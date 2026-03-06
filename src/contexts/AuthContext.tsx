@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/lib/supabase";
 
 type AppRole = "entreprise" | "facilitateur" | "admin" | null;
 
@@ -34,14 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
-      // Use raw query to bypass TypeScript issues with ungenerated types
-      const { data, error } = await supabase
-        .from("profiles" as never)
+      const { data, error } = await db
+        .from("profiles")
         .select("*")
         .eq("id", userId)
-        .maybeSingle() as { data: Profile | null; error: unknown };
+        .maybeSingle();
       if (!error && data) {
-        setProfile(data);
+        setProfile(data as Profile);
       }
     } catch {
       // silent fail
