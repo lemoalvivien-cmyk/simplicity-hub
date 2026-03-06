@@ -14,10 +14,18 @@ import NotFound from "./pages/NotFound";
 
 // User pages
 import Onboarding from "./pages/Onboarding";
-import Dashboard from "./pages/Dashboard";
+import DashboardEntreprise from "./pages/DashboardEntreprise";
+import DashboardFacilitateur from "./pages/DashboardFacilitateur";
 import Assistant from "./pages/Assistant";
 import Help from "./pages/Help";
 import Account from "./pages/Account";
+
+// Métier
+import Missions from "./pages/Missions";
+import Introductions from "./pages/Introductions";
+import Gains from "./pages/Gains";
+import ProfilEntreprise from "./pages/ProfilEntreprise";
+import ProfilFacilitateur from "./pages/ProfilFacilitateur";
 
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
@@ -43,9 +51,23 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
-          {/* User (authenticated) */}
+          {/* Onboarding */}
           <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* Dashboards par rôle */}
+          <Route path="/dashboard/entreprise" element={<DashboardEntreprise />} />
+          <Route path="/dashboard/facilitateur" element={<DashboardFacilitateur />} />
+          {/* Alias legacy */}
+          <Route path="/dashboard" element={<DashboardFacilitateur />} />
+
+          {/* Pages métier */}
+          <Route path="/missions" element={<Missions />} />
+          <Route path="/introductions" element={<Introductions />} />
+          <Route path="/gains" element={<Gains />} />
+          <Route path="/profil/entreprise" element={<ProfilEntreprise />} />
+          <Route path="/profil/facilitateur" element={<ProfilFacilitateur />} />
+
+          {/* Pages utilitaires utilisateur */}
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/help" element={<Help />} />
           <Route path="/account" element={<Account />} />
