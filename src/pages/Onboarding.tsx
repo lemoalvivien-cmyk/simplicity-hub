@@ -60,8 +60,8 @@ export default function Onboarding() {
     setSaving(true);
     try {
       // Update profile role and prenom
-      await supabase
-        .from("profiles" as never)
+      await db
+        .from("profiles")
         .update({
           role: role,
           prenom: profile.prenom,
@@ -71,8 +71,8 @@ export default function Onboarding() {
 
       // Create role-specific profile
       if (role === "entreprise") {
-        await supabase
-          .from("entreprise_profiles" as never)
+        await db
+          .from("entreprise_profiles")
           .upsert({
             user_id: user.id,
             nom_entreprise: profile.nomEntite,
@@ -80,8 +80,8 @@ export default function Onboarding() {
             description: description,
           }, { onConflict: "user_id" });
       } else if (role === "facilitateur") {
-        await supabase
-          .from("facilitateur_profiles" as never)
+        await db
+          .from("facilitateur_profiles")
           .upsert({
             user_id: user.id,
             description_reseau: description,
