@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Target, Users, CheckCircle2, ArrowRight, MessageCircle,
-  HelpCircle, Search, Zap, Play, TrendingUp
+  HelpCircle, Search, Zap, Play, TrendingUp, Sparkles
 } from "lucide-react";
 
 const entrepriseName = "Marie";
