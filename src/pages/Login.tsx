@@ -1,10 +1,46 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
-import { Eye, EyeOff, Zap } from "lucide-react";
+import { Eye, EyeOff, Zap, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { signIn, profile } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const { error: authError } = await signIn(email, password);
+
+    if (authError) {
+      setError("Email ou mot de passe incorrect. Vérifiez vos informations.");
+      setLoading(false);
+      return;
+    }
+
+    // Navigation handled by profile role
+    setLoading(false);
+  };
+
+  // Once profile is loaded after sign-in, redirect based on role
+  if (profile) {
+    if (!profile.onboarding_done) {
+      navigate("/onboarding", { replace: true });
+      return null;
+    }
+    if (profile.role === "entreprise") navigate("/dashboard/entreprise", { replace: true });
+    else if (profile.role === "admin") navigate("/admin", { replace: true });
+    else navigate("/dashboard/facilitateur", { replace: true });
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -23,7 +59,14 @@ export default function Login() {
             <p className="text-muted-foreground text-sm mt-1">Connectez-vous à votre espace WIINUP MAX</p>
           </div>
 
-          <div className="card-surface p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="card-surface p-6 space-y-4">
+            {error && (
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                <AlertCircle size={15} className="text-destructive shrink-0 mt-0.5" />
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+
             <div>
               <label className="text-sm font-medium text-foreground block mb-1.5">
                 Adresse e-mail
@@ -31,6 +74,9 @@ export default function Login() {
               <input
                 type="email"
                 placeholder="vous@exemple.fr"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="input-premium"
               />
             </div>
@@ -46,6 +92,9 @@ export default function Login() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Votre mot de passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                   className="input-premium pr-11"
                 />
                 <button
@@ -58,10 +107,14 @@ export default function Login() {
               </div>
             </div>
 
-            <Link to="/dashboard" className="btn-primary block text-center w-full py-3 text-sm">
-              Se connecter →
-            </Link>
-          </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary block text-center w-full py-3 text-sm disabled:opacity-60"
+            >
+              {loading ? "Connexion…" : "Se connecter →"}
+            </button>
+          </form>
 
           <p className="text-center text-sm text-muted-foreground mt-5">
             Pas encore de compte ?{" "}

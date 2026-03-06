@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle2, ChevronRight, Building2, Users, ArrowRight } from "lucide-react";
+import { CheckCircle2, ChevronRight, Building2, Users, ArrowRight, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type Role = "entreprise" | "facilitateur" | null;
 
@@ -10,6 +13,7 @@ type ProfileData = {
   nomEntite: string;
   secteur: string;
   objectif: string;
+  description: string;
 };
 
 const TOTAL_STEPS = 3;
@@ -37,16 +41,62 @@ export default function Onboarding() {
     nomEntite: "",
     secteur: "",
     objectif: "",
+    description: "",
   });
   const [done, setDone] = useState(false);
+  const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const { user, refreshProfile } = useAuth();
   const [params] = useSearchParams();
-  const via = params.get("via"); // "code" or null
+  const via = params.get("via");
 
   const welcomeMsg =
     via === "code"
       ? "Votre accès de 12 mois est bien actif. Prenons 2 minutes pour personnaliser votre espace."
       : "Votre accès est activé. Prenons 2 minutes pour préparer votre espace.";
+
+  const saveProfile = async (description: string) => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      // Update profile role and prenom
+      await supabase
+        .from("profiles" as never)
+        .update({
+          role: role,
+          prenom: profile.prenom,
+          onboarding_done: true,
+        })
+        .eq("id", user.id);
+
+      // Create role-specific profile
+      if (role === "entreprise") {
+        await supabase
+          .from("entreprise_profiles" as never)
+          .upsert({
+            user_id: user.id,
+            nom_entreprise: profile.nomEntite,
+            secteur: profile.secteur,
+            description: description,
+          }, { onConflict: "user_id" });
+      } else if (role === "facilitateur") {
+        await supabase
+          .from("facilitateur_profiles" as never)
+          .upsert({
+            user_id: user.id,
+            description_reseau: description,
+            secteur: profile.secteur,
+          }, { onConflict: "user_id" });
+      }
+
+      await refreshProfile();
+      setDone(true);
+    } catch {
+      toast.error("Une erreur est survenue. Réessayez.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // ── ÉTAPE 0 — BIENVENUE ─────────────────────────────────────
   const StepWelcome = () => (
@@ -108,7 +158,6 @@ export default function Onboarding() {
       </div>
 
       <div className="space-y-3 mb-6">
-        {/* Entreprise */}
         <button
           onClick={() => setRole("entreprise")}
           className={`w-full text-left rounded-2xl border-2 p-5 transition-all ${
@@ -124,9 +173,7 @@ export default function Onboarding() {
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <p className="font-semibold text-foreground">Je représente une entreprise</p>
-                {role === "entreprise" && (
-                  <CheckCircle2 size={18} className="text-primary shrink-0" />
-                )}
+                {role === "entreprise" && <CheckCircle2 size={18} className="text-primary shrink-0" />}
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
                 Je cherche de nouveaux clients grâce à un réseau de recommandation.
@@ -135,7 +182,6 @@ export default function Onboarding() {
           </div>
         </button>
 
-        {/* Facilitateur */}
         <button
           onClick={() => setRole("facilitateur")}
           className={`w-full text-left rounded-2xl border-2 p-5 transition-all ${
@@ -151,9 +197,7 @@ export default function Onboarding() {
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <p className="font-semibold text-foreground">Je suis apporteur d'affaires</p>
-                {role === "facilitateur" && (
-                  <CheckCircle2 size={18} className="text-primary shrink-0" />
-                )}
+                {role === "facilitateur" && <CheckCircle2 size={18} className="text-primary shrink-0" />}
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
                 J'ai un réseau et je peux mettre en relation des entreprises avec leurs futurs clients.
@@ -199,7 +243,6 @@ export default function Onboarding() {
     ];
 
     const goals = isEntreprise ? goalsEntreprise : goalsFacilitateur;
-
     const isValid = profile.prenom.trim().length > 1 && profile.nomEntite.trim().length > 1 && profile.secteur && profile.objectif;
 
     return (
@@ -217,7 +260,6 @@ export default function Onboarding() {
         </div>
 
         <div className="space-y-4 mb-6">
-          {/* Prénom */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
               Votre prénom
@@ -232,7 +274,6 @@ export default function Onboarding() {
             />
           </div>
 
-          {/* Nom entité */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
               {isEntreprise ? "Nom de votre entreprise" : "Votre nom ou celui de votre activité"}
@@ -247,7 +288,6 @@ export default function Onboarding() {
             />
           </div>
 
-          {/* Secteur */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
               {isEntreprise ? "Votre secteur d'activité" : "Votre domaine de réseau"}
@@ -270,7 +310,6 @@ export default function Onboarding() {
             </div>
           </div>
 
-          {/* Objectif */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
               Votre objectif principal
@@ -315,6 +354,12 @@ export default function Onboarding() {
   // ── ÉTAPE 3 — PREMIÈRE ACTION ────────────────────────────────
   const StepFirstAction = () => {
     const isEntreprise = role === "entreprise";
+    const [desc, setDesc] = useState(profile.description);
+
+    const handleFinish = async () => {
+      setProfile((p) => ({ ...p, description: desc }));
+      await saveProfile(desc);
+    };
 
     return (
       <div className="w-full max-w-md animate-fade-in" key="action">
@@ -328,7 +373,7 @@ export default function Onboarding() {
           <p className="text-muted-foreground text-sm">
             {isEntreprise
               ? "Décrivez en quelques mots ce que vous proposez. C'est ce que verront les apporteurs d'affaires."
-              : "Décrivez en quelques mots le type d'entreprises ou de clients que vous connaissez. C'est ce qui vous connectera aux bonnes missions."}
+              : "Décrivez en quelques mots le type d'entreprises ou de clients que vous connaissez."}
           </p>
         </div>
 
@@ -338,6 +383,8 @@ export default function Onboarding() {
           </label>
           <textarea
             rows={3}
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
             placeholder={
               isEntreprise
                 ? "ex : Je propose un logiciel de facturation pour les TPE. Je cherche des clients dans le commerce et l'artisanat."
@@ -351,14 +398,20 @@ export default function Onboarding() {
         </div>
 
         <button
-          onClick={() => setDone(true)}
-          className="btn-cta w-full py-4"
+          onClick={handleFinish}
+          disabled={saving}
+          className="btn-cta w-full py-4 disabled:opacity-60"
         >
-          Terminer et accéder à mon espace →
+          {saving ? (
+            <><Loader2 size={16} className="animate-spin" /> Finalisation…</>
+          ) : (
+            "Terminer et accéder à mon espace →"
+          )}
         </button>
         <button
-          onClick={() => setDone(true)}
-          className="w-full text-center mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => saveProfile("")}
+          disabled={saving}
+          className="w-full text-center mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
         >
           Passer cette étape, je compléterai plus tard
         </button>
@@ -402,15 +455,13 @@ export default function Onboarding() {
         </div>
 
         <button
-          onClick={() =>
-            navigate(isEntreprise ? "/dashboard/entreprise" : "/dashboard/facilitateur")
-          }
+          onClick={() => navigate(isEntreprise ? "/dashboard/entreprise" : "/dashboard/facilitateur")}
           className="btn-cta w-full py-4 mb-3"
         >
           Accéder à mon espace <ArrowRight size={16} />
         </button>
         <button
-          onClick={() => navigate(isEntreprise ? "/missions" : "/missions")}
+          onClick={() => navigate("/missions")}
           className="w-full px-4 py-3 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
         >
           {isEntreprise ? "Voir les missions disponibles" : "Explorer les missions"}
@@ -422,30 +473,26 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
-      <div className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-primary flex items-center justify-center">
-            <span className="text-white font-bold text-xs">W</span>
-          </div>
-          <span className="font-display font-bold text-foreground">Wiinup</span>
+      <div className="border-b border-border">
+        <div className="container flex items-center justify-between h-14">
+          <span className="font-display font-bold text-foreground">WIINUP MAX</span>
+          {step > 0 && step < 4 && !done && (
+            <span className="text-xs text-muted-foreground">Étape {step} sur {TOTAL_STEPS}</span>
+          )}
         </div>
-        {step > 0 && !done && (
-          <span className="text-sm text-muted-foreground">
-            Étape {step} sur {TOTAL_STEPS}
-          </span>
-        )}
       </div>
 
-      {/* Progress bar (steps 1–3) */}
+      {/* Progress */}
       {step > 0 && !done && <ProgressBar current={step - 1} total={TOTAL_STEPS} />}
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center p-6">
-        {done && <StepDone />}
-        {!done && step === 0 && <StepWelcome />}
-        {!done && step === 1 && <StepRole />}
-        {!done && step === 2 && <StepProfile />}
-        {!done && step === 3 && <StepFirstAction />}
+        {done ? <StepDone /> :
+          step === 0 ? <StepWelcome /> :
+          step === 1 ? <StepRole /> :
+          step === 2 ? <StepProfile /> :
+          <StepFirstAction />
+        }
       </div>
     </div>
   );

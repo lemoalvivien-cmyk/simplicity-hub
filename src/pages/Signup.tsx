@@ -1,10 +1,46 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
-import { Eye, EyeOff, CheckCircle2, Zap } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, Zap, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
+  const [prenom, setPrenom] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (password.length < 8) {
+      setError("Le mot de passe doit faire au moins 8 caractères.");
+      return;
+    }
+
+    setLoading(true);
+    const { error: authError } = await signUp(email, password, prenom);
+    setLoading(false);
+
+    if (authError) {
+      if (authError.message?.includes("already registered")) {
+        setError("Cette adresse e-mail est déjà utilisée. Connectez-vous.");
+      } else {
+        setError("Une erreur est survenue. Vérifiez vos informations.");
+      }
+      return;
+    }
+
+    // Auto-confirmed or email confirmation required
+    setSuccess(true);
+    setTimeout(() => navigate("/onboarding"), 1500);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -25,7 +61,23 @@ export default function Signup() {
             </p>
           </div>
 
-          <div className="card-surface p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="card-surface p-6 space-y-4">
+            {error && (
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
+                <AlertCircle size={15} className="text-destructive shrink-0 mt-0.5" />
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+
+            {success && (
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-success-light border border-success/20">
+                <CheckCircle2 size={15} style={{ color: "hsl(var(--success))" }} className="shrink-0 mt-0.5" />
+                <p className="text-sm" style={{ color: "hsl(var(--success))" }}>
+                  Compte créé ! Redirection…
+                </p>
+              </div>
+            )}
+
             <div>
               <label className="text-sm font-medium text-foreground block mb-1.5">
                 Votre prénom
@@ -33,6 +85,9 @@ export default function Signup() {
               <input
                 type="text"
                 placeholder="Marie"
+                value={prenom}
+                onChange={(e) => setPrenom(e.target.value)}
+                required
                 className="input-premium"
               />
             </div>
@@ -44,6 +99,9 @@ export default function Signup() {
               <input
                 type="email"
                 placeholder="vous@exemple.fr"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="input-premium"
               />
             </div>
@@ -56,6 +114,10 @@ export default function Signup() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="8 caractères minimum"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
                   className="input-premium pr-11"
                 />
                 <button
@@ -68,16 +130,20 @@ export default function Signup() {
               </div>
             </div>
 
-            <Link to="/onboarding" className="btn-cta block text-center w-full py-3 text-sm">
-              Créer mon compte →
-            </Link>
+            <button
+              type="submit"
+              disabled={loading || success}
+              className="btn-cta block text-center w-full py-3 text-sm disabled:opacity-60"
+            >
+              {loading ? "Création…" : "Créer mon compte →"}
+            </button>
 
             <p className="text-xs text-muted-foreground text-center leading-relaxed">
               En créant un compte, vous acceptez nos{" "}
               <a href="#" className="underline">CGU</a> et notre{" "}
               <a href="#" className="underline">politique de confidentialité</a>.
             </p>
-          </div>
+          </form>
 
           <div className="space-y-2 mt-5">
             {[
