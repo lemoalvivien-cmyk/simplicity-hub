@@ -34,13 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string) => {
     try {
+      // Use raw query to bypass TypeScript issues with ungenerated types
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles" as never)
         .select("*")
         .eq("id", userId)
-        .maybeSingle();
+        .maybeSingle() as { data: Profile | null; error: unknown };
       if (!error && data) {
-        setProfile(data as Profile);
+        setProfile(data);
       }
     } catch {
       // silent fail
@@ -58,7 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(newSession);
         setUser(newSession?.user ?? null);
         if (newSession?.user) {
-          await fetchProfile(newSession.user.id);
+          // Use setTimeout to avoid Supabase deadlock
+          setTimeout(() => fetchProfile(newSession.user.id), 0);
         } else {
           setProfile(null);
         }
