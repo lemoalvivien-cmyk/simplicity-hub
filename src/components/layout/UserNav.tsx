@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
-  Search, Play, Zap, ListOrdered
+  Play, Zap, ListOrdered, Activity
 } from "lucide-react";
 
 type UserRole = "entreprise" | "facilitateur";
@@ -20,6 +20,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
 
   const linksEntreprise = [
     { to: dashboardPath, label: "Accueil", icon: LayoutDashboard },
+    { to: "/pilotage", label: "Pilotage", icon: Activity },
     // Prospection
     { to: "/contacts", label: "Contacts", icon: Users },
     { to: "/campagnes", label: "Campagnes", icon: Play },
@@ -34,6 +35,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
 
   const linksFacilitateur = [
     { to: dashboardPath, label: "Accueil", icon: LayoutDashboard },
+    { to: "/pilotage", label: "Pilotage", icon: Activity },
     // Apport d'affaires
     { to: "/missions", label: "Missions", icon: Briefcase },
     { to: "/introductions", label: "Introductions", icon: Send },
@@ -49,18 +51,19 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
 
   const links = role === "entreprise" ? linksEntreprise : linksFacilitateur;
 
-  // Mobile: groupement pour naviguer
   const mobileGroups =
     role === "entreprise"
       ? [
-          { label: "Prospection", items: links.slice(1, 4) },
-          { label: "Apport d'affaires", items: links.slice(4, 6) },
-          { label: "Compte", items: links.slice(6) },
+          { label: "Pilotage", items: [links[1]] },
+          { label: "Prospection", items: links.slice(2, 5) },
+          { label: "Apport d'affaires", items: links.slice(5, 7) },
+          { label: "Compte", items: links.slice(7) },
         ]
       : [
-          { label: "Apport d'affaires", items: links.slice(1, 4) },
-          { label: "Prospection", items: links.slice(4, 7) },
-          { label: "Compte", items: links.slice(7) },
+          { label: "Pilotage", items: [links[1]] },
+          { label: "Apport d'affaires", items: links.slice(2, 5) },
+          { label: "Prospection", items: links.slice(5, 8) },
+          { label: "Compte", items: links.slice(8) },
         ];
 
   return (
@@ -74,14 +77,13 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
           <span className="font-display font-bold text-lg text-foreground">Wiinup</span>
         </Link>
 
-        {/* Desktop nav — condensé avec séparateur visuel */}
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-0.5">
-          {/* Accueil */}
           <NavLink to={dashboardPath} label="Accueil" icon={LayoutDashboard} pathname={pathname} />
+          <NavLink to="/pilotage" label="Pilotage" icon={Activity} pathname={pathname} highlight />
 
           <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
 
-          {/* Prospection */}
           {role === "entreprise" && (
             <>
               <NavLink to="/contacts" label="Contacts" icon={Users} pathname={pathname} />
@@ -191,14 +193,17 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
 }
 
 function NavLink({
-  to, label, icon: Icon, pathname,
-}: { to: string; label: string; icon: React.ElementType; pathname: string }) {
+  to, label, icon: Icon, pathname, highlight,
+}: { to: string; label: string; icon: React.ElementType; pathname: string; highlight?: boolean }) {
+  const isActive = pathname === to || pathname.startsWith(to + "/");
   return (
     <Link
       to={to}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-        pathname === to || pathname.startsWith(to + "/")
+        isActive
           ? "bg-primary text-primary-foreground"
+          : highlight
+          ? "text-primary bg-secondary hover:bg-primary hover:text-primary-foreground"
           : "text-muted-foreground hover:text-foreground hover:bg-muted"
       }`}
     >

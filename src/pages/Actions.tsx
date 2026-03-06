@@ -117,7 +117,7 @@ export default function Actions() {
   const totalRestantes = filtrees.length;
 
   return (
-    <UserLayout jarvisContext="contacts">
+    <UserLayout jarvisContext="contact">
       <div className="max-w-xl mx-auto">
 
         {/* Header */}
