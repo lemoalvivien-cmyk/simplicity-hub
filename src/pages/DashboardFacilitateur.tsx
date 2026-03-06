@@ -2,10 +2,9 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Briefcase, Send, TrendingUp, CheckCircle2, ArrowRight,
-  MessageCircle, HelpCircle
+  MessageCircle, HelpCircle, Users, Zap, Search
 } from "lucide-react";
 
-// Données simulées
 const facilitateurName = "Thomas";
 
 const missionsDisponibles = [
@@ -20,11 +19,9 @@ const introductions = [
   { id: 3, contact: "Aurélie Dubois", mission: "Acme SaaS", status: "en_attente", gain: "En attente", date: "Aujourd'hui" },
 ];
 
-const gains = {
-  total_valide: "300 €",
-  en_attente: "800 €",
-  total_recu: "300 €",
-};
+const gains = { total_valide: "300 €", en_attente: "800 €" };
+
+const prospectionResume = { contacts: 6, a_contacter: 1, campagnes: 0 };
 
 const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
   en_attente: { color: "hsl(38 80% 30%)", bg: "hsl(var(--accent-light))", label: "Envoyée" },
@@ -34,11 +31,11 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
 };
 
 export default function DashboardFacilitateur() {
-  const nextAction = introductions.find((i) => i.status === "en_attente");
+  const nextIntro = introductions.find((i) => i.status === "en_attente");
 
   return (
     <UserLayout role="facilitateur">
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-5">
 
         {/* ── BLOC 1 — BIENVENUE ─────────────────────────────────── */}
         <div className="card-surface p-6">
@@ -48,169 +45,188 @@ export default function DashboardFacilitateur() {
                 Bonjour {facilitateurName} 👋
               </h1>
               <p className="text-muted-foreground text-sm">
-                Voici les missions disponibles et l'état de vos introductions.
+                Missions, introductions, prospection — tout est ici.
               </p>
             </div>
-            <div className="shrink-0">
-              <span className="badge-success">
-                <CheckCircle2 size={12} />
-                Accès actif
-              </span>
-              <p className="text-xs text-muted-foreground mt-1">
-                Compte apporteur
-              </p>
-            </div>
+            <span className="badge-success shrink-0">
+              <CheckCircle2 size={12} />
+              Compte actif
+            </span>
           </div>
         </div>
 
-        {/* ── BLOC 2 — ACTION PRINCIPALE ─────────────────────────── */}
-        {missionsDisponibles.length > 0 && (
-          <div
-            className="rounded-xl border-2 p-6"
-            style={{ borderColor: "hsl(var(--accent))", background: "hsl(var(--accent-light))" }}
-          >
-            <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: "hsl(38 80% 30%)" }}>
+        {/* ── BLOC 2 — ACTION PRIORITAIRE ────────────────────────── */}
+        <div
+          className="rounded-xl border-2 p-5"
+          style={{ borderColor: "hsl(var(--accent))", background: "hsl(var(--accent-light))" }}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Zap size={14} style={{ color: "hsl(var(--accent))" }} />
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "hsl(38 80% 30%)" }}>
               À faire maintenant
             </p>
-            <h2 className="font-display text-lg font-bold text-foreground mb-1">
-              Vous avez {missionsDisponibles.length} missions à regarder
-            </h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Parcourez les missions disponibles. Si vous connaissez quelqu'un qui correspond, faites une introduction en quelques clics.
-            </p>
-            <Link to="/missions" className="btn-cta text-sm py-2.5 px-5 inline-flex">
-              Voir les missions <ArrowRight size={15} />
-            </Link>
           </div>
-        )}
+          {nextIntro ? (
+            <>
+              <h2 className="font-display text-lg font-bold text-foreground mb-1">
+                Une introduction attend une réponse
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Votre contact <strong>{nextIntro.contact}</strong> a été envoyé à <strong>{nextIntro.mission}</strong>.
+                Ils n'ont pas encore répondu — restez disponible.
+              </p>
+              <Link to="/introductions" className="btn-cta text-sm py-2.5 px-5 inline-flex">
+                Suivre mes introductions <ArrowRight size={14} />
+              </Link>
+            </>
+          ) : (
+            <>
+              <h2 className="font-display text-lg font-bold text-foreground mb-1">
+                {missionsDisponibles.length} missions disponibles pour vous
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Connaissez-vous quelqu'un qui pourrait correspondre ? Faites une introduction en quelques clics.
+              </p>
+              <Link to="/missions" className="btn-cta text-sm py-2.5 px-5 inline-flex">
+                Voir les missions <ArrowRight size={14} />
+              </Link>
+            </>
+          )}
+        </div>
 
-        {/* ── BLOC 3 — MISSIONS RECOMMANDÉES ─────────────────────── */}
+        {/* ── BLOC 3 — MISSIONS ──────────────────────────────────── */}
         <div className="card-surface p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <Briefcase size={17} className="text-primary" />
+              <Briefcase size={16} className="text-primary" />
               Missions pour vous
             </h2>
             <Link to="/missions" className="text-xs text-primary font-medium hover:underline">
               Tout voir
             </Link>
           </div>
-
-          <div className="space-y-3">
-            {missionsDisponibles.slice(0, 3).map((m) => (
-              <div key={m.id} className="p-4 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">{m.entreprise}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{m.besoin}</p>
-                    <p className="text-xs font-medium mt-1.5" style={{ color: "hsl(var(--success))" }}>
-                      💰 {m.gain}
-                    </p>
-                  </div>
-                  <Link
-                    to={`/missions/${m.id}`}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors shrink-0"
-                  >
-                    Voir
-                  </Link>
+          <div className="space-y-2">
+            {missionsDisponibles.slice(0, 2).map((m) => (
+              <div key={m.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted hover:bg-secondary transition-colors">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{m.entreprise}</p>
+                  <p className="text-xs text-muted-foreground truncate">{m.besoin}</p>
+                  <p className="text-xs font-medium mt-0.5" style={{ color: "hsl(var(--success))" }}>
+                    {m.gain}
+                  </p>
                 </div>
+                <Link to={`/missions/${m.id}`} className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors shrink-0">
+                  Voir
+                </Link>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── BLOC 4 — MES INTRODUCTIONS EN COURS ────────────────── */}
+        {/* ── BLOC 4 — INTRODUCTIONS + GAINS ────────────────────── */}
         <div className="card-surface p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <Send size={17} className="text-primary" />
+              <Send size={16} className="text-primary" />
               Mes introductions
             </h2>
             <Link to="/introductions" className="text-xs text-primary font-medium hover:underline">
               Tout voir
             </Link>
           </div>
-
-          {introductions.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">
-              Vous n'avez encore fait aucune introduction. Parcourez les missions pour commencer.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {introductions.map((intro) => {
-                const cfg = statusConfig[intro.status];
-                return (
-                  <div key={intro.id} className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                        <span className="text-xs font-semibold text-secondary-foreground">
-                          {intro.contact.charAt(0)}
-                        </span>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{intro.contact}</p>
-                        <p className="text-xs text-muted-foreground">{intro.mission} · {intro.date}</p>
-                      </div>
+          <div className="space-y-2 mb-4">
+            {introductions.map((intro) => {
+              const cfg = statusConfig[intro.status];
+              return (
+                <Link key={intro.id} to={`/introductions/${intro.id}`} className="flex items-center justify-between gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                      style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}
+                    >
+                      {intro.contact.charAt(0)}
                     </div>
-                    <div className="text-right shrink-0">
-                      <span
-                        className="block text-xs font-semibold px-2.5 py-1 rounded-full"
-                        style={{ color: cfg.color, background: cfg.bg }}
-                      >
-                        {cfg.label}
-                      </span>
-                      <span className="block text-xs text-muted-foreground mt-1">{intro.gain}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{intro.contact}</p>
+                      <p className="text-xs text-muted-foreground">{intro.mission} · {intro.date}</p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                  <div className="text-right shrink-0">
+                    <span className="block text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: cfg.color, background: cfg.bg }}>
+                      {cfg.label}
+                    </span>
+                    <span className="block text-xs text-muted-foreground mt-1">{intro.gain}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
 
-        {/* ── BLOC 4b — MES GAINS ────────────────────────────────── */}
-        <div className="card-surface p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <TrendingUp size={17} className="text-primary" />
-              Mes gains
-            </h2>
+          {/* Gains résumé inline */}
+          <div
+            className="flex items-center justify-between p-3 rounded-xl"
+            style={{ background: "hsl(var(--success-light))" }}
+          >
+            <div className="flex items-center gap-2">
+              <TrendingUp size={14} style={{ color: "hsl(var(--success))" }} />
+              <div>
+                <p className="text-xs font-semibold" style={{ color: "hsl(var(--success))" }}>
+                  {gains.total_valide} validés · {gains.en_attente} en attente
+                </p>
+                <p className="text-xs text-muted-foreground">Votre total de gains</p>
+              </div>
+            </div>
             <Link to="/gains" className="text-xs text-primary font-medium hover:underline">
               Détail
             </Link>
           </div>
+        </div>
 
-          <div className="grid grid-cols-3 gap-3">
+        {/* ── BLOC 5 — MA PROSPECTION ────────────────────────────── */}
+        <div className="card-surface p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-foreground flex items-center gap-2">
+              <Search size={16} className="text-primary" />
+              Ma prospection
+            </h2>
+            <Link to="/contacts" className="text-xs text-primary font-medium hover:underline">
+              Voir les contacts
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 gap-3 mb-4">
             {[
-              { label: "Validés", value: gains.total_valide, color: "hsl(var(--success))", bg: "hsl(var(--success-light))" },
-              { label: "En attente", value: gains.en_attente, color: "hsl(38 80% 30%)", bg: "hsl(var(--accent-light))" },
-              { label: "Reçus", value: gains.total_recu, color: "hsl(var(--primary))", bg: "hsl(var(--secondary))" },
+              { label: "Contacts", value: prospectionResume.contacts, color: "hsl(var(--foreground))", bg: "hsl(var(--muted))" },
+              { label: "À contacter", value: prospectionResume.a_contacter, color: "hsl(var(--primary))", bg: "hsl(var(--secondary))" },
+              { label: "Campagnes", value: prospectionResume.campagnes, color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
             ].map(({ label, value, color, bg }) => (
               <div key={label} className="rounded-xl p-3 text-center" style={{ background: bg }}>
-                <p className="text-lg font-bold" style={{ color }}>{value}</p>
+                <p className="font-display text-xl font-bold" style={{ color }}>{value}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
               </div>
             ))}
           </div>
+          <div className="flex gap-2">
+            <Link to="/contacts/import" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
+              <Users size={12} /> Importer
+            </Link>
+            <Link to="/campagnes" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-primary text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
+              Campagnes
+            </Link>
+          </div>
         </div>
 
-        {/* ── BLOC 5 — AIDE ──────────────────────────────────────── */}
-        <div className="card-surface p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        {/* ── BLOC 6 — AIDE ──────────────────────────────────────── */}
+        <div className="card-surface p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex-1">
             <h2 className="font-semibold text-foreground mb-0.5">Une question ?</h2>
-            <p className="text-sm text-muted-foreground">
-              L'assistant répond immédiatement. Le centre d'aide aussi.
-            </p>
+            <p className="text-sm text-muted-foreground">L'assistant répond immédiatement.</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
-            <Link to="/assistant" className="btn-primary text-sm py-2.5 px-4 justify-center">
-              <MessageCircle size={15} /> Assistant
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Link to="/assistant" className="btn-primary text-sm py-2.5 px-4 flex-1 sm:flex-initial justify-center">
+              <MessageCircle size={14} /> Assistant
             </Link>
-            <Link
-              to="/help"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
-            >
-              <HelpCircle size={15} /> Aide
+            <Link to="/help" className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
+              <HelpCircle size={14} /> Aide
             </Link>
           </div>
         </div>

@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
-  LayoutDashboard, Briefcase, Send, TrendingUp, User,
-  HelpCircle, Menu, X, LogOut, Building2, Users
+  LayoutDashboard, Briefcase, Send, TrendingUp,
+  HelpCircle, Menu, X, LogOut, Building2, Users,
+  Search, Play, Zap, ListOrdered
 } from "lucide-react";
 
 type UserRole = "entreprise" | "facilitateur";
@@ -18,55 +19,94 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
   const dashboardPath = role === "entreprise" ? "/dashboard/entreprise" : "/dashboard/facilitateur";
 
   const linksEntreprise = [
-    { to: dashboardPath, label: "Tableau de bord", icon: LayoutDashboard },
-    { to: "/missions", label: "Mes missions", icon: Briefcase },
-    { to: "/introductions", label: "Introductions", icon: Send },
-    { to: "/profil/entreprise", label: "Mon profil", icon: Building2 },
+    { to: dashboardPath, label: "Accueil", icon: LayoutDashboard },
+    // Prospection
+    { to: "/contacts", label: "Contacts", icon: Users },
+    { to: "/campagnes", label: "Campagnes", icon: Play },
+    { to: "/actions", label: "À faire", icon: Zap },
+    // Apport d'affaires
+    { to: "/missions", label: "Missions", icon: Briefcase },
+    { to: "/entreprise/introductions", label: "Introductions", icon: Send },
+    // Commun
     { to: "/help", label: "Aide", icon: HelpCircle },
+    { to: "/profil/entreprise", label: "Mon profil", icon: Building2 },
   ];
 
   const linksFacilitateur = [
-    { to: dashboardPath, label: "Tableau de bord", icon: LayoutDashboard },
+    { to: dashboardPath, label: "Accueil", icon: LayoutDashboard },
+    // Apport d'affaires
     { to: "/missions", label: "Missions", icon: Briefcase },
-    { to: "/introductions", label: "Mes introductions", icon: Send },
+    { to: "/introductions", label: "Introductions", icon: Send },
     { to: "/gains", label: "Mes gains", icon: TrendingUp },
-    { to: "/profil/facilitateur", label: "Mon profil", icon: Users },
+    // Prospection
+    { to: "/contacts", label: "Contacts", icon: Users },
+    { to: "/listes", label: "Listes", icon: ListOrdered },
+    { to: "/campagnes", label: "Campagnes", icon: Play },
+    // Commun
+    { to: "/actions", label: "À faire", icon: Zap },
     { to: "/help", label: "Aide", icon: HelpCircle },
   ];
 
   const links = role === "entreprise" ? linksEntreprise : linksFacilitateur;
 
+  // Mobile: groupement pour naviguer
+  const mobileGroups =
+    role === "entreprise"
+      ? [
+          { label: "Prospection", items: links.slice(1, 4) },
+          { label: "Apport d'affaires", items: links.slice(4, 6) },
+          { label: "Compte", items: links.slice(6) },
+        ]
+      : [
+          { label: "Apport d'affaires", items: links.slice(1, 4) },
+          { label: "Prospection", items: links.slice(4, 7) },
+          { label: "Compte", items: links.slice(7) },
+        ];
+
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
       <div className="container flex items-center justify-between h-16">
         {/* Logo */}
-        <Link to={dashboardPath} className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
+        <Link to={dashboardPath} className="flex items-center gap-2 shrink-0">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--primary))" }}>
             <span className="text-white font-display font-bold text-sm">W</span>
           </div>
           <span className="font-display font-bold text-lg text-foreground">Wiinup</span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {links.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                pathname === to
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              <Icon size={15} />
-              {label}
-            </Link>
-          ))}
+        {/* Desktop nav — condensé avec séparateur visuel */}
+        <nav className="hidden md:flex items-center gap-0.5">
+          {/* Accueil */}
+          <NavLink to={dashboardPath} label="Accueil" icon={LayoutDashboard} pathname={pathname} />
+
+          <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
+
+          {/* Prospection */}
+          {role === "entreprise" && (
+            <>
+              <NavLink to="/contacts" label="Contacts" icon={Users} pathname={pathname} />
+              <NavLink to="/campagnes" label="Campagnes" icon={Play} pathname={pathname} />
+              <NavLink to="/actions" label="À faire" icon={Zap} pathname={pathname} />
+              <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
+              <NavLink to="/missions" label="Missions" icon={Briefcase} pathname={pathname} />
+              <NavLink to="/entreprise/introductions" label="Introductions" icon={Send} pathname={pathname} />
+            </>
+          )}
+          {role === "facilitateur" && (
+            <>
+              <NavLink to="/missions" label="Missions" icon={Briefcase} pathname={pathname} />
+              <NavLink to="/introductions" label="Introductions" icon={Send} pathname={pathname} />
+              <NavLink to="/gains" label="Gains" icon={TrendingUp} pathname={pathname} />
+              <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
+              <NavLink to="/contacts" label="Contacts" icon={Users} pathname={pathname} />
+              <NavLink to="/campagnes" label="Campagnes" icon={Play} pathname={pathname} />
+              <NavLink to="/actions" label="À faire" icon={Zap} pathname={pathname} />
+            </>
+          )}
         </nav>
 
-        {/* Desktop — role badge + logout */}
-        <div className="hidden md:flex items-center gap-2">
+        {/* Desktop — badge rôle + déconnexion */}
+        <div className="hidden md:flex items-center gap-2 shrink-0">
           <span
             className="text-xs font-semibold px-2.5 py-1 rounded-full"
             style={{
@@ -76,10 +116,10 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
           >
             {role === "entreprise" ? "Entreprise" : "Apporteur"}
           </span>
-          <Link
-            to="/login"
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted"
-          >
+          <Link to="/help" className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <HelpCircle size={15} />
+          </Link>
+          <Link to="/login" className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
             <LogOut size={15} />
           </Link>
         </div>
@@ -96,35 +136,74 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t border-border bg-card animate-fade-in">
-          <div className="container py-4 flex flex-col gap-1">
-            {links.map(({ to, label, icon: Icon }) => (
-              <Link
-                key={to}
-                to={to}
-                onClick={() => setOpen(false)}
-                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  pathname === to
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-muted"
-                }`}
-              >
-                <Icon size={16} />
-                {label}
-              </Link>
+          <div className="container py-4 flex flex-col gap-3">
+            {/* Accueil */}
+            <Link
+              to={dashboardPath}
+              onClick={() => setOpen(false)}
+              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                pathname === dashboardPath
+                  ? "bg-primary text-primary-foreground"
+                  : "text-foreground hover:bg-muted"
+              }`}
+            >
+              <LayoutDashboard size={16} /> Accueil
+            </Link>
+
+            {mobileGroups.map((group) => (
+              <div key={group.label}>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-1.5">
+                  {group.label}
+                </p>
+                <div className="space-y-0.5">
+                  {group.items.map(({ to, label, icon: Icon }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        pathname === to
+                          ? "bg-primary text-primary-foreground"
+                          : "text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      <Icon size={16} /> {label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))}
-            <div className="border-t border-border mt-2 pt-2">
+
+            <div className="border-t border-border pt-2">
               <Link
                 to="/login"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted"
               >
-                <LogOut size={16} />
-                Déconnexion
+                <LogOut size={16} /> Déconnexion
               </Link>
             </div>
           </div>
         </div>
       )}
     </header>
+  );
+}
+
+function NavLink({
+  to, label, icon: Icon, pathname,
+}: { to: string; label: string; icon: React.ElementType; pathname: string }) {
+  return (
+    <Link
+      to={to}
+      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+        pathname === to || pathname.startsWith(to + "/")
+          ? "bg-primary text-primary-foreground"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+      }`}
+    >
+      <Icon size={13} />
+      {label}
+    </Link>
   );
 }
