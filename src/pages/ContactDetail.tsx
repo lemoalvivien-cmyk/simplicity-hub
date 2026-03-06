@@ -5,6 +5,7 @@ import {
   CheckCircle2, Clock, ChevronRight, Send, Plus,
   ListOrdered, AlertCircle
 } from "lucide-react";
+import CopilotPanel from "@/components/ai/CopilotPanel";
 
 interface ContactData {
   id: number;

@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  ArrowLeft, MapPin, Euro, Briefcase, CheckCircle2, Clock,
-  Send, ChevronRight, Users, Info, AlertCircle
+  ArrowLeft, Send, Info, AlertCircle, ChevronRight, CheckCircle2, Clock, MapPin, Euro, Briefcase, Users
 } from "lucide-react";
+import CopilotPanel from "@/components/ai/CopilotPanel";
 
 // ─── Données mock partagées ───────────────────────────────────────────────────
 export const allMissions = [
