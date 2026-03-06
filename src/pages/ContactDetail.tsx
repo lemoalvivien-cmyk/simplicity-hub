@@ -302,6 +302,13 @@ export default function ContactDetail() {
           </button>
         </div>
 
+        {/* Copilot — aide sur ce contact */}
+        <CopilotPanel
+          context="contact"
+          textToImprove={`${contact.prenom} ${contact.nom} — ${contact.entreprise}${contact.poste ? `, ${contact.poste}` : ""}. Source: ${sourceLabels[contact.source]}. Statut: ${stCfg.label}.`}
+          userRole="facilitateur"
+        />
+
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
           {contact.email && (

@@ -223,6 +223,16 @@ function IntroductionForm({ mission, onSuccess, onCancel }: IntroFormProps) {
           </div>
         )}
 
+        {/* Copilot — améliorer l'introduction */}
+        {(form.contexte.length > 10 || form.pourquoi.length > 5) && (
+          <CopilotPanel
+            context="introduction"
+            textToImprove={`${form.contexte} ${form.pourquoi}`}
+            userRole="facilitateur"
+            compact
+          />
+        )}
+
         {/* Info après envoi */}
         <div className="p-3 rounded-xl bg-muted flex gap-3 text-xs text-muted-foreground">
           <Info size={14} className="shrink-0 mt-0.5" />
