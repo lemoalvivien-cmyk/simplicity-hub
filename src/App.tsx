@@ -6,6 +6,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Pilotage from "./pages/Pilotage";
 
+// Studio & Builder
+import Studio from "./pages/Studio";
+import CampagneNouvelle from "./pages/CampagneNouvelle";
+import Sources from "./pages/Sources";
+import Messages from "./pages/Messages";
+import Regles from "./pages/Regles";
+import Canaux from "./pages/Canaux";
+import Opportunites from "./pages/Opportunites";
+
 // Public pages
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
@@ -70,6 +79,15 @@ const App = () => (
           {/* ── Pilotage ─────────────────────────────── */}
           <Route path="/pilotage" element={<Pilotage />} />
 
+          {/* ── Studio & Builder ─────────────────────── */}
+          <Route path="/studio" element={<Studio />} />
+          <Route path="/campagnes/nouvelle" element={<CampagneNouvelle />} />
+          <Route path="/sources" element={<Sources />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/regles" element={<Regles />} />
+          <Route path="/canaux" element={<Canaux />} />
+          <Route path="/opportunites" element={<Opportunites />} />
+
           {/* ── Onboarding ───────────────────────────── */}
           <Route path="/onboarding" element={<Onboarding />} />
 
@@ -85,7 +103,6 @@ const App = () => (
           <Route path="/listes" element={<Listes />} />
           <Route path="/campagnes" element={<Campagnes />} />
           <Route path="/campagnes/:id" element={<CampagneDetail />} />
-          <Route path="/campagnes/nouvelle" element={<CampagneDetail />} />
           <Route path="/actions" element={<Actions />} />
 
           {/* ── Apport d'affaires — facilitateur ─────── */}

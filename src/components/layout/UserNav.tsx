@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
-  Play, Zap, ListOrdered, Activity
+  Play, Zap, ListOrdered, Activity, Layers, Target
 } from "lucide-react";
 
 type UserRole = "entreprise" | "facilitateur";
@@ -18,52 +18,69 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
 
   const dashboardPath = role === "entreprise" ? "/dashboard/entreprise" : "/dashboard/facilitateur";
 
-  const linksEntreprise = [
-    { to: dashboardPath, label: "Accueil", icon: LayoutDashboard },
-    { to: "/pilotage", label: "Pilotage", icon: Activity },
-    // Prospection
-    { to: "/contacts", label: "Contacts", icon: Users },
-    { to: "/campagnes", label: "Campagnes", icon: Play },
-    { to: "/actions", label: "À faire", icon: Zap },
-    // Apport d'affaires
-    { to: "/missions", label: "Missions", icon: Briefcase },
-    { to: "/entreprise/introductions", label: "Introductions", icon: Send },
-    // Commun
-    { to: "/help", label: "Aide", icon: HelpCircle },
-    { to: "/profil/entreprise", label: "Mon profil", icon: Building2 },
-  ];
-
-  const linksFacilitateur = [
-    { to: dashboardPath, label: "Accueil", icon: LayoutDashboard },
-    { to: "/pilotage", label: "Pilotage", icon: Activity },
-    // Apport d'affaires
-    { to: "/missions", label: "Missions", icon: Briefcase },
-    { to: "/introductions", label: "Introductions", icon: Send },
-    { to: "/gains", label: "Mes gains", icon: TrendingUp },
-    // Prospection
-    { to: "/contacts", label: "Contacts", icon: Users },
-    { to: "/listes", label: "Listes", icon: ListOrdered },
-    { to: "/campagnes", label: "Campagnes", icon: Play },
-    // Commun
-    { to: "/actions", label: "À faire", icon: Zap },
-    { to: "/help", label: "Aide", icon: HelpCircle },
-  ];
-
-  const links = role === "entreprise" ? linksEntreprise : linksFacilitateur;
-
   const mobileGroups =
     role === "entreprise"
       ? [
-          { label: "Pilotage", items: [links[1]] },
-          { label: "Prospection", items: links.slice(2, 5) },
-          { label: "Apport d'affaires", items: links.slice(5, 7) },
-          { label: "Compte", items: links.slice(7) },
+          {
+            label: "Pilotage",
+            items: [
+              { to: "/pilotage", label: "Pilotage", icon: Activity },
+              { to: "/opportunites", label: "Opportunités", icon: Target },
+            ],
+          },
+          {
+            label: "Studio",
+            items: [
+              { to: "/studio", label: "Studio", icon: Layers },
+              { to: "/campagnes", label: "Campagnes", icon: Play },
+              { to: "/contacts", label: "Contacts", icon: Users },
+              { to: "/actions", label: "À faire", icon: Zap },
+            ],
+          },
+          {
+            label: "Apport d'affaires",
+            items: [
+              { to: "/missions", label: "Missions", icon: Briefcase },
+              { to: "/entreprise/introductions", label: "Introductions", icon: Send },
+            ],
+          },
+          {
+            label: "Compte",
+            items: [
+              { to: "/help", label: "Aide", icon: HelpCircle },
+              { to: "/profil/entreprise", label: "Mon profil", icon: Building2 },
+            ],
+          },
         ]
       : [
-          { label: "Pilotage", items: [links[1]] },
-          { label: "Apport d'affaires", items: links.slice(2, 5) },
-          { label: "Prospection", items: links.slice(5, 8) },
-          { label: "Compte", items: links.slice(8) },
+          {
+            label: "Pilotage",
+            items: [
+              { to: "/pilotage", label: "Pilotage", icon: Activity },
+              { to: "/opportunites", label: "Opportunités", icon: Target },
+            ],
+          },
+          {
+            label: "Studio",
+            items: [
+              { to: "/studio", label: "Studio", icon: Layers },
+              { to: "/campagnes", label: "Campagnes", icon: Play },
+              { to: "/contacts", label: "Contacts", icon: Users },
+              { to: "/actions", label: "À faire", icon: Zap },
+            ],
+          },
+          {
+            label: "Apport d'affaires",
+            items: [
+              { to: "/missions", label: "Missions", icon: Briefcase },
+              { to: "/introductions", label: "Introductions", icon: Send },
+              { to: "/gains", label: "Mes gains", icon: TrendingUp },
+            ],
+          },
+          {
+            label: "Compte",
+            items: [{ to: "/help", label: "Aide", icon: HelpCircle }],
+          },
         ];
 
   return (
@@ -81,6 +98,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
         <nav className="hidden md:flex items-center gap-0.5">
           <NavLink to={dashboardPath} label="Accueil" icon={LayoutDashboard} pathname={pathname} />
           <NavLink to="/pilotage" label="Pilotage" icon={Activity} pathname={pathname} highlight />
+          <NavLink to="/studio" label="Studio" icon={Layers} pathname={pathname} />
 
           <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
 
