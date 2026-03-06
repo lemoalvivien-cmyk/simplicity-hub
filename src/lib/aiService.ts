@@ -12,10 +12,19 @@ export type CopilotContext =
   | "profil_entreprise"
   | "profil_facilitateur"
   | "contact"
+  | "contacts"
   | "campagne"
+  | "campaign"
   | "actions"
   | "dashboard"
-  | "gains";
+  | "gains"
+  | "missions"
+  | "studio"
+  | "sources"
+  | "messages"
+  | "regles"
+  | "canaux"
+  | "opportunites";
 
 export interface AiRequest {
   role: AiRole;
