@@ -1,8 +1,5 @@
 project_id = "usnriklfiagazpffsqew"
 
-[functions.setup-stripe-products]
-verify_jwt = false
-
 [functions.create-checkout]
 verify_jwt = false
 

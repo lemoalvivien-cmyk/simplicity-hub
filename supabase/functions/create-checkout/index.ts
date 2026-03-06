@@ -57,8 +57,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          // WIINUP MAX — Entreprise 29€/mois
-          price: "price_wiinup_entreprise_29",
+          price: "price_1T86SrEG497aCUFx17s4MGpA", // WIINUP MAX — Entreprise 29€/mois
           quantity: 1,
         },
       ],
