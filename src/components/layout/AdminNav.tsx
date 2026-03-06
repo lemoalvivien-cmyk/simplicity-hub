@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
   LayoutDashboard, Users, Tag, CreditCard, HelpCircle,
-  BarChart2, Menu, X, LogOut, Shield
+  BarChart2, Menu, X, LogOut, Shield, Zap
 } from "lucide-react";
 
 const links = [
