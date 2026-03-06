@@ -1,142 +1,229 @@
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  Zap, MessageCircle, HelpCircle, ArrowRight,
-  CheckCircle2, Clock, TrendingUp
+  MessageCircle, HelpCircle, ArrowRight,
+  CheckCircle2, Circle, User, Zap, BookOpen
 } from "lucide-react";
 
-const quickActions = [
-  { icon: Zap, label: "Commencer une tâche", to: "/dashboard", color: "bg-primary/10 text-primary" },
-  { icon: MessageCircle, label: "Poser une question à l'IA", to: "/assistant", color: "bg-accent-light text-accent" },
-  { icon: HelpCircle, label: "Consulter l'aide", to: "/help", color: "bg-success-light text-success" },
+// Simulated state — replace with real auth/data later
+const userName = "Marie";
+const subscriptionLabel = "Accès Premium actif";
+const subscriptionExpiry = "5 mars 2025";
+const viaCode = false; // true = activated via invitation code
+
+const steps = [
+  { id: 1, label: "Compte créé", done: true },
+  { id: 2, label: "Onboarding terminé", done: true },
+  { id: 3, label: "Première question posée à l'assistant", done: false },
+  { id: 4, label: "Base d'aide consultée", done: false },
 ];
 
-const recentActivity = [
-  { icon: CheckCircle2, text: "Onboarding terminé", time: "Il y a 2 min", color: "text-success" },
-  { icon: TrendingUp, text: "Premier accès au tableau de bord", time: "Il y a 2 min", color: "text-primary" },
+const doneCount = steps.filter((s) => s.done).length;
+const progressPercent = Math.round((doneCount / steps.length) * 100);
+
+const shortcuts = [
+  {
+    icon: MessageCircle,
+    label: "Poser une question",
+    description: "L'assistant répond en quelques secondes",
+    to: "/assistant",
+    color: "bg-accent-light text-accent",
+  },
+  {
+    icon: BookOpen,
+    label: "Centre d'aide",
+    description: "Guides et réponses aux questions fréquentes",
+    to: "/help",
+    color: "bg-success-light text-success",
+  },
+  {
+    icon: User,
+    label: "Mon compte",
+    description: "Abonnement, informations personnelles",
+    to: "/account",
+    color: "bg-secondary text-secondary-foreground",
+  },
 ];
+
+// The first incomplete step = next action
+const nextStep = steps.find((s) => !s.done);
 
 export default function Dashboard() {
   return (
     <UserLayout>
-      {/* Welcome */}
-      <div className="mb-8">
-        <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-          Bonjour Marie 👋
-        </h1>
-        <p className="text-muted-foreground">
-          Votre espace est prêt. Voici ce que vous pouvez faire maintenant.
-        </p>
-      </div>
+      <div className="max-w-2xl mx-auto space-y-6">
 
-      {/* Status card */}
-      <div className="bg-gradient-primary rounded-xl p-6 mb-6 text-primary-foreground">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-primary-foreground/70 mb-1">Votre abonnement</p>
-            <p className="font-display text-xl font-bold">Accès Premium actif</p>
-            <p className="text-sm text-primary-foreground/70 mt-1">Expire le 5 mars 2025</p>
-          </div>
-          <div className="bg-white/10 rounded-lg px-3 py-1.5">
-            <span className="text-xs font-semibold">✓ Actif</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick actions */}
-      <div className="mb-8">
-        <h2 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wider text-muted-foreground">
-          Que souhaitez-vous faire ?
-        </h2>
-        <div className="grid sm:grid-cols-3 gap-3">
-          {quickActions.map(({ icon: Icon, label, to, color }) => (
-            <Link
-              key={to + label}
-              to={to}
-              className="card-surface p-4 flex items-center gap-3 hover:shadow-md transition-shadow group"
-            >
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
-                <Icon size={18} />
-              </div>
-              <span className="text-sm font-medium text-foreground">{label}</span>
-              <ArrowRight size={15} className="text-muted-foreground ml-auto group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Main content area */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Activity */}
-        <div className="card-surface p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-foreground">Activité récente</h2>
-          </div>
-          <div className="space-y-3">
-            {recentActivity.map(({ icon: Icon, text, time, color }) => (
-              <div key={text} className="flex items-start gap-3">
-                <Icon size={16} className={`${color} shrink-0 mt-0.5`} />
-                <div>
-                  <p className="text-sm text-foreground">{text}</p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <Clock size={11} /> {time}
-                  </p>
-                </div>
-              </div>
-            ))}
-            <div className="flex items-center gap-3 py-6 text-center justify-center">
-              <p className="text-sm text-muted-foreground">
-                Commencez à utiliser Planify pour voir votre activité ici.
+        {/* ── BLOC 1 — Bienvenue ───────────────────────────────── */}
+        <div className="card-surface p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+                Bonjour {userName} 👋
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                {viaCode
+                  ? "Votre accès gratuit de 12 mois est bien actif. Vous pouvez utiliser toutes les fonctionnalités librement."
+                  : "Votre espace est prêt. Vous pouvez commencer à l'utiliser dès maintenant."}
+              </p>
+            </div>
+            <div className="shrink-0">
+              <span className="badge-success">
+                <CheckCircle2 size={12} />
+                {subscriptionLabel}
+              </span>
+              <p className="text-xs text-muted-foreground mt-1 text-right">
+                jusqu'au {subscriptionExpiry}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Assistant CTA */}
-        <div className="card-surface p-5 flex flex-col">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-light flex items-center justify-center">
-              <MessageCircle size={18} className="text-accent" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-foreground">Assistant IA</h2>
-              <p className="text-xs text-muted-foreground">Disponible 24h/24</p>
-            </div>
+        {/* ── BLOC 2 — À faire maintenant ─────────────────────── */}
+        {nextStep && (
+          <div
+            className="rounded-xl border-2 p-6"
+            style={{
+              borderColor: "hsl(var(--accent))",
+              background: "hsl(var(--accent-light))",
+            }}
+          >
+            <p
+              className="text-xs font-semibold uppercase tracking-wider mb-2"
+              style={{ color: "hsl(38 80% 30%)" }}
+            >
+              Prochaine étape recommandée
+            </p>
+            <h2 className="font-display text-lg font-bold text-foreground mb-1">
+              {nextStep.label}
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              {nextStep.id === 3
+                ? "Posez votre première question à l'assistant IA. Il connaît la plateforme sur le bout des doigts et répond en quelques secondes."
+                : "Consultez la base d'aide pour trouver des guides et des réponses aux questions fréquentes."}
+            </p>
+            <Link
+              to={nextStep.id === 3 ? "/assistant" : "/help"}
+              className="btn-cta text-sm py-2.5 px-5 w-full sm:w-auto justify-center"
+            >
+              {nextStep.id === 3 ? "Ouvrir l'assistant" : "Consulter l'aide"}
+              <ArrowRight size={16} />
+            </Link>
           </div>
-          <p className="text-sm text-muted-foreground mb-4 flex-1">
-            Posez n'importe quelle question. L'assistant connaît Planify sur le bout des doigts et répond en quelques secondes.
-          </p>
-          <Link to="/assistant" className="btn-cta text-sm text-center py-3">
-            Ouvrir l'assistant →
-          </Link>
-        </div>
-      </div>
+        )}
 
-      {/* Getting started checklist */}
-      <div className="card-surface p-5 mt-6">
-        <h2 className="font-semibold text-foreground mb-4">Pour bien démarrer</h2>
-        <div className="space-y-3">
-          {[
-            { done: true, text: "Créer votre compte", link: null },
-            { done: true, text: "Terminer l'onboarding", link: null },
-            { done: false, text: "Poser votre première question à l'assistant", link: "/assistant" },
-            { done: false, text: "Consulter la base d'aide", link: "/help" },
-          ].map(({ done, text, link }) => (
-            <div key={text} className="flex items-center gap-3">
-              <CheckCircle2
-                size={18}
-                className={done ? "text-success shrink-0" : "text-border shrink-0"}
-              />
-              {link ? (
-                <Link to={link} className="text-sm text-primary hover:underline">{text}</Link>
-              ) : (
-                <span className={`text-sm ${done ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                  {text}
+        {/* ── BLOC 3 — Mon avancement ─────────────────────────── */}
+        <div className="card-surface p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-foreground">Mon avancement</h2>
+            <span className="text-sm font-medium text-muted-foreground">
+              {doneCount} / {steps.length} étapes
+            </span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full h-2 bg-secondary rounded-full mb-5 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${progressPercent}%`,
+                background: "var(--gradient-accent)",
+              }}
+            />
+          </div>
+
+          {/* Step list */}
+          <ul className="space-y-3">
+            {steps.map((step) => (
+              <li key={step.id} className="flex items-center gap-3">
+                {step.done ? (
+                  <CheckCircle2
+                    size={18}
+                    className="shrink-0"
+                    style={{ color: "hsl(var(--success))" }}
+                  />
+                ) : (
+                  <Circle
+                    size={18}
+                    className="text-border shrink-0"
+                  />
+                )}
+                <span
+                  className={`text-sm ${
+                    step.done
+                      ? "line-through text-muted-foreground"
+                      : "text-foreground font-medium"
+                  }`}
+                >
+                  {step.label}
                 </span>
-              )}
-            </div>
-          ))}
+                {!step.done && step.id === nextStep?.id && (
+                  <span className="badge-warning ml-auto text-xs">
+                    <Zap size={10} /> À faire
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
+
+        {/* ── BLOC 4 — Raccourcis utiles ──────────────────────── */}
+        <div>
+          <h2 className="font-semibold text-foreground mb-3 text-sm uppercase tracking-wider text-muted-foreground">
+            Accès rapide
+          </h2>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {shortcuts.map(({ icon: Icon, label, description, to, color }) => (
+              <Link
+                key={to}
+                to={to}
+                className="card-surface p-4 flex flex-col gap-2 hover:shadow-md transition-shadow group"
+              >
+                <div
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${color}`}
+                >
+                  <Icon size={17} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {label}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                    {description}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* ── BLOC 5 — Besoin d'aide ? ────────────────────────── */}
+        <div className="card-surface p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex-1">
+            <h2 className="font-semibold text-foreground mb-0.5">
+              Besoin d'aide ?
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              L'assistant répond en quelques secondes. Le centre d'aide est là si vous préférez chercher vous-même.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto">
+            <Link
+              to="/assistant"
+              className="btn-primary text-sm py-2.5 px-4 justify-center"
+            >
+              <MessageCircle size={15} />
+              Assistant IA
+            </Link>
+            <Link
+              to="/help"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <HelpCircle size={15} />
+              Centre d'aide
+            </Link>
+          </div>
+        </div>
+
       </div>
     </UserLayout>
   );
