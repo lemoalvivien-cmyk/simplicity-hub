@@ -1,27 +1,30 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import {
-  Briefcase, Send, TrendingUp, CheckCircle2, ArrowRight,
-  MessageCircle, HelpCircle, Users, Zap, Search, Sparkles
-} from "lucide-react";
+import { Briefcase, Send, TrendingUp, CheckCircle2, ArrowRight, MessageCircle, HelpCircle, Users, Zap, Search, Sparkles, Loader2 } from "lucide-react";
+import { db } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
-const facilitateurName = "Thomas";
+interface Mission {
+  id: string;
+  titre: string;
+  recompense: string;
+  entreprise_id: string;
+}
 
-const missionsDisponibles = [
-  { id: 1, entreprise: "Acme SaaS", besoin: "TPE en commerce / artisanat", gain: "300 € par client validé", secteur: "SaaS" },
-  { id: 2, entreprise: "FinEdge", besoin: "PME cherchant financement", gain: "500 € par mise en relation réussie", secteur: "Finance" },
-  { id: 3, entreprise: "FormaPro", besoin: "Responsables formation", gain: "200 € par inscription", secteur: "Formation" },
-];
+interface Introduction {
+  id: string;
+  contact_nom: string;
+  mission_id: string;
+  statut: string;
+  created_at: string;
+}
 
-const introductions = [
-  { id: 1, contact: "Isabelle Petit", mission: "Acme SaaS", status: "validee", gain: "300 €", date: "Il y a 2 jours" },
-  { id: 2, contact: "Gérard Morin", mission: "FinEdge", status: "en_cours", gain: "En attente", date: "Hier" },
-  { id: 3, contact: "Aurélie Dubois", mission: "Acme SaaS", status: "en_attente", gain: "En attente", date: "Aujourd'hui" },
-];
-
-const gains = { total_valide: "300 €", en_attente: "800 €" };
-
-const prospectionResume = { contacts: 6, a_contacter: 1, campagnes: 0 };
+interface Gain {
+  id: string;
+  montant: number;
+  statut: string;
+}
 
 const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
   en_attente: { color: "hsl(38 80% 30%)", bg: "hsl(var(--accent-light))", label: "Envoyée" },
@@ -31,7 +34,37 @@ const statusConfig: Record<string, { color: string; bg: string; label: string }>
 };
 
 export default function DashboardFacilitateur() {
-  const nextIntro = introductions.find((i) => i.status === "en_attente");
+  const { user, profile } = useAuth();
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [introductions, setIntroductions] = useState<Introduction[]>([]);
+  const [gains, setGains] = useState<Gain[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [contactsCount, setContactsCount] = useState(0);
+
+  const prenom = profile?.prenom || "vous";
+
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      setLoading(true);
+      const [missionsRes, introsRes, gainsRes, contactsRes] = await Promise.all([
+        db.from("missions").select("id, titre, recompense, entreprise_id").eq("statut", "active").limit(3),
+        db.from("introductions").select("id, contact_nom, mission_id, statut, created_at").eq("facilitateur_id", user.id).order("created_at", { ascending: false }).limit(3),
+        db.from("gains").select("id, montant, statut").eq("facilitateur_id", user.id),
+        db.from("contacts").select("id", { count: "exact", head: true }).eq("owner_user_id", user.id),
+      ]);
+      setMissions(missionsRes.data || []);
+      setIntroductions(introsRes.data || []);
+      setGains(gainsRes.data || []);
+      setContactsCount(contactsRes.count || 0);
+      setLoading(false);
+    };
+    load();
+  }, [user]);
+
+  const totalValide = gains.filter(g => g.statut === "valide").reduce((s, g) => s + g.montant, 0);
+  const totalAttendu = gains.filter(g => g.statut === "en_attente").reduce((s, g) => s + g.montant, 0);
+  const nextIntro = introductions.find(i => i.statut === "en_attente");
 
   return (
     <UserLayout role="facilitateur">
@@ -42,7 +75,7 @@ export default function DashboardFacilitateur() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-                Bonjour {facilitateurName} 👋
+                Bonjour {prenom} 👋
               </h1>
               <p className="text-muted-foreground text-sm">
                 Missions, introductions, prospection — tout est ici.
@@ -72,8 +105,7 @@ export default function DashboardFacilitateur() {
                 Une introduction attend une réponse
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                Votre contact <strong>{nextIntro.contact}</strong> a été envoyé à <strong>{nextIntro.mission}</strong>.
-                Ils n'ont pas encore répondu — restez disponible.
+                Votre contact <strong>{nextIntro.contact_nom}</strong> a été envoyé et attend une réponse.
               </p>
               <Link to="/introductions" className="btn-cta text-sm py-2.5 px-5 inline-flex">
                 Suivre mes introductions <ArrowRight size={14} />
@@ -82,7 +114,7 @@ export default function DashboardFacilitateur() {
           ) : (
             <>
               <h2 className="font-display text-lg font-bold text-foreground mb-1">
-                {missionsDisponibles.length} missions disponibles pour vous
+                {missions.length} mission{missions.length !== 1 ? "s" : ""} disponible{missions.length !== 1 ? "s" : ""} pour vous
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
                 Connaissez-vous quelqu'un qui pourrait correspondre ? Faites une introduction en quelques clics.
@@ -105,22 +137,33 @@ export default function DashboardFacilitateur() {
               Tout voir
             </Link>
           </div>
-          <div className="space-y-2">
-            {missionsDisponibles.slice(0, 2).map((m) => (
-              <div key={m.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted hover:bg-secondary transition-colors">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{m.entreprise}</p>
-                  <p className="text-xs text-muted-foreground truncate">{m.besoin}</p>
-                  <p className="text-xs font-medium mt-0.5" style={{ color: "hsl(var(--success))" }}>
-                    {m.gain}
-                  </p>
+          {loading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 size={20} className="animate-spin text-muted-foreground" />
+            </div>
+          ) : missions.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground">Aucune mission disponible pour l'instant.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {missions.slice(0, 2).map((m) => (
+                <div key={m.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted hover:bg-secondary transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{m.titre}</p>
+                    {m.recompense && (
+                      <p className="text-xs font-medium mt-0.5" style={{ color: "hsl(var(--success))" }}>
+                        {m.recompense}
+                      </p>
+                    )}
+                  </div>
+                  <Link to={`/missions/${m.id}`} className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors shrink-0">
+                    Voir
+                  </Link>
                 </div>
-                <Link to={`/missions/${m.id}`} className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors shrink-0">
-                  Voir
-                </Link>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── BLOC 4 — INTRODUCTIONS + GAINS ────────────────────── */}
@@ -134,52 +177,52 @@ export default function DashboardFacilitateur() {
               Tout voir
             </Link>
           </div>
-          <div className="space-y-2 mb-4">
-            {introductions.map((intro) => {
-              const cfg = statusConfig[intro.status];
-              return (
-                <Link key={intro.id} to={`/introductions/${intro.id}`} className="flex items-center justify-between gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
-                      style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}
-                    >
-                      {intro.contact.charAt(0)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{intro.contact}</p>
-                      <p className="text-xs text-muted-foreground">{intro.mission} · {intro.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className="block text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: cfg.color, background: cfg.bg }}>
-                      {cfg.label}
-                    </span>
-                    <span className="block text-xs text-muted-foreground mt-1">{intro.gain}</span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Gains résumé inline */}
-          <div
-            className="flex items-center justify-between p-3 rounded-xl"
-            style={{ background: "hsl(var(--success-light))" }}
-          >
-            <div className="flex items-center gap-2">
-              <TrendingUp size={14} style={{ color: "hsl(var(--success))" }} />
-              <div>
-                <p className="text-xs font-semibold" style={{ color: "hsl(var(--success))" }}>
-                  {gains.total_valide} validés · {gains.en_attente} en attente
-                </p>
-                <p className="text-xs text-muted-foreground">Votre total de gains</p>
-              </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 size={20} className="animate-spin text-muted-foreground" />
             </div>
-            <Link to="/gains" className="text-xs text-primary font-medium hover:underline">
-              Détail
-            </Link>
-          </div>
+          ) : introductions.length === 0 ? (
+            <div className="text-center py-4">
+              <p className="text-sm text-muted-foreground mb-3">Aucune introduction pour l'instant.</p>
+              <Link to="/missions" className="btn-cta text-sm py-2 px-4 inline-flex">Voir les missions</Link>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2 mb-4">
+                {introductions.map((intro) => {
+                  const cfg = statusConfig[intro.statut] || statusConfig.en_cours;
+                  return (
+                    <Link key={intro.id} to={`/introductions/${intro.id}`}
+                      className="flex items-center justify-between gap-3 p-2.5 rounded-xl hover:bg-muted transition-colors">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                          style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
+                          {intro.contact_nom.charAt(0)}
+                        </div>
+                        <p className="text-sm font-medium text-foreground truncate">{intro.contact_nom}</p>
+                      </div>
+                      <span className="block text-xs font-semibold px-2 py-0.5 rounded-full shrink-0"
+                        style={{ color: cfg.color, background: cfg.bg }}>
+                        {cfg.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: "hsl(var(--success-light))" }}>
+                <div className="flex items-center gap-2">
+                  <TrendingUp size={14} style={{ color: "hsl(var(--success))" }} />
+                  <div>
+                    <p className="text-xs font-semibold" style={{ color: "hsl(var(--success))" }}>
+                      {totalValide} € validés · {totalAttendu} € en attente
+                    </p>
+                    <p className="text-xs text-muted-foreground">Votre total de gains</p>
+                  </div>
+                </div>
+                <Link to="/gains" className="text-xs text-primary font-medium hover:underline">Détail</Link>
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── BLOC 5 — MA PROSPECTION ────────────────────────────── */}
@@ -193,11 +236,10 @@ export default function DashboardFacilitateur() {
               Voir les contacts
             </Link>
           </div>
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             {[
-              { label: "Contacts", value: prospectionResume.contacts, color: "hsl(var(--foreground))", bg: "hsl(var(--muted))" },
-              { label: "À contacter", value: prospectionResume.a_contacter, color: "hsl(var(--primary))", bg: "hsl(var(--secondary))" },
-              { label: "Campagnes", value: prospectionResume.campagnes, color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
+              { label: "Contacts", value: contactsCount, color: "hsl(var(--foreground))", bg: "hsl(var(--muted))" },
+              { label: "Introductions", value: introductions.length, color: "hsl(var(--primary))", bg: "hsl(var(--secondary))" },
             ].map(({ label, value, color, bg }) => (
               <div key={label} className="rounded-xl p-3 text-center" style={{ background: bg }}>
                 <p className="font-display text-xl font-bold" style={{ color }}>{value}</p>
@@ -218,27 +260,13 @@ export default function DashboardFacilitateur() {
         {/* ── BLOC 6 — AIDE ──────────────────────────────────────── */}
         <div className="card-surface p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "var(--gradient-primary)" }}
-            >
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
               <Sparkles size={16} style={{ color: "hsl(var(--primary-foreground))" }} />
             </div>
             <div>
               <h2 className="font-semibold text-foreground text-sm">Besoin d'aide ?</h2>
               <p className="text-xs text-muted-foreground">JARVIS répond en quelques secondes.</p>
             </div>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {["Que dois-je faire maintenant ?", "Résume ma situation", "Que signifient ces statuts ?"].map((q) => (
-              <Link
-                key={q}
-                to="/assistant"
-                className="text-xs px-3 py-1.5 rounded-full border border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground transition-colors"
-              >
-                {q}
-              </Link>
-            ))}
           </div>
           <div className="flex gap-2">
             <Link to="/assistant" className="btn-primary text-sm py-2.5 px-4 flex-1 justify-center">
