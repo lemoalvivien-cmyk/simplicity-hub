@@ -1,27 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { Plus, Copy, CheckCircle2, XCircle, Clock, Tag } from "lucide-react";
+import { Plus, Copy, CheckCircle2, XCircle, Clock, Tag, Loader2, AlertCircle } from "lucide-react";
+import { db } from "@/lib/supabase";
+import { toast } from "sonner";
 
 type CodeStatus = "actif" | "utilisé" | "expiré" | "désactivé";
 
 interface PromoCode {
-  id: number;
+  id: string;
   code: string;
   status: CodeStatus;
-  usedBy?: string;
-  usedAt?: string;
-  createdAt: string;
-  expiresAt: string;
+  duration_months: number;
+  usage_unique: boolean;
+  expires_at: string | null;
+  used_by: string | null;
+  used_at: string | null;
+  created_at: string;
 }
-
-const INITIAL_CODES: PromoCode[] = [
-  { id: 1, code: "BIENVENUE12", status: "utilisé", usedBy: "marie@exemple.fr", usedAt: "5 mars 2024", createdAt: "1 jan. 2024", expiresAt: "31 déc. 2024" },
-  { id: 2, code: "INVITE2024A", status: "actif", createdAt: "1 jan. 2024", expiresAt: "31 déc. 2024" },
-  { id: 3, code: "INVITE2024B", status: "actif", createdAt: "1 jan. 2024", expiresAt: "31 déc. 2024" },
-  { id: 4, code: "PROMO2024C", status: "utilisé", usedBy: "sophie@exemple.fr", usedAt: "1 mars 2024", createdAt: "1 jan. 2024", expiresAt: "31 déc. 2024" },
-  { id: 5, code: "INVEXT2024D", status: "expiré", createdAt: "1 jan. 2023", expiresAt: "31 déc. 2023" },
-  { id: 6, code: "DISABLETEST", status: "désactivé", createdAt: "1 jan. 2024", expiresAt: "31 déc. 2024" },
-];
 
 const STATUS_CONFIG: Record<CodeStatus, { badge: string; icon: typeof CheckCircle2 }> = {
   actif: { badge: "badge-success", icon: CheckCircle2 },
@@ -30,52 +25,96 @@ const STATUS_CONFIG: Record<CodeStatus, { badge: string; icon: typeof CheckCircl
   désactivé: { badge: "badge-muted", icon: XCircle },
 };
 
-const stats = [
-  { label: "Codes créés", value: "120", color: "text-primary" },
-  { label: "Codes activés", value: "89", color: "text-success" },
-  { label: "Codes disponibles", value: "18", color: "text-accent" },
-  { label: "Codes expirés", value: "13", color: "text-muted-foreground" },
-];
-
 export default function AdminPromoCodes() {
-  const [codes, setCodes] = useState<PromoCode[]>(INITIAL_CODES);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [codes, setCodes] = useState<PromoCode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [newCode, setNewCode] = useState("");
+  const [newExpiry, setNewExpiry] = useState("");
+  const [creating, setCreating] = useState(false);
   const [filter, setFilter] = useState<"tous" | CodeStatus>("tous");
 
-  const copyCode = (id: number, code: string) => {
+  const loadCodes = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const { data, error: err } = await db
+        .from("promo_codes")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (err) throw err;
+      setCodes(data || []);
+    } catch (e) {
+      setError("Impossible de charger les codes.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadCodes(); }, []);
+
+  const copyCode = (id: string, code: string) => {
     navigator.clipboard.writeText(code);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+    toast.success("Code copié !");
   };
 
-  const createCode = () => {
+  const createCode = async () => {
     if (!newCode.trim()) return;
-    const code: PromoCode = {
-      id: Date.now(),
-      code: newCode.toUpperCase().replace(/\s/g, ""),
-      status: "actif",
-      createdAt: "Maintenant",
-      expiresAt: "31 déc. 2024",
-    };
-    setCodes((prev) => [code, ...prev]);
-    setNewCode("");
-    setShowCreate(false);
+    setCreating(true);
+    try {
+      const payload: Record<string, unknown> = {
+        code: newCode.toUpperCase().replace(/\s/g, ""),
+        status: "actif",
+        duration_months: 12,
+        usage_unique: true,
+      };
+      if (newExpiry) payload.expires_at = new Date(newExpiry).toISOString();
+      else payload.expires_at = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+      const { error: err } = await db.from("promo_codes").insert(payload);
+      if (err) throw err;
+      toast.success("Code créé !");
+      setNewCode("");
+      setNewExpiry("");
+      setShowCreate(false);
+      await loadCodes();
+    } catch (e) {
+      toast.error("Erreur lors de la création.");
+    } finally {
+      setCreating(false);
+    }
   };
 
-  const toggleStatus = (id: number, currentStatus: CodeStatus) => {
-    setCodes((prev) => prev.map((c) =>
-      c.id === id
-        ? { ...c, status: currentStatus === "actif" ? "désactivé" : currentStatus === "désactivé" ? "actif" : c.status }
-        : c
-    ));
+  const toggleStatus = async (id: string, currentStatus: CodeStatus) => {
+    const newStatus = currentStatus === "actif" ? "désactivé" : currentStatus === "désactivé" ? "actif" : null;
+    if (!newStatus) return;
+    try {
+      const update: Record<string, unknown> = { status: newStatus };
+      if (newStatus === "désactivé") update.disabled_at = new Date().toISOString();
+      const { error: err } = await db.from("promo_codes").update(update).eq("id", id);
+      if (err) throw err;
+      await loadCodes();
+      toast.success(newStatus === "désactivé" ? "Code désactivé" : "Code réactivé");
+    } catch {
+      toast.error("Erreur lors de la mise à jour.");
+    }
   };
 
   const filtered = filter === "tous" ? codes : codes.filter((c) => c.status === filter);
 
+  const stats = [
+    { label: "Codes créés", value: codes.length, color: "text-primary" },
+    { label: "Codes actifs", value: codes.filter(c => c.status === "actif").length, color: "text-success" },
+    { label: "Codes utilisés", value: codes.filter(c => c.status === "utilisé").length, color: "text-accent" },
+    { label: "Expirés / désactivés", value: codes.filter(c => c.status === "expiré" || c.status === "désactivé").length, color: "text-muted-foreground" },
+  ];
+
   return (
-    <AdminLayout title="Codes promo" subtitle="Gérez les codes d'invitation et suivez leur utilisation.">
+    <AdminLayout title="Codes d'invitation" subtitle="Gérez les codes d'accès et suivez leur utilisation.">
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {stats.map(({ label, value, color }) => (
@@ -113,16 +152,24 @@ export default function AdminPromoCodes() {
       {/* Create form */}
       {showCreate && (
         <div className="card-surface p-4 mb-4 border-2 border-accent/30 animate-fade-in">
-          <p className="font-medium text-foreground text-sm mb-3">Nouveau code d'invitation</p>
-          <div className="flex gap-2">
+          <p className="font-medium text-foreground text-sm mb-3">Nouveau code d'invitation — 12 mois gratuits</p>
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={newCode}
               onChange={(e) => setNewCode(e.target.value.toUpperCase().replace(/\s/g, ""))}
-              placeholder="Ex : INVITE2024X"
+              placeholder="Ex : INVITE2025X"
               className="flex-1 px-4 py-2.5 rounded-xl border border-input bg-background text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-ring"
             />
-            <button onClick={createCode} className="btn-primary text-sm px-4 py-2.5">
+            <input
+              type="date"
+              value={newExpiry}
+              onChange={(e) => setNewExpiry(e.target.value)}
+              className="px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Date d'expiration"
+            />
+            <button onClick={createCode} disabled={!newCode || creating} className="btn-primary text-sm px-4 py-2.5 flex items-center gap-2">
+              {creating ? <Loader2 size={14} className="animate-spin" /> : null}
               Créer
             </button>
             <button onClick={() => setShowCreate(false)} className="px-4 py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors">
@@ -132,73 +179,87 @@ export default function AdminPromoCodes() {
         </div>
       )}
 
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg mb-4">
+          <AlertCircle size={14} className="text-destructive" />
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
+
       {/* Table */}
       <div className="card-surface overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="border-b border-border bg-muted/30">
-              <tr>
-                <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Code</th>
-                <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Statut</th>
-                <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Utilisé par</th>
-                <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Date d'utilisation</th>
-                <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Expiration</th>
-                <th className="px-5 py-3 text-right font-medium text-muted-foreground text-xs uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((code) => {
-                const config = STATUS_CONFIG[code.status];
-                return (
-                  <tr key={code.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <code className="font-mono text-sm font-semibold text-foreground tracking-wider">
-                        {code.code}
-                      </code>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={config.badge}>{code.status}</span>
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-muted-foreground">
-                      {code.usedBy || "—"}
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-muted-foreground">
-                      {code.usedAt || "—"}
-                    </td>
-                    <td className="px-5 py-3.5 text-sm text-muted-foreground">
-                      {code.expiresAt}
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="flex items-center gap-2 justify-end">
-                        <button
-                          onClick={() => copyCode(code.id, code.code)}
-                          className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                          title="Copier"
-                        >
-                          {copiedId === code.id ? <CheckCircle2 size={14} className="text-success" /> : <Copy size={14} />}
-                        </button>
-                        {(code.status === "actif" || code.status === "désactivé") && (
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 size={20} className="animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-border bg-muted/30">
+                <tr>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Code</th>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Statut</th>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Durée</th>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Date d'utilisation</th>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Expiration</th>
+                  <th className="px-5 py-3 text-right font-medium text-muted-foreground text-xs uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((code) => {
+                  const config = STATUS_CONFIG[code.status];
+                  return (
+                    <tr key={code.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="px-5 py-3.5">
+                        <code className="font-mono text-sm font-semibold text-foreground tracking-wider">
+                          {code.code}
+                        </code>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className={config.badge}>{code.status}</span>
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-muted-foreground">
+                        {code.duration_months} mois
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-muted-foreground">
+                        {code.used_at ? new Date(code.used_at).toLocaleDateString("fr-FR") : "—"}
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-muted-foreground">
+                        {code.expires_at ? new Date(code.expires_at).toLocaleDateString("fr-FR") : "—"}
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center gap-2 justify-end">
                           <button
-                            onClick={() => toggleStatus(code.id, code.status)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                              code.status === "actif"
-                                ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
-                                : "bg-success-light text-success hover:bg-success-light"
-                            }`}
+                            onClick={() => copyCode(code.id, code.code)}
+                            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                            title="Copier"
                           >
-                            {code.status === "actif" ? "Désactiver" : "Réactiver"}
+                            {copiedId === code.id ? <CheckCircle2 size={14} className="text-success" /> : <Copy size={14} />}
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                          {(code.status === "actif" || code.status === "désactivé") && (
+                            <button
+                              onClick={() => toggleStatus(code.id, code.status)}
+                              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                                code.status === "actif"
+                                  ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                                  : "bg-success-light text-success hover:bg-success-light"
+                              }`}
+                            >
+                              {code.status === "actif" ? "Désactiver" : "Réactiver"}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-        {filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div className="py-12 text-center">
             <p className="text-muted-foreground text-sm">Aucun code dans cette catégorie.</p>
           </div>
