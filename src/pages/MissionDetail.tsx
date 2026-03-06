@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  ArrowLeft, MapPin, Euro, Briefcase, CheckCircle2, Clock,
-  Send, ChevronRight, Users, Info, AlertCircle
+  ArrowLeft, Send, Info, AlertCircle, ChevronRight, CheckCircle2, Clock, MapPin, Euro, Briefcase, Users
 } from "lucide-react";
+import CopilotPanel from "@/components/ai/CopilotPanel";
 
 // ─── Données mock partagées ───────────────────────────────────────────────────
 export const allMissions = [
@@ -221,6 +221,16 @@ function IntroductionForm({ mission, onSuccess, onCancel }: IntroFormProps) {
             style={{ background: "hsl(0 72% 95%)", color: "hsl(var(--destructive))" }}>
             <AlertCircle size={15} /> {error}
           </div>
+        )}
+
+        {/* Copilot — améliorer l'introduction */}
+        {(form.contexte.length > 10 || form.pourquoi.length > 5) && (
+          <CopilotPanel
+            context="introduction"
+            textToImprove={`${form.contexte} ${form.pourquoi}`}
+            userRole="facilitateur"
+            compact
+          />
         )}
 
         {/* Info après envoi */}

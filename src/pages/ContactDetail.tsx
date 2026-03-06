@@ -5,6 +5,7 @@ import {
   CheckCircle2, Clock, ChevronRight, Send, Plus,
   ListOrdered, AlertCircle
 } from "lucide-react";
+import CopilotPanel from "@/components/ai/CopilotPanel";
 
 interface ContactData {
   id: number;
@@ -300,6 +301,13 @@ export default function ContactDetail() {
             <Plus size={13} /> Ajouter une note
           </button>
         </div>
+
+        {/* Copilot — aide sur ce contact */}
+        <CopilotPanel
+          context="contact"
+          textToImprove={`${contact.prenom} ${contact.nom} — ${contact.entreprise}${contact.poste ? `, ${contact.poste}` : ""}. Source: ${sourceLabels[contact.source]}. Statut: ${stCfg.label}.`}
+          userRole="facilitateur"
+        />
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">

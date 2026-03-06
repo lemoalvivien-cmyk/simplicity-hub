@@ -1,0 +1,369 @@
+/**
+ * ════════════════════════════════════════════════════════
+ * AI SERVICE — Architecture prête pour Qwen API (OpenAI-compatible)
+ * Hiérarchie : FAQ cache → petit modèle → modèle fort
+ * ════════════════════════════════════════════════════════
+ */
+
+export type AiRole = "jarvis" | "copilot";
+export type CopilotContext =
+  | "mission"
+  | "introduction"
+  | "profil_entreprise"
+  | "profil_facilitateur"
+  | "contact"
+  | "campagne"
+  | "actions"
+  | "dashboard"
+  | "gains";
+
+export interface AiRequest {
+  role: AiRole;
+  context: CopilotContext;
+  input: string;
+  userRole?: "entreprise" | "facilitateur";
+}
+
+export interface AiResponse {
+  text: string;
+  action?: { label: string; href?: string; onClick?: () => void };
+  source: "faq" | "model_light" | "model_strong" | "mock";
+}
+
+// ── FAQ / Réponses statiques (niveau 1 — 0 coût) ───────────────────────────
+const FAQ_CACHE: Record<string, AiResponse> = {
+  "que dois-je faire maintenant": {
+    text: "Regardez vos actions prioritaires en haut de votre dashboard. S'il y a une introduction à valider ou une mission ouverte, commencez par là.",
+    action: { label: "Voir mes priorités", href: "/actions" },
+    source: "faq",
+  },
+  "résume ma situation": {
+    text: "Vous avez des missions ouvertes, quelques introductions en cours, et des contacts à relancer. Votre prochaine étape : examiner vos introductions.",
+    action: { label: "Voir mes introductions", href: "/introductions" },
+    source: "faq",
+  },
+  "aide-moi à démarrer": {
+    text: "Commencez par compléter votre profil, puis regardez les missions disponibles. Si vous connaissez quelqu'un qui correspond, envoyez une introduction !",
+    action: { label: "Voir les missions", href: "/missions" },
+    source: "faq",
+  },
+  "explique cette page": {
+    text: "Cette page vous montre ce qui est important maintenant. Chaque bloc a un objectif clair : agir, suivre, ou comprendre.",
+    source: "faq",
+  },
+  "que signifient ces statuts": {
+    text: "• Envoyée = votre introduction est partie. • En cours = l'entreprise l'examine. • Validée = bravo, le gain est confirmé ! • Refusée = ce contact ne correspondait pas, mais ça arrive.",
+    source: "faq",
+  },
+  "montre-moi mes priorités": {
+    text: "Vos priorités du moment : 1) Valider les introductions en attente. 2) Regarder les nouvelles missions. 3) Relancer les contacts non répondus.",
+    action: { label: "À faire", href: "/actions" },
+    source: "faq",
+  },
+};
+
+// ── Réponses mock contextuelles (niveau 2 — simule le petit modèle) ─────────
+const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
+  mission: {
+    default: "Cette mission semble bien ciblée. Pour maximiser vos chances, soyez précis dans la description du contact que vous présentez.",
+    ameliorer: "Voici une version plus claire et plus attirante :\n\n**Version améliorée :** Mettez en avant le bénéfice concret pour l'apporteur (gain en €), simplifiez la description du besoin, et ajoutez un délai de réponse garanti.",
+    pourquoi: "Expliquer le contexte de votre contact est la clé. L'entreprise a besoin de savoir en 2 phrases pourquoi cette personne est pertinente.",
+  },
+  introduction: {
+    default: "Votre introduction est en bonne voie. Assurez-vous d'expliquer clairement pourquoi ce contact correspond exactement au besoin.",
+    ameliorer: "Pour rendre cette introduction plus convaincante : commencez par une phrase de contexte sur la personne, puis expliquez le lien avec la mission. Finissez par votre conviction personnelle.",
+    simplifier: "Version simplifiée : [Prénom] est [rôle] chez [entreprise]. Il/elle cherche [besoin]. Je pense qu'il/elle correspond parce que [raison courte].",
+  },
+  profil_entreprise: {
+    default: "Un profil clair attire plus d'apporteurs qualifiés. Plus votre description est précise, meilleures sont les introductions que vous recevrez.",
+    ameliorer: "Rendez votre description plus convaincante en répondant à ces 3 questions : Quel problème résolvez-vous ? Pour qui exactement ? Qu'est-ce qui vous différencie ?",
+    cible: "Pour mieux cibler vos introductions, décrivez votre client idéal avec : secteur, taille d'entreprise, rôle du décideur, et signal d'achat typique.",
+  },
+  profil_facilitateur: {
+    default: "Un profil complet vous permet de recevoir des missions vraiment adaptées à votre réseau.",
+    ameliorer: "Décrivez votre réseau en 2 angles : les secteurs où vous avez des contacts, et le type de décideurs que vous connaissez bien.",
+    reseau: "Exemple de description de réseau efficace : 'Je connais surtout des dirigeants de TPE dans le commerce et la restauration en région PACA, avec qui j'ai travaillé pendant 8 ans.'",
+  },
+  contact: {
+    default: "Ce contact mérite un suivi. La prochaine étape : le relancer avec un message personnalisé lié à son contexte.",
+    resumé: "Ce contact est dans votre liste depuis un moment. Il n'a pas encore répondu. Un message court et direct peut faire la différence.",
+    action: "Pour ce contact, je vous suggère d'envoyer un court message de relance. Mentionnez quelque chose de spécifique à son activité pour qu'il se souvienne de vous.",
+  },
+  campagne: {
+    default: "Votre campagne est bien structurée. Vérifiez que l'objet de vos messages est court et accrocheur (moins de 7 mots).",
+    ameliorer: "Pour améliorer les résultats de cette campagne : 1) Personnalisez le premier message avec le prénom. 2) Espacez les relances de 3 jours. 3) Gardez les messages courts (< 5 lignes).",
+    etape: "Voici une séquence efficace en 3 étapes : Jour 1 : présentation courte. Jour 4 : valeur ajoutée. Jour 8 : question de clôture.",
+  },
+  actions: {
+    default: "Voici vos priorités du moment. Traitez d'abord les actions urgentes, puis les relances.",
+    prioriser: "Pour prioriser : commencez par ce qui a une date limite, puis ce qui peut rapporter le plus rapidement.",
+  },
+  dashboard: {
+    default: "Votre dashboard vous donne une vue d'ensemble. Utilisez les blocs en haut pour les actions urgentes, et les blocs du bas pour le suivi.",
+    situation: "En résumé : vous avez des actions à traiter, des missions disponibles, et quelques introductions en cours. Commencez par vos priorités.",
+  },
+  gains: {
+    default: "Vos gains progressent bien. Pour en obtenir plus, les missions à fort gain méritent votre attention en priorité.",
+    attente: "Les gains en attente seront confirmés une fois que l'entreprise aura validé vos introductions. Cela prend généralement 3 à 10 jours.",
+  },
+};
+
+// ── Router simple (détermine la route de réponse) ────────────────────────────
+function routeRequest(req: AiRequest): "faq" | "model_light" | "model_strong" {
+  const lower = req.input.toLowerCase();
+
+  // Niveau 1 : FAQ
+  for (const key of Object.keys(FAQ_CACHE)) {
+    if (lower.includes(key)) return "faq";
+  }
+
+  // Niveau 2 : petit modèle (mock) pour reformulation courte
+  if (
+    lower.includes("améliore") ||
+    lower.includes("simplifie") ||
+    lower.includes("résume") ||
+    lower.includes("rends plus clair") ||
+    lower.includes("explique")
+  )
+    return "model_light";
+
+  // Niveau 3 : modèle fort pour optimisation complexe
+  if (lower.includes("optimise") || lower.includes("analyse") || lower.includes("stratégie"))
+    return "model_strong";
+
+  return "model_light";
+}
+
+// ── Réponse FAQ ───────────────────────────────────────────────────────────────
+function getFaqResponse(input: string): AiResponse | null {
+  const lower = input.toLowerCase();
+  for (const [key, response] of Object.entries(FAQ_CACHE)) {
+    if (lower.includes(key)) return response;
+  }
+  return null;
+}
+
+// ── Réponse mock contextuelle ─────────────────────────────────────────────────
+function getMockResponse(req: AiRequest): AiResponse {
+  const lower = req.input.toLowerCase();
+  const ctxMock = CONTEXT_MOCK[req.context] || {};
+
+  let text = ctxMock.default || "Je suis là pour vous aider. Pouvez-vous préciser ce que vous souhaitez améliorer ?";
+
+  if (lower.includes("améliore") || lower.includes("rends plus") || lower.includes("meilleure version")) {
+    text = ctxMock.ameliorer || ctxMock.default || text;
+  } else if (lower.includes("simplifie") || lower.includes("plus simple") || lower.includes("simplifier")) {
+    text = ctxMock.simplifier || ctxMock.ameliorer || ctxMock.default || text;
+  } else if (lower.includes("résume") || lower.includes("résumé")) {
+    text = ctxMock.resumé || ctxMock.situation || ctxMock.default || text;
+  } else if (lower.includes("réseau")) {
+    text = ctxMock.reseau || ctxMock.default || text;
+  } else if (lower.includes("priorit")) {
+    text = ctxMock.prioriser || ctxMock.default || text;
+  } else if (lower.includes("attente")) {
+    text = ctxMock.attente || ctxMock.default || text;
+  }
+
+  return { text, source: "mock" };
+}
+
+// ── Réponse JARVIS transverse ─────────────────────────────────────────────────
+const JARVIS_RESPONSES: { keywords: string[]; response: AiResponse }[] = [
+  {
+    keywords: ["que dois-je faire", "quoi faire", "par où commencer", "que faire"],
+    response: {
+      text: "Voici ce qui mérite votre attention : vérifiez vos introductions en attente, puis regardez les nouvelles missions disponibles.",
+      action: { label: "Voir mes priorités", href: "/actions" },
+      source: "faq",
+    },
+  },
+  {
+    keywords: ["résume ma situation", "résumé", "où j'en suis", "état actuel"],
+    response: {
+      text: "Vous avez des missions actives, des introductions en cours, et des contacts dans votre base. Votre prochain gain peut venir d'une validation en attente.",
+      action: { label: "Voir mes introductions", href: "/introductions" },
+      source: "faq",
+    },
+  },
+  {
+    keywords: ["aide-moi à démarrer", "comment commencer", "comment ça marche", "démarrer"],
+    response: {
+      text: "Commencez par compléter votre profil, puis explorez les missions disponibles. Si vous connaissez quelqu'un qui correspond à une mission, envoyez une introduction !",
+      action: { label: "Voir les missions", href: "/missions" },
+      source: "faq",
+    },
+  },
+  {
+    keywords: ["explique", "cette page", "à quoi ça sert", "comment utiliser"],
+    response: {
+      text: "Cette page regroupe tout ce dont vous avez besoin pour agir. Les blocs en haut sont vos priorités immédiates. Les blocs en bas suivent vos résultats.",
+      source: "faq",
+    },
+  },
+  {
+    keywords: ["statut", "que signifie", "statuts", "validé", "en attente", "refusé"],
+    response: {
+      text: "**Envoyée** = votre intro est partie.\n**En cours** = l'entreprise l'examine.\n**Validée** = gain confirmé ! 🎉\n**Refusée** = ce contact ne correspondait pas.",
+      source: "faq",
+    },
+  },
+  {
+    keywords: ["priorités", "priorité", "urgent", "important"],
+    response: {
+      text: "Vos priorités : 1) Introductions à valider. 2) Nouvelles missions. 3) Contacts à relancer.",
+      action: { label: "À faire", href: "/actions" },
+      source: "faq",
+    },
+  },
+  {
+    keywords: ["gain", "gains", "argent", "combien", "récompense"],
+    response: {
+      text: "Vos gains s'accumulent à chaque introduction validée. Consultez la page Gains pour voir le détail.",
+      action: { label: "Voir mes gains", href: "/gains" },
+      source: "faq",
+    },
+  },
+  {
+    keywords: ["mission", "missions", "opportunité"],
+    response: {
+      text: "Les missions sont des demandes d'introductions d'entreprises. Parcourez-les et envoyez une introduction si vous connaissez quelqu'un qui correspond.",
+      action: { label: "Voir les missions", href: "/missions" },
+      source: "faq",
+    },
+  },
+];
+
+function getJarvisResponse(input: string): AiResponse {
+  const lower = input.toLowerCase();
+  for (const { keywords, response } of JARVIS_RESPONSES) {
+    if (keywords.some((kw) => lower.includes(kw))) return response;
+  }
+  return {
+    text: "Je suis là pour vous aider ! Vous pouvez me demander de résumer votre situation, d'expliquer un statut, ou de vous guider vers la prochaine étape.",
+    source: "faq",
+  };
+}
+
+// ── Délai simulé réaliste ─────────────────────────────────────────────────────
+function simulateLatency(source: string): number {
+  if (source === "faq") return 300;
+  if (source === "model_light") return 800;
+  return 1500;
+}
+
+// ── Point d'entrée principal ──────────────────────────────────────────────────
+export async function askAI(req: AiRequest): Promise<AiResponse> {
+  // JARVIS : toujours passer par les réponses transverses
+  if (req.role === "jarvis") {
+    const faqHit = getFaqResponse(req.input);
+    if (faqHit) {
+      await new Promise((r) => setTimeout(r, simulateLatency("faq")));
+      return faqHit;
+    }
+    const jarvisResp = getJarvisResponse(req.input);
+    await new Promise((r) => setTimeout(r, simulateLatency("faq")));
+    return jarvisResp;
+  }
+
+  // COPILOT : routing hiérarchique
+  const route = routeRequest(req);
+
+  if (route === "faq") {
+    const hit = getFaqResponse(req.input);
+    if (hit) {
+      await new Promise((r) => setTimeout(r, simulateLatency("faq")));
+      return hit;
+    }
+  }
+
+  // Niveau mock (simule model_light et model_strong)
+  await new Promise((r) => setTimeout(r, simulateLatency("model_light")));
+  return getMockResponse(req);
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * BRANCHEMENT FUTUR — API Qwen (compatible OpenAI)
+   * Décommentez et configurez VITE_QWEN_API_URL + VITE_QWEN_API_KEY
+   * ══════════════════════════════════════════════════════════════
+   *
+   * const SYSTEM_PROMPTS: Record<CopilotContext, string> = {
+   *   mission: "Tu es un expert en apport d'affaires...",
+   *   introduction: "Tu aides à rédiger des introductions business...",
+   *   // ... etc
+   * };
+   *
+   * const response = await fetch(`${import.meta.env.VITE_QWEN_API_URL}/v1/chat/completions`, {
+   *   method: 'POST',
+   *   headers: {
+   *     'Authorization': `Bearer ${import.meta.env.VITE_QWEN_API_KEY}`,
+   *     'Content-Type': 'application/json',
+   *   },
+   *   body: JSON.stringify({
+   *     model: route === "model_strong" ? "qwen-max" : "qwen-turbo",
+   *     messages: [
+   *       { role: "system", content: SYSTEM_PROMPTS[req.context] },
+   *       { role: "user", content: req.input },
+   *     ],
+   *     max_tokens: 300,
+   *     temperature: 0.7,
+   *   }),
+   * });
+   *
+   * const data = await response.json();
+   * return { text: data.choices[0].message.content, source: route };
+   */
+}
+
+// ── Suggestions contextuelles (boutons pré-définis) ──────────────────────────
+export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt: string }[]> = {
+  mission: [
+    { label: "Améliorer ce texte", prompt: "Améliore la description de cette mission pour la rendre plus attirante" },
+    { label: "Rendre plus clair", prompt: "Rends ce texte plus clair et plus simple à comprendre" },
+    { label: "Que faire ensuite ?", prompt: "Que dois-je faire maintenant pour cette mission ?" },
+  ],
+  introduction: [
+    { label: "Améliorer mon message", prompt: "Améliore mon texte d'introduction pour le rendre plus convaincant" },
+    { label: "Simplifier", prompt: "Simplifie ce message pour qu'il soit plus direct" },
+    { label: "M'aider à compléter", prompt: "Aide-moi à compléter cette introduction" },
+  ],
+  profil_entreprise: [
+    { label: "Améliorer ma description", prompt: "Améliore ma description d'entreprise pour attirer plus d'apporteurs" },
+    { label: "Mieux cibler ma clientèle", prompt: "Aide-moi à mieux décrire le type de clients que je cherche" },
+    { label: "Rendre plus convaincant", prompt: "Rends mon profil plus convaincant et plus précis" },
+  ],
+  profil_facilitateur: [
+    { label: "Améliorer mon profil", prompt: "Améliore la description de mon réseau" },
+    { label: "Décrire mon réseau", prompt: "Aide-moi à mieux décrire mon réseau" },
+  ],
+  contact: [
+    { label: "Résumer ce contact", prompt: "Résume ce contact et ce que je sais de lui" },
+    { label: "Que faire maintenant ?", prompt: "Quelle est la prochaine action pour ce contact ?" },
+    { label: "Préparer un message", prompt: "Aide-moi à rédiger un message de prise de contact" },
+  ],
+  campagne: [
+    { label: "Améliorer la campagne", prompt: "Améliore la structure de cette campagne" },
+    { label: "Optimiser les messages", prompt: "Comment rendre mes messages plus efficaces ?" },
+    { label: "Suggérer des étapes", prompt: "Propose une meilleure séquence d'étapes" },
+  ],
+  actions: [
+    { label: "Prioriser mes actions", prompt: "Aide-moi à prioriser mes actions du moment" },
+    { label: "Que faire en premier ?", prompt: "Que dois-je faire en premier ?" },
+  ],
+  dashboard: [
+    { label: "Résume ma situation", prompt: "Résume ma situation actuelle" },
+    { label: "Que faire maintenant ?", prompt: "Que dois-je faire maintenant ?" },
+  ],
+  gains: [
+    { label: "Expliquer mes gains", prompt: "Explique le statut de mes gains en attente" },
+    { label: "Comment gagner plus ?", prompt: "Comment puis-je obtenir plus de gains validés ?" },
+  ],
+};
+
+export const JARVIS_QUICK_QUESTIONS = [
+  "Que dois-je faire maintenant ?",
+  "Résume ma situation",
+  "Aide-moi à démarrer",
+  "Montre-moi mes priorités",
+  "Que signifient ces statuts ?",
+  "Comment fonctionnent les missions ?",
+];

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import UserLayout from "@/components/layout/UserLayout";
 import { Users, CheckCircle2, Save } from "lucide-react";
+import CopilotPanel from "@/components/ai/CopilotPanel";
 
 const secteurs = ["SaaS / Tech", "Immobilier", "Finance / Assurance", "Formation", "Commerce", "Industrie", "Conseil", "Autre"];
 const zones = ["France entière", "Île-de-France", "Grand Ouest", "Grand Sud", "Grand Est", "International"];
@@ -172,6 +173,13 @@ export default function ProfilFacilitateur() {
               placeholder="ex : 10 ans dans le conseil aux TPE…"
             />
           </div>
+
+          {/* Copilot IA */}
+          <CopilotPanel
+            context="profil_facilitateur"
+            textToImprove={form.description}
+            userRole="facilitateur"
+          />
 
           {/* Save */}
           <button onClick={handleSave} className="btn-cta w-full py-4">

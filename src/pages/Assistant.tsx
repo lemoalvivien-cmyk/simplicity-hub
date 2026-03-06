@@ -1,44 +1,24 @@
 import { useState, useRef, useEffect } from "react";
 import UserLayout from "@/components/layout/UserLayout";
-import { Send, Bot, User, Loader2, RefreshCw } from "lucide-react";
+import { Send, Sparkles, User, Loader2, RefreshCw, ChevronRight } from "lucide-react";
+import { askAI, JARVIS_QUICK_QUESTIONS, AiResponse } from "@/lib/aiService";
+import { useNavigate } from "react-router-dom";
 
 type Message = {
   id: number;
   role: "user" | "assistant";
   content: string;
+  action?: AiResponse["action"];
   timestamp: Date;
 };
 
-const STARTER_QUESTIONS = [
-  "Comment fonctionne mon abonnement ?",
-  "Comment utiliser un code d'invitation ?",
-  "Comment accéder à l'aide ?",
-  "Comment modifier mon mot de passe ?",
-];
-
-const MOCK_RESPONSES: Record<string, string> = {
-  default: "Je suis là pour vous aider ! Posez-moi n'importe quelle question sur Planify et je vous répondrai clairement. Si je ne sais pas, je vous orienterai vers notre équipe support.",
-  abonnement: "Votre abonnement Premium vous donne accès à toutes les fonctionnalités de Planify. Vous pouvez le consulter, modifier ou annuler à tout moment depuis **Mon compte → Abonnement**. La résiliation est immédiate et sans condition.",
-  code: "Le code d'invitation vous donne **12 mois d'accès gratuit**. Il s'utilise une seule fois au moment de l'activation. Si le vôtre ne fonctionne pas, contactez notre support — nous vérifierons ça pour vous.",
-  aide: "Vous trouvez le centre d'aide en cliquant sur **Aide** dans le menu du haut. Vous y trouverez les réponses aux questions les plus courantes, et si ce n'est pas suffisant, vous pouvez me poser la question directement ici.",
-  "mot de passe": "Pour changer votre mot de passe : allez dans **Mon compte**, puis cliquez sur **Modifier le mot de passe**. Vous recevrez un e-mail de confirmation.",
-};
-
-function getResponse(input: string): string {
-  const lower = input.toLowerCase();
-  if (lower.includes("abonnement") || lower.includes("prix") || lower.includes("tarif")) return MOCK_RESPONSES.abonnement;
-  if (lower.includes("code") || lower.includes("invitation")) return MOCK_RESPONSES.code;
-  if (lower.includes("aide") || lower.includes("help")) return MOCK_RESPONSES.aide;
-  if (lower.includes("mot de passe") || lower.includes("password")) return MOCK_RESPONSES["mot de passe"];
-  return MOCK_RESPONSES.default;
-}
-
 export default function Assistant() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 0,
       role: "assistant",
-      content: "Bonjour ! Je suis votre assistant Planify. Posez-moi n'importe quelle question, je suis là pour vous aider. 😊",
+      content: "Bonjour ! Je suis JARVIS, votre assistant business. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
       timestamp: new Date(),
     },
   ]);
@@ -64,12 +44,17 @@ export default function Assistant() {
     setInput("");
     setLoading(true);
 
-    await new Promise((r) => setTimeout(r, 900));
+    const res = await askAI({
+      role: "jarvis",
+      context: "dashboard",
+      input: text,
+    });
 
     const reply: Message = {
       id: Date.now() + 1,
       role: "assistant",
-      content: getResponse(text),
+      content: res.text,
+      action: res.action,
       timestamp: new Date(),
     };
 
@@ -86,32 +71,40 @@ export default function Assistant() {
     setMessages([{
       id: 0,
       role: "assistant",
-      content: "Bonjour ! Je suis votre assistant Planify. Posez-moi n'importe quelle question, je suis là pour vous aider. 😊",
+      content: "Bonjour ! Je suis JARVIS, votre assistant business. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
       timestamp: new Date(),
     }]);
     setInput("");
   };
 
   return (
-    <UserLayout>
+    <UserLayout jarvisContext="dashboard">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="font-display text-2xl font-bold text-foreground">Assistant IA</h1>
-            <p className="text-sm text-muted-foreground">Je réponds à vos questions en quelques secondes.</p>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Sparkles size={20} style={{ color: "hsl(var(--primary-foreground))" }} />
+            </div>
+            <div>
+              <h1 className="font-display text-2xl font-bold text-foreground">JARVIS</h1>
+              <p className="text-sm text-muted-foreground">Votre assistant business — répond en quelques secondes.</p>
+            </div>
           </div>
           <button
             onClick={reset}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <RefreshCw size={14} />
-            Nouvelle conversation
+            <span className="hidden sm:inline">Nouvelle conversation</span>
           </button>
         </div>
 
         {/* Chat container */}
-        <div className="card-surface flex flex-col" style={{ height: "calc(100vh - 280px)", minHeight: "400px" }}>
+        <div className="card-surface flex flex-col" style={{ height: "calc(100vh - 300px)", minHeight: "420px" }}>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {messages.map((msg) => (
@@ -119,20 +112,49 @@ export default function Assistant() {
                 key={msg.id}
                 className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
               >
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                  msg.role === "assistant" ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
-                }`}>
-                  {msg.role === "assistant" ? <Bot size={15} /> : <User size={15} />}
-                </div>
                 <div
-                  className={`max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-tr-sm"
-                      : "bg-muted text-foreground rounded-tl-sm"
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                    msg.role === "assistant" ? "" : "bg-muted"
                   }`}
+                  style={msg.role === "assistant" ? { background: "var(--gradient-primary)" } : {}}
                 >
-                  {msg.content.split("**").map((part, i) =>
-                    i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
+                  {msg.role === "assistant"
+                    ? <Sparkles size={14} style={{ color: "hsl(var(--primary-foreground))" }} />
+                    : <User size={14} className="text-muted-foreground" />
+                  }
+                </div>
+                <div className="max-w-[78%] space-y-2">
+                  <div
+                    className="px-4 py-3 text-sm leading-relaxed"
+                    style={{
+                      background: msg.role === "user" ? "hsl(var(--primary))" : "hsl(var(--muted))",
+                      color: msg.role === "user" ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
+                      borderRadius: msg.role === "user" ? "1rem 1rem 0.25rem 1rem" : "1rem 1rem 1rem 0.25rem",
+                    }}
+                  >
+                    {msg.content.split("\n").map((line, i) => {
+                      const parts = line.split("**");
+                      return (
+                        <p key={i} className={i > 0 && line ? "mt-1" : ""}>
+                          {parts.map((part, j) =>
+                            j % 2 === 1 ? <strong key={j}>{part}</strong> : <span key={j}>{part}</span>
+                          )}
+                        </p>
+                      );
+                    })}
+                  </div>
+                  {msg.action && (
+                    <button
+                      onClick={() => msg.action?.href && navigate(msg.action.href)}
+                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
+                      style={{
+                        background: "hsl(var(--secondary))",
+                        color: "hsl(var(--primary))",
+                        border: "1px solid hsl(var(--border))",
+                      }}
+                    >
+                      {msg.action.label} <ChevronRight size={12} />
+                    </button>
                   )}
                 </div>
               </div>
@@ -140,12 +162,18 @@ export default function Assistant() {
 
             {loading && (
               <div className="flex gap-3 flex-row">
-                <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
-                  <Bot size={15} />
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: "var(--gradient-primary)" }}
+                >
+                  <Sparkles size={14} style={{ color: "hsl(var(--primary-foreground))" }} />
                 </div>
-                <div className="bg-muted px-4 py-3 rounded-2xl rounded-tl-sm flex items-center gap-2">
+                <div
+                  className="px-4 py-3 flex items-center gap-2"
+                  style={{ background: "hsl(var(--muted))", borderRadius: "1rem 1rem 1rem 0.25rem" }}
+                >
                   <Loader2 size={14} className="animate-spin text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Je cherche...</span>
+                  <span className="text-sm text-muted-foreground">Je réfléchis…</span>
                 </div>
               </div>
             )}
@@ -155,16 +183,19 @@ export default function Assistant() {
 
           {/* Quick questions */}
           {messages.length <= 1 && (
-            <div className="px-5 pb-3 flex flex-wrap gap-2">
-              {STARTER_QUESTIONS.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => send(q)}
-                  className="text-xs px-3 py-1.5 rounded-full border border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
+            <div className="px-5 pb-3 space-y-2">
+              <p className="text-xs text-muted-foreground">Questions fréquentes :</p>
+              <div className="flex flex-wrap gap-2">
+                {JARVIS_QUICK_QUESTIONS.map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => send(q)}
+                    className="text-xs px-3 py-1.5 rounded-full border border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground transition-colors"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -175,15 +206,16 @@ export default function Assistant() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Posez votre question..."
-                className="flex-1 px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                placeholder="Posez votre question…"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 transition-shadow"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
-                className="btn-primary px-4 py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-xl flex items-center justify-center disabled:opacity-40 transition-opacity"
+                style={{ background: "var(--gradient-primary)" }}
               >
-                <Send size={16} />
+                <Send size={15} style={{ color: "hsl(var(--primary-foreground))" }} />
               </button>
             </form>
           </div>

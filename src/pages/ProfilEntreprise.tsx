@@ -1,6 +1,7 @@
 import { useState } from "react";
 import UserLayout from "@/components/layout/UserLayout";
 import { Building2, CheckCircle2, Save, Edit3 } from "lucide-react";
+import CopilotPanel from "@/components/ai/CopilotPanel";
 
 const secteurs = ["SaaS / Tech", "Immobilier", "Finance / Assurance", "Formation", "Commerce", "Industrie", "Autre"];
 const tailles = ["Indépendant", "2–10 personnes", "10–50 personnes", "50–200 personnes", "Plus de 200 personnes"];
@@ -153,6 +154,13 @@ export default function ProfilEntreprise() {
               placeholder="ex : 300 € par client signé et actif 30 jours"
             />
           </div>
+
+          {/* Copilot IA */}
+          <CopilotPanel
+            context="profil_entreprise"
+            textToImprove={form.description}
+            userRole="entreprise"
+          />
 
           {/* Save */}
           <button onClick={handleSave} className="btn-cta w-full py-4">

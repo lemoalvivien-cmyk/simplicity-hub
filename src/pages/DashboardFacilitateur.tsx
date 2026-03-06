@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Briefcase, Send, TrendingUp, CheckCircle2, ArrowRight,
-  MessageCircle, HelpCircle, Users, Zap, Search
+  MessageCircle, HelpCircle, Users, Zap, Search, Sparkles
 } from "lucide-react";
 
 const facilitateurName = "Thomas";
@@ -216,16 +216,35 @@ export default function DashboardFacilitateur() {
         </div>
 
         {/* ── BLOC 6 — AIDE ──────────────────────────────────────── */}
-        <div className="card-surface p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex-1">
-            <h2 className="font-semibold text-foreground mb-0.5">Une question ?</h2>
-            <p className="text-sm text-muted-foreground">L'assistant répond immédiatement.</p>
+        <div className="card-surface p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "var(--gradient-primary)" }}
+            >
+              <Sparkles size={16} style={{ color: "hsl(var(--primary-foreground))" }} />
+            </div>
+            <div>
+              <h2 className="font-semibold text-foreground text-sm">Besoin d'aide ?</h2>
+              <p className="text-xs text-muted-foreground">JARVIS répond en quelques secondes.</p>
+            </div>
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Link to="/assistant" className="btn-primary text-sm py-2.5 px-4 flex-1 sm:flex-initial justify-center">
-              <MessageCircle size={14} /> Assistant
+          <div className="flex flex-wrap gap-2 mb-3">
+            {["Que dois-je faire maintenant ?", "Résume ma situation", "Que signifient ces statuts ?"].map((q) => (
+              <Link
+                key={q}
+                to="/assistant"
+                className="text-xs px-3 py-1.5 rounded-full border border-border bg-background text-muted-foreground hover:border-primary hover:text-foreground transition-colors"
+              >
+                {q}
+              </Link>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Link to="/assistant" className="btn-primary text-sm py-2.5 px-4 flex-1 justify-center">
+              <MessageCircle size={14} /> Ouvrir JARVIS
             </Link>
-            <Link to="/help" className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
+            <Link to="/help" className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
               <HelpCircle size={14} /> Aide
             </Link>
           </div>
