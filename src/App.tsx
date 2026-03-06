@@ -79,6 +79,15 @@ const App = () => (
           {/* ── Pilotage ─────────────────────────────── */}
           <Route path="/pilotage" element={<Pilotage />} />
 
+          {/* ── Studio & Builder ─────────────────────── */}
+          <Route path="/studio" element={<Studio />} />
+          <Route path="/campagnes/nouvelle" element={<CampagneNouvelle />} />
+          <Route path="/sources" element={<Sources />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/regles" element={<Regles />} />
+          <Route path="/canaux" element={<Canaux />} />
+          <Route path="/opportunites" element={<Opportunites />} />
+
           {/* ── Onboarding ───────────────────────────── */}
           <Route path="/onboarding" element={<Onboarding />} />
 
@@ -94,7 +103,6 @@ const App = () => (
           <Route path="/listes" element={<Listes />} />
           <Route path="/campagnes" element={<Campagnes />} />
           <Route path="/campagnes/:id" element={<CampagneDetail />} />
-          <Route path="/campagnes/nouvelle" element={<CampagneDetail />} />
           <Route path="/actions" element={<Actions />} />
 
           {/* ── Apport d'affaires — facilitateur ─────── */}
