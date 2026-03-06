@@ -208,8 +208,8 @@ export default function Checkout() {
                   <button onClick={() => setStep("choose")} className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                     Retour
                   </button>
-                  <button onClick={() => setStep("success")} className="flex-1 btn-cta text-sm">
-                    Payer 59 € / mois →
+                   <button onClick={() => setStep("success")} className="flex-1 btn-cta text-sm">
+                    Payer 29 € / mois →
                   </button>
                 </div>
 
