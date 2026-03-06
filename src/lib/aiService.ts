@@ -404,6 +404,44 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
     { label: "Expliquer mes gains", prompt: "Explique le statut de mes gains en attente" },
     { label: "Comment gagner plus ?", prompt: "Comment puis-je obtenir plus de gains validés ?" },
   ],
+  contacts: [
+    { label: "Organiser mes contacts", prompt: "Comment organiser mes contacts efficacement ?" },
+    { label: "Que faire maintenant ?", prompt: "Quelle est la prochaine étape avec mes contacts ?" },
+  ],
+  campaign: [
+    { label: "Améliorer la campagne", prompt: "Améliore la structure de cette campagne" },
+    { label: "Optimiser les messages", prompt: "Comment rendre mes messages plus efficaces ?" },
+  ],
+  missions: [
+    { label: "Voir mes priorités", prompt: "Quelles missions prioriser en ce moment ?" },
+    { label: "Comment bien démarrer ?", prompt: "Comment bien démarrer sur une nouvelle mission ?" },
+  ],
+  studio: [
+    { label: "Aide-moi à démarrer", prompt: "Par où commencer pour préparer ma première campagne ?" },
+    { label: "Quel canal choisir ?", prompt: "Quel canal de prospection me conseilles-tu ?" },
+    { label: "Comment organiser ?", prompt: "Comment organiser mes contacts avant de lancer ?" },
+  ],
+  sources: [
+    { label: "Optimiser mes imports", prompt: "Comment préparer mon fichier pour un import réussi ?" },
+    { label: "Éviter les doublons", prompt: "Comment éviter les doublons dans ma base de contacts ?" },
+  ],
+  messages: [
+    { label: "Améliorer mon message", prompt: "Améliore ce message pour le rendre plus humain et efficace" },
+    { label: "Raccourcir", prompt: "Rends ce message plus court et plus direct" },
+    { label: "Rendre plus humain", prompt: "Rends ce message plus naturel et moins formel" },
+  ],
+  regles: [
+    { label: "Quelles règles activer ?", prompt: "Quelles règles de sécurité me conseilles-tu d'activer ?" },
+    { label: "Expliquer les règles", prompt: "Explique-moi à quoi servent ces règles de sécurité" },
+  ],
+  canaux: [
+    { label: "Quel canal choisir ?", prompt: "Quel canal me conseilles-tu pour débuter ma prospection ?" },
+    { label: "Comparer les canaux", prompt: "Quelles sont les différences entre email et téléphone ?" },
+  ],
+  opportunites: [
+    { label: "Que traiter en premier ?", prompt: "Quelle opportunité dois-je traiter en priorité ?" },
+    { label: "Comprendre les statuts", prompt: "Explique-moi les différents statuts des opportunités" },
+  ],
 };
 
 export const JARVIS_QUICK_QUESTIONS = [

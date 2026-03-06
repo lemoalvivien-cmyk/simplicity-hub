@@ -6,6 +6,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Pilotage from "./pages/Pilotage";
 
+// Studio & Builder
+import Studio from "./pages/Studio";
+import CampagneNouvelle from "./pages/CampagneNouvelle";
+import Sources from "./pages/Sources";
+import Messages from "./pages/Messages";
+import Regles from "./pages/Regles";
+import Canaux from "./pages/Canaux";
+import Opportunites from "./pages/Opportunites";
+
 // Public pages
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
