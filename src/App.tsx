@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 import Pilotage from "./pages/Pilotage";
 
@@ -64,77 +66,83 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* ── Public ───────────────────────────────── */}
-          <Route path="/" element={<Index />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* ── Public ───────────────────────────────── */}
+            <Route path="/" element={<Index />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
 
-          {/* ── Pilotage ─────────────────────────────── */}
-          <Route path="/pilotage" element={<Pilotage />} />
+            {/* ── Onboarding ───────────────────────────── */}
+            <Route path="/onboarding" element={
+              <ProtectedRoute>
+                <Onboarding />
+              </ProtectedRoute>
+            } />
 
-          {/* ── Studio & Builder ─────────────────────── */}
-          <Route path="/studio" element={<Studio />} />
-          <Route path="/campagnes/nouvelle" element={<CampagneNouvelle />} />
-          <Route path="/sources" element={<Sources />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/regles" element={<Regles />} />
-          <Route path="/canaux" element={<Canaux />} />
-          <Route path="/opportunites" element={<Opportunites />} />
+            {/* ── Pilotage ─────────────────────────────── */}
+            <Route path="/pilotage" element={<ProtectedRoute><Pilotage /></ProtectedRoute>} />
 
-          {/* ── Onboarding ───────────────────────────── */}
-          <Route path="/onboarding" element={<Onboarding />} />
+            {/* ── Studio & Builder ─────────────────────── */}
+            <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
+            <Route path="/campagnes/nouvelle" element={<ProtectedRoute><CampagneNouvelle /></ProtectedRoute>} />
+            <Route path="/sources" element={<ProtectedRoute><Sources /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/regles" element={<ProtectedRoute><Regles /></ProtectedRoute>} />
+            <Route path="/canaux" element={<ProtectedRoute><Canaux /></ProtectedRoute>} />
+            <Route path="/opportunites" element={<ProtectedRoute><Opportunites /></ProtectedRoute>} />
 
-          {/* ── Dashboards ───────────────────────────── */}
-          <Route path="/dashboard/entreprise" element={<DashboardEntreprise />} />
-          <Route path="/dashboard/facilitateur" element={<DashboardFacilitateur />} />
-          <Route path="/dashboard" element={<DashboardFacilitateur />} />
+            {/* ── Dashboards ───────────────────────────── */}
+            <Route path="/dashboard/entreprise" element={<ProtectedRoute><DashboardEntreprise /></ProtectedRoute>} />
+            <Route path="/dashboard/facilitateur" element={<ProtectedRoute><DashboardFacilitateur /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardFacilitateur /></ProtectedRoute>} />
 
-          {/* ── Prospection ──────────────────────────── */}
-          <Route path="/contacts" element={<Contacts />} />
-          <Route path="/contacts/import" element={<ContactImport />} />
-          <Route path="/contacts/:id" element={<ContactDetail />} />
-          <Route path="/listes" element={<Listes />} />
-          <Route path="/campagnes" element={<Campagnes />} />
-          <Route path="/campagnes/:id" element={<CampagneDetail />} />
-          <Route path="/actions" element={<Actions />} />
+            {/* ── Prospection ──────────────────────────── */}
+            <Route path="/contacts" element={<ProtectedRoute><Contacts /></ProtectedRoute>} />
+            <Route path="/contacts/import" element={<ProtectedRoute><ContactImport /></ProtectedRoute>} />
+            <Route path="/contacts/:id" element={<ProtectedRoute><ContactDetail /></ProtectedRoute>} />
+            <Route path="/listes" element={<ProtectedRoute><Listes /></ProtectedRoute>} />
+            <Route path="/campagnes" element={<ProtectedRoute><Campagnes /></ProtectedRoute>} />
+            <Route path="/campagnes/:id" element={<ProtectedRoute><CampagneDetail /></ProtectedRoute>} />
+            <Route path="/actions" element={<ProtectedRoute><Actions /></ProtectedRoute>} />
 
-          {/* ── Apport d'affaires — facilitateur ─────── */}
-          <Route path="/missions" element={<Missions />} />
-          <Route path="/missions/:id" element={<MissionDetail />} />
-          <Route path="/introductions" element={<Introductions />} />
-          <Route path="/introductions/:id" element={<IntroductionDetail />} />
-          <Route path="/gains" element={<Gains />} />
-          <Route path="/profil/facilitateur" element={<ProfilFacilitateur />} />
+            {/* ── Apport d'affaires — facilitateur ─────── */}
+            <Route path="/missions" element={<ProtectedRoute><Missions /></ProtectedRoute>} />
+            <Route path="/missions/:id" element={<ProtectedRoute><MissionDetail /></ProtectedRoute>} />
+            <Route path="/introductions" element={<ProtectedRoute><Introductions /></ProtectedRoute>} />
+            <Route path="/introductions/:id" element={<ProtectedRoute><IntroductionDetail /></ProtectedRoute>} />
+            <Route path="/gains" element={<ProtectedRoute><Gains /></ProtectedRoute>} />
+            <Route path="/profil/facilitateur" element={<ProtectedRoute><ProfilFacilitateur /></ProtectedRoute>} />
 
-          {/* ── Apport d'affaires — entreprise ───────── */}
-          <Route path="/entreprise/introductions" element={<IntroductionsEntreprise />} />
-          <Route path="/profil/entreprise" element={<ProfilEntreprise />} />
+            {/* ── Apport d'affaires — entreprise ───────── */}
+            <Route path="/entreprise/introductions" element={<ProtectedRoute><IntroductionsEntreprise /></ProtectedRoute>} />
+            <Route path="/profil/entreprise" element={<ProtectedRoute><ProfilEntreprise /></ProtectedRoute>} />
 
-          {/* ── Utilitaires ──────────────────────────── */}
-          <Route path="/assistant" element={<Assistant />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/account" element={<Account />} />
+            {/* ── Utilitaires ──────────────────────────── */}
+            <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
+            <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
+            <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
 
-          {/* ── Admin ────────────────────────────────── */}
-          <Route path="/admin" element={<AdminOverview />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/promo-codes" element={<AdminPromoCodes />} />
-          <Route path="/admin/payments" element={<AdminPayments />} />
-          <Route path="/admin/help" element={<AdminHelpContent />} />
-          <Route path="/admin/analytics" element={<AdminAnalytics />} />
+            {/* ── Admin ────────────────────────────────── */}
+            <Route path="/admin" element={<ProtectedRoute adminOnly><AdminOverview /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/promo-codes" element={<ProtectedRoute adminOnly><AdminPromoCodes /></ProtectedRoute>} />
+            <Route path="/admin/payments" element={<ProtectedRoute adminOnly><AdminPayments /></ProtectedRoute>} />
+            <Route path="/admin/help" element={<ProtectedRoute adminOnly><AdminHelpContent /></ProtectedRoute>} />
+            <Route path="/admin/analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
 
-          {/* ── 404 ──────────────────────────────────── */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            {/* ── 404 ──────────────────────────────────── */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
