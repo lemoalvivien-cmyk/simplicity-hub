@@ -1,50 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import { Briefcase, Euro, MapPin, ChevronRight, Plus, Search } from "lucide-react";
-
-const allMissions = [
-  {
-    id: 1,
-    entreprise: "Acme SaaS",
-    titre: "Clients TPE en commerce et artisanat",
-    description: "Nous cherchons des TPE qui ont besoin de simplifier leur facturation. Si vous connaissez des commerçants, artisans ou prestataires qui galèrent encore avec Excel, cette mission est pour vous.",
-    secteur: "SaaS / Tech",
-    zone: "France entière",
-    gain: "300 € par client validé",
-    status: "ouverte",
-  },
-  {
-    id: 2,
-    entreprise: "FinEdge",
-    titre: "PME cherchant un financement ou crédit pro",
-    description: "Nous accompagnons les PME dans leur recherche de financement. Si vous connaissez un dirigeant qui a du mal à obtenir un prêt ou cherche un partenaire financier, parlez-nous de lui.",
-    secteur: "Finance / Assurance",
-    zone: "Île-de-France",
-    gain: "500 € par mise en relation aboutie",
-    status: "ouverte",
-  },
-  {
-    id: 3,
-    entreprise: "FormaPro",
-    titre: "Responsables formation en entreprise",
-    description: "Nous proposons des formations certifiantes pour les équipes. Si vous connaissez des responsables RH ou formation qui cherchent à développer les compétences de leurs collaborateurs, contactez-nous.",
-    secteur: "Formation",
-    zone: "France entière",
-    gain: "200 € par inscription confirmée",
-    status: "ouverte",
-  },
-  {
-    id: 4,
-    entreprise: "ImmoConnect",
-    titre: "Investisseurs immobiliers en recherche de biens",
-    description: "Nous sourcions des biens off-market pour des investisseurs qualifiés. Si vous avez des contacts dans l'investissement immobilier, cette mission peut vous rapporter.",
-    secteur: "Immobilier",
-    zone: "Lyon, Bordeaux, Nantes",
-    gain: "800 € par transaction réalisée",
-    status: "ouverte",
-  },
-];
+import { Euro, MapPin, ChevronRight, Plus, Search, Send } from "lucide-react";
+import { allMissions } from "./MissionDetail";
 
 const secteurs = ["Tous", "SaaS / Tech", "Finance / Assurance", "Formation", "Immobilier"];
 
@@ -155,7 +113,7 @@ export default function Missions() {
                     style={{ color: "hsl(var(--success))" }}
                   >
                     <Euro size={13} />
-                    {m.gain}
+                    {m.gainLabel}
                   </div>
                 </div>
 
@@ -164,13 +122,13 @@ export default function Missions() {
                     to={`/missions/${m.id}`}
                     className="btn-cta text-sm py-2.5 px-5"
                   >
-                    Faire une introduction <ChevronRight size={15} />
+                    <Send size={14} /> Faire une introduction
                   </Link>
                   <Link
                     to={`/missions/${m.id}`}
                     className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
                   >
-                    En savoir plus
+                    En savoir plus <ChevronRight size={13} />
                   </Link>
                 </div>
               </div>
