@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  Target, Users, CheckCircle2, Circle, ArrowRight,
-  MessageCircle, HelpCircle, Zap, Clock, TrendingUp
+  Target, Users, CheckCircle2, ArrowRight,
+  MessageCircle, HelpCircle
 } from "lucide-react";
 
 // Données simulées

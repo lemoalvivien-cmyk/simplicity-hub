@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Briefcase, Send, TrendingUp, CheckCircle2, ArrowRight,
-  MessageCircle, HelpCircle, Clock, Euro
+  MessageCircle, HelpCircle
 } from "lucide-react";
 
 // Données simulées
