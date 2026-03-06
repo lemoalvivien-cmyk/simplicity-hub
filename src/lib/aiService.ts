@@ -98,10 +98,20 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
     resumé: "Ce contact est dans votre liste depuis un moment. Il n'a pas encore répondu. Un message court et direct peut faire la différence.",
     action: "Pour ce contact, je vous suggère d'envoyer un court message de relance. Mentionnez quelque chose de spécifique à son activité pour qu'il se souvienne de vous.",
   },
+  contacts: {
+    default: "Votre base de contacts est votre actif principal. Organisez-les en listes pour lancer des campagnes ciblées.",
+    importer: "Pour importer facilement : préparez un fichier CSV avec au minimum le prénom, le nom et l'email. Le reste peut être ajouté ensuite.",
+    organiser: "Organisez vos contacts en listes par secteur ou par niveau d'intérêt. Cela simplifie vos campagnes.",
+  },
   campagne: {
     default: "Votre campagne est bien structurée. Vérifiez que l'objet de vos messages est court et accrocheur (moins de 7 mots).",
     ameliorer: "Pour améliorer les résultats de cette campagne : 1) Personnalisez le premier message avec le prénom. 2) Espacez les relances de 3 jours. 3) Gardez les messages courts (< 5 lignes).",
     etape: "Voici une séquence efficace en 3 étapes : Jour 1 : présentation courte. Jour 4 : valeur ajoutée. Jour 8 : question de clôture.",
+  },
+  campaign: {
+    default: "Votre campagne est bien structurée. Vérifiez que l'objet de vos messages est court et accrocheur.",
+    ameliorer: "Pour améliorer les résultats : personnalisez avec le prénom, espacez les relances de 3 jours, gardez les messages courts.",
+    etape: "Séquence efficace en 3 étapes : Jour 1 : présentation. Jour 4 : valeur ajoutée. Jour 8 : question de clôture.",
   },
   actions: {
     default: "Voici vos priorités du moment. Traitez d'abord les actions urgentes, puis les relances.",
@@ -114,6 +124,34 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
   gains: {
     default: "Vos gains progressent bien. Pour en obtenir plus, les missions à fort gain méritent votre attention en priorité.",
     attente: "Les gains en attente seront confirmés une fois que l'entreprise aura validé vos introductions. Cela prend généralement 3 à 10 jours.",
+  },
+  missions: {
+    default: "Parcourez les missions disponibles et choisissez celles qui correspondent le mieux à votre réseau.",
+    priorite: "Commencez par les missions à fort gain et courte durée. Elles ont le meilleur ratio effort/résultat.",
+  },
+  studio: {
+    default: "Le Studio vous permet de préparer votre campagne étape par étape. Commencez par vos contacts, puis choisissez votre canal.",
+    demarrer: "Pour démarrer : 1) Importez ou sélectionnez vos contacts. 2) Choisissez un canal. 3) Préparez un message simple. 4) Lancez.",
+  },
+  sources: {
+    default: "Vos sources de contacts sont variées. Gardez une trace de l'origine pour savoir quels canaux vous rapportent le plus.",
+    organiser: "Organisez vos contacts par source dès l'import. Cela vous permettra de comparer l'efficacité de chaque canal.",
+  },
+  messages: {
+    default: "Un bon message est court, personnel et clair. Évitez le jargon et parlez directement au problème de votre interlocuteur.",
+    ameliorer: "Pour améliorer vos messages : 1) Commencez par le prénom. 2) Une phrase de contexte. 3) Une question simple. 4) Votre signature.",
+  },
+  regles: {
+    default: "Vos règles de sécurité vous protègent et protègent vos contacts. Gardez au minimum la validation avant envoi.",
+    conseil: "Pour débuter, activez toutes les règles de sécurité. Vous pourrez en désactiver certaines une fois à l'aise avec le produit.",
+  },
+  canaux: {
+    default: "Chaque canal a ses avantages. L'email est idéal pour la prospection froide, le téléphone pour les contacts importants.",
+    choisir: "Pour débuter, choisissez un seul canal. Maîtrisez-le avant d'en ajouter un deuxième.",
+  },
+  opportunites: {
+    default: "Voici vos opportunités actives. Commencez par celles en attente de validation — elles peuvent avancer rapidement.",
+    prioriser: "Traitez en priorité les opportunités 'à traiter' et 'en attente'. Une réponse rapide augmente vos chances de succès.",
   },
 };
 
