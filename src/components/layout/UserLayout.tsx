@@ -20,7 +20,7 @@ export default function UserLayout({ children, role = "facilitateur", jarvisCont
       </main>
       <footer className="border-t border-border py-4">
         <div className="container flex items-center justify-between text-xs text-muted-foreground">
-          <span>© 2024 Wiinup</span>
+          <span>© 2026 WIINUP MAX</span>
           <div className="flex gap-4">
             <a href="#" className="hover:text-foreground transition-colors">Confidentialité</a>
             <a href="#" className="hover:text-foreground transition-colors">CGU</a>

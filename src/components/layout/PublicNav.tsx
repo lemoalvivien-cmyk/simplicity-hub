@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Zap } from "lucide-react";
 
 export default function PublicNav() {
   const [open, setOpen] = useState(false);
@@ -12,14 +12,19 @@ export default function PublicNav() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
+    <header className="sticky top-0 z-50 nav-glass">
       <div className="container flex items-center justify-between h-16">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-            <span className="text-white font-display font-bold text-sm">P</span>
+        {/* Logo WIINUP MAX */}
+        <Link to="/" className="flex items-center gap-2.5">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: "var(--gradient-electric)" }}
+          >
+            <Zap size={14} className="text-white" strokeWidth={2.5} />
           </div>
-          <span className="font-display font-bold text-lg text-foreground">Planify</span>
+          <span className="font-display font-bold text-base tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
+            WIINUP <span style={{ color: "hsl(var(--accent))" }}>MAX</span>
+          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -48,11 +53,11 @@ export default function PublicNav() {
             Connexion
           </Link>
           <Link to="/pricing" className="btn-cta text-sm px-4 py-2">
-            Commencer →
+            Démarrer gratuitement →
           </Link>
         </div>
 
-        {/* Mobile menu toggle */}
+        {/* Mobile toggle */}
         <button
           onClick={() => setOpen(!open)}
           className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -88,7 +93,7 @@ export default function PublicNav() {
                 onClick={() => setOpen(false)}
                 className="btn-cta text-sm text-center"
               >
-                Commencer →
+                Démarrer gratuitement →
               </Link>
             </div>
           </div>

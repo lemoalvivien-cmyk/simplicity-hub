@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
-  Play, Zap, ListOrdered, Activity, Layers, Target
+  Play, Zap, Activity, Layers, Target
 } from "lucide-react";
 
 type UserRole = "entreprise" | "facilitateur";
@@ -84,14 +84,19 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
         ];
 
   return (
-    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
+    <header className="sticky top-0 z-50 nav-glass">
       <div className="container flex items-center justify-between h-16">
         {/* Logo */}
-        <Link to={dashboardPath} className="flex items-center gap-2 shrink-0">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--primary))" }}>
-            <span className="text-white font-display font-bold text-sm">W</span>
+        <Link to={dashboardPath} className="flex items-center gap-2.5 shrink-0">
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{ background: "var(--gradient-electric)" }}
+          >
+            <Zap size={13} className="text-white" strokeWidth={2.5} />
           </div>
-          <span className="font-display font-bold text-lg text-foreground">Wiinup</span>
+          <span className="font-display font-bold text-sm tracking-tight hidden sm:block" style={{ color: "hsl(var(--foreground))" }}>
+            WIINUP <span style={{ color: "hsl(var(--accent))" }}>MAX</span>
+          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -125,13 +130,14 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
           )}
         </nav>
 
-        {/* Desktop — badge rôle + déconnexion */}
+        {/* Badge rôle + actions */}
         <div className="hidden md:flex items-center gap-2 shrink-0">
           <span
-            className="text-xs font-semibold px-2.5 py-1 rounded-full"
+            className="text-xs font-semibold px-2.5 py-1 rounded-full border"
             style={{
-              background: role === "entreprise" ? "hsl(var(--secondary))" : "hsl(var(--accent-light))",
-              color: role === "entreprise" ? "hsl(var(--primary))" : "hsl(38 80% 30%)",
+              background: role === "entreprise" ? "hsl(218 72% 18% / 0.08)" : "hsl(24 100% 52% / 0.1)",
+              color: role === "entreprise" ? "hsl(var(--primary))" : "hsl(24 80% 38%)",
+              borderColor: role === "entreprise" ? "hsl(218 72% 18% / 0.15)" : "hsl(24 100% 52% / 0.2)",
             }}
           >
             {role === "entreprise" ? "Entreprise" : "Apporteur"}
@@ -157,7 +163,6 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
       {open && (
         <div className="md:hidden border-t border-border bg-card animate-fade-in">
           <div className="container py-4 flex flex-col gap-3">
-            {/* Accueil */}
             <Link
               to={dashboardPath}
               onClick={() => setOpen(false)}
@@ -217,9 +222,9 @@ function NavLink({
   return (
     <Link
       to={to}
-      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
         isActive
-          ? "bg-primary text-primary-foreground"
+          ? "bg-primary text-primary-foreground shadow-sm"
           : highlight
           ? "text-primary bg-secondary hover:bg-primary hover:text-primary-foreground"
           : "text-muted-foreground hover:text-foreground hover:bg-muted"

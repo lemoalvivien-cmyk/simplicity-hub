@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
-import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, Zap } from "lucide-react";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,8 +13,11 @@ export default function Signup() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-display font-bold text-lg">P</span>
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: "var(--gradient-electric)" }}
+            >
+              <Zap size={20} className="text-white" strokeWidth={2.5} />
             </div>
             <h1 className="font-display text-2xl font-bold text-foreground">Créer mon compte</h1>
             <p className="text-muted-foreground text-sm mt-1">
@@ -30,7 +33,7 @@ export default function Signup() {
               <input
                 type="text"
                 placeholder="Marie"
-                className="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                className="input-premium"
               />
             </div>
 
@@ -41,7 +44,7 @@ export default function Signup() {
               <input
                 type="email"
                 placeholder="vous@exemple.fr"
-                className="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                className="input-premium"
               />
             </div>
 
@@ -53,7 +56,7 @@ export default function Signup() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="8 caractères minimum"
-                  className="w-full px-4 py-3 pr-11 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                  className="input-premium pr-11"
                 />
                 <button
                   type="button"
@@ -77,7 +80,11 @@ export default function Signup() {
           </div>
 
           <div className="space-y-2 mt-5">
-            {["Aucune carte requise avec un code d'invitation", "Annulable à tout moment"].map((t) => (
+            {[
+              "Apporteur d'affaires ? Votre compte est gratuit",
+              "Aucune carte requise avec un code d'invitation",
+              "Annulable à tout moment",
+            ].map((t) => (
               <div key={t} className="flex items-center gap-2">
                 <CheckCircle2 size={14} className="text-success shrink-0" />
                 <span className="text-xs text-muted-foreground">{t}</span>

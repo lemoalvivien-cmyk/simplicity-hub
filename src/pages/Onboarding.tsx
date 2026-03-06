@@ -56,7 +56,7 @@ export default function Onboarding() {
           <span className="text-white font-display font-bold text-xl">W</span>
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-          Bienvenue sur Wiinup 👋
+          Bienvenue sur WIINUP MAX 👋
         </h1>
         <p className="text-muted-foreground leading-relaxed">{welcomeMsg}</p>
       </div>

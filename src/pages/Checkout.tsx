@@ -102,9 +102,9 @@ export default function Checkout() {
                   className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary transition-colors text-left"
                 >
                   <CreditCard size={22} className="text-primary shrink-0" />
-                  <div>
+                   <div>
                     <p className="font-semibold text-foreground text-sm">Je préfère payer par carte</p>
-                    <p className="text-xs text-muted-foreground">59 € / mois — annulable à tout moment</p>
+                    <p className="text-xs text-muted-foreground">29 € / mois — annulable à tout moment</p>
                   </div>
                   <ArrowRight size={18} className="text-muted-foreground ml-auto" />
                 </button>
@@ -208,8 +208,8 @@ export default function Checkout() {
                   <button onClick={() => setStep("choose")} className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                     Retour
                   </button>
-                  <button onClick={() => setStep("success")} className="flex-1 btn-cta text-sm">
-                    Payer 59 € / mois →
+                   <button onClick={() => setStep("success")} className="flex-1 btn-cta text-sm">
+                    Payer 29 € / mois →
                   </button>
                 </div>
 
