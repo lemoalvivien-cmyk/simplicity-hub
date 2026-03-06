@@ -23,11 +23,16 @@ export default function AdminNav() {
       {/* Sidebar desktop */}
       <aside className="hidden md:flex flex-col w-60 min-h-screen bg-sidebar border-r border-sidebar-border fixed left-0 top-0">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-5 h-16 border-b border-sidebar-border">
-          <div className="w-8 h-8 rounded-lg bg-gradient-accent flex items-center justify-center">
-            <span className="text-accent-foreground font-display font-bold text-sm">P</span>
+        <div className="flex items-center gap-2.5 px-5 h-16 border-b border-sidebar-border">
+          <div
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{ background: "var(--gradient-accent)" }}
+          >
+            <Zap size={13} className="text-white" strokeWidth={2.5} />
           </div>
-          <span className="font-display font-bold text-lg text-sidebar-foreground">Planify</span>
+          <span className="font-display font-bold text-sm tracking-tight text-sidebar-foreground">
+            WIINUP <span style={{ color: "hsl(var(--sidebar-primary))" }}>MAX</span>
+          </span>
         </div>
 
         {/* Badge admin */}
@@ -73,11 +78,16 @@ export default function AdminNav() {
       {/* Mobile topbar */}
       <header className="md:hidden sticky top-0 z-50 bg-sidebar border-b border-sidebar-border">
         <div className="flex items-center justify-between h-16 px-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-accent flex items-center justify-center">
-              <span className="text-accent-foreground font-display font-bold text-sm">P</span>
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: "var(--gradient-accent)" }}
+            >
+              <Zap size={13} className="text-white" strokeWidth={2.5} />
             </div>
-            <span className="font-display font-bold text-lg text-sidebar-foreground">Admin</span>
+            <span className="font-display font-bold text-sm text-sidebar-foreground">
+              WIINUP <span style={{ color: "hsl(var(--sidebar-primary))" }}>MAX</span>
+            </span>
           </div>
           <button
             onClick={() => setOpen(!open)}

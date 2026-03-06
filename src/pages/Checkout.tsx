@@ -102,9 +102,9 @@ export default function Checkout() {
                   className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-border hover:border-primary transition-colors text-left"
                 >
                   <CreditCard size={22} className="text-primary shrink-0" />
-                  <div>
+                   <div>
                     <p className="font-semibold text-foreground text-sm">Je préfère payer par carte</p>
-                    <p className="text-xs text-muted-foreground">59 € / mois — annulable à tout moment</p>
+                    <p className="text-xs text-muted-foreground">29 € / mois — annulable à tout moment</p>
                   </div>
                   <ArrowRight size={18} className="text-muted-foreground ml-auto" />
                 </button>
