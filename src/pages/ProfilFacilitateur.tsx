@@ -1,6 +1,7 @@
 import { useState } from "react";
 import UserLayout from "@/components/layout/UserLayout";
 import { Users, CheckCircle2, Save } from "lucide-react";
+import CopilotPanel from "@/components/ai/CopilotPanel";
 
 const secteurs = ["SaaS / Tech", "Immobilier", "Finance / Assurance", "Formation", "Commerce", "Industrie", "Conseil", "Autre"];
 const zones = ["France entière", "Île-de-France", "Grand Ouest", "Grand Sud", "Grand Est", "International"];
