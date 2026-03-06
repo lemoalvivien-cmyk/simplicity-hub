@@ -174,6 +174,13 @@ export default function ProfilFacilitateur() {
             />
           </div>
 
+          {/* Copilot IA */}
+          <CopilotPanel
+            context="profil_facilitateur"
+            textToImprove={form.description}
+            userRole="facilitateur"
+          />
+
           {/* Save */}
           <button onClick={handleSave} className="btn-cta w-full py-4">
             <Save size={16} /> Enregistrer mon profil

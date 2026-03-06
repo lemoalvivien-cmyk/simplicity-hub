@@ -155,6 +155,13 @@ export default function ProfilEntreprise() {
             />
           </div>
 
+          {/* Copilot IA */}
+          <CopilotPanel
+            context="profil_entreprise"
+            textToImprove={form.description}
+            userRole="entreprise"
+          />
+
           {/* Save */}
           <button onClick={handleSave} className="btn-cta w-full py-4">
             <Save size={16} /> Enregistrer mon profil
