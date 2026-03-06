@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Pilotage from "./pages/Pilotage";
+
 // Public pages
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
@@ -64,6 +66,9 @@ const App = () => (
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+
+          {/* ── Pilotage ─────────────────────────────── */}
+          <Route path="/pilotage" element={<Pilotage />} />
 
           {/* ── Onboarding ───────────────────────────── */}
           <Route path="/onboarding" element={<Onboarding />} />
