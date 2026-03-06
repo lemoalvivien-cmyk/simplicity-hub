@@ -113,7 +113,7 @@ export default function Missions() {
                     style={{ color: "hsl(var(--success))" }}
                   >
                     <Euro size={13} />
-                    {m.gain}
+                    {m.gainLabel}
                   </div>
                 </div>
 
@@ -122,13 +122,13 @@ export default function Missions() {
                     to={`/missions/${m.id}`}
                     className="btn-cta text-sm py-2.5 px-5"
                   >
-                    Faire une introduction <ChevronRight size={15} />
+                    <Send size={14} /> Faire une introduction
                   </Link>
                   <Link
                     to={`/missions/${m.id}`}
                     className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
                   >
-                    En savoir plus
+                    En savoir plus <ChevronRight size={13} />
                   </Link>
                 </div>
               </div>
