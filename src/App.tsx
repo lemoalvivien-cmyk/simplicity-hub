@@ -20,12 +20,17 @@ import Assistant from "./pages/Assistant";
 import Help from "./pages/Help";
 import Account from "./pages/Account";
 
-// Métier
+// Métier — parcours facilitateur
 import Missions from "./pages/Missions";
+import MissionDetail from "./pages/MissionDetail";
 import Introductions from "./pages/Introductions";
+import IntroductionDetail from "./pages/IntroductionDetail";
 import Gains from "./pages/Gains";
-import ProfilEntreprise from "./pages/ProfilEntreprise";
 import ProfilFacilitateur from "./pages/ProfilFacilitateur";
+
+// Métier — parcours entreprise
+import IntroductionsEntreprise from "./pages/IntroductionsEntreprise";
+import ProfilEntreprise from "./pages/ProfilEntreprise";
 
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
@@ -57,17 +62,21 @@ const App = () => (
           {/* Dashboards par rôle */}
           <Route path="/dashboard/entreprise" element={<DashboardEntreprise />} />
           <Route path="/dashboard/facilitateur" element={<DashboardFacilitateur />} />
-          {/* Alias legacy */}
           <Route path="/dashboard" element={<DashboardFacilitateur />} />
 
-          {/* Pages métier */}
+          {/* Parcours facilitateur */}
           <Route path="/missions" element={<Missions />} />
+          <Route path="/missions/:id" element={<MissionDetail />} />
           <Route path="/introductions" element={<Introductions />} />
+          <Route path="/introductions/:id" element={<IntroductionDetail />} />
           <Route path="/gains" element={<Gains />} />
-          <Route path="/profil/entreprise" element={<ProfilEntreprise />} />
           <Route path="/profil/facilitateur" element={<ProfilFacilitateur />} />
 
-          {/* Pages utilitaires utilisateur */}
+          {/* Parcours entreprise */}
+          <Route path="/entreprise/introductions" element={<IntroductionsEntreprise />} />
+          <Route path="/profil/entreprise" element={<ProfilEntreprise />} />
+
+          {/* Utilitaires utilisateur */}
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/help" element={<Help />} />
           <Route path="/account" element={<Account />} />
@@ -89,3 +98,4 @@ const App = () => (
 );
 
 export default App;
+
