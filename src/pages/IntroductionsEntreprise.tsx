@@ -181,15 +181,14 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
                   : "En refusant, l'apporteur sera informé que ce contact ne correspond pas à vos critères actuels."}
               </p>
               <div className="flex gap-3">
-                <button
-                  onClick={() => onValidate(intro.id)}
+              <button
+                  onClick={() => confirming === "valider" ? onValidate(intro.id) : onRefuse(intro.id)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
                   style={
                     confirming === "valider"
                       ? { background: "hsl(var(--success))", color: "hsl(var(--success-foreground))" }
                       : { background: "hsl(var(--destructive))", color: "hsl(var(--destructive-foreground))" }
                   }
-                  onClick={() => confirming === "valider" ? onValidate(intro.id) : onRefuse(intro.id)}
                 >
                   {confirming === "valider" ? "Oui, valider" : "Oui, refuser"}
                 </button>

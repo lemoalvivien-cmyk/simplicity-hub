@@ -308,7 +308,7 @@ export default function MissionDetail() {
   const [success, setSuccess] = useState(false);
 
   // Rôle simulé — dans le vrai produit : récupéré depuis le contexte auth
-  const role: "facilitateur" | "entreprise" = "facilitateur";
+  const role = "facilitateur" as "facilitateur" | "entreprise";
 
   const mission = allMissions.find((m) => m.id === Number(id));
 
