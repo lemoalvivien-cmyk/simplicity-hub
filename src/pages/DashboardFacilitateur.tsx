@@ -37,7 +37,7 @@ export default function DashboardFacilitateur() {
   const nextAction = introductions.find((i) => i.status === "en_attente");
 
   return (
-    <UserLayout>
+    <UserLayout role="facilitateur">
       <div className="max-w-2xl mx-auto space-y-6">
 
         {/* ── BLOC 1 — BIENVENUE ─────────────────────────────────── */}
