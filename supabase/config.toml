@@ -33,8 +33,12 @@ verify_jwt = false
 [functions.openclaw-generate]
 verify_jwt = false
 
+[functions.openclaw-status]
+verify_jwt = false
+
 [functions.elevenlabs-voice-token]
 verify_jwt = false
 
 [functions.deal-radar-score]
 verify_jwt = false
+
