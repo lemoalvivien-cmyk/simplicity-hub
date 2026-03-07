@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
   LayoutDashboard, Users, Tag, CreditCard, HelpCircle,
-  BarChart2, Menu, X, LogOut, Shield, Zap
+  BarChart2, Menu, X, LogOut, Shield, Zap, TrendingUp, Rocket
 } from "lucide-react";
 
 const links = [
@@ -10,6 +10,8 @@ const links = [
   { to: "/admin/users", label: "Utilisateurs", icon: Users },
   { to: "/admin/promo-codes", label: "Codes promo", icon: Tag },
   { to: "/admin/payments", label: "Paiements", icon: CreditCard },
+  { to: "/admin/revenue", label: "Revenu réel", icon: TrendingUp },
+  { to: "/admin/go-live", label: "Go-Live", icon: Rocket },
   { to: "/admin/help", label: "Aide", icon: HelpCircle },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart2 },
 ];
