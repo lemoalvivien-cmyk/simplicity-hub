@@ -3,19 +3,20 @@ import type { OpenClawConfig } from "@/hooks/useOpenClaw";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, CheckCircle2, AlertTriangle,
-  Pause, Play, ChevronRight, Eye, Target, MessageSquare,
-  Briefcase, Filter, Activity, Radio, Sparkles,
-  TrendingUp, Users, Cpu, BookOpen, Wifi, WifiOff,
+  Pause, Play, ChevronRight, Target, MessageSquare,
+  Activity, Radio, Sparkles,
+  Users, Cpu, BookOpen, Wifi, WifiOff,
   Settings, RefreshCw, ExternalLink, AlertCircle,
-  Info, ArrowRight, Lightbulb, RotateCcw, Clock,
-  Mail, Star, Link, FlaskConical, Ban,
+  Info, RotateCcw, Clock,
+  Link, FlaskConical, Ban, ShieldCheck, ServerCrash,
+  Fingerprint, Layers, PlugZap, ArrowRight,
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useOpenClaw, OpenClawAgent, ConnectionStatus } from "@/hooks/useOpenClaw";
 import { supabase } from "@/integrations/supabase/client";
 import { MorningBrief } from "@/components/openclaw/MorningBrief";
 
-type TabId = "monitoring" | "agents" | "plans" | "configuration";
+type TabId = "monitoring" | "agents" | "plans" | "configuration" | "preuve";
 
 // ── Métadonnées visuelles par agent ─────────────────────────────────────────
 const AGENT_META: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
