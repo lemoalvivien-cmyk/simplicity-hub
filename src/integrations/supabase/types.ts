@@ -207,6 +207,44 @@ export type Database = {
         }
         Relationships: []
       }
+      company_aliases: {
+        Row: {
+          alias_domain: string | null
+          alias_name: string
+          canonical_company_id: string
+          confidence: number
+          created_at: string
+          id: string
+          source: string
+        }
+        Insert: {
+          alias_domain?: string | null
+          alias_name: string
+          canonical_company_id: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          source?: string
+        }
+        Update: {
+          alias_domain?: string | null
+          alias_name?: string
+          canonical_company_id?: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_aliases_canonical_company_id_fkey"
+            columns: ["canonical_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts: {
         Row: {
           created_at: string
@@ -249,12 +287,15 @@ export type Database = {
       entreprise_profiles: {
         Row: {
           abonnement_statut: string | null
+          business_corridors: string[] | null
           cible_client: string | null
           created_at: string
           description: string | null
           id: string
+          languages: string[] | null
           nom_entreprise: string | null
           offre: string | null
+          preferred_language: string | null
           secteur: string | null
           updated_at: string
           user_id: string
@@ -262,12 +303,15 @@ export type Database = {
         }
         Insert: {
           abonnement_statut?: string | null
+          business_corridors?: string[] | null
           cible_client?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          languages?: string[] | null
           nom_entreprise?: string | null
           offre?: string | null
+          preferred_language?: string | null
           secteur?: string | null
           updated_at?: string
           user_id: string
@@ -275,12 +319,15 @@ export type Database = {
         }
         Update: {
           abonnement_statut?: string | null
+          business_corridors?: string[] | null
           cible_client?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          languages?: string[] | null
           nom_entreprise?: string | null
           offre?: string | null
+          preferred_language?: string | null
           secteur?: string | null
           updated_at?: string
           user_id?: string
@@ -292,9 +339,12 @@ export type Database = {
         Row: {
           avatar_url: string | null
           average_rating: number | null
+          business_corridors: string[] | null
           created_at: string
           description_reseau: string | null
           id: string
+          languages: string[] | null
+          preferred_language: string | null
           response_rate: number | null
           secteur: string | null
           statut: string | null
@@ -307,9 +357,12 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           average_rating?: number | null
+          business_corridors?: string[] | null
           created_at?: string
           description_reseau?: string | null
           id?: string
+          languages?: string[] | null
+          preferred_language?: string | null
           response_rate?: number | null
           secteur?: string | null
           statut?: string | null
@@ -322,9 +375,12 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           average_rating?: number | null
+          business_corridors?: string[] | null
           created_at?: string
           description_reseau?: string | null
           id?: string
+          languages?: string[] | null
+          preferred_language?: string | null
           response_rate?: number | null
           secteur?: string | null
           statut?: string | null
@@ -509,6 +565,107 @@ export type Database = {
             columns: ["mission_id"]
             isOneToOne: false
             referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      graph_edges: {
+        Row: {
+          created_at: string
+          from_entity_id: string
+          from_entity_type: string
+          id: string
+          relationship_type: string
+          source: string
+          strength_score: number
+          to_entity_id: string
+          to_entity_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_entity_id: string
+          from_entity_type: string
+          id?: string
+          relationship_type: string
+          source?: string
+          strength_score?: number
+          to_entity_id: string
+          to_entity_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          from_entity_id?: string
+          from_entity_type?: string
+          id?: string
+          relationship_type?: string
+          source?: string
+          strength_score?: number
+          to_entity_id?: string
+          to_entity_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      introduction_proofs: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          facilitator_id: string
+          finalized_at: string | null
+          id: string
+          introduction_id: string
+          last_event_at: string
+          linked_gain_id: string | null
+          linked_review_id: string | null
+          proof_context: string | null
+          proof_status: string
+          requested_by: string | null
+          updated_at: string
+          validation_status: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          facilitator_id: string
+          finalized_at?: string | null
+          id?: string
+          introduction_id: string
+          last_event_at?: string
+          linked_gain_id?: string | null
+          linked_review_id?: string | null
+          proof_context?: string | null
+          proof_status?: string
+          requested_by?: string | null
+          updated_at?: string
+          validation_status?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          facilitator_id?: string
+          finalized_at?: string | null
+          id?: string
+          introduction_id?: string
+          last_event_at?: string
+          linked_gain_id?: string | null
+          linked_review_id?: string | null
+          proof_context?: string | null
+          proof_status?: string
+          requested_by?: string | null
+          updated_at?: string
+          validation_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "introduction_proofs_introduction_id_fkey"
+            columns: ["introduction_id"]
+            isOneToOne: false
+            referencedRelation: "introductions"
             referencedColumns: ["id"]
           },
         ]
@@ -1145,15 +1302,73 @@ export type Database = {
           },
         ]
       }
+      opportunity_matches: {
+        Row: {
+          created_at: string
+          facilitator_id: string
+          geo_fit_score: number
+          id: string
+          language_fit_score: number
+          match_reason_summary: string | null
+          match_score: number
+          opportunity_id: string
+          sector_fit_score: number
+          status: string
+          trust_fit_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          facilitator_id: string
+          geo_fit_score?: number
+          id?: string
+          language_fit_score?: number
+          match_reason_summary?: string | null
+          match_score?: number
+          opportunity_id: string
+          sector_fit_score?: number
+          status?: string
+          trust_fit_score?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          facilitator_id?: string
+          geo_fit_score?: number
+          id?: string
+          language_fit_score?: number
+          match_reason_summary?: string | null
+          match_score?: number
+          opportunity_id?: string
+          sector_fit_score?: number
+          status?: string
+          trust_fit_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_matches_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
           email: string | null
           id: string
           onboarding_done: boolean
+          preferred_language: string | null
           prenom: string | null
           role: string | null
           statut: string | null
+          ui_language: string | null
           updated_at: string
         }
         Insert: {
@@ -1161,9 +1376,11 @@ export type Database = {
           email?: string | null
           id: string
           onboarding_done?: boolean
+          preferred_language?: string | null
           prenom?: string | null
           role?: string | null
           statut?: string | null
+          ui_language?: string | null
           updated_at?: string
         }
         Update: {
@@ -1171,9 +1388,11 @@ export type Database = {
           email?: string | null
           id?: string
           onboarding_done?: boolean
+          preferred_language?: string | null
           prenom?: string | null
           role?: string | null
           statut?: string | null
+          ui_language?: string | null
           updated_at?: string
         }
         Relationships: []
