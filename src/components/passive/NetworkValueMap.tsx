@@ -44,7 +44,7 @@ export default function NetworkValueMap() {
     const load = async () => {
       const [contactsRes, introRes, gainsRes, profileRes] = await Promise.all([
         db.from("contacts")
-          .select("secteur, zone, langue, statut")
+          .select("secteur, zone, langue, statut, entreprise")
           .eq("owner_user_id", user.id),
         db.from("introductions")
           .select("mission_id, statut")
@@ -55,7 +55,7 @@ export default function NetworkValueMap() {
         db.from("facilitateur_profiles")
           .select("secteur, zone, languages, business_corridors, response_rate")
           .eq("user_id", user.id)
-          .single(),
+          .maybeSingle(),
       ]);
 
       const contacts = contactsRes.data || [];
