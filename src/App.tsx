@@ -155,6 +155,7 @@ const App = () => (
 
               {/* ── Facilitateurs & Signalement ──────────── */}
               <Route path="/facilitateurs" element={<ProtectedRoute><Facilitateurs /></ProtectedRoute>} />
+              <Route path="/facilitateurs/:id" element={<ProtectedRoute><FacilitateurDetail /></ProtectedRoute>} />
               <Route path="/signalement" element={<ProtectedRoute><Signalement /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
