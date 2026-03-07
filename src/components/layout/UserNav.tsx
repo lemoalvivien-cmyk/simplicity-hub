@@ -26,6 +26,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
             label: "Pilotage",
             items: [
               { to: "/pilotage", label: "Pilotage", icon: Activity },
+              { to: "/radar", label: "Deal Radar", icon: Radar },
               { to: "/opportunites", label: "Opportunités", icon: Target },
             ],
           },
@@ -74,6 +75,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
             label: "Pilotage",
             items: [
               { to: "/pilotage", label: "Pilotage", icon: Activity },
+              { to: "/radar", label: "Deal Radar", icon: Radar },
               { to: "/opportunites", label: "Opportunités", icon: Target },
             ],
           },
