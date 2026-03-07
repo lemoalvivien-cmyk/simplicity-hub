@@ -1,6 +1,6 @@
 /**
  * War Room OpenClaw — Centre de commandement opérationnel
- * Montre ce que le moteur a RÉELLEMENT produit + jobs réels
+ * REAL autonomous execution state: queue, heartbeats, scheduler, event bus
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -9,13 +9,14 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
   Radio, Play, RefreshCw, ChevronRight, Activity,
-  Wifi, WifiOff, AlertCircle, Lock, Database, TrendingUp, Flame,
-  Target, Layers, BarChart3, Sparkles, XCircle
+  Wifi, WifiOff, AlertCircle, Lock, TrendingUp,
+  Target, BarChart3, Sparkles, XCircle, ListChecks, Cpu
 } from "lucide-react";
 import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_TYPE_META } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
 import { useOpenClaw } from "@/hooks/useOpenClaw";
 import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hooks/useOpenClawExecutions";
+import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_META } from "@/hooks/useOpenClawScheduler";
 
 function formatFuture(iso: string | null) {
   if (!iso) return "—";
