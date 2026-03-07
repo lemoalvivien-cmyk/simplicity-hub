@@ -571,6 +571,11 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
     { label: "Que prouve mon score ?", prompt: "Que signifie mon score de confiance pour les entreprises ?" },
     { label: "Mes introductions sont protégées ?", prompt: "Comment la plateforme protège mes introductions ?" },
   ],
+  "mission-creation": [
+    { label: "Améliorer ma mission", prompt: "Améliore le titre et la description de cette mission pour attirer les meilleurs facilitateurs" },
+    { label: "Clarifier la cible", prompt: "Précise et rends plus actionnable la description du contact recherché dans cette mission" },
+    { label: "Rendre plus attrayant", prompt: "Rends cette mission plus attrayante et engageante pour les facilitateurs" },
+  ],
 };
 
 export const JARVIS_QUICK_QUESTIONS = [
