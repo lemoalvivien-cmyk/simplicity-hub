@@ -14,15 +14,15 @@ import {
   Radio, Play, RefreshCw, ChevronRight, Activity,
   Wifi, AlertCircle, Lock, TrendingUp,
   Target, BarChart3, XCircle,
-  Moon, Send, MessageCircle, Package,
+  Moon, Send, Package,
 } from "lucide-react";
 import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_TYPE_META } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
 import { useOpenClaw } from "@/hooks/useOpenClaw";
 import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hooks/useOpenClawExecutions";
-import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_META } from "@/hooks/useOpenClawScheduler";
-import { useOpenClawChannelActions, CHANNEL_META, ACTION_TYPE_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
-import { useOpenClawScheduledRuns, SCHEDULE_PLAN, CRON_JOBS_PROOF } from "@/hooks/useOpenClawScheduledRuns";
+import { useOpenClawScheduler } from "@/hooks/useOpenClawScheduler";
+import { useOpenClawChannelActions, CHANNEL_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
+import { useOpenClawScheduledRuns } from "@/hooks/useOpenClawScheduledRuns";
 import { useOpenClawCronDiagnostic } from "@/hooks/useOpenClawCronDiagnostic";
 import { useOpenClawDeliveries, DELIVERY_STATUS_META, CHANNEL_CAPABILITY_MATRIX, getChannelCapability, getDispatchLabel } from "@/hooks/useOpenClawDeliveries";
 
