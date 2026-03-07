@@ -28,7 +28,7 @@ export default function DashboardEntreprise() {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const [missionsRes, introsRes, contactsRes, campagnesRes, validRes, recoRes, agentsRes] = await Promise.all([
+      const [missionsRes, introsRes, contactsRes, campagnesRes, validRes, recoRes, agentsRes, hotOppsRes, sigRes] = await Promise.all([
         db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).limit(3),
         db.from("introductions").select("id, contact_nom, mission_id, statut")
           .in("mission_id", (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: Mission) => m.id) || [])
