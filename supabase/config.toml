@@ -51,3 +51,6 @@ verify_jwt = false
 [functions.openclaw-channel-probe]
 verify_jwt = false
 
+[functions.openclaw-job-executor]
+verify_jwt = false
+
