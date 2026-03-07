@@ -24,7 +24,7 @@ export default function SystemProof() {
   const { diagnostics: jobs } = useOpenClawCronDiagnostic();
 
   const liveCount    = Object.values(FEATURE_FLAGS).filter(f => f.state === "live").length;
-  const prepCount    = 0; // no "prepared" state currently used
+  const _prepCount   = 0; // no "prepared" state currently in FEATURE_FLAGS
   const envDepCount  = Object.values(FEATURE_FLAGS).filter(f => f.state === "env-dep").length;
   const totalRoutes  = 58; // counted from ROUTES_MANIFEST.md
   const totalFns     = 21; // counted from EDGE_FUNCTIONS_MANIFEST.md
