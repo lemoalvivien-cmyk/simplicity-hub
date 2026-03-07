@@ -54,3 +54,9 @@ verify_jwt = false
 [functions.openclaw-job-executor]
 verify_jwt = false
 
+[functions.openclaw-scheduler]
+verify_jwt = false
+
+[functions.openclaw-event-bus]
+verify_jwt = false
+
