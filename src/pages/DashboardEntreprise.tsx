@@ -1,12 +1,12 @@
 /**
- * Dashboard Entreprise — Launch Mode + Activation Engine
+ * Dashboard Entreprise — Launch Mode + Double Moteur
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert, Bot,
-  Flame, Bell, Plus, Briefcase, HelpCircle, Star, Users
+  Flame, Bell, Plus, Briefcase, HelpCircle, Star, Users, Radar, Layers
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";

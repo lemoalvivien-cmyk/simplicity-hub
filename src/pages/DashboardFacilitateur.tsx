@@ -1,5 +1,5 @@
 /**
- * Dashboard Facilitateur — Launch Mode + Activation Engine
+ * Dashboard Facilitateur — Launch Mode + Double Moteur
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -7,7 +7,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Moon, Share2, CheckCircle2, ArrowRight, Zap, Sparkles,
   Loader2, Brain, Bell, Link2, Star, Trophy, Briefcase,
-  Send, HelpCircle, Flame
+  Send, HelpCircle, Flame, Layers
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
