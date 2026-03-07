@@ -560,6 +560,39 @@ export type Database = {
         }
         Relationships: []
       }
+      openclaw_briefs: {
+        Row: {
+          created_at: string
+          id: string
+          priority_items: Json | null
+          stats: Json | null
+          suggested_actions: Json | null
+          summary: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          priority_items?: Json | null
+          stats?: Json | null
+          suggested_actions?: Json | null
+          summary: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          priority_items?: Json | null
+          stats?: Json | null
+          suggested_actions?: Json | null
+          summary?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       openclaw_config: {
         Row: {
           autonomie_level: string
@@ -742,6 +775,57 @@ export type Database = {
           id?: string
           risque?: string | null
           summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      openclaw_recommendations: {
+        Row: {
+          agent_name: string
+          created_at: string
+          id: string
+          linked_entity_id: string | null
+          linked_entity_type: string | null
+          payload: Json | null
+          priority: string
+          recommended_action: string | null
+          status: string
+          summary: string
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_name?: string
+          created_at?: string
+          id?: string
+          linked_entity_id?: string | null
+          linked_entity_type?: string | null
+          payload?: Json | null
+          priority?: string
+          recommended_action?: string | null
+          status?: string
+          summary: string
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_name?: string
+          created_at?: string
+          id?: string
+          linked_entity_id?: string | null
+          linked_entity_type?: string | null
+          payload?: Json | null
+          priority?: string
+          recommended_action?: string | null
+          status?: string
+          summary?: string
+          title?: string
+          type?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

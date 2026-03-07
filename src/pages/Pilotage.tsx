@@ -6,6 +6,7 @@ import {
   CheckCircle2, Phone, Mail, Send, Clock, AlertCircle,
   BarChart2, Users, MessageCircle, ChevronRight, Activity
 } from "lucide-react";
+import { MorningBrief } from "@/components/openclaw/MorningBrief";
 
 /* ─── DONNÉES MOCK ─────────────────────────────────────────── */
 
@@ -121,6 +122,9 @@ export default function Pilotage() {
             {urgentes.length} élément{urgentes.length > 1 ? "s" : ""} urgent{urgentes.length > 1 ? "s" : ""}
           </span>
         </div>
+
+        {/* ── BRIEF OPENCLAW ─────────────────────────────────────── */}
+        <MorningBrief compact />
 
         {/* ── MODES D'ACTION ─────────────────────────────────────── */}
         <div className="card-surface p-5">
