@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { OpenClawConfig } from "@/hooks/useOpenClaw";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
