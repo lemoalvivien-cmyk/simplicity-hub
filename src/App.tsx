@@ -47,6 +47,7 @@ import Actions from "./pages/Actions";
 // Apport d'affaires — facilitateur
 import Missions from "./pages/Missions";
 import MissionDetail from "./pages/MissionDetail";
+import MissionNouvelle from "./pages/MissionNouvelle";
 import Introductions from "./pages/Introductions";
 import IntroductionDetail from "./pages/IntroductionDetail";
 import Gains from "./pages/Gains";
@@ -148,6 +149,7 @@ const App = () => (
 
               {/* ── Apport d'affaires — facilitateur ─────── */}
               <Route path="/missions" element={<ProtectedRoute><Missions /></ProtectedRoute>} />
+              <Route path="/missions/nouvelle" element={<ProtectedRoute><MissionNouvelle /></ProtectedRoute>} />
               <Route path="/missions/:id" element={<ProtectedRoute><MissionDetail /></ProtectedRoute>} />
               <Route path="/introductions" element={<ProtectedRoute><Introductions /></ProtectedRoute>} />
               <Route path="/introductions/:id" element={<ProtectedRoute><IntroductionDetail /></ProtectedRoute>} />

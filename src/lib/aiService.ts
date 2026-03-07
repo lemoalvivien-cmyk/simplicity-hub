@@ -37,7 +37,8 @@ export type CopilotContext =
   | "radar"
   | "validations"
   | "chaud"
-  | "trust";
+  | "trust"
+  | "mission-creation";
 
 export interface AiRequest {
   role: AiRole;
@@ -221,6 +222,12 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
     ameliorer: "Pour progresser : répondez vite aux demandes, envoyez des introductions de qualité, et complétez votre profil. Ce sont les meilleurs leviers.",
     badge: "Les badges de confiance sont accordés automatiquement selon vos résultats réels. Ils attestent de votre sérieux sur la plateforme.",
     protection: "Vos introductions sont tracées et horodatées. En cas de litige, la plateforme dispose de toutes les preuves pour défendre vos droits.",
+  },
+  "mission-creation": {
+    default: "Votre mission semble bien construite. Pour attirer les meilleurs facilitateurs, soyez précis sur le profil du contact recherché et proposez une récompense claire.",
+    ameliorer: "Reformulez le titre pour qu'il soit une phrase d'action. Ex : 'Je cherche des dirigeants de PME en Île-de-France prêts à découvrir une solution RH.'",
+    simplifier: "Raccourcissez la description : 3 lignes maximum. Indiquez qui vous cherchez, dans quel secteur, et pourquoi vous payez une récompense.",
+    cible: "Précisez le type de décideur : 'Dirigeant', 'DRH', 'Responsable IT'... Plus c'est précis, plus les facilitateurs peuvent cibler juste.",
   },
 };
 
@@ -563,6 +570,11 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
     { label: "Comment progresser ?", prompt: "Comment puis-je améliorer mon score de confiance ?" },
     { label: "Que prouve mon score ?", prompt: "Que signifie mon score de confiance pour les entreprises ?" },
     { label: "Mes introductions sont protégées ?", prompt: "Comment la plateforme protège mes introductions ?" },
+  ],
+  "mission-creation": [
+    { label: "Améliorer ma mission", prompt: "Améliore le titre et la description de cette mission pour attirer les meilleurs facilitateurs" },
+    { label: "Clarifier la cible", prompt: "Précise et rends plus actionnable la description du contact recherché dans cette mission" },
+    { label: "Rendre plus attrayant", prompt: "Rends cette mission plus attrayante et engageante pour les facilitateurs" },
   ],
 };
 
