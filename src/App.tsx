@@ -61,6 +61,9 @@ import Agents from "./pages/Agents";
 import Dossier from "./pages/Dossier";
 import Validations from "./pages/Validations";
 
+// Mobile / PWA
+import Install from "./pages/Install";
+
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/Users";
