@@ -241,19 +241,41 @@ export function useOpenClawRuntime() {
 
   const probeChannel = useCallback(async (channelId: string) => {
     if (!user) return;
-    // Mark as probing
-    await db.from("openclaw_channels").update({ status: "probe", last_probe_at: new Date().toISOString() })
+    // Mark as probing immediately in DB so UI reflects it
+    await db.from("openclaw_channels")
+      .update({ status: "probe", last_probe_at: new Date().toISOString() })
       .eq("user_id", user.id).eq("channel_id", channelId);
-    // Simulate probe result (in prod: call real health endpoint)
-    await new Promise(r => setTimeout(r, 1200));
-    const isReady = ["email", "introduction"].includes(channelId);
-    await db.from("openclaw_channels").update({
-      status: isReady ? "pret" : "non_configure",
-      is_ready: isReady,
-      probe_latency_ms: isReady ? Math.floor(Math.random() * 80 + 20) : null,
-      probe_detail: isReady ? "Canal opérationnel" : "Configuration requise",
-      last_probe_at: new Date().toISOString(),
-    }).eq("user_id", user.id).eq("channel_id", channelId);
+    await loadAll(); // refresh UI to show "Sonde…"
+
+    // Call the real edge function — no simulation, no setTimeout, no random values
+    const { data: sessionData } = await db.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    if (!token) return;
+
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    try {
+      await fetch(
+        `https://${projectId}.supabase.co/functions/v1/openclaw-channel-probe`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ channel_id: channelId }),
+        }
+      );
+    } catch (err) {
+      // If edge function unreachable, mark channel as error in DB directly
+      await db.from("openclaw_channels")
+        .update({
+          status: "erreur",
+          is_ready: false,
+          probe_detail: "Impossible de joindre le service de sondage.",
+          last_probe_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id).eq("channel_id", channelId);
+    }
     await loadAll();
   }, [user, loadAll]);
 
