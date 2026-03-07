@@ -456,18 +456,29 @@ export default function Operations() {
         ══════════════════════════════════════════════════════════════════ */}
         {activeTab === "jobs" && (
           <div className="space-y-3">
+            {/* Honnêteté runtime : ces jobs sont des plans de travail en base */}
             <div className="rounded-2xl p-3 flex items-start gap-2"
               style={{ background: "hsl(var(--muted))" }}>
               <Clock size={13} className="text-primary shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                OpenClaw se réveille automatiquement selon ces cycles. Chaque réveil lance le bon agent au bon moment.
-              </p>
+              <div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Ces cycles sont votre <strong>plan de travail</strong>. OpenClaw les exécutera automatiquement si votre gateway est configuré.
+                  Sans gateway, ils restent planifiés mais ne s'exécutent pas seuls.
+                </p>
+                {!config?.gateway_url && (
+                  <p className="text-xs mt-1 font-semibold" style={{ color: "hsl(38 80% 40%)" }}>
+                    ⚠️ Aucun gateway configuré — les cycles sont préparés, pas encore automatiques.
+                  </p>
+                )}
+              </div>
             </div>
 
             {jobs.map((job) => {
               const typeMeta = JOB_TYPE_META[job.job_type];
               const statusMeta = JOB_STATUS_META[job.status] ?? { label: job.status, color: "hsl(var(--muted-foreground))" };
               const isTriggering = triggeringJob === job.id;
+              // Honest: run_count > 0 means it was manually triggered at least once
+              const everRan = job.run_count > 0;
 
               return (
                 <div key={job.id} className="card-surface p-4">
@@ -486,6 +497,11 @@ export default function Operations() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{typeMeta?.desc ?? ""}</p>
+                      {/* Source honnête */}
+                      <p className="text-xs mt-0.5 font-medium"
+                        style={{ color: everRan ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }}>
+                        {everRan ? `✓ A tourné ${job.run_count} fois` : "Plan de travail — pas encore déclenché"}
+                      </p>
                     </div>
                   </div>
 
