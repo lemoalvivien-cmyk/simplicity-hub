@@ -80,6 +80,7 @@ import Reseau from "./pages/Reseau";
 import PassiveOS from "./pages/PassiveOS";
 import ImportReseau from "./pages/ImportReseau";
 import Offres from "./pages/Offres";
+import OffresEntreprise from "./pages/OffresEntreprise";
 
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
@@ -173,6 +174,7 @@ const App = () => (
               <Route path="/passive" element={<ProtectedRoute><PassiveOS /></ProtectedRoute>} />
               <Route path="/import-reseau" element={<ProtectedRoute><ImportReseau /></ProtectedRoute>} />
               <Route path="/offres" element={<ProtectedRoute><Offres /></ProtectedRoute>} />
+              <Route path="/offres/entreprise" element={<ProtectedRoute><OffresEntreprise /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
