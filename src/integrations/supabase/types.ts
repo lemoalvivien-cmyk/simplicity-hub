@@ -3046,7 +3046,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      openclaw_cron_status: {
+        Row: {
+          avg_duration_ms: number | null
+          last_cron_attempt_at: string | null
+          last_cron_run_at: string | null
+          next_run_at: string | null
+          observed_status: string | null
+          real_cron_runs: number | null
+          run_key: string | null
+          total_failed: number | null
+          total_jobs_completed: number | null
+          total_runs: number | null
+          total_successful: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       claim_next_job: {

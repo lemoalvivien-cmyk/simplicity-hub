@@ -22,6 +22,7 @@ import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hoo
 import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_META } from "@/hooks/useOpenClawScheduler";
 import { useOpenClawChannelActions, CHANNEL_META, ACTION_TYPE_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
 import { useOpenClawScheduledRuns, SCHEDULE_PLAN, CRON_JOBS_PROOF } from "@/hooks/useOpenClawScheduledRuns";
+import { useOpenClawCronDiagnostic } from "@/hooks/useOpenClawCronDiagnostic";
 
 function formatFuture(iso: string | null) {
   if (!iso) return "—";
@@ -99,6 +100,11 @@ export default function WarRoom() {
     isCronActive, lastTick, lastDailySweep, totalAutoToday, todayRuns,
     hasEverRun, cronRunStatus, smokeTesting, lastSmokeResult, runSmokeTest,
   } = useOpenClawScheduledRuns();
+  const {
+    diagnostics: cronDiagnostics, loading: cronDiagLoading,
+    infraScore, allConfiguredInRepo, allConfiguredInDb, tickIsActive, lastChecked: cronCheckedAt,
+    reload: reloadCronDiag,
+  } = useOpenClawCronDiagnostic();
 
   const loading = runtimeLoading || runsLoading || execLoading;
 
@@ -659,51 +665,112 @@ export default function WarRoom() {
         {activeSection === "cycles" && (
           <div className="space-y-4">
 
-            {/* ── PREUVE CRON JOBS ────────────────────────────────────────── */}
+            {/* ── INFRA-AS-CODE: Cron Diagnostic ─────────────────────────── */}
             <div className="rounded-2xl p-4"
               style={{ background: "linear-gradient(135deg, hsl(218 65% 8%), hsl(218 55% 11%))", border: "1px solid hsl(218 40% 22% / 0.5)" }}>
+              {/* Header + score */}
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Radio size={11} className="animate-pulse" style={{ color: "hsl(var(--success))" }} />
-                  Infrastructure cron — preuve en base
-                </p>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                  style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
-                  3 crons actifs
-                </span>
+                <div>
+                  <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Radio size={11} className={tickIsActive ? "animate-pulse" : ""} style={{ color: tickIsActive ? "hsl(var(--success))" : "hsl(38 80% 55%)" }} />
+                    Infra-as-code — cron jobs
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "hsl(218 40% 50%)" }}>
+                    Documenté dans <code className="font-mono text-xs" style={{ color: "hsl(218 72% 55%)" }}>supabase/infra/cron-jobs.md</code>
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs font-bold px-2 py-1 rounded-xl"
+                    style={{
+                      background: infraScore >= 80 ? "hsl(var(--success-light))" : "hsl(38 80% 40% / 0.15)",
+                      color: infraScore >= 80 ? "hsl(var(--success))" : "hsl(38 80% 60%)",
+                    }}>
+                    Infra {infraScore}%
+                  </div>
+                </div>
               </div>
+
+              {/* Légende */}
+              <div className="grid grid-cols-3 gap-1 mb-3 text-center">
+                {[
+                  { label: "Dans le repo", ok: allConfiguredInRepo, icon: "📁" },
+                  { label: "En base (pg_cron)", ok: allConfiguredInDb, icon: "🗄️" },
+                  { label: "Tick actif", ok: tickIsActive, icon: "⚡" },
+                ].map(({ label, ok, icon }) => (
+                  <div key={label} className="py-1.5 rounded-xl text-xs"
+                    style={{ background: "hsl(218 40% 13% / 0.6)" }}>
+                    <p>{icon}</p>
+                    <p className="font-semibold mt-0.5" style={{ color: ok ? "hsl(var(--success))" : "hsl(38 80% 55%)" }}>
+                      {ok ? "✓" : "✗"}
+                    </p>
+                    <p style={{ color: "hsl(218 40% 50%)", fontSize: "9px" }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Par cron job */}
               <div className="space-y-2">
-                {cronRunStatus.map(cron => {
-                  const state = cron.everSucceeded ? "run" : cron.everRan ? "attempted" : "configured_never_run";
+                {cronDiagnostics.map(cron => {
+                  const obsStatus = cron.observed_status;
+                  const obsColor =
+                    obsStatus === "recently_active"             ? "hsl(var(--success))"
+                    : obsStatus === "active"                    ? "hsl(218 72% 65%)"
+                    : obsStatus === "seen_today"                ? "hsl(218 72% 55%)"
+                    : obsStatus === "configured_never_run"      ? "hsl(38 80% 60%)"
+                    : obsStatus === "configured_not_seen_recently" ? "hsl(0 65% 50%)"
+                    : "hsl(var(--muted-foreground))";
+                  const obsLabel =
+                    obsStatus === "recently_active"             ? "⚡ Actif < 10min"
+                    : obsStatus === "active"                    ? "✓ Actif < 1h"
+                    : obsStatus === "seen_today"                ? "✓ Vu aujourd'hui"
+                    : obsStatus === "configured_never_run"      ? "⏳ Pas encore observé"
+                    : obsStatus === "configured_not_seen_recently" ? "⚠️ Pas vu récemment"
+                    : "? Inconnu";
+
                   return (
-                    <div key={cron.key} className="flex items-start gap-3 p-2.5 rounded-xl"
+                    <div key={cron.run_key} className="p-2.5 rounded-xl"
                       style={{ background: "hsl(218 40% 13% / 0.8)" }}>
-                      <span className="text-base shrink-0">{cron.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-xs font-semibold text-white">{cron.label}</p>
-                          <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
-                            style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))", fontSize: "9px" }}>
-                            ✅ Configuré en base
-                          </span>
-                          {state === "run" ? (
-                            <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
-                              style={{ background: "hsl(218 72% 50% / 0.2)", color: "hsl(218 72% 65%)", fontSize: "9px" }}>
-                              ✅ A tourné
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-base shrink-0">{cron.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          {/* Ligne 1: nom + badges */}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="text-xs font-semibold text-white">{cron.label}</p>
+                            {/* Repo */}
+                            <span className="px-1 py-0.5 rounded text-xs font-semibold"
+                              style={{ background: cron.defined_in_repo ? "hsl(218 72% 50% / 0.15)" : "hsl(0 65% 50% / 0.15)", color: cron.defined_in_repo ? "hsl(218 72% 65%)" : "hsl(0 65% 55%)", fontSize: "9px" }}>
+                              {cron.defined_in_repo ? "📁 Repo" : "✗ Absent repo"}
                             </span>
-                          ) : (
-                            <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
-                              style={{ background: "hsl(38 80% 40% / 0.15)", color: "hsl(38 80% 60%)", fontSize: "9px" }}>
-                              ⏳ Jamais observé
+                            {/* Base */}
+                            <span className="px-1 py-0.5 rounded text-xs font-semibold"
+                              style={{ background: cron.configured_in_db ? "hsl(var(--success-light))" : "hsl(0 65% 50% / 0.15)", color: cron.configured_in_db ? "hsl(var(--success))" : "hsl(0 65% 55%)", fontSize: "9px" }}>
+                              {cron.configured_in_db ? `✓ jobid:${cron.jobid}` : "✗ Absent base"}
                             </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <code className="text-xs font-mono" style={{ color: "hsl(218 72% 55%)" }}>{cron.schedule}</code>
-                          {cron.lastRun && (
-                            <span className="text-xs" style={{ color: "hsl(218 40% 55%)" }}>
-                              · dernier : {formatRelative(cron.lastRun.started_at)}
+                            {/* Statut observé */}
+                            <span className="px-1 py-0.5 rounded text-xs font-semibold"
+                              style={{ background: `${obsColor}18`, color: obsColor, fontSize: "9px" }}>
+                              {obsLabel}
                             </span>
+                          </div>
+                          {/* Ligne 2: schedule + stats */}
+                          <div className="flex items-center gap-3 mt-1 flex-wrap">
+                            <code className="text-xs font-mono" style={{ color: "hsl(218 72% 45%)" }}>{cron.schedule}</code>
+                            {cron.last_cron_run_at && (
+                              <span className="text-xs" style={{ color: "hsl(218 40% 45%)" }}>
+                                dernier : {formatRelative(cron.last_cron_run_at)}
+                              </span>
+                            )}
+                            {cron.real_cron_runs > 0 && (
+                              <span className="text-xs" style={{ color: "hsl(218 40% 45%)" }}>
+                                {cron.real_cron_runs} run{cron.real_cron_runs > 1 ? "s" : ""} cron
+                              </span>
+                            )}
+                          </div>
+                          {/* Incohérence */}
+                          {cron.inconsistency && (
+                            <p className="text-xs mt-1 font-semibold" style={{ color: "hsl(0 65% 55%)" }}>
+                              ⚠️ {cron.inconsistency}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -711,9 +778,16 @@ export default function WarRoom() {
                   );
                 })}
               </div>
-              <p className="text-xs mt-3 text-white/30">
-                Jobids 4, 5, 6 enregistrés dans pg_cron.job · pg_cron v1.6.4 · pg_net v0.19.5
-              </p>
+              <div className="flex items-center justify-between mt-3">
+                <p className="text-xs" style={{ color: "hsl(218 40% 38%)" }}>
+                  pg_cron v1.6.4 · pg_net v0.19.5
+                </p>
+                {cronCheckedAt && (
+                  <p className="text-xs" style={{ color: "hsl(218 40% 35%)" }}>
+                    Vérifié {formatRelative(cronCheckedAt.toISOString())}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* ── SMOKE TEST ──────────────────────────────────────────────── */}

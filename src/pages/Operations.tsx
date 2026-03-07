@@ -22,6 +22,7 @@ import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_
 
 import { useOpenClawChannelActions, CHANNEL_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
 import { useOpenClawScheduledRuns, SCHEDULE_PLAN, CRON_JOBS_PROOF } from "@/hooks/useOpenClawScheduledRuns";
+import { useOpenClawCronDiagnostic } from "@/hooks/useOpenClawCronDiagnostic";
 
 type TabId = "runtime" | "channels" | "queue" | "jobs" | "executions" | "canal" | "sessions" | "tools" | "boundary";
 
@@ -86,6 +87,11 @@ export default function Operations() {
     isCronActive, lastTick, todayRuns, cronRunStatus,
     smokeTesting, lastSmokeResult, runSmokeTest,
   } = useOpenClawScheduledRuns();
+  const {
+    diagnostics: cronDiagnostics, loading: cronDiagLoading,
+    infraScore, allConfiguredInRepo, allConfiguredInDb, tickIsActive, lastChecked: cronCheckedAt,
+    reload: reloadCronDiag,
+  } = useOpenClawCronDiagnostic();
 
   const {
     channels, jobs, contextSessions, loading: runtimeLoading,
@@ -717,20 +723,115 @@ export default function Operations() {
         ══════════════════════════════════════════════════════════════════ */}
         {activeTab === "jobs" && (
           <div className="space-y-3">
-            {/* Honnêteté runtime : ces jobs sont des plans de travail en base */}
+
+            {/* ── Infra-as-code: Cron diagnostic ─────────────────────────── */}
+            <div className="rounded-2xl p-4"
+              style={{ background: "linear-gradient(135deg, hsl(218 65% 8%), hsl(218 55% 11%))", border: "1px solid hsl(218 40% 22% / 0.5)" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Radio size={11} className={tickIsActive ? "animate-pulse" : ""} style={{ color: tickIsActive ? "hsl(var(--success))" : "hsl(38 80% 55%)" }} />
+                    Infra-as-code — schedules autonomes
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "hsl(218 40% 45%)" }}>
+                    Source : <code className="font-mono" style={{ color: "hsl(218 72% 55%)", fontSize: "10px" }}>supabase/infra/cron-jobs.md</code>
+                  </p>
+                </div>
+                <div className="text-xs font-bold px-2 py-1 rounded-xl"
+                  style={{
+                    background: infraScore >= 80 ? "hsl(var(--success-light))" : "hsl(38 80% 40% / 0.15)",
+                    color: infraScore >= 80 ? "hsl(var(--success))" : "hsl(38 80% 60%)",
+                  }}>
+                  {infraScore}%
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {cronDiagnostics.map(cron => {
+                  const obsStatus = cron.observed_status;
+                  const obsColor =
+                    obsStatus === "recently_active"             ? "hsl(var(--success))"
+                    : obsStatus === "active"                    ? "hsl(218 72% 65%)"
+                    : obsStatus === "seen_today"                ? "hsl(218 72% 55%)"
+                    : obsStatus === "configured_never_run"      ? "hsl(38 80% 60%)"
+                    : obsStatus === "configured_not_seen_recently" ? "hsl(0 65% 50%)"
+                    : "hsl(var(--muted-foreground))";
+                  const obsLabel =
+                    obsStatus === "recently_active"             ? "⚡ Actif < 10min"
+                    : obsStatus === "active"                    ? "✓ Actif < 1h"
+                    : obsStatus === "seen_today"                ? "✓ Vu aujourd'hui"
+                    : obsStatus === "configured_never_run"      ? "⏳ Pas encore observé"
+                    : obsStatus === "configured_not_seen_recently" ? "⚠️ Pas vu récemment"
+                    : "? Inconnu";
+
+                  return (
+                    <div key={cron.run_key} className="p-2.5 rounded-xl"
+                      style={{ background: "hsl(218 40% 13% / 0.8)" }}>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-base shrink-0">{cron.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                            <p className="text-xs font-semibold text-white">{cron.label}</p>
+                            <span className="px-1 py-0.5 rounded text-xs font-semibold"
+                              style={{ background: cron.defined_in_repo ? "hsl(218 72% 50% / 0.15)" : "hsl(0 65% 50% / 0.15)", color: cron.defined_in_repo ? "hsl(218 72% 65%)" : "hsl(0 65% 55%)", fontSize: "9px" }}>
+                              {cron.defined_in_repo ? "📁 Repo" : "✗ Absent repo"}
+                            </span>
+                            <span className="px-1 py-0.5 rounded text-xs font-semibold"
+                              style={{ background: cron.configured_in_db ? "hsl(var(--success-light))" : "hsl(0 65% 50% / 0.15)", color: cron.configured_in_db ? "hsl(var(--success))" : "hsl(0 65% 55%)", fontSize: "9px" }}>
+                              {cron.configured_in_db ? `✓ jobid:${cron.jobid}` : "✗ Absent base"}
+                            </span>
+                            <span className="px-1 py-0.5 rounded text-xs font-semibold"
+                              style={{ background: `${obsColor}18`, color: obsColor, fontSize: "9px" }}>
+                              {obsLabel}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <code className="font-mono" style={{ color: "hsl(218 72% 45%)", fontSize: "10px" }}>{cron.schedule}</code>
+                            <span className="text-xs" style={{ color: "hsl(218 40% 45%)" }}>{cron.schedule_label}</span>
+                            {cron.last_cron_run_at && (
+                              <span className="text-xs" style={{ color: "hsl(218 40% 40%)" }}>
+                                · {formatRelative(cron.last_cron_run_at)}
+                              </span>
+                            )}
+                          </div>
+                          {cron.real_cron_runs > 0 && (
+                            <p className="text-xs mt-0.5" style={{ color: "hsl(218 40% 45%)" }}>
+                              {cron.real_cron_runs} run{cron.real_cron_runs > 1 ? "s" : ""} cron · {cron.total_jobs_completed} jobs terminés
+                            </p>
+                          )}
+                          {cron.inconsistency && (
+                            <p className="text-xs mt-1 font-semibold" style={{ color: "hsl(0 65% 55%)" }}>
+                              ⚠️ {cron.inconsistency}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center justify-between mt-3">
+                <p className="text-xs" style={{ color: "hsl(218 40% 35%)" }}>
+                  pg_cron v1.6.4 · pg_net v0.19.5
+                </p>
+                <button onClick={reloadCronDiag}
+                  className="flex items-center gap-1 text-xs"
+                  style={{ color: "hsl(218 40% 40%)" }}>
+                  <RefreshCw size={9} /> Rafraîchir
+                </button>
+              </div>
+            </div>
+
+            {/* Honnêteté runtime */}
             <div className="rounded-2xl p-3 flex items-start gap-2"
               style={{ background: "hsl(var(--muted))" }}>
               <Clock size={13} className="text-primary shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Ces cycles sont votre <strong>plan de travail</strong>. OpenClaw les exécutera automatiquement si votre gateway est configuré.
-                  Sans gateway, ils restent planifiés mais ne s'exécutent pas seuls.
+                  Les <strong>cycles planifiés</strong> ci-dessous sont votre plan de travail métier.
+                  Ils sont exécutés par le scheduler autonome (5min tick) ou manuellement.
                 </p>
-                {!config?.gateway_url && (
-                  <p className="text-xs mt-1 font-semibold" style={{ color: "hsl(38 80% 40%)" }}>
-                    ⚠️ Aucun gateway configuré — les cycles sont préparés, pas encore automatiques.
-                  </p>
-                )}
               </div>
             </div>
 
@@ -738,7 +839,6 @@ export default function Operations() {
               const typeMeta = JOB_TYPE_META[job.job_type];
               const statusMeta = JOB_STATUS_META[job.status] ?? { label: job.status, color: "hsl(var(--muted-foreground))" };
               const isTriggering = triggeringJob === job.id;
-              // Honest: run_count > 0 means it was manually triggered at least once
               const everRan = job.run_count > 0;
 
               return (
@@ -758,7 +858,6 @@ export default function Operations() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{typeMeta?.desc ?? ""}</p>
-                      {/* Source honnête */}
                       <p className="text-xs mt-0.5 font-medium"
                         style={{ color: everRan ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }}>
                         {everRan ? `✓ A tourné ${job.run_count} fois` : "Plan de travail — pas encore déclenché"}
