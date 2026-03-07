@@ -161,6 +161,9 @@ const App = () => (
               <Route path="/facilitateurs/:id" element={<ProtectedRoute><FacilitateurDetail /></ProtectedRoute>} />
               <Route path="/signalement" element={<ProtectedRoute><Signalement /></ProtectedRoute>} />
 
+              {/* ── Réseau intelligent — Graph + Proof Ledger ── */}
+              <Route path="/reseau" element={<ProtectedRoute><Reseau /></ProtectedRoute>} />
+
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
               <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
