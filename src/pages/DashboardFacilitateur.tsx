@@ -1,5 +1,5 @@
 /**
- * Dashboard Facilitateur — Launch Mode + Double Moteur
+ * Dashboard Facilitateur — Passive-First OS + Double Moteur
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -7,7 +7,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Moon, Share2, CheckCircle2, ArrowRight, Zap, Sparkles,
   Loader2, Brain, Bell, Link2, Star, Trophy, Briefcase,
-  Send, HelpCircle, Flame, Layers
+  Send, HelpCircle, Flame
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,9 @@ import ActivationProgressBar from "@/components/activation/ActivationProgressBar
 import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
+import BestOfferToPush from "@/components/passive/BestOfferToPush";
+import NetworkValueMap from "@/components/passive/NetworkValueMap";
+import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 
 interface ShareLink {
   id: string;
