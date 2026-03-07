@@ -349,6 +349,24 @@ export default function DashboardFacilitateur() {
           )}
         </div>
 
+        {/* ── CONFIANCE — CTA ──────────────────────────────── */}
+        <Link to="/trust" className="rounded-xl border p-4 flex items-center justify-between gap-3 hover:opacity-90 transition-all" style={{
+          background: "linear-gradient(135deg, hsl(142 62% 4%), hsl(218 65% 8%))",
+          borderColor: "hsl(142 62% 35% / 0.35)"
+        }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "linear-gradient(135deg, hsl(142 62% 35%), hsl(218 72% 45%))" }}>
+              <ShieldCheck size={17} className="text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-white text-sm">Ma confiance & réputation</p>
+              <p className="text-white/50 text-xs">Introductions protégées · Score · Historique</p>
+            </div>
+          </div>
+          <ArrowRight size={15} className="text-white/50 shrink-0" />
+        </Link>
+
         {/* ── MODE PASSIF — CTA ────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3">
           <Link to="/passive" className="rounded-xl p-4 flex flex-col gap-2 hover:opacity-90 transition-all" style={{
