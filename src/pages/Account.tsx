@@ -210,7 +210,7 @@ export default function Account() {
         </div>
 
         {/* Sécurité */}
-        <div className="card-surface p-5 mb-5">
+        <div className="card-surface p-5 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <Shield size={17} className="text-primary" />
             <h2 className="font-semibold text-foreground">Sécurité</h2>
@@ -219,6 +219,18 @@ export default function Account() {
             Modifier le mot de passe
             <ChevronRight size={15} className="text-muted-foreground" />
           </button>
+        </div>
+
+        {/* Autonomie & IA */}
+        <div className="card-surface p-5 mb-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap size={17} className="text-primary" />
+            <h2 className="font-semibold text-foreground">Autonomie & Voix</h2>
+          </div>
+          <a href="/autonomie" className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
+            Configurer OpenClaw, la voix et les canaux
+            <ChevronRight size={15} className="text-muted-foreground" />
+          </a>
         </div>
 
         {/* Logout */}

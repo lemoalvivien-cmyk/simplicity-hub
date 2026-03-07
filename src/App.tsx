@@ -63,6 +63,7 @@ import Validations from "./pages/Validations";
 
 // Mobile / PWA
 import Install from "./pages/Install";
+import Autonomie from "./pages/Autonomie";
 
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
@@ -146,6 +147,7 @@ const App = () => (
               <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
               <Route path="/install" element={<ProtectedRoute><Install /></ProtectedRoute>} />
+              <Route path="/autonomie" element={<ProtectedRoute><Autonomie /></ProtectedRoute>} />
 
               {/* ── Admin ────────────────────────────────── */}
               <Route path="/admin" element={<ProtectedRoute adminOnly><AdminOverview /></ProtectedRoute>} />
