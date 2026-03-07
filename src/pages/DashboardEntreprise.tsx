@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import { Target, Users, CheckCircle2, ArrowRight, MessageCircle, Zap, TrendingUp, Sparkles, Loader2, Brain, ShieldAlert, Moon, Bot } from "lucide-react";
+import { Target, Users, CheckCircle2, ArrowRight, MessageCircle, Zap, TrendingUp, Sparkles, Loader2, Brain, ShieldAlert, Moon, Bot, Radar } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import VoiceWelcome from "@/components/ai/VoiceWelcome";

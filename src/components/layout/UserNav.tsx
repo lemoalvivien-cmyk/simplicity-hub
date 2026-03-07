@@ -164,7 +164,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
           )}
 
           <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
-          <NavLink to="/radar" label="Radar" icon={Radar} pathname={pathname} radar />
+          <NavLink to="/radar" label="Radar" icon={Radar} pathname={pathname} highlight />
           <NavLink to="/agents" label="OpenClaw" icon={Brain} pathname={pathname} openclaw />
         </nav>
 
