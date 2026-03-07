@@ -424,6 +424,10 @@ export default function Onboarding() {
     const isEntreprise = role === "entreprise";
     const prenom = profile.prenom || "vous";
 
+    const primaryCTA = isEntreprise
+      ? { label: "Créer ma première mission →", path: "/missions" }
+      : { label: "Voir les missions disponibles →", path: "/missions" };
+
     return (
       <div className="w-full max-w-md animate-fade-in text-center" key="done">
         <div className="w-16 h-16 rounded-full bg-success-light flex items-center justify-center mx-auto mb-5">
