@@ -179,6 +179,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
 
         {/* Badge rôle + actions */}
         <div className="hidden md:flex items-center gap-2 shrink-0">
+          <NavLink to="/reseau" label="Réseau" icon={Network} pathname={pathname} />
           <span
             className="text-xs font-semibold px-2.5 py-1 rounded-full border"
             style={{
@@ -189,6 +190,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
           >
             {role === "entreprise" ? "Entreprise" : "Apporteur"}
           </span>
+          <LanguageSwitcher compact />
           <Link to="/help" className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
             <HelpCircle size={15} />
           </Link>
