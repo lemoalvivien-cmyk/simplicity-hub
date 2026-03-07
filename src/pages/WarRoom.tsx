@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
-  Radio, Play, RefreshCw, ChevronRight, Activity,
+  Radio, RefreshCw, ChevronRight, Activity,
   Wifi, AlertCircle, Lock, TrendingUp,
   Target, BarChart3, XCircle,
   Moon, Send, Package,
