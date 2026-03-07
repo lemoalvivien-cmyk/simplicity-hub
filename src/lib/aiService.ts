@@ -37,7 +37,8 @@ export type CopilotContext =
   | "radar"
   | "validations"
   | "chaud"
-  | "trust";
+  | "trust"
+  | "mission-creation";
 
 export interface AiRequest {
   role: AiRole;
