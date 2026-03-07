@@ -5,7 +5,7 @@ import {
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Zap, Activity, Layers, Brain, AlertTriangle,
   MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network,
-  Moon, Share2, Upload, ChevronDown, Lock
+  Moon, Share2, Upload, ChevronDown, Lock, Swords, Cpu
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
@@ -60,6 +60,8 @@ export default function UserNav({ role = "facilitateur", introCount = 0 }: UserN
     { to: "/actions", label: "À faire", icon: Zap },
     { to: "/radar", label: "Deal Radar", icon: Radar },
     { to: "/agents", label: "OpenClaw", icon: Brain },
+    { to: "/war-room", label: "War Room", icon: Swords },
+    { to: "/operations", label: "Opérations", icon: Cpu },
     { to: "/validations", label: "Validations", icon: AlertTriangle },
     { to: "/reseau", label: "Réseau", icon: Network },
     { to: "/facilitateurs", label: "Facilitateurs", icon: Users },
@@ -80,6 +82,8 @@ export default function UserNav({ role = "facilitateur", introCount = 0 }: UserN
     { to: "/offres", label: "Offres à partager", icon: Share2 },
     { to: "/chaud", label: "Ce qui chauffe", icon: Zap },
     { to: "/agents", label: "OpenClaw", icon: Brain },
+    { to: "/war-room", label: "War Room", icon: Swords },
+    { to: "/operations", label: "Opérations", icon: Cpu },
     { to: "/trust", label: "Confiance", icon: AlertTriangle },
     { to: "/reseau", label: "Réseau", icon: Network },
     { to: "/import-reseau", label: "Importer réseau", icon: Upload },
