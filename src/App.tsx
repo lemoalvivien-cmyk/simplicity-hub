@@ -192,6 +192,7 @@ const App = () => (
               <Route path="/trust" element={<ProtectedRoute><Trust /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
+              <Route path="/system-proof" element={<ProtectedRoute><SystemProof /></ProtectedRoute>} />
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
               <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
