@@ -73,6 +73,9 @@ import Facilitateurs from "./pages/Facilitateurs";
 import FacilitateurDetail from "./pages/FacilitateurDetail";
 import Signalement from "./pages/Signalement";
 
+// Réseau intelligent — Graph, Proof Ledger, Corridors
+import Reseau from "./pages/Reseau";
+
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/Users";
