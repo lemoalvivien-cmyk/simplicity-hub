@@ -353,17 +353,32 @@ export default function Operations() {
             {channels.map((ch) => {
               const meta = CHANNEL_STATUS_META[ch.status] ?? CHANNEL_STATUS_META.non_configure;
               const isProbing = probingChannel === ch.channel_id;
+              const probeSource: string = (ch as unknown as { config?: { probe_source?: string } }).config?.probe_source ?? "";
+              const sourceLabel = probeSource === "live_gateway"
+                ? { text: "Vérifié via gateway", color: "hsl(var(--success))" }
+                : probeSource === "native_platform"
+                  ? { text: "Intégré WIINUP", color: "hsl(218 72% 50%)" }
+                  : ch.last_probe_at
+                    ? { text: "Non encore sondé", color: "hsl(var(--muted-foreground))" }
+                    : { text: "Non sondé", color: "hsl(var(--muted-foreground))" };
+
+              const channelEmoji = ch.channel_id === "email" ? "📧"
+                : ch.channel_id === "whatsapp" ? "💬"
+                : ch.channel_id === "introduction" ? "🤝"
+                : ch.channel_id === "phone" ? "📞"
+                : ch.channel_id === "linkedin" ? "💼"
+                : ch.channel_id === "telegram" ? "✈️"
+                : ch.channel_id === "slack" ? "💼"
+                : ch.channel_id === "discord" ? "🎮"
+                : ch.channel_id === "webchat" ? "💬"
+                : "📡";
+
               return (
                 <div key={ch.id} className="card-surface p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
                       style={{ background: ch.is_ready ? "hsl(var(--success-light))" : "hsl(var(--muted))" }}>
-                      {ch.channel_id === "email" ? "📧"
-                        : ch.channel_id === "whatsapp" ? "💬"
-                        : ch.channel_id === "introduction" ? "🤝"
-                        : ch.channel_id === "phone" ? "📞"
-                        : ch.channel_id === "linkedin" ? "💼"
-                        : "📡"}
+                      {channelEmoji}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
@@ -373,23 +388,31 @@ export default function Operations() {
                           {meta.icon} {meta.label}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        OpenClaw : <span className="font-medium" style={{ color: meta.color }}>{meta.openclaw}</span>
+                      {/* Source du statut — honest */}
+                      <p className="text-xs mt-0.5 font-medium" style={{ color: sourceLabel.color }}>
+                        {sourceLabel.text}
                       </p>
                     </div>
                   </div>
 
+                  {/* Probe detail — texte réel retourné par la fonction */}
+                  {ch.probe_detail && (
+                    <p className="text-xs text-muted-foreground mb-2 leading-relaxed italic">
+                      {ch.probe_detail}
+                    </p>
+                  )}
+
                   {/* Latency & last probe */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      {ch.probe_latency_ms && (
+                      {ch.probe_latency_ms != null && (
                         <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                           {ch.probe_latency_ms}ms
                         </span>
                       )}
                       {ch.last_probe_at && (
                         <span className="text-xs text-muted-foreground">
-                          Sondé {formatRelative(ch.last_probe_at)}
+                          Dernière sonde {formatRelative(ch.last_probe_at)}
                         </span>
                       )}
                     </div>
@@ -399,7 +422,7 @@ export default function Operations() {
                           <Brain size={9} /> IA active
                         </span>
                       ) : (
-                        <span className="text-xs text-muted-foreground">IA désactivée</span>
+                        <span className="text-xs text-muted-foreground">IA inactivée</span>
                       )}
                     </div>
                   </div>
@@ -412,12 +435,12 @@ export default function Operations() {
                       className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl transition-all"
                       style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}>
                       {isProbing ? <RefreshCw size={11} className="animate-spin" /> : <Eye size={11} />}
-                      {isProbing ? "Sondage…" : "Sonder"}
+                      {isProbing ? "Sondage en cours…" : "Sonder maintenant"}
                     </button>
-                    {ch.channel_id === "whatsapp" && (
+                    {(ch.status === "non_configure" || !ch.is_ready) && ch.channel_id !== "email" && ch.channel_id !== "introduction" && (
                       <Link to="/canaux"
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl transition-all"
-                        style={{ background: "hsl(142 70% 45% / 0.1)", color: "hsl(142 70% 35%)" }}>
+                        className="flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-xl transition-all"
+                        style={{ background: "hsl(218 72% 50% / 0.1)", color: "hsl(218 72% 50%)" }}>
                         <Settings2 size={11} /> Configurer
                       </Link>
                     )}
