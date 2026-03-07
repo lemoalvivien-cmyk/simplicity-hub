@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import InstallBanner from "@/components/pwa/InstallBanner";
 
 import Pilotage from "./pages/Pilotage";
 
@@ -60,6 +61,9 @@ import Agents from "./pages/Agents";
 import Dossier from "./pages/Dossier";
 import Validations from "./pages/Validations";
 
+// Mobile / PWA
+import Install from "./pages/Install";
+
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/Users";
@@ -77,6 +81,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <InstallBanner />
           <BrowserRouter>
             <Routes>
               {/* ── Public ───────────────────────────────── */}
@@ -140,6 +145,7 @@ const App = () => (
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
               <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+              <Route path="/install" element={<ProtectedRoute><Install /></ProtectedRoute>} />
 
               {/* ── Admin ────────────────────────────────── */}
               <Route path="/admin" element={<ProtectedRoute adminOnly><AdminOverview /></ProtectedRoute>} />

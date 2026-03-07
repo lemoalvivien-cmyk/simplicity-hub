@@ -3,7 +3,8 @@ import { useState } from "react";
 import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
-  Play, Zap, Activity, Layers, Target, Brain, AlertTriangle
+  Play, Zap, Activity, Layers, Target, Brain, AlertTriangle,
+  MessageSquare, Smartphone
 } from "lucide-react";
 
 type UserRole = "entreprise" | "facilitateur";
@@ -45,13 +46,20 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
             ],
           },
            {
-            label: "OpenClaw",
-            items: [
-              { to: "/agents", label: "Agents & Autonomie", icon: Brain },
-              { to: "/validations", label: "Boîte de validation", icon: AlertTriangle },
-              { to: "/dossier", label: "Dossier entreprise", icon: Building2 },
-            ],
-          },
+             label: "OpenClaw",
+             items: [
+               { to: "/agents", label: "Agents & Autonomie", icon: Brain },
+               { to: "/validations", label: "Boîte de validation", icon: AlertTriangle },
+               { to: "/dossier", label: "Dossier entreprise", icon: Building2 },
+             ],
+           },
+           {
+             label: "Canaux & App",
+             items: [
+               { to: "/canaux", label: "WhatsApp & Canaux", icon: MessageSquare },
+               { to: "/install", label: "Installer l'app", icon: Smartphone },
+             ],
+           },
           {
             label: "Compte",
             items: [
@@ -86,12 +94,19 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
             ],
           },
           {
-            label: "OpenClaw",
-            items: [
-              { to: "/agents", label: "Agents & Autonomie", icon: Brain },
-              { to: "/validations", label: "Boîte de validation", icon: AlertTriangle },
-            ],
-          },
+             label: "OpenClaw",
+             items: [
+               { to: "/agents", label: "Agents & Autonomie", icon: Brain },
+               { to: "/validations", label: "Boîte de validation", icon: AlertTriangle },
+             ],
+           },
+           {
+             label: "Canaux & App",
+             items: [
+               { to: "/canaux", label: "WhatsApp & Canaux", icon: MessageSquare },
+               { to: "/install", label: "Installer l'app", icon: Smartphone },
+             ],
+           },
           {
             label: "Compte",
             items: [{ to: "/help", label: "Aide", icon: HelpCircle }],
