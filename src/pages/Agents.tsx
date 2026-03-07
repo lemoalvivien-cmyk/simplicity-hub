@@ -282,7 +282,7 @@ export default function Agents() {
 
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: "Agents actifs", value: openclawActif ? `${agentsActifs}/5`, icon: Radio },
+              { label: "Agents actifs", value: openclawActif ? `${agentsActifs}/5` : "0/5", icon: Radio },
               { label: "Actions aujourd'hui", value: openclawActif ? actionsTotal : 0, icon: Activity },
               { label: "En attente de vous", value: openclawActif ? VALIDATIONS.length : 0, icon: Clock },
             ].map(({ label, value, icon: Icon }) => (
