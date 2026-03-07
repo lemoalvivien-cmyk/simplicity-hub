@@ -1,8 +1,41 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Zap, Shield, Users } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
+import { useTranslation } from "react-i18next";
 
 export default function HeroSection() {
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      num: "01",
+      title: t("hero_step1_title"),
+      desc: t("hero_step1_desc"),
+      color: "hsl(218 72% 55%)",
+      dot: "hsl(218 72% 55%)",
+    },
+    {
+      num: "02",
+      title: t("hero_step2_title"),
+      desc: t("hero_step2_desc"),
+      color: "hsl(152 62% 45%)",
+      dot: "hsl(152 62% 45%)",
+    },
+    {
+      num: "03",
+      title: t("hero_step3_title"),
+      desc: t("hero_step3_desc"),
+      color: "hsl(24 100% 52%)",
+      dot: "hsl(24 100% 52%)",
+    },
+  ];
+
+  const trustItems = [
+    { icon: CheckCircle2, label: t("hero_trust_1") },
+    { icon: Shield,       label: t("hero_trust_2") },
+    { icon: Zap,          label: t("hero_trust_3") },
+  ];
+
   return (
     <>
       {/* ══ HERO PRINCIPAL ══════════════════════════════════════ */}
@@ -23,22 +56,22 @@ export default function HeroSection() {
               WebkitTextFillColor: "transparent",
               backgroundClip: "text"
             }}>
-              Recevez vos premiers clients
+              {t("hero_headline_1")}
             </span>
             <span className="block text-3xl md:text-4xl lg:text-5xl text-white mt-2">
-              via un réseau d'apporteurs qualifiés.
+              {t("hero_headline_2")}
             </span>
           </h1>
 
-          {/* Sous-titre court */}
+          {/* Sous-titre */}
           <p className="text-lg md:text-xl text-white/60 mb-8 max-w-xl mx-auto leading-relaxed font-light">
-            Publiez votre mission. Recevez des introductions vérifiées. Mesurez vos résultats.
+            {t("hero_subtitle")}
           </p>
 
-          {/* CTA principal unique */}
+          {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-8">
             <Link to="/pricing" className="btn-cta text-base px-10 py-4 gap-2 w-full sm:w-auto">
-              Lancer ma première mission
+              {t("hero_cta_entreprise")}
               <ArrowRight size={18} />
             </Link>
             <Link
@@ -46,17 +79,13 @@ export default function HeroSection() {
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white/65 border border-white/15 font-medium text-sm hover:bg-white/8 transition-colors w-full sm:w-auto"
             >
               <Users size={14} />
-              Je suis apporteur d'affaires — Gratuit
+              {t("hero_cta_apporteur")}
             </Link>
           </div>
 
           {/* Trust bar */}
           <div className="flex flex-wrap items-center justify-center gap-4 text-white/35 text-xs">
-            {[
-              { icon: CheckCircle2, label: "Introduction vérifiée avant paiement" },
-              { icon: Shield, label: "Confiance garantie par la plateforme" },
-              { icon: Zap, label: "Offre lancement 99 € / an" },
-            ].map(({ icon: Icon, label }) => (
+            {trustItems.map(({ icon: Icon, label }) => (
               <span key={label} className="flex items-center gap-1.5">
                 <Icon size={11} className="text-white/40" /> {label}
               </span>
@@ -64,7 +93,7 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* ── Mockup "comment ça marche" simple ── */}
+        {/* ── Mockup "comment ça marche" ── */}
         <div className="container max-w-3xl mt-14 px-4 relative z-10">
           <div className="rounded-2xl overflow-hidden border border-white/10" style={{
             boxShadow: "0 32px 80px hsl(218 72% 8% / 0.7), 0 0 0 1px hsl(218 72% 40% / 0.08)",
@@ -80,31 +109,8 @@ export default function HeroSection() {
                 <span className="text-white/30 text-xs">wiinupmax.app</span>
               </div>
             </div>
-            {/* 3 étapes visuelles */}
             <div className="p-5 md:p-6 grid md:grid-cols-3 gap-3">
-              {[
-                {
-                  num: "01",
-                  title: "Publiez votre mission",
-                  desc: "Décrivez votre client idéal en 2 minutes.",
-                  color: "hsl(218 72% 55%)",
-                  dot: "hsl(218 72% 55%)"
-                },
-                {
-                  num: "02",
-                  title: "Recevez des introductions",
-                  desc: "Des apporteurs vous présentent des contacts qualifiés.",
-                  color: "hsl(152 62% 45%)",
-                  dot: "hsl(152 62% 45%)"
-                },
-                {
-                  num: "03",
-                  title: "Mesurez les résultats",
-                  desc: "Chaque intro est tracée, validée, liée à un gain.",
-                  color: "hsl(24 100% 52%)",
-                  dot: "hsl(24 100% 52%)"
-                },
-              ].map(({ num, title, desc, color, dot }) => (
+              {steps.map(({ num, title, desc, color, dot }) => (
                 <div key={num} className="rounded-xl p-4" style={{ background: "hsl(218 50% 16% / 0.7)", border: `1px solid ${color}20` }}>
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: dot }} />
