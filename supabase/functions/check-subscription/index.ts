@@ -20,9 +20,6 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -39,8 +36,33 @@ serve(async (req) => {
     const user = userData.user;
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Check promo code redemption first
+    // Check profile role
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    // Facilitators and admins are always free
+    if (profile?.role === "facilitateur" || profile?.role === "admin") {
+      logStep("Free role detected", { role: profile.role });
+      return new Response(
+        JSON.stringify({
+          subscribed: true,
+          status: "active",
+          subscription_end: null,
+          access_type: "free",
+          offer_type: null,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
+
     const now = new Date().toISOString();
+
+    // =============================================
+    // CHECK 1: Active promo code redemption (NO STRIPE)
+    // =============================================
     const { data: redemption } = await supabase
       .from("promo_code_redemptions")
       .select("*")
@@ -51,24 +73,51 @@ serve(async (req) => {
 
     if (redemption) {
       logStep("Active promo redemption found", { end_at: redemption.end_at });
+
+      // Sync to subscriptions table
+      await supabase.from("subscriptions").upsert(
+        {
+          user_id: user.id,
+          status: "promo_active",
+          current_period_start: redemption.start_at,
+          current_period_end: redemption.end_at,
+          offer_type: "promo",
+          cancel_at_period_end: false,
+          updated_at: now,
+        },
+        { onConflict: "user_id" }
+      );
+
       return new Response(
         JSON.stringify({
           subscribed: true,
           status: "promo_active",
           subscription_end: redemption.end_at,
           access_type: "promo",
+          offer_type: "promo",
+          cancel_at_period_end: false,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
 
-    // Check Stripe subscription
+    // =============================================
+    // CHECK 2: Stripe subscription
+    // =============================================
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      logStep("No Stripe key, returning none");
+      return new Response(
+        JSON.stringify({ subscribed: false, status: "none", access_type: "none" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
 
     if (customers.data.length === 0) {
-      logStep("No customer found");
-      // Update subscription table
+      logStep("No Stripe customer found");
       await supabase.from("subscriptions").upsert(
         { user_id: user.id, status: "none", updated_at: now },
         { onConflict: "user_id" }
@@ -80,7 +129,7 @@ serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
-    logStep("Customer found", { customerId });
+    logStep("Stripe customer found", { customerId });
 
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
@@ -108,14 +157,20 @@ serve(async (req) => {
     const isActive = sub.status === "active" || sub.status === "trialing";
     const subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
 
+    // Determine offer type from price ID
+    const LAUNCH_PRICE_ID = "price_1T8GOWEG497aCUFxjNjFjk4t";
+    const priceId = sub.items.data[0]?.price.id;
+    const offerType = priceId === LAUNCH_PRICE_ID ? "launch" : "standard";
+
     // Sync to database
     await supabase.from("subscriptions").upsert(
       {
         user_id: user.id,
         stripe_customer_id: customerId,
         stripe_subscription_id: sub.id,
-        stripe_price_id: sub.items.data[0]?.price.id,
+        stripe_price_id: priceId,
         status: sub.status,
+        offer_type: offerType,
         current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
         current_period_end: subscriptionEnd,
         cancel_at_period_end: sub.cancel_at_period_end,
@@ -124,7 +179,7 @@ serve(async (req) => {
       { onConflict: "user_id" }
     );
 
-    logStep("Subscription found", { status: sub.status, end: subscriptionEnd });
+    logStep("Stripe subscription found", { status: sub.status, end: subscriptionEnd, offerType });
 
     return new Response(
       JSON.stringify({
@@ -133,6 +188,7 @@ serve(async (req) => {
         subscription_end: subscriptionEnd,
         cancel_at_period_end: sub.cancel_at_period_end,
         access_type: "stripe",
+        offer_type: offerType,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );

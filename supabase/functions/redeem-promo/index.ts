@@ -35,6 +35,20 @@ serve(async (req) => {
     const user = userData.user;
     logStep("User authenticated", { userId: user.id });
 
+    // Check role — only entreprise role can redeem promo codes for platform access
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profile?.role === "facilitateur") {
+      return new Response(
+        JSON.stringify({ valid: false, message: "Les apporteurs d'affaires ont un accès gratuit permanent. Ce code n'est pas nécessaire." }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
+
     const body = await req.json();
     const { code } = body;
     if (!code || typeof code !== "string") {
@@ -52,6 +66,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (promoError || !promoCode) {
+      logStep("Code not found", { code: codeUpper });
       return new Response(
         JSON.stringify({ valid: false, message: "Ce code n'existe pas." }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
@@ -60,18 +75,21 @@ serve(async (req) => {
 
     // Status checks
     if (promoCode.status === "utilisé") {
+      logStep("Code already used", { code: codeUpper });
       return new Response(
         JSON.stringify({ valid: false, message: "Ce code a déjà été utilisé." }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
     if (promoCode.status === "désactivé") {
+      logStep("Code disabled", { code: codeUpper });
       return new Response(
         JSON.stringify({ valid: false, message: "Ce code n'est plus actif." }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
     if (promoCode.status === "expiré") {
+      logStep("Code expired (status)", { code: codeUpper });
       return new Response(
         JSON.stringify({ valid: false, message: "Ce code a expiré." }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
@@ -83,6 +101,7 @@ serve(async (req) => {
         .from("promo_codes")
         .update({ status: "expiré" })
         .eq("id", promoCode.id);
+      logStep("Code expired (date)", { code: codeUpper, expires_at: promoCode.expires_at });
       return new Response(
         JSON.stringify({ valid: false, message: "Ce code a expiré." }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
@@ -92,14 +111,17 @@ serve(async (req) => {
     // Check if user already redeemed a code
     const { data: existingRedemption } = await supabaseAdmin
       .from("promo_code_redemptions")
-      .select("id")
+      .select("id, end_at")
       .eq("user_id", user.id)
       .eq("status", "active")
       .maybeSingle();
 
     if (existingRedemption) {
+      const endDate = new Date(existingRedemption.end_at).toLocaleDateString("fr-FR", {
+        day: "numeric", month: "long", year: "numeric"
+      });
       return new Response(
-        JSON.stringify({ valid: false, message: "Vous avez déjà un accès promo actif." }),
+        JSON.stringify({ valid: false, message: `Vous avez déjà un accès gratuit actif jusqu'au ${endDate}.` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
@@ -109,14 +131,19 @@ serve(async (req) => {
     const endAt = new Date(now);
     endAt.setMonth(endAt.getMonth() + (promoCode.duration_months || 12));
 
-    // Create redemption
-    await supabaseAdmin.from("promo_code_redemptions").insert({
+    // Create redemption record
+    const { error: redemptionError } = await supabaseAdmin.from("promo_code_redemptions").insert({
       promo_code_id: promoCode.id,
       user_id: user.id,
       start_at: now.toISOString(),
       end_at: endAt.toISOString(),
       status: "active",
     });
+
+    if (redemptionError) {
+      logStep("Redemption insert error", redemptionError);
+      throw redemptionError;
+    }
 
     // Mark promo code as used if usage_unique
     if (promoCode.usage_unique) {
@@ -130,7 +157,7 @@ serve(async (req) => {
         .eq("id", promoCode.id);
     }
 
-    // Update subscription record
+    // Sync to subscriptions table — NO Stripe involvement
     await supabaseAdmin.from("subscriptions").upsert(
       {
         user_id: user.id,
@@ -138,18 +165,33 @@ serve(async (req) => {
         current_period_start: now.toISOString(),
         current_period_end: endAt.toISOString(),
         updated_at: now.toISOString(),
+        offer_type: "promo",
+        // Explicitly clear any Stripe refs so it's clean
+        stripe_customer_id: null,
+        stripe_subscription_id: null,
+        stripe_price_id: null,
+        cancel_at_period_end: false,
       },
       { onConflict: "user_id" }
     );
 
-    logStep("Promo redeemed successfully", { userId: user.id, endAt: endAt.toISOString() });
+    logStep("Promo redeemed successfully", {
+      userId: user.id,
+      code: codeUpper,
+      endAt: endAt.toISOString()
+    });
+
+    const endDateFormatted = endAt.toLocaleDateString("fr-FR", {
+      day: "numeric", month: "long", year: "numeric"
+    });
 
     return new Response(
       JSON.stringify({
         valid: true,
-        message: `Code activé ! Votre accès gratuit est valable jusqu'au ${endAt.toLocaleDateString("fr-FR")}.`,
+        message: `Votre accès gratuit de 12 mois est activé. Il est valable jusqu'au ${endDateFormatted}.`,
         end_at: endAt.toISOString(),
         duration_months: promoCode.duration_months,
+        access_type: "promo",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
