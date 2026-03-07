@@ -58,6 +58,7 @@ import ProfilEntreprise from "./pages/ProfilEntreprise";
 // OpenClaw — Cerveau central agentique
 import Agents from "./pages/Agents";
 import Dossier from "./pages/Dossier";
+import Validations from "./pages/Validations";
 
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
@@ -133,6 +134,7 @@ const App = () => (
               {/* ── OpenClaw — Cerveau agentique ─────────── */}
               <Route path="/agents" element={<ProtectedRoute><Agents /></ProtectedRoute>} />
               <Route path="/dossier" element={<ProtectedRoute><Dossier /></ProtectedRoute>} />
+              <Route path="/validations" element={<ProtectedRoute><Validations /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />

@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
-  Play, Zap, Activity, Layers, Target, Brain
+  Play, Zap, Activity, Layers, Target, Brain, AlertTriangle
 } from "lucide-react";
 
 type UserRole = "entreprise" | "facilitateur";
@@ -44,10 +44,11 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
               { to: "/entreprise/introductions", label: "Introductions", icon: Send },
             ],
           },
-          {
+           {
             label: "OpenClaw",
             items: [
               { to: "/agents", label: "Agents & Autonomie", icon: Brain },
+              { to: "/validations", label: "Boîte de validation", icon: AlertTriangle },
               { to: "/dossier", label: "Dossier entreprise", icon: Building2 },
             ],
           },
@@ -86,7 +87,10 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
           },
           {
             label: "OpenClaw",
-            items: [{ to: "/agents", label: "Agents & Autonomie", icon: Brain }],
+            items: [
+              { to: "/agents", label: "Agents & Autonomie", icon: Brain },
+              { to: "/validations", label: "Boîte de validation", icon: AlertTriangle },
+            ],
           },
           {
             label: "Compte",
