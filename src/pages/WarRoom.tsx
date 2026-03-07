@@ -334,7 +334,7 @@ export default function WarRoom() {
                   <div className="w-2 h-2 rounded-full animate-pulse shrink-0"
                     style={{ background: "hsl(var(--success))" }} />
                   <p className="text-xs font-medium text-foreground flex-1">{s.session_type}</p>
-                  <span className="text-xs text-muted-foreground">{s.context_type}</span>
+                  <span className="text-xs text-muted-foreground">{s.autonomie_level}</span>
                   {s.next_scheduled_at && (
                     <span className="text-xs font-semibold" style={{ color: "hsl(218 72% 55%)" }}>
                       {formatFuture(s.next_scheduled_at)}
