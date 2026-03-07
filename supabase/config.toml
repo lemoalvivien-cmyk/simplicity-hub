@@ -66,4 +66,7 @@ verify_jwt = false
 [functions.openclaw-channel-dispatch]
 verify_jwt = false
 
+[functions.openclaw-graph-engine]
+verify_jwt = false
+
 
