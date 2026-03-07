@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import HeroSection from "@/components/landing/HeroSection";
 import GuichetUniqueSection from "@/components/landing/GuichetUniqueSection";
+import PassiveSectionLanding from "@/components/landing/PassiveSectionLanding";
 import {
   ArrowRight, Zap, Target, Users, Send, TrendingUp, Play,
   Briefcase, CheckCircle2, Shield, Star, ChevronRight,
@@ -69,6 +70,9 @@ export default function LandingPage() {
 
       {/* ══ GUICHET UNIQUE + AUTOPILOT + APPORT D'AFFAIRES ══ */}
       <GuichetUniqueSection />
+
+      {/* ══ PASSIVE FACILITATOR OS ════════════════════════ */}
+      <PassiveSectionLanding />
 
       {/* ══ POUR LES ENTREPRISES + APPORTEURS ════════════ */}
       <section className="py-24 bg-muted">
