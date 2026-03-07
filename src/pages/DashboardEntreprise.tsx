@@ -38,6 +38,8 @@ export default function DashboardEntreprise() {
         db.from("openclaw_validations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("statut", "en_attente"),
         db.from("openclaw_recommendations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "pending"),
         db.from("openclaw_agents").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("statut", "actif"),
+        db.from("opportunities").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("intent_label", "eleve").neq("status", "archivee"),
+        db.from("signals").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "nouveau"),
       ]);
       setMissions(missionsRes.data || []);
       setIntroductions(introsRes.data || []);
@@ -46,6 +48,8 @@ export default function DashboardEntreprise() {
       setValidationsCount(validRes.count || 0);
       setRecommendationsCount(recoRes.count || 0);
       setAgentsActifs(agentsRes.count || 0);
+      setHotOpps(hotOppsRes.count || 0);
+      setNewSignals(sigRes.count || 0);
       setLoading(false);
     };
     load();
