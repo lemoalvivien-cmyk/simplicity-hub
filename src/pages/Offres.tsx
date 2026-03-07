@@ -231,6 +231,8 @@ export default function Offres() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"offres" | "mes_liens">("offres");
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  // Heat scores per offer
+  const [heatScores, setHeatScores] = useState<Record<string, number>>({});
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -239,8 +241,32 @@ export default function Offres() {
       db.from("offer_share_links").select("*").eq("facilitator_id", user.id).order("created_at", { ascending: false }),
     ]);
     const loadedOffers: SharedOffer[] = offersRes.data || [];
+    const loadedLinks: ShareLink[] = linksRes.data || [];
     setOffers(loadedOffers);
-    setMyLinks(linksRes.data || []);
+    setMyLinks(loadedLinks);
+
+    // Compute heat scores
+    const scores: Record<string, number> = {};
+    for (const offer of loadedOffers) {
+      const myLink = loadedLinks.find(l => l.offer_id === offer.id);
+      if (myLink) {
+        const recency = myLink.last_click_at
+          ? Math.max(0, 40 - Math.floor((Date.now() - new Date(myLink.last_click_at).getTime()) / (1000 * 60 * 60 * 24)) * 3)
+          : 0;
+        scores[offer.id] = Math.min(100, Math.round(
+          30 +
+          (myLink.clicks_count || 0) * 2 +
+          (myLink.unique_clicks_count || 0) * 4 +
+          (myLink.qualified_interest_count || 0) * 15 +
+          (myLink.opportunity_count || 0) * 20 +
+          (myLink.converted ? 25 : 0) +
+          recency
+        ));
+      } else {
+        scores[offer.id] = 30; // base: not yet shared
+      }
+    }
+    setHeatScores(scores);
 
     // Load packs for all offers
     if (loadedOffers.length > 0) {
@@ -305,6 +331,9 @@ export default function Offres() {
   const totalUnique = myLinks.reduce((s, l) => s + (l.unique_clicks_count || 0), 0);
   const converted = myLinks.filter(l => l.converted).length;
 
+  // Sort offers by heat score descending
+  const sortedOffers = [...offers].sort((a, b) => (heatScores[b.id] || 0) - (heatScores[a.id] || 0));
+
   return (
     <UserLayout role="facilitateur" jarvisContext="offres">
       <div className="max-w-2xl mx-auto space-y-5">
@@ -356,7 +385,13 @@ export default function Offres() {
           <>
             {tab === "offres" && (
               <>
-                {offers.length === 0 ? (
+                {sortedOffers.length > 0 && (
+                  <div className="flex items-center gap-2 px-1">
+                    <Flame size={12} style={{ color: "hsl(24 100% 52%)" }} />
+                    <p className="text-xs text-muted-foreground">Classées par chaleur — les meilleures d'abord</p>
+                  </div>
+                )}
+                {sortedOffers.length === 0 ? (
                   <div className="card-surface p-10 text-center">
                     <Share2 size={30} className="mx-auto text-muted-foreground mb-3" />
                     <p className="font-semibold text-foreground mb-1">Aucune offre disponible</p>
@@ -364,17 +399,26 @@ export default function Offres() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {offers.map(offer => (
-                      <OfferCard
-                        key={offer.id}
-                        offer={offer}
-                        myLinks={myLinks}
-                        pack={packs[offer.id] || null}
-                        onGetLink={getOfferLink}
-                        onCopy={copyText}
-                        onGeneratePack={generatePack}
-                        generatingId={generatingId}
-                      />
+                    {sortedOffers.map((offer, index) => (
+                      <div key={offer.id} className="relative">
+                        {index === 0 && (heatScores[offer.id] || 0) >= 40 && (
+                          <div className="absolute -top-2 left-3 z-10">
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white"
+                              style={{ background: "linear-gradient(135deg, hsl(24 100% 52%), hsl(38 80% 45%))" }}>
+                              🔥 Meilleure offre à pousser
+                            </span>
+                          </div>
+                        )}
+                        <OfferCard
+                          offer={offer}
+                          myLinks={myLinks}
+                          pack={packs[offer.id] || null}
+                          onGetLink={getOfferLink}
+                          onCopy={copyText}
+                          onGeneratePack={generatePack}
+                          generatingId={generatingId}
+                        />
+                      </div>
                     ))}
                   </div>
                 )}

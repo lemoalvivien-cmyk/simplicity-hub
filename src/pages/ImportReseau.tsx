@@ -1,5 +1,5 @@
 /**
- * ImportReseau — Import CSV/Excel ultra simple pour facilitateurs
+ * ImportReseau — Import CSV/Excel + graph feeding + smart offer suggestions
  * "Importez votre réseau, laissez l'IA faire le reste."
  */
 import { useState, useRef } from "react";
@@ -7,11 +7,12 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Upload, CheckCircle2, AlertCircle, ArrowRight, Users,
-  FileText, X, Loader2, Sparkles, ChevronDown, Info
+  FileText, X, Loader2, Sparkles, Info, Flame, Share2, ChevronRight
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type ParsedContact = {
   prenom_nom: string;
@@ -62,6 +63,12 @@ function detectColumn(headers: string[], keys: string[]): number {
   return -1;
 }
 
+interface SuggestedOffer {
+  id: string;
+  title: string;
+  short_description: string | null;
+}
+
 export default function ImportReseau() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -71,6 +78,8 @@ export default function ImportReseau() {
   const [importing, setImporting] = useState(false);
   const [imported, setImported] = useState(0);
   const [fileName, setFileName] = useState("");
+  const [suggestedOffers, setSuggestedOffers] = useState<SuggestedOffer[]>([]);
+  const [graphFed, setGraphFed] = useState(false);
 
   const handleFile = (file: File) => {
     setFileName(file.name);
@@ -152,10 +161,34 @@ export default function ImportReseau() {
         if (!e) count++;
       }
     }
+
+    // ── Feed graph with import event ──────────────────────────
+    // Log a graph_event so the passive engine knows the network grew
+    try {
+      await db.from("graph_events").insert({
+        user_id: user.id,
+        event_type: "network_import",
+        entity_type: "contact",
+        entity_id: user.id,
+        delta_weight: Math.min(20, Math.round(count / 5)),
+        summary: `Import réseau : ${count} contacts ajoutés. Signal passif enrichi.`,
+      });
+      setGraphFed(true);
+    } catch (_) { /* silent */ }
+
+    // ── Load suggested offers based on imported data ───────────
+    try {
+      const { data: offers } = await db.from("shared_offers")
+        .select("id, title, short_description")
+        .eq("status", "active")
+        .limit(3);
+      setSuggestedOffers(offers || []);
+    } catch (_) { /* silent */ }
+
     setImported(count);
     setImporting(false);
     setStep("done");
-    toast({ title: `${count} contacts importés ✓`, description: "Votre réseau est maintenant dans WIINUP MAX." });
+    toast({ title: `${count} contacts importés ✓`, description: "Votre réseau enrichit maintenant le moteur." });
   };
 
   const valid = parsed.filter(c => !c._duplicate && c._valid);
@@ -291,7 +324,7 @@ export default function ImportReseau() {
           <div className="card-surface p-10 text-center">
             <Loader2 size={32} className="animate-spin text-primary mx-auto mb-4" />
             <p className="font-semibold text-foreground mb-1">Import en cours…</p>
-            <p className="text-sm text-muted-foreground">Vos contacts rejoignent votre réseau.</p>
+            <p className="text-sm text-muted-foreground">Vos contacts rejoignent votre réseau. La machine enrichit le graphe.</p>
           </div>
         )}
 
@@ -302,17 +335,51 @@ export default function ImportReseau() {
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "hsl(var(--success-light))" }}>
                 <CheckCircle2 size={28} style={{ color: "hsl(var(--success))" }} />
               </div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-2">{imported} contacts importés ✓</h2>
-              <p className="text-muted-foreground text-sm mb-6">Votre réseau est maintenant dans WIINUP MAX. OpenClaw peut commencer à travailler.</p>
+              <h2 className="font-display text-2xl font-bold text-foreground mb-2">{imported} contacts dans le moteur ✓</h2>
+              <p className="text-muted-foreground text-sm mb-1">Votre réseau est maintenant dans WIINUP MAX.</p>
+              {graphFed && (
+                <p className="text-xs font-semibold mb-4" style={{ color: "hsl(152 62% 45%)" }}>
+                  ✓ Graphe enrichi — le moteur passif sait où chercher.
+                </p>
+              )}
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link to="/contacts" className="btn-cta py-3 px-6 flex items-center justify-center gap-2">
                   <Users size={14} /> Voir mes contacts
                 </Link>
                 <Link to="/offres" className="py-3 px-6 rounded-xl font-semibold border border-primary text-primary flex items-center justify-center gap-2 hover:bg-secondary transition-colors text-sm">
-                  <Sparkles size={14} /> Voir les offres à partager
+                  <Sparkles size={14} /> Offres à partager
                 </Link>
               </div>
             </div>
+
+            {/* ── SUGGESTED OFFERS ───────────────────────────────── */}
+            {suggestedOffers.length > 0 && (
+              <div className="card-surface p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Flame size={14} style={{ color: "hsl(24 100% 52%)" }} />
+                  <p className="text-sm font-semibold text-foreground">Offres prêtes à diffuser maintenant</p>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">Le moteur a sélectionné ces offres pour votre réseau.</p>
+                <div className="space-y-2">
+                  {suggestedOffers.map(offer => (
+                    <Link key={offer.id} to="/offres"
+                      className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-secondary transition-colors group">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "hsl(var(--primary) / 0.1)" }}>
+                        <Share2 size={13} className="text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{offer.title}</p>
+                        {offer.short_description && (
+                          <p className="text-xs text-muted-foreground truncate">{offer.short_description}</p>
+                        )}
+                      </div>
+                      <ChevronRight size={12} className="text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Link to="/passive" className="flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground">
               <ArrowRight size={13} /> Retour au Mode passif
             </Link>

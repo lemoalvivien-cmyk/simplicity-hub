@@ -1,5 +1,5 @@
 /**
- * Dashboard Facilitateur — Launch Mode + Double Moteur
+ * Dashboard Facilitateur — Passive-First OS + Double Moteur
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -7,7 +7,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Moon, Share2, CheckCircle2, ArrowRight, Zap, Sparkles,
   Loader2, Brain, Bell, Link2, Star, Trophy, Briefcase,
-  Send, HelpCircle, Flame, Layers
+  Send, HelpCircle, Flame
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,9 @@ import ActivationProgressBar from "@/components/activation/ActivationProgressBar
 import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
+import BestOfferToPush from "@/components/passive/BestOfferToPush";
+import NetworkValueMap from "@/components/passive/NetworkValueMap";
+import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 
 interface ShareLink {
   id: string;
@@ -193,11 +196,20 @@ export default function DashboardFacilitateur() {
           </div>
         )}
 
+        {/* ── PASSIVE COACH BANNER ─────────────────────────── */}
+        <PassiveCoachBanner />
+
         {/* ── OPENCLAW CERVEAU VIVANT ───────────────────────── */}
         <OpenClawBrainWidget variant="facilitateur" />
 
-        {/* ── OPPORTUNITÉS DU MOTEUR ────────────────────────── */}
-        {!isLaunchMode && <BestAccessPanel title="Où votre réseau vaut le plus" context={{ limit: 3 }} compact showAlternatives={false} />}
+        {/* ── MEILLEURES OFFRES À POUSSER ─────────────────── */}
+        {!isLaunchMode && <BestOfferToPush compact />}
+
+        {/* ── MEILLEUR CHEMIN D'ACCÈS ───────────────────────── */}
+        {!isLaunchMode && <BestAccessPanel title="Meilleur chemin d'accès" context={{ limit: 3 }} compact showAlternatives={false} />}
+
+        {/* ── NETWORK VALUE MAP ─────────────────────────────── */}
+        {!isLaunchMode && <NetworkValueMap />}
 
         {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
@@ -207,7 +219,7 @@ export default function DashboardFacilitateur() {
           <div className="rounded-xl border-2 p-5" style={{ borderColor: "hsl(var(--primary))", background: "hsl(var(--secondary))" }}>
             <div className="flex items-center gap-2 mb-3">
               <Bell size={14} className="text-primary" />
-              <p className="text-sm font-semibold text-foreground">À valider maintenant</p>
+              <p className="text-sm font-semibold text-foreground">Validation utile</p>
               <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: "hsl(var(--primary))" }}>
                 {requests.length}
               </span>
