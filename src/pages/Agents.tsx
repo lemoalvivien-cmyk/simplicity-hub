@@ -398,11 +398,11 @@ export default function Agents() {
                     </div>
                     <div className="flex items-center gap-2">
                       <StatutBadge statut={effectiveStatut} />
-                      {agent.id !== "controle" && (
+                    {agent.id !== "controle" && (
                         <button
                           onClick={() => toggleAgent(agent.id)}
                           className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                          title={isPaused ? "Reprendre" : "Mettre en pause"}
+                          title={isPaused ? "Reprendre" : "Pause"}
                         >
                           {isPaused ? <Play size={12} /> : <Pause size={12} />}
                         </button>
