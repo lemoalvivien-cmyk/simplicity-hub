@@ -245,10 +245,12 @@ export default function Operations() {
                   pulse: !config?.kill_switch_global,
                 },
                 {
-                  label: "Exécution cloud",
-                  ok: true,
-                  desc: "Hôte cloud Lovable actif",
-                  pulse: true,
+                  label: "Gateway connecté",
+                  ok: !!config?.gateway_url && config?.is_connected !== false,
+                  desc: config?.gateway_url
+                    ? (config?.is_connected ? "Gateway joignable" : "Dernière sonde échouée")
+                    : "Aucun gateway configuré",
+                  pulse: !!config?.gateway_url && config?.is_connected !== false,
                 },
                 {
                   label: "Run actif",
