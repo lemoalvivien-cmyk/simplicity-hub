@@ -61,7 +61,14 @@ import Agents from "./pages/Agents";
 import Dossier from "./pages/Dossier";
 import Validations from "./pages/Validations";
 
-// Routes App.tsx — add Facilitateurs + Signalement
+// Deal Radar
+import Radar from "./pages/Radar";
+
+// Mobile / PWA
+import Install from "./pages/Install";
+import Autonomie from "./pages/Autonomie";
+
+// Facilitateurs & Signalement
 import Facilitateurs from "./pages/Facilitateurs";
 import Signalement from "./pages/Signalement";
 
