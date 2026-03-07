@@ -93,14 +93,17 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
               { to: "/actions", label: "À faire", icon: Zap },
             ],
           },
-          {
-            label: "Apport d'affaires",
-            items: [
-              { to: "/missions", label: "Missions", icon: Briefcase },
-              { to: "/introductions", label: "Introductions", icon: Send },
-              { to: "/gains", label: "Mes gains", icon: TrendingUp },
-            ],
-          },
+           {
+             label: "Apport d'affaires",
+             items: [
+               { to: "/missions", label: "Missions", icon: Briefcase },
+               { to: "/introductions", label: "Introductions", icon: Send },
+               { to: "/gains", label: "Mes gains", icon: TrendingUp },
+               { to: "/passive", label: "Mode passif", icon: Moon },
+               { to: "/offres", label: "Offres à partager", icon: Share2 },
+               { to: "/import-reseau", label: "Importer mon réseau", icon: Upload },
+             ],
+           },
            {
              label: "OpenClaw",
              items: [
