@@ -1,0 +1,1 @@
+ALTER TABLE public.openclaw_scheduler_heartbeats ALTER COLUMN user_id DROP NOT NULL;

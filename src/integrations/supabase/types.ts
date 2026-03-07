@@ -2217,7 +2217,7 @@ export type Database = {
           jobs_due: number
           jobs_failed: number
           note: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           beat_at?: string
@@ -2228,7 +2228,7 @@ export type Database = {
           jobs_due?: number
           jobs_failed?: number
           note?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           beat_at?: string
@@ -2239,7 +2239,7 @@ export type Database = {
           jobs_due?: number
           jobs_failed?: number
           note?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
