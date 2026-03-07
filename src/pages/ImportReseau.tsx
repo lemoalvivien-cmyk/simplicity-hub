@@ -147,6 +147,9 @@ export default function ImportReseau() {
       email: c.email || null,
       telephone: c.telephone || null,
       entreprise: c.entreprise || null,
+      secteur: c.secteur || null,
+      zone: c.zone || null,
+      langue: c.langue || null,
       origine: "import_csv",
       statut: "actif",
     }));

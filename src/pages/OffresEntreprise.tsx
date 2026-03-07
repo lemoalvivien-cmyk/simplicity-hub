@@ -378,6 +378,51 @@ export default function OffresEntreprise() {
           </div>
         )}
 
+        {/* ── OFFER INTELLIGENCE PANEL ──────────────────────── */}
+        <div className="card-surface p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles size={14} className="text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Conseils pour une offre qui tourne dans le réseau passif</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-3">
+            {[
+              {
+                icon: "🎯",
+                title: "Titre actionnable",
+                tip: "Un bon titre dit exactement ce que vous cherchez. Ex : "Cherche décideurs RH dans les PME industrielles du Maghreb".",
+              },
+              {
+                icon: "💰",
+                title: "Gain proposé clair",
+                tip: "Indiquez le type et le montant de la récompense. Plus c'est précis, plus les facilitateurs s'engagent.",
+              },
+              {
+                icon: "🌍",
+                title: "Corridor et langue",
+                tip: "Précisez les zones géographiques ciblées et la langue recommandée. Cela oriente le moteur de matching.",
+              },
+              {
+                icon: "👤",
+                title: "Profil cible précis",
+                tip: "Décrivez le contact idéal : poste, secteur, taille d'entreprise. Plus c'est ciblé, moins c'est rejeté.",
+              },
+              {
+                icon: "📦",
+                title: "Générez le pack IA",
+                tip: "Après publication, générez le pack OpenClaw : 7 formats de diffusion prêts (WhatsApp, email, post, pitch…).",
+              },
+            ].map(({ icon, title, tip }) => (
+              <div key={title} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "hsl(var(--secondary))" }}>
+                <span className="text-lg shrink-0">{icon}</span>
+                <div>
+                  <p className="text-xs font-bold text-foreground mb-0.5">{title}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{tip}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* CTA link to facilitateur marketplace */}
         <div className="rounded-xl p-4 flex items-center justify-between gap-3" style={{
           background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))",
