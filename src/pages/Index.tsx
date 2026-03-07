@@ -4,7 +4,7 @@ import HeroSection from "@/components/landing/HeroSection";
 import {
   ArrowRight, Zap, Target, Users, Send, TrendingUp, Play,
   Briefcase, CheckCircle2, Shield, Star, ChevronRight,
-  Building2, MessageSquare, BarChart3, Bot, Globe
+  Building2, MessageSquare, BarChart3, Bot, Globe, Brain
 } from "lucide-react";
 
 // ─── DATA ────────────────────────────────────────────────
