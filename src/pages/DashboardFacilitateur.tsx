@@ -4,7 +4,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Briefcase, Send, TrendingUp, CheckCircle2, ArrowRight,
   MessageCircle, Users, Zap, Search, Sparkles, Loader2,
-  Brain, Moon, Bot, Flag, Star, Bell, ThumbsUp
+  Brain, Moon, Bot, Flag, Star, Bell, ThumbsUp, Share2
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
