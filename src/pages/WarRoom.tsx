@@ -100,6 +100,11 @@ export default function WarRoom() {
     isCronActive, lastTick, lastDailySweep, totalAutoToday, todayRuns,
     hasEverRun, cronRunStatus, smokeTesting, lastSmokeResult, runSmokeTest,
   } = useOpenClawScheduledRuns();
+  const {
+    diagnostics: cronDiagnostics, loading: cronDiagLoading,
+    infraScore, allConfiguredInRepo, allConfiguredInDb, tickIsActive, lastChecked: cronCheckedAt,
+    reload: reloadCronDiag,
+  } = useOpenClawCronDiagnostic();
 
   const loading = runtimeLoading || runsLoading || execLoading;
 
