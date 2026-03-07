@@ -1,21 +1,22 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { OpenClawConfig } from "@/hooks/useOpenClaw";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, CheckCircle2, AlertTriangle,
-  Pause, Play, ChevronRight, Eye, Target, MessageSquare,
-  Briefcase, Filter, Activity, Radio, Sparkles,
-  TrendingUp, Users, Cpu, BookOpen, Wifi, WifiOff,
+  Pause, Play, ChevronRight, Target, MessageSquare,
+  Activity, Radio, Sparkles,
+  Users, Cpu, BookOpen, Wifi, WifiOff,
   Settings, RefreshCw, ExternalLink, AlertCircle,
-  Info, ArrowRight, Lightbulb, RotateCcw, Clock,
-  Mail, Star, Link, FlaskConical, Ban,
+  Info, Clock,
+  Link, FlaskConical, Ban, ShieldCheck, ServerCrash,
+  Fingerprint, Layers, PlugZap, ArrowRight, Filter,
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useOpenClaw, OpenClawAgent, ConnectionStatus } from "@/hooks/useOpenClaw";
 import { supabase } from "@/integrations/supabase/client";
 import { MorningBrief } from "@/components/openclaw/MorningBrief";
 
-type TabId = "monitoring" | "agents" | "plans" | "configuration";
+type TabId = "monitoring" | "agents" | "plans" | "configuration" | "preuve";
 
 // ── Métadonnées visuelles par agent ─────────────────────────────────────────
 const AGENT_META: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
@@ -207,9 +208,37 @@ export default function Agents() {
     config, connectionStatus, agents, logs, loading, syncing, healthChecking,
     activeAgents, pendingValidations, dossierSync, diagnostic,
     lastActivity, lastSyncLog,
-    saveConfig, checkHealth, syncDossier, toggleKillSwitch, createTestValidation,
+    saveConfig, checkHealth, syncDossier, toggleKillSwitch, createTestValidation, runStatusProbe,
     loadAll,
   } = useOpenClaw();
+
+  // Live Proof state
+  const [probeRunning, setProbeRunning] = useState(false);
+  const [probeResult, setProbeResult] = useState<{
+    gateway_configured: boolean;
+    gateway_reachable: boolean;
+    auth_ok: boolean;
+    channels_ok: boolean;
+    health_score: number;
+    probes: { label: string; status: string; detail: string; latency_ms?: number }[];
+    channels?: string[];
+    dossier?: { completion_score: number; last_sync_at: string | null; session_id: string | null; is_fresh: boolean };
+    kill_switch_active?: boolean;
+    last_log?: { summary: string; event_type: string; created_at: string } | null;
+    bootstrap_required?: boolean;
+    bootstrap_steps?: { step: number; label: string; detail: string }[];
+    checked_at?: string;
+  } | null>(null);
+
+  const handleRunProbe = useCallback(async () => {
+    setProbeRunning(true);
+    try {
+      const result = await runStatusProbe();
+      setProbeResult(result);
+    } finally {
+      setProbeRunning(false);
+    }
+  }, [runStatusProbe]);
 
   const handleSaveGateway = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -235,6 +264,7 @@ export default function Agents() {
     { id: "monitoring",    label: "Monitoring",   icon: Activity },
     { id: "agents",        label: "Mes agents",   icon: Cpu },
     { id: "plans",         label: "Plans",        icon: BookOpen },
+    { id: "preuve",        label: "Preuve live",  icon: ShieldCheck },
     { id: "configuration", label: "Connexion",    icon: Settings },
   ];
 
@@ -618,6 +648,299 @@ export default function Agents() {
         {activeTab === "plans" && (
           <MorningBrief compact={false} />
         )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+            TAB : PREUVE LIVE
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeTab === "preuve" && (
+          <div className="space-y-4">
+
+            {/* Header */}
+            <div className="rounded-2xl p-4 flex items-start gap-3"
+              style={{ background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))", border: "1px solid hsl(218 40% 25% / 0.5)" }}>
+              <ShieldCheck size={18} className="text-white mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-white">Preuve live OpenClaw</p>
+                <p className="text-xs text-white/60 mt-0.5">
+                  Vérification complète et réelle de la connexion, de l'auth, des canaux et de la synchronisation.
+                  Aucune simulation. Aucun faux statut.
+                </p>
+              </div>
+            </div>
+
+            {/* CTA Probe */}
+            <button
+              onClick={handleRunProbe}
+              disabled={probeRunning}
+              className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl font-semibold text-sm transition-all disabled:opacity-50"
+              style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+            >
+              {probeRunning
+                ? <><RefreshCw size={15} className="animate-spin" /> Probe en cours…</>
+                : <><PlugZap size={15} /> Lancer le probe complet</>}
+            </button>
+
+            {/* Résultats du probe */}
+            {probeResult && (
+              <>
+                {/* Score santé */}
+                <div className="card-surface p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Fingerprint size={15} style={{ color: "hsl(var(--primary))" }} />
+                      <p className="text-sm font-semibold text-foreground">Score de santé global</p>
+                    </div>
+                    <span className="text-sm font-bold"
+                      style={{ color: probeResult.health_score >= 70 ? "hsl(var(--success))" : probeResult.health_score >= 40 ? "hsl(38 80% 30%)" : "hsl(0 65% 40%)" }}>
+                      {probeResult.health_score}/100
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: "hsl(var(--muted))" }}>
+                    <div className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        width: `${probeResult.health_score}%`,
+                        background: probeResult.health_score >= 70
+                          ? "hsl(var(--success))"
+                          : probeResult.health_score >= 40
+                            ? "hsl(38 80% 30%)"
+                            : "hsl(0 65% 40%)",
+                      }} />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {probeResult.health_score === 100 ? "OpenClaw est parfaitement opérationnel."
+                      : probeResult.health_score >= 70 ? "La connexion est bonne. Quelques éléments à vérifier."
+                      : probeResult.health_score >= 40 ? "Connexion partielle. Vérifiez les points rouges ci-dessous."
+                      : "OpenClaw n'est pas accessible. Suivez les étapes ci-dessous."}
+                  </p>
+                  {probeResult.checked_at && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Probe effectué le {new Date(probeResult.checked_at).toLocaleString("fr-FR")}
+                    </p>
+                  )}
+                </div>
+
+                {/* Bootstrap si gateway non configuré */}
+                {probeResult.bootstrap_required && (
+                  <div className="card-surface p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ServerCrash size={15} style={{ color: "hsl(38 80% 30%)" }} />
+                      <p className="text-sm font-semibold text-foreground">OpenClaw n'est pas encore connecté</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Suivez ces étapes pour connecter votre gateway OpenClaw à WIINUP MAX.
+                    </p>
+                    <div className="space-y-3">
+                      {(probeResult.bootstrap_steps ?? []).map((step) => (
+                        <div key={step.step} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "hsl(var(--muted))" }}>
+                          <span className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                            style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+                            {step.step}
+                          </span>
+                          <div>
+                            <p className="text-xs font-semibold text-foreground">{step.label}</p>
+                            <code className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{step.detail}</code>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setActiveTab("configuration")}
+                      className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold"
+                      style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}
+                    >
+                      <Settings size={13} /> Configurer l'URL du gateway
+                    </button>
+                  </div>
+                )}
+
+                {/* Détail des probes */}
+                {probeResult.probes.length > 0 && (
+                  <div className="card-surface p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Layers size={14} style={{ color: "hsl(var(--primary))" }} />
+                      <p className="text-sm font-semibold text-foreground">Détail des vérifications</p>
+                    </div>
+                    <div className="space-y-2.5">
+                      {probeResult.probes.map((probe, i) => {
+                        const statusColor = probe.status === "ok"
+                          ? "hsl(var(--success))"
+                          : probe.status === "error"
+                            ? "hsl(0 65% 40%)"
+                            : probe.status === "not_configured"
+                              ? "hsl(38 80% 30%)"
+                              : "hsl(var(--muted-foreground))";
+                        const StatusIcon = probe.status === "ok" ? CheckCircle2
+                          : probe.status === "error" ? AlertCircle
+                          : probe.status === "not_configured" ? Info
+                          : Clock;
+                        return (
+                          <div key={i} className="flex items-start gap-3 p-3 rounded-xl"
+                            style={{
+                              background: probe.status === "error" ? "hsl(0 65% 98%)" : "hsl(var(--muted))",
+                              border: probe.status === "error" ? "1px solid hsl(0 65% 88%)" : "none",
+                            }}>
+                            <StatusIcon size={14} style={{ color: statusColor }} className="shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-xs font-semibold text-foreground">{probe.label}</p>
+                                <div className="flex items-center gap-1.5">
+                                  {probe.latency_ms !== undefined && (
+                                    <span className="text-xs text-muted-foreground">{probe.latency_ms}ms</span>
+                                  )}
+                                  <span className="text-xs font-semibold" style={{ color: statusColor }}>
+                                    {probe.status === "ok" ? "OK"
+                                      : probe.status === "error" ? "ERREUR"
+                                      : probe.status === "skipped" ? "Ignoré"
+                                      : "Non configuré"}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5 break-all">{probe.detail}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Channels disponibles */}
+                {(probeResult.channels ?? []).length > 0 && (
+                  <div className="card-surface p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <PlugZap size={14} style={{ color: "hsl(var(--success))" }} />
+                      <p className="text-sm font-semibold text-foreground">
+                        Outils disponibles ({probeResult.channels!.length})
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {probeResult.channels!.map((ch, i) => (
+                        <span key={i} className="text-xs px-2.5 py-1 rounded-full font-medium"
+                          style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+                          {ch}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Dossier status */}
+                {probeResult.dossier && (
+                  <div className="card-surface p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Filter size={14} style={{ color: "hsl(var(--primary))" }} />
+                      <p className="text-sm font-semibold text-foreground">Dossier entreprise</p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Complétion</span>
+                        <span className="text-xs font-semibold text-foreground">{probeResult.dossier.completion_score}%</span>
+                      </div>
+                      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
+                        <div className="h-full rounded-full"
+                          style={{ width: `${probeResult.dossier.completion_score}%`, background: "hsl(var(--primary))" }} />
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-xs text-muted-foreground">Dernière sync</span>
+                        <span className="text-xs font-semibold" style={{
+                          color: probeResult.dossier.last_sync_at ? "hsl(var(--success))" : "hsl(38 80% 30%)",
+                        }}>
+                          {probeResult.dossier.last_sync_at
+                            ? new Date(probeResult.dossier.last_sync_at).toLocaleString("fr-FR")
+                            : "Jamais synchronisé"}
+                        </span>
+                      </div>
+                      {probeResult.dossier.session_id && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">Session ID</span>
+                          <code className="text-xs font-mono" style={{ color: "hsl(var(--muted-foreground))" }}>
+                            {probeResult.dossier.session_id.slice(0, 20)}…
+                          </code>
+                        </div>
+                      )}
+                    </div>
+                    {!probeResult.dossier.last_sync_at && (
+                      <button onClick={syncDossier} disabled={syncing}
+                        className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold"
+                        style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
+                        <RefreshCw size={11} className={syncing ? "animate-spin" : ""} />
+                        Synchroniser le dossier
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Dernier événement */}
+                {probeResult.last_log && (
+                  <div className="card-surface p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Activity size={13} style={{ color: "hsl(var(--primary))" }} />
+                      <p className="text-sm font-semibold text-foreground">Dernier événement enregistré</p>
+                    </div>
+                    <p className="text-xs text-foreground">{probeResult.last_log.summary}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(probeResult.last_log.created_at).toLocaleString("fr-FR")}
+                    </p>
+                  </div>
+                )}
+
+                {/* Kill switch status */}
+                <div className="card-surface p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Ban size={14} style={{ color: probeResult.kill_switch_active ? "hsl(0 65% 40%)" : "hsl(var(--muted-foreground))" }} />
+                      <p className="text-sm font-semibold text-foreground">Kill Switch</p>
+                    </div>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                      style={{
+                        background: probeResult.kill_switch_active ? "hsl(0 65% 95%)" : "hsl(var(--success-light))",
+                        color: probeResult.kill_switch_active ? "hsl(0 65% 40%)" : "hsl(var(--success))",
+                      }}>
+                      {probeResult.kill_switch_active ? "⛔ Activé" : "Désactivé"}
+                    </span>
+                  </div>
+                  {probeResult.kill_switch_active && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Le Kill Switch est actif. Aucun agent ne peut exécuter d'action.
+                      Désactivez-le depuis l'onglet Connexion.
+                    </p>
+                  )}
+                </div>
+
+                {/* Actions rapides */}
+                <div className="flex gap-2">
+                  <button onClick={handleRunProbe} disabled={probeRunning}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold"
+                    style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}>
+                    <RefreshCw size={11} className={probeRunning ? "animate-spin" : ""} />
+                    Relancer le probe
+                  </button>
+                  {!probeResult.dossier?.last_sync_at && (
+                    <button onClick={syncDossier} disabled={syncing}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold"
+                      style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
+                      <ArrowRight size={11} />
+                      Synchroniser
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* État initial : pas encore de probe */}
+            {!probeResult && !probeRunning && (
+              <div className="card-surface p-8 text-center">
+                <ShieldCheck size={32} className="mx-auto mb-3 opacity-20" />
+                <p className="text-sm font-semibold text-foreground mb-1">Aucun probe effectué</p>
+                <p className="text-xs text-muted-foreground">
+                  Lancez un probe pour obtenir la preuve réelle de connexion avec OpenClaw.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+
 
         {/* ══════════════════════════════════════════════════════════════════
             TAB : CONFIGURATION

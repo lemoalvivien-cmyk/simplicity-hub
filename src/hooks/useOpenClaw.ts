@@ -415,6 +415,38 @@ export function useOpenClaw() {
     }
   }, [loadAll, toast]);
 
+  // ── Probe complet (openclaw-status) ───────────────────────────────────────
+  const runStatusProbe = useCallback(async () => {
+    setHealthChecking(true);
+    setConnectionStatus("checking");
+    try {
+      const result = await callEdgeFunction("openclaw-status", {});
+      const newStatus: ConnectionStatus = result.gateway_reachable
+        ? "connected"
+        : result.gateway_configured
+          ? "error"
+          : "not_configured";
+      if (config?.kill_switch_global) {
+        setConnectionStatus("kill_switch_on");
+      } else {
+        setConnectionStatus(newStatus);
+      }
+      setConfig((prev) => prev ? {
+        ...prev,
+        is_connected: result.gateway_reachable,
+        healthcheck_status: result.gateway_reachable ? "ok" : "error",
+        last_healthcheck_at: result.checked_at,
+      } : null);
+      await loadAll();
+      return result;
+    } catch (err) {
+      setConnectionStatus("error");
+      return { gateway_configured: false, gateway_reachable: false, auth_ok: false, health_score: 0, probes: [], bootstrap_required: true };
+    } finally {
+      setHealthChecking(false);
+    }
+  }, [config?.kill_switch_global, loadAll]);
+
   // ── Appel gateway direct ───────────────────────────────────────────────────
   const callGateway = useCallback(async (
     tool: string,
@@ -466,7 +498,7 @@ export function useOpenClaw() {
     // Dérivés
     lastActivity, lastSyncLog, lastHealthLog, diagnostic,
     // Actions
-    loadAll, saveConfig, checkHealth, syncDossier,
+    loadAll, saveConfig, checkHealth, syncDossier, runStatusProbe,
     toggleKillSwitch, processValidation, callGateway, createTestValidation,
   };
 }
