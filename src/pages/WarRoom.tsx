@@ -68,6 +68,11 @@ export default function WarRoom() {
     totalOutputs, totalRecs, totalActions,
     lastExecutionByType, executeJob, loading: execLoading,
   } = useOpenClawExecutions();
+  const {
+    pendingJobs, doneToday, overdueJobs, latestHeartbeat, engineHealthy,
+    totalOutputToday, motor1Done, motor2Done,
+    triggerScheduler, triggering: schedulerTriggering,
+  } = useOpenClawScheduler();
 
   const loading = runtimeLoading || runsLoading || execLoading;
 
