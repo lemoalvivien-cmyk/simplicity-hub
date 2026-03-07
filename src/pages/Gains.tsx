@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import { CheckCircle2, Clock, ArrowDownCircle, XCircle, Euro, Info, TrendingUp, ChevronRight, Loader2 } from "lucide-react";
+import { CheckCircle2, Clock, ArrowDownCircle, XCircle, Euro, Info, TrendingUp, ChevronRight, Loader2, Link2, Share2, Flame, Target } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -10,8 +10,11 @@ type GainTab = "tous" | GainStatus;
 
 interface Gain {
   id: string;
-  introduction_id: string;
-  mission_id: string;
+  introduction_id: string | null;
+  mission_id: string | null;
+  share_link_id: string | null;
+  shared_offer_id: string | null;
+  source: string | null;
   montant: number;
   statut: GainStatus;
   created_at: string;
@@ -33,6 +36,27 @@ const statusConfig: Record<GainStatus, { icon: JSX.Element; color: string; bg: s
   annule: { icon: <XCircle size={13} />, color: "hsl(var(--destructive))", bg: "hsl(0 72% 95%)", label: "Annulé", explication_courte: "Ce gain n'a pas abouti." },
 };
 
+const SOURCE_LABELS: Record<string, { label: string; icon: JSX.Element; color: string }> = {
+  mission_directe: { label: "Mission directe", icon: <Target size={10} />, color: "hsl(var(--primary))" },
+  diffusion_passive: { label: "Diffusion passive", icon: <Flame size={10} />, color: "hsl(24 100% 52%)" },
+  lien_traque: { label: "Lien traqué", icon: <Link2 size={10} />, color: "hsl(38 80% 40%)" },
+  apporteur_actif: { label: "Apport actif", icon: <Share2 size={10} />, color: "hsl(218 72% 55%)" },
+  apporteur_passif: { label: "Apport passif", icon: <Flame size={10} />, color: "hsl(24 100% 52%)" },
+  deal_radar: { label: "Deal Radar", icon: <Target size={10} />, color: "hsl(152 62% 35%)" },
+  demande_entreprise: { label: "Demande entreprise", icon: <Share2 size={10} />, color: "hsl(218 72% 55%)" },
+};
+
+function SourceBadge({ source }: { source: string | null }) {
+  if (!source) return null;
+  const cfg = SOURCE_LABELS[source] || { label: source, icon: <Share2 size={10} />, color: "hsl(var(--muted-foreground))" };
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+      style={{ background: `${cfg.color}18`, color: cfg.color }}>
+      {cfg.icon} {cfg.label}
+    </span>
+  );
+}
+
 export default function Gains() {
   const { user } = useAuth();
   const [gains, setGains] = useState<Gain[]>([]);
@@ -45,19 +69,20 @@ export default function Gains() {
       setLoading(true);
       const { data } = await db
         .from("gains")
-        .select("*")
+        .select("id, introduction_id, mission_id, share_link_id, shared_offer_id, source, montant, statut, created_at, updated_at")
         .eq("facilitateur_id", user.id)
         .order("created_at", { ascending: false });
-      setGains(data || []);
+      setGains((data || []) as Gain[]);
       setLoading(false);
     };
     load();
   }, [user]);
 
   const filtered = activeTab === "tous" ? gains : gains.filter(g => g.statut === activeTab);
-  const totalValide = gains.filter(g => g.statut === "valide").reduce((s, g) => s + g.montant, 0);
-  const totalAttendu = gains.filter(g => g.statut === "en_attente").reduce((s, g) => s + g.montant, 0);
-  const totalRecu = gains.filter(g => g.statut === "recu").reduce((s, g) => s + g.montant, 0);
+  const totalValide = gains.filter(g => g.statut === "valide").reduce((s, g) => s + (g.montant || 0), 0);
+  const totalAttendu = gains.filter(g => g.statut === "en_attente").reduce((s, g) => s + (g.montant || 0), 0);
+  const totalRecu = gains.filter(g => g.statut === "recu").reduce((s, g) => s + (g.montant || 0), 0);
+  const passiveGainsCount = gains.filter(g => g.source === "diffusion_passive" || g.source === "lien_traque" || g.source === "apporteur_passif").length;
   const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 
   return (
@@ -83,6 +108,25 @@ export default function Gains() {
             </div>
           ))}
         </div>
+
+        {/* Passive attribution banner */}
+        {passiveGainsCount > 0 && (
+          <div className="mb-5 p-4 rounded-xl flex items-center gap-3" style={{
+            background: "hsl(24 100% 52% / 0.08)",
+            border: "1px solid hsl(24 100% 52% / 0.25)"
+          }}>
+            <Flame size={16} style={{ color: "hsl(24 100% 52%)" }} className="shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {passiveGainsCount} gain{passiveGainsCount > 1 ? "s issus" : " issu"} de votre diffusion passive.
+              </p>
+              <p className="text-xs text-muted-foreground">Votre apport d'affaires passif génère des résultats réels.</p>
+            </div>
+            <Link to="/chaud" className="text-xs font-semibold shrink-0" style={{ color: "hsl(24 100% 52%)" }}>
+              Voir →
+            </Link>
+          </div>
+        )}
 
         {/* Info paiement */}
         <div className="p-4 rounded-xl border border-border bg-muted flex gap-3 mb-6">
@@ -137,7 +181,8 @@ export default function Gains() {
                           {formatDate(g.created_at).charAt(0)}
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Introduction · {formatDate(g.created_at)}</p>
+                          <p className="text-xs text-muted-foreground">{formatDate(g.created_at)}</p>
+                          <SourceBadge source={g.source} />
                         </div>
                       </div>
                       <div className="text-right shrink-0">
@@ -149,12 +194,21 @@ export default function Gains() {
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground leading-relaxed ml-11">{cfg.explication_courte}</p>
-                    <div className="mt-2 ml-11">
-                      <Link to={`/introductions/${g.introduction_id}`}
-                        className="text-xs text-primary font-medium hover:underline inline-flex items-center gap-1">
-                        Voir l'introduction <ChevronRight size={11} />
-                      </Link>
-                    </div>
+                    {(g.source === "diffusion_passive" || g.source === "lien_traque") && (
+                      <div className="mt-1.5 ml-11 p-2 rounded-lg" style={{ background: "hsl(24 100% 52% / 0.06)" }}>
+                        <p className="text-xs" style={{ color: "hsl(24 100% 45%)" }}>
+                          Cette diffusion a créé une opportunité. Votre apport d'affaires passif rapporte vraiment.
+                        </p>
+                      </div>
+                    )}
+                    {g.introduction_id && (
+                      <div className="mt-2 ml-11">
+                        <Link to={`/introductions/${g.introduction_id}`}
+                          className="text-xs text-primary font-medium hover:underline inline-flex items-center gap-1">
+                          Voir l'introduction <ChevronRight size={11} />
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 );
               })}

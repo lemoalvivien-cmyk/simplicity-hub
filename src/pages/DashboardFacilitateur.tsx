@@ -302,28 +302,22 @@ export default function DashboardFacilitateur() {
         </div>
 
         {/* ── BLOC 4 — CE QUI CHAUFFE ─────────────────────── */}
-        <div className="rounded-xl border-2 p-5" style={{ borderColor: "hsl(var(--accent))", background: "hsl(var(--accent-light))" }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Zap size={14} style={{ color: "hsl(var(--accent))" }} />
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(38 80% 30%)" }}>Ce qui chauffe maintenant</p>
+        <Link to="/chaud" className="rounded-xl border-2 p-5 flex items-center justify-between gap-4 hover:opacity-90 transition-all" style={{
+          borderColor: "hsl(24 100% 52% / 0.4)",
+          background: "linear-gradient(135deg, hsl(24 80% 8%), hsl(38 70% 11%))"
+        }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: "linear-gradient(135deg, hsl(24 100% 52%), hsl(38 80% 45%))" }}>
+              <Zap size={18} className="text-white" />
+            </div>
+            <div>
+              <p className="font-bold text-white text-sm">Ce qui chauffe maintenant</p>
+              <p className="text-white/50 text-xs mt-0.5">Intérêts · Signaux · Opportunités passives</p>
+            </div>
           </div>
-          <div className="space-y-2">
-            {[
-              { to: "/missions", label: "Missions disponibles", desc: "Connaissez-vous quelqu'un qui correspond ?", icon: "🎯" },
-              { to: "/reseau", label: "Mon réseau intelligent", desc: "Connexions utiles · Corridors actifs", icon: "🌐" },
-              { to: "/radar", label: "Deal Radar", desc: "Opportunités détectées dans votre secteur", icon: "📡" },
-            ].map(({ to, label, desc, icon }) => (
-              <Link key={to} to={to} className="flex items-center gap-3 p-3 rounded-xl bg-background/60 hover:bg-background transition-colors">
-                <span className="text-lg shrink-0">{icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{label}</p>
-                  <p className="text-xs text-muted-foreground">{desc}</p>
-                </div>
-                <ArrowRight size={12} className="text-muted-foreground shrink-0" />
-              </Link>
-            ))}
-          </div>
-        </div>
+          <ArrowRight size={16} className="text-white/50 shrink-0" />
+        </Link>
 
         {/* ── BLOC 5 — MES GAINS ──────────────────────────── */}
         <div className="card-surface p-5">
