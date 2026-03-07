@@ -80,6 +80,11 @@ export default function Operations() {
 
   const { runs, sessions, memory, activeRun, blockedRuns, loading: runsLoading } = useOpenClawRuns();
   const { config, pendingValidations } = useOpenClaw();
+  const {
+    recentExecutions, failedExecutions, runningExecutions,
+    totalOutputs, totalRecs, totalActions, lastExecutionByType,
+    executeJob, loading: execLoading,
+  } = useOpenClawExecutions();
 
   const loading = runtimeLoading || runsLoading;
 
@@ -95,13 +100,25 @@ export default function Operations() {
     setTriggeringJob(null);
   };
 
+  const handleExecuteJob = async (jobType: string, jobId?: string) => {
+    setTriggeringJob(jobId || jobType);
+    const result = await executeJob(jobType, jobId);
+    setTriggeringJob(null);
+    if (result.success) {
+      toast.success(result.summary || "Job exécuté.", { description: result.outputCount ? `${result.outputCount} sortie${result.outputCount > 1 ? "s" : ""} produite${result.outputCount > 1 ? "s" : ""}` : undefined });
+    } else {
+      toast.error("Le job a échoué.", { description: result.error });
+    }
+  };
+
   const tabs: { id: TabId; label: string; icon: React.ElementType; badge?: number }[] = [
-    { id: "runtime",   label: "Runtime",   icon: Brain },
-    { id: "channels",  label: "Canaux",    icon: Wifi,       badge: blockedChannels.length || undefined },
-    { id: "jobs",      label: "Cycles",    icon: Clock },
-    { id: "sessions",  label: "Sessions",  icon: Layers },
-    { id: "tools",     label: "Outils",    icon: Cpu },
-    { id: "boundary",  label: "Sécurité",  icon: Lock },
+    { id: "runtime",    label: "Runtime",    icon: Brain },
+    { id: "channels",   label: "Canaux",     icon: Wifi,      badge: blockedChannels.length || undefined },
+    { id: "jobs",       label: "Cycles",     icon: Clock },
+    { id: "executions", label: "Exécutions", icon: BarChart3, badge: failedExecutions.length || undefined },
+    { id: "sessions",   label: "Sessions",   icon: Layers },
+    { id: "tools",      label: "Outils",     icon: Cpu },
+    { id: "boundary",   label: "Sécurité",   icon: Lock },
   ];
 
   if (loading) {
