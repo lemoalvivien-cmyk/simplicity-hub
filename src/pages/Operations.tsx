@@ -1022,18 +1022,18 @@ export default function Operations() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════
-            TAB: CANAL — Actions canal préparées ou exécutées par OpenClaw
+            TAB: CANAL — Real delivery + receipts + outcome loop
         ══════════════════════════════════════════════════════════════════ */}
         {activeTab === "canal" && (
           <div className="space-y-4">
 
-            {/* Stats rapides */}
+            {/* Delivery stats */}
             <div className="grid grid-cols-4 gap-2">
               {[
-                { label: "Prêtes",         value: preparedActions.length,        color: "hsl(218 72% 55%)" },
-                { label: "Accord requis",  value: chPendingApprovals.length,     color: "hsl(38 80% 45%)" },
-                { label: "Envoyées",       value: channelActions.filter(a => a.status === "sent").length,     color: "hsl(var(--success))" },
-                { label: "Échouées",       value: channelActions.filter(a => a.status === "failed").length,   color: "hsl(0 65% 45%)" },
+                { label: "Préparées",   value: preparedActions.length + chPendingApprovals.length, color: "hsl(218 72% 55%)" },
+                { label: "Envoyées",   value: allDispatched.length,    color: "hsl(var(--success))" },
+                { label: "Réponses",   value: allReplied.length,       color: "hsl(280 60% 55%)" },
+                { label: "Échecs",     value: allDeliveryFailed.length, color: "hsl(0 65% 45%)" },
               ].map(({ label, value, color }) => (
                 <div key={label} className="card-surface p-3 text-center">
                   <p className="text-base font-bold" style={{ color }}>{value}</p>
@@ -1042,18 +1042,44 @@ export default function Operations() {
               ))}
             </div>
 
-            {/* Pendant votre absence — contexte rapide */}
-            {whileYouSlept.length > 0 && (
-              <div className="rounded-2xl p-3 flex items-start gap-2.5"
-                style={{ background: "hsl(280 50% 8%)", border: "1px solid hsl(280 40% 22% / 0.5)" }}>
-                <span className="text-sm">🌙</span>
-                <p className="text-xs" style={{ color: "hsl(280 60% 65%)" }}>
-                  <strong style={{ color: "hsl(280 60% 75%)" }}>{whileYouSlept.length} action{whileYouSlept.length > 1 ? "s" : ""}</strong> préparée{whileYouSlept.length > 1 ? "s" : ""} pendant votre absence — déclenchées automatiquement ou en mode assisté.
-                </p>
+            {/* Channel capability matrix */}
+            <div className="card-surface p-4">
+              <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
+                <Wifi size={12} className="text-primary" /> Matrice de dispatch par canal
+              </p>
+              <div className="space-y-2">
+                {CHANNEL_CAPABILITY_MATRIX.map(cap => {
+                  const dispatch = getDispatchLabel(cap);
+                  const channelDeliveries = deliveriesByChannel[cap.channel] || [];
+                  const sent = channelDeliveries.filter(d => d.dispatch_status === "dispatched" || d.dispatch_status === "delivered").length;
+                  return (
+                    <div key={cap.channel} className="flex items-center gap-3 py-1.5 border-b border-border/20 last:border-0">
+                      <span className="text-base shrink-0">{cap.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground">{cap.channel_name}</p>
+                        <p className="text-xs mt-0.5" style={{ color: dispatch.color }}>
+                          {dispatch.badge} {dispatch.label}
+                        </p>
+                      </div>
+                      {sent > 0 && (
+                        <span className="text-xs font-bold px-1.5 py-0.5 rounded"
+                          style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+                          {sent} envoyé{sent > 1 ? "s" : ""}
+                        </span>
+                      )}
+                      {!cap.can_send_validated && !cap.can_auto_send && (
+                        <span className="text-xs px-1.5 py-0.5 rounded"
+                          style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                          {cap.availability === "export" ? "Export humain" : "Préparé"}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
 
-            {/* Approbations en attente */}
+            {/* Accord requis */}
             {chPendingApprovals.length > 0 && (
               <div>
                 <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 uppercase tracking-wider">
@@ -1063,7 +1089,8 @@ export default function Operations() {
                 <div className="space-y-2">
                   {chPendingApprovals.map((a) => {
                     const chMeta = CHANNEL_META[a.channel] ?? { emoji: "📡", label: a.channel, color: "hsl(var(--muted-foreground))" };
-                    const tmMeta = TRIGGER_MODE_META[a.trigger_mode as "auto" | "assisted" | "manual"];
+                    const cap = getChannelCapability(a.channel);
+                    const dispatch = getDispatchLabel(cap);
                     return (
                       <div key={a.id} className="card-surface p-4">
                         <div className="flex items-start gap-3">
@@ -1072,28 +1099,46 @@ export default function Operations() {
                             {chMeta.emoji}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-0.5">
+                            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                               <p className="text-xs font-semibold text-foreground">{chMeta.label}</p>
                               <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md"
-                                style={{ background: `${tmMeta.color}22`, color: tmMeta.color }}>
-                                {tmMeta.badge} {a.trigger_mode === "auto" ? "Auto" : "Assisté"}
+                                style={{ background: `${dispatch.color}22`, color: dispatch.color }}>
+                                {dispatch.badge} {dispatch.label}
                               </span>
                             </div>
                             <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                               {a.payload_summary || `Action ${a.action_type} préparée`}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {a.job_type} · {new Date(a.created_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" })}
-                            </p>
+                            {cap.honest_note && (
+                              <p className="text-xs mt-1 italic" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}>
+                                {cap.honest_note}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="flex gap-2 mt-3">
-                          <button
-                            onClick={() => { approveAction(a.id); toast.success("Action approuvée."); }}
-                            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl transition-all"
-                            style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
-                            <CheckCheck size={11} /> Approuver
-                          </button>
+                          {cap.can_send_validated && (
+                            <button
+                              onClick={async () => {
+                                const r = await dispatchAction(a.id, "validated");
+                                if (r.ok) toast.success("Action envoyée après validation.");
+                                else { approveAction(a.id); toast.success("Action approuvée."); }
+                              }}
+                              disabled={dispatching === a.id}
+                              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl transition-all"
+                              style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+                              {dispatching === a.id ? <RefreshCw size={11} className="animate-spin" /> : <Send size={11} />}
+                              {cap.availability === "export" ? "Marquer envoyé" : "Envoyer"}
+                            </button>
+                          )}
+                          {!cap.can_send_validated && (
+                            <button
+                              onClick={() => { approveAction(a.id); toast.success("Action approuvée pour export."); }}
+                              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl transition-all"
+                              style={{ background: "hsl(218 72% 50% / 0.12)", color: "hsl(218 72% 55%)" }}>
+                              <Package size={11} /> Prêt à exporter
+                            </button>
+                          )}
                           <button
                             onClick={() => { cancelAction(a.id); toast("Action annulée."); }}
                             className="flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-xl transition-all"
@@ -1108,32 +1153,58 @@ export default function Operations() {
               </div>
             )}
 
-            {/* Actions préparées */}
+            {/* Prêtes à envoyer */}
             {preparedActions.length > 0 && (
               <div>
                 <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Prêtes à envoyer</p>
                 <div className="space-y-2">
                   {preparedActions.map((a) => {
                     const chMeta = CHANNEL_META[a.channel] ?? { emoji: "📡", label: a.channel, color: "hsl(var(--muted-foreground))" };
+                    const cap = getChannelCapability(a.channel);
+                    const dispatch = getDispatchLabel(cap);
                     return (
                       <div key={a.id} className="card-surface p-3 flex items-start gap-3">
                         <span className="text-base shrink-0 mt-0.5">{chMeta.emoji}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-foreground">{chMeta.label}</p>
-                          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
-                            {a.payload_summary || `Action ${a.action_type}`}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{a.job_type}</p>
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <p className="text-xs font-semibold text-foreground">{chMeta.label}</p>
+                            <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                              style={{ background: `${dispatch.color}18`, color: dispatch.color }}>
+                              {dispatch.badge} {dispatch.label}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2">{a.payload_summary || `Action ${a.action_type}`}</p>
                         </div>
-                        <div className="shrink-0 flex flex-col items-end gap-1">
-                          <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
-                            style={{ background: "hsl(218 72% 50% / 0.12)", color: "hsl(218 72% 55%)" }}>
-                            🔵 Prêt
-                          </span>
+                        <div className="flex flex-col gap-1 shrink-0">
+                          {cap.can_send_validated ? (
+                            <button
+                              onClick={async () => {
+                                const r = await dispatchAction(a.id, "validated");
+                                if (r.ok) toast.success("Envoyé.");
+                                else toast.error(r.error ?? "Erreur");
+                              }}
+                              disabled={dispatching === a.id}
+                              className="text-xs font-bold px-2 py-1 rounded-lg transition-all flex items-center gap-1"
+                              style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+                              {dispatching === a.id ? <RefreshCw size={9} className="animate-spin" /> : <Send size={9} />}
+                              Envoyer
+                            </button>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                await dispatchAction(a.id, "export");
+                                toast.success("Marqué prêt à exporter.");
+                              }}
+                              disabled={dispatching === a.id}
+                              className="text-xs font-bold px-2 py-1 rounded-lg transition-all flex items-center gap-1"
+                              style={{ background: "hsl(218 72% 50% / 0.12)", color: "hsl(218 72% 55%)" }}>
+                              <Package size={9} /> Exporter
+                            </button>
+                          )}
                           <button
-                            onClick={() => { cancelAction(a.id); toast("Action annulée."); }}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                            <XCircle size={11} />
+                            onClick={() => { cancelAction(a.id); toast("Annulée."); }}
+                            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center">
+                            <XCircle size={10} />
                           </button>
                         </div>
                       </div>
@@ -1143,31 +1214,36 @@ export default function Operations() {
               </div>
             )}
 
-            {/* Historique toutes actions */}
-            {channelActions.filter(a => a.status === "sent" || a.status === "failed").length > 0 && (
+            {/* Historique deliveries */}
+            {deliveries.length > 0 && (
               <div>
-                <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Historique récent</p>
+                <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Historique d'envois</p>
                 <div className="space-y-1.5">
-                  {channelActions.filter(a => a.status === "sent" || a.status === "failed").slice(0, 10).map((a) => {
-                    const chMeta = CHANNEL_META[a.channel] ?? { emoji: "📡", label: a.channel, color: "hsl(var(--muted-foreground))" };
-                    const stMeta = STATUS_META[a.status];
-                    const tmMeta = TRIGGER_MODE_META[a.trigger_mode as "auto" | "assisted" | "manual"];
+                  {deliveries.slice(0, 15).map((d) => {
+                    const cap = getChannelCapability(d.channel);
+                    const stMeta = DELIVERY_STATUS_META[d.dispatch_status as keyof typeof DELIVERY_STATUS_META] ?? DELIVERY_STATUS_META.prepared;
                     return (
-                      <div key={a.id} className="flex items-center gap-2.5 p-2.5 rounded-xl"
+                      <div key={d.id} className="flex items-center gap-2.5 p-2.5 rounded-xl"
                         style={{ background: "hsl(var(--muted))" }}>
-                        <span className="text-sm shrink-0">{chMeta.emoji}</span>
+                        <span className="text-sm shrink-0">{cap.emoji}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-foreground truncate">{a.payload_summary || `${chMeta.label} — ${a.action_type}`}</p>
+                          <p className="text-xs font-medium text-foreground truncate">{cap.channel_name}</p>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-xs font-semibold" style={{ color: stMeta.color }}>{stMeta.badge} {stMeta.label}</span>
-                            <span className="text-xs px-1.5 py-0.5 rounded-md"
-                              style={{ background: `${tmMeta.color}22`, color: tmMeta.color, fontSize: "10px" }}>
-                              {tmMeta.badge} {a.trigger_mode}
+                            <span className="text-xs font-semibold" style={{ color: stMeta.color }}>
+                              {stMeta.badge} {stMeta.label}
                             </span>
+                            {d.dispatch_mode && (
+                              <span className="text-xs text-muted-foreground">
+                                {d.dispatch_mode === "auto" ? "⚡ Auto" : d.dispatch_mode === "validated" ? "✅ Validé" : "📋 Export"}
+                              </span>
+                            )}
                           </div>
+                          {d.error_summary && (
+                            <p className="text-xs mt-0.5 truncate" style={{ color: "hsl(0 65% 45%)" }}>{d.error_summary}</p>
+                          )}
                         </div>
                         <p className="text-xs text-muted-foreground shrink-0">
-                          {new Date(a.created_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                          {new Date(d.created_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
                         </p>
                       </div>
                     );
@@ -1176,25 +1252,15 @@ export default function Operations() {
               </div>
             )}
 
-            {channelActions.length === 0 && (
+            {channelActions.length === 0 && deliveries.length === 0 && (
               <div className="card-surface p-8 text-center">
                 <Radio size={28} className="mx-auto mb-3 opacity-30" />
                 <p className="text-sm font-medium text-foreground mb-1">Aucune action canal encore</p>
                 <p className="text-xs text-muted-foreground">
-                  OpenClaw générera des actions canal lors des prochains cycles automatiques.
+                  OpenClaw générera des actions canal lors des prochains cycles autonomes.
                 </p>
               </div>
             )}
-
-            {/* Mode canal honnête */}
-            <div className="rounded-2xl p-3 flex items-start gap-2"
-              style={{ background: "hsl(var(--muted))" }}>
-              <Radio size={13} className="text-primary shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Les actions canal sont préparées par OpenClaw lors des cycles autonomes.
-                Selon votre mode d'autonomie, elles sont envoyées directement, soumises à validation, ou simplement préparées.
-              </p>
-            </div>
 
           </div>
         )}
