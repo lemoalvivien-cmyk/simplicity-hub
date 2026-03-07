@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Play, Zap, Activity, Layers, Target, Brain, AlertTriangle,
-  MessageSquare, Smartphone, SlidersHorizontal, Radar
+  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag
 } from "lucide-react";
 
 type UserRole = "entreprise" | "facilitateur";
@@ -56,8 +56,9 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
              ],
            },
            {
-             label: "App",
+             label: "Réseau",
              items: [
+               { to: "/facilitateurs", label: "Vitrine facilitateurs", icon: Users },
                { to: "/canaux", label: "WhatsApp & Canaux", icon: MessageSquare },
                { to: "/install", label: "Installer l'app", icon: Smartphone },
              ],
@@ -66,6 +67,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
             label: "Compte",
             items: [
               { to: "/help", label: "Aide", icon: HelpCircle },
+              { to: "/signalement", label: "Signaler un problème", icon: Flag },
               { to: "/profil/entreprise", label: "Mon profil", icon: Building2 },
             ],
           },
@@ -105,15 +107,19 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
              ],
            },
            {
-             label: "App",
+             label: "Réseau",
              items: [
+               { to: "/missions", label: "Toutes les missions", icon: Briefcase },
                { to: "/canaux", label: "WhatsApp & Canaux", icon: MessageSquare },
                { to: "/install", label: "Installer l'app", icon: Smartphone },
              ],
            },
           {
             label: "Compte",
-            items: [{ to: "/help", label: "Aide", icon: HelpCircle }],
+            items: [
+              { to: "/help", label: "Aide", icon: HelpCircle },
+              { to: "/signalement", label: "Signaler un problème", icon: Flag },
+            ],
           },
         ];
 
