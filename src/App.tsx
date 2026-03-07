@@ -70,6 +70,7 @@ import Autonomie from "./pages/Autonomie";
 
 // Facilitateurs & Signalement
 import Facilitateurs from "./pages/Facilitateurs";
+import FacilitateurDetail from "./pages/FacilitateurDetail";
 import Signalement from "./pages/Signalement";
 
 // Admin pages
