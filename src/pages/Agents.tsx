@@ -264,6 +264,7 @@ export default function Agents() {
     { id: "monitoring",    label: "Monitoring",   icon: Activity },
     { id: "agents",        label: "Mes agents",   icon: Cpu },
     { id: "plans",         label: "Plans",        icon: BookOpen },
+    { id: "preuve",        label: "Preuve live",  icon: ShieldCheck },
     { id: "configuration", label: "Connexion",    icon: Settings },
   ];
 
