@@ -145,6 +145,7 @@ const App = () => (
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
               <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+              <Route path="/install" element={<ProtectedRoute><Install /></ProtectedRoute>} />
 
               {/* ── Admin ────────────────────────────────── */}
               <Route path="/admin" element={<ProtectedRoute adminOnly><AdminOverview /></ProtectedRoute>} />
