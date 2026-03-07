@@ -115,7 +115,8 @@ export function useOpenClaw() {
       });
     }
 
-    setAgents((agentsRes.data ?? []) as OpenClawAgent[]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setAgents((agentsRes.data ?? []) as unknown as OpenClawAgent[]);
     setValidations((validationsRes.data ?? []) as OpenClawValidation[]);
     setLogs((logsRes.data ?? []) as OpenClawLog[]);
     setLoading(false);
