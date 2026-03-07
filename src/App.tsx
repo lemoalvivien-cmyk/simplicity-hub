@@ -134,6 +134,7 @@ const App = () => (
               {/* ── OpenClaw — Cerveau agentique ─────────── */}
               <Route path="/agents" element={<ProtectedRoute><Agents /></ProtectedRoute>} />
               <Route path="/dossier" element={<ProtectedRoute><Dossier /></ProtectedRoute>} />
+              <Route path="/validations" element={<ProtectedRoute><Validations /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />

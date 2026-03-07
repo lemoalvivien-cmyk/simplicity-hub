@@ -3,9 +3,9 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
   Pause, Play, ChevronRight, Eye, Target, MessageSquare,
-  BarChart3, Filter, Activity, Lock, Radio, Sparkles,
-  TrendingUp, Users, XCircle, Cpu, BookOpen, FlaskConical,
-  Database, Globe, Mail, FileText,
+  Briefcase, Filter, Activity, Lock, Radio, Sparkles,
+  TrendingUp, Users, Cpu, BookOpen, FlaskConical,
+  Database, Globe, Mail, FileText, Star,
   ArrowRight, ThumbsUp, ThumbsDown, Lightbulb, RotateCcw,
   ChevronDown
 } from "lucide-react";
@@ -969,19 +969,3 @@ export default function Agents() {
   );
 }
 
-// Petit hack pour l'import Briefcase/Star manquant
-function Briefcase({ size, className }: { size: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect width="20" height="14" x="2" y="7" rx="2" ry="2"/>
-      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-    </svg>
-  );
-}
-function Star({ size, className }: { size: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-    </svg>
-  );
-}
