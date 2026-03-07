@@ -201,7 +201,7 @@ function LogEntry({ log }: { log: { event_type: string; summary: string; created
 // PAGE PRINCIPALE
 // ══════════════════════════════════════════════════════════════════════════════
 export default function Agents() {
-  const [activeTab, setActiveTab] = useState<TabId>("monitoring");
+  const [activeTab, setActiveTab] = useState<TabId>("cerveau");
   const [gatewayUrlInput, setGatewayUrlInput] = useState("");
   const [gatewaySecretInput, setGatewaySecretInput] = useState("");
 
