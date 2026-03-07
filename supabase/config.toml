@@ -14,3 +14,18 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.openclaw-healthcheck]
+verify_jwt = false
+
+[functions.openclaw-gateway]
+verify_jwt = false
+
+[functions.openclaw-dossier-sync]
+verify_jwt = false
+
+[functions.openclaw-kill-switch]
+verify_jwt = false
+
+[functions.openclaw-validate]
+verify_jwt = false

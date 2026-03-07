@@ -512,6 +512,303 @@ export type Database = {
         }
         Relationships: []
       }
+      openclaw_agents: {
+        Row: {
+          action_en_cours: string | null
+          actions_aujourd_hui: number
+          agent_id: string
+          created_at: string
+          derniere_activite_at: string | null
+          id: string
+          kill_switch: boolean
+          nom: string
+          outils_autorises: Json | null
+          role: string
+          statut: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_en_cours?: string | null
+          actions_aujourd_hui?: number
+          agent_id: string
+          created_at?: string
+          derniere_activite_at?: string | null
+          id?: string
+          kill_switch?: boolean
+          nom: string
+          outils_autorises?: Json | null
+          role: string
+          statut?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_en_cours?: string | null
+          actions_aujourd_hui?: number
+          agent_id?: string
+          created_at?: string
+          derniere_activite_at?: string | null
+          id?: string
+          kill_switch?: boolean
+          nom?: string
+          outils_autorises?: Json | null
+          role?: string
+          statut?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      openclaw_config: {
+        Row: {
+          autonomie_level: string
+          created_at: string
+          gateway_secret: string | null
+          gateway_url: string | null
+          healthcheck_status: string | null
+          id: string
+          is_connected: boolean
+          kill_switch_global: boolean
+          last_healthcheck_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autonomie_level?: string
+          created_at?: string
+          gateway_secret?: string | null
+          gateway_url?: string | null
+          healthcheck_status?: string | null
+          id?: string
+          is_connected?: boolean
+          kill_switch_global?: boolean
+          last_healthcheck_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autonomie_level?: string
+          created_at?: string
+          gateway_secret?: string | null
+          gateway_url?: string | null
+          healthcheck_status?: string | null
+          id?: string
+          is_connected?: boolean
+          kill_switch_global?: boolean
+          last_healthcheck_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      openclaw_dossier: {
+        Row: {
+          actions_sensibles: string | null
+          activite: string | null
+          angle_principal: string | null
+          canaux_autorises: string[] | null
+          canaux_interdits: string[] | null
+          cas_usage: string | null
+          cible_ideale: string | null
+          clients_interdits: string | null
+          completion_score: number | null
+          created_at: string
+          derniere_sync_openclaw_at: string | null
+          exclusions_geo: string | null
+          id: string
+          mode_prospection: string | null
+          niveau_formalite: string | null
+          objectif_introductions: number | null
+          objectif_opportunites: number | null
+          objectif_rdv: number | null
+          offre: string | null
+          openclaw_session_id: string | null
+          priorite_secteur: string | null
+          secteurs_prioritaires: string | null
+          style_commercial: string | null
+          taille_cible: string | null
+          ton_messages: string | null
+          type_decideur: string | null
+          type_entreprise: string | null
+          updated_at: string
+          user_id: string
+          valeur_proposee: string | null
+          validation_humaine_requise: boolean
+          villes: string | null
+          zone_geo: string | null
+        }
+        Insert: {
+          actions_sensibles?: string | null
+          activite?: string | null
+          angle_principal?: string | null
+          canaux_autorises?: string[] | null
+          canaux_interdits?: string[] | null
+          cas_usage?: string | null
+          cible_ideale?: string | null
+          clients_interdits?: string | null
+          completion_score?: number | null
+          created_at?: string
+          derniere_sync_openclaw_at?: string | null
+          exclusions_geo?: string | null
+          id?: string
+          mode_prospection?: string | null
+          niveau_formalite?: string | null
+          objectif_introductions?: number | null
+          objectif_opportunites?: number | null
+          objectif_rdv?: number | null
+          offre?: string | null
+          openclaw_session_id?: string | null
+          priorite_secteur?: string | null
+          secteurs_prioritaires?: string | null
+          style_commercial?: string | null
+          taille_cible?: string | null
+          ton_messages?: string | null
+          type_decideur?: string | null
+          type_entreprise?: string | null
+          updated_at?: string
+          user_id: string
+          valeur_proposee?: string | null
+          validation_humaine_requise?: boolean
+          villes?: string | null
+          zone_geo?: string | null
+        }
+        Update: {
+          actions_sensibles?: string | null
+          activite?: string | null
+          angle_principal?: string | null
+          canaux_autorises?: string[] | null
+          canaux_interdits?: string[] | null
+          cas_usage?: string | null
+          cible_ideale?: string | null
+          clients_interdits?: string | null
+          completion_score?: number | null
+          created_at?: string
+          derniere_sync_openclaw_at?: string | null
+          exclusions_geo?: string | null
+          id?: string
+          mode_prospection?: string | null
+          niveau_formalite?: string | null
+          objectif_introductions?: number | null
+          objectif_opportunites?: number | null
+          objectif_rdv?: number | null
+          offre?: string | null
+          openclaw_session_id?: string | null
+          priorite_secteur?: string | null
+          secteurs_prioritaires?: string | null
+          style_commercial?: string | null
+          taille_cible?: string | null
+          ton_messages?: string | null
+          type_decideur?: string | null
+          type_entreprise?: string | null
+          updated_at?: string
+          user_id?: string
+          valeur_proposee?: string | null
+          validation_humaine_requise?: boolean
+          villes?: string | null
+          zone_geo?: string | null
+        }
+        Relationships: []
+      }
+      openclaw_logs: {
+        Row: {
+          agent_id: string | null
+          created_at: string
+          details: Json | null
+          event_type: string
+          gateway_request_id: string | null
+          id: string
+          risque: string | null
+          summary: string
+          user_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          gateway_request_id?: string | null
+          id?: string
+          risque?: string | null
+          summary: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          gateway_request_id?: string | null
+          id?: string
+          risque?: string | null
+          summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      openclaw_validations: {
+        Row: {
+          agent_id: string
+          consequence_refuse: string
+          consequence_valide: string
+          created_at: string
+          description: string
+          details: string[] | null
+          expires_at: string | null
+          gateway_callback_url: string | null
+          id: string
+          payload: Json | null
+          risque: string
+          statut: string
+          titre: string
+          type_validation: string
+          updated_at: string
+          user_id: string
+          validated_at: string | null
+          validated_by: string | null
+        }
+        Insert: {
+          agent_id: string
+          consequence_refuse: string
+          consequence_valide: string
+          created_at?: string
+          description: string
+          details?: string[] | null
+          expires_at?: string | null
+          gateway_callback_url?: string | null
+          id?: string
+          payload?: Json | null
+          risque?: string
+          statut?: string
+          titre: string
+          type_validation: string
+          updated_at?: string
+          user_id: string
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Update: {
+          agent_id?: string
+          consequence_refuse?: string
+          consequence_valide?: string
+          created_at?: string
+          description?: string
+          details?: string[] | null
+          expires_at?: string | null
+          gateway_callback_url?: string | null
+          id?: string
+          payload?: Json | null
+          risque?: string
+          statut?: string
+          titre?: string
+          type_validation?: string
+          updated_at?: string
+          user_id?: string
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
