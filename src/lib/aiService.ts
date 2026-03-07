@@ -24,7 +24,9 @@ export type CopilotContext =
   | "messages"
   | "regles"
   | "canaux"
-  | "opportunites";
+  | "opportunites"
+  | "agents"
+  | "dossier";
 
 export interface AiRequest {
   role: AiRole;
