@@ -153,9 +153,9 @@ export default function UserNav({ role = "facilitateur", introCount = 0 }: UserN
           <Link to="/help" className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
             <HelpCircle size={15} />
           </Link>
-          <Link to="/login" className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+          <button onClick={handleSignOut} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
             <LogOut size={15} />
-          </Link>
+          </button>
         </div>
 
         {/* Mobile toggle */}
@@ -212,13 +212,12 @@ export default function UserNav({ role = "facilitateur", introCount = 0 }: UserN
               ) : (
                 <MobileLink to="/profil/facilitateur" label="Mon profil" icon={Users} pathname={pathname} setOpen={setOpen} />
               )}
-              <Link
-                to="/login"
-                onClick={() => setOpen(false)}
+              <button
+                onClick={handleSignOut}
                 className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted"
               >
                 <LogOut size={16} /> Déconnexion
-              </Link>
+              </button>
             </div>
           </div>
         </div>
