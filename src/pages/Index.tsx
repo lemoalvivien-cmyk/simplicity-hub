@@ -468,12 +468,15 @@ export default function LandingPage() {
             {/* Entreprise */}
             <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-primary">
               <div className="p-7 border-b border-border" style={{ background: "var(--gradient-primary)" }}>
-                <p className="text-white/65 text-sm font-medium mb-2">Entreprise</p>
+              <p className="text-white/65 text-sm font-medium mb-2">Entreprise</p>
                 <div className="flex items-end gap-1.5">
-                  <span className="font-display font-bold text-5xl text-white">29 €</span>
-                  <span className="text-white/60 text-sm pb-1">TTC / mois</span>
+                  <span className="font-display font-bold text-5xl text-white">99 €</span>
+                  <div className="pb-1">
+                    <p className="text-white/60 text-sm">TTC / an</p>
+                    <p className="text-white/35 text-xs line-through">490 € / an</p>
+                  </div>
                 </div>
-                <p className="text-white/50 text-xs mt-1.5">Sans engagement · Annulation libre</p>
+                <p className="text-white/50 text-xs mt-1.5">Offre lancement — 100 premières entreprises</p>
               </div>
               <div className="p-6">
                 <ul className="space-y-2.5 mb-6">
@@ -492,7 +495,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link to="/pricing" className="btn-primary w-full text-center block py-3.5 text-sm">
-                  Commencer à 29 € / mois →
+                  Voir l'offre entreprise →
                 </Link>
               </div>
             </div>
