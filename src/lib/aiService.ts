@@ -17,6 +17,8 @@ export type CopilotContext =
   | "campaign"
   | "actions"
   | "dashboard"
+  | "dashboard-facilitateur"
+  | "dashboard-entreprise"
   | "gains"
   | "missions"
   | "studio"
@@ -26,7 +28,10 @@ export type CopilotContext =
   | "canaux"
   | "opportunites"
   | "agents"
-  | "dossier";
+  | "dossier"
+  | "passive-os"
+  | "import-reseau"
+  | "offres";
 
 export interface AiRequest {
   role: AiRole;
