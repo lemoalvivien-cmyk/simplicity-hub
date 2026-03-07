@@ -576,6 +576,106 @@ export default function Operations() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════
+            TAB: EXECUTIONS RÉELLES
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeTab === "executions" && (
+          <div className="space-y-3">
+            {/* Totaux réels */}
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Sorties totales",  value: totalOutputs,  ok: totalOutputs > 0 },
+                { label: "Recommandations",  value: totalRecs,     ok: totalRecs > 0 },
+                { label: "Actions créées",   value: totalActions,  ok: totalActions > 0 },
+              ].map(({ label, value, ok }) => (
+                <div key={label} className="card-surface p-3 text-center">
+                  <p className="text-base font-bold" style={{ color: ok ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }}>{value}</p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Lancer des jobs réels */}
+            <div className="card-surface p-4">
+              <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
+                <Zap size={12} className="text-primary" /> Exécuter un job maintenant
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(JOB_TYPE_LIBRARY).map(([type, meta]) => {
+                  const lastExec = lastExecutionByType[type];
+                  const isRunning = triggeringJob === type;
+                  const correspondingJob = jobs.find(j => j.job_type === type);
+                  return (
+                    <button key={type}
+                      onClick={() => handleExecuteJob(type, correspondingJob?.id)}
+                      disabled={isRunning || config?.kill_switch_global === true}
+                      className="text-left p-3 rounded-xl transition-all disabled:opacity-50"
+                      style={{ background: isRunning ? "hsl(218 72% 50% / 0.08)" : "hsl(var(--muted))" }}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-base">{meta.icon}</span>
+                        <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full ml-auto"
+                          style={{ background: meta.motor === "prospection" ? "hsl(218 72% 95%)" : "hsl(24 100% 95%)", color: meta.motor === "prospection" ? "hsl(218 72% 40%)" : "hsl(24 100% 40%)", fontSize: "9px" }}>
+                          {meta.motor === "prospection" ? "Moteur 1" : "Moteur 2"}
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-foreground">{meta.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {isRunning ? "En cours…" : lastExec?.output_summary
+                          ? lastExec.output_summary.slice(0, 38) + (lastExec.output_summary.length > 38 ? "…" : "")
+                          : meta.desc}
+                      </p>
+                      {lastExec && !isRunning && (
+                        <p className="text-xs mt-1 font-semibold" style={{ color: lastExec.status === "termine" ? "hsl(var(--success))" : "hsl(0 65% 40%)" }}>
+                          {EXEC_STATUS_META[lastExec.status]?.label}
+                        </p>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Historique exécutions */}
+            {recentExecutions.length > 0 ? (
+              <div className="card-surface p-4">
+                <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
+                  <BarChart3 size={12} className="text-primary" /> Historique d'exécution
+                </p>
+                <div className="space-y-2">
+                  {recentExecutions.map((exec) => {
+                    const meta = JOB_TYPE_LIBRARY[exec.job_type];
+                    const statusMeta = EXEC_STATUS_META[exec.status];
+                    return (
+                      <div key={exec.id} className="flex items-start gap-3 py-1.5 border-b border-border/30 last:border-0">
+                        <span className="text-base shrink-0 mt-0.5">{meta?.icon ?? "⚙️"}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-foreground truncate">{exec.output_summary || meta?.label}</p>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            {exec.recommendations_created > 0 && <span className="text-xs text-muted-foreground">+{exec.recommendations_created} reco.</span>}
+                            {exec.actions_created > 0 && <span className="text-xs text-muted-foreground">+{exec.actions_created} action{exec.actions_created > 1 ? "s" : ""}</span>}
+                            {exec.trust_updates > 0 && <span className="text-xs text-muted-foreground">trust ↑</span>}
+                            <span className="text-xs font-semibold" style={{ color: statusMeta?.color }}>{statusMeta?.label}</span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-xs text-muted-foreground">{new Date(exec.created_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</p>
+                          {exec.duration_ms && <p className="text-xs text-muted-foreground">{exec.duration_ms}ms</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="card-surface p-8 text-center">
+                <BarChart3 size={28} className="mx-auto mb-3 opacity-30" />
+                <p className="text-sm font-medium text-foreground mb-1">Aucune exécution encore</p>
+                <p className="text-xs text-muted-foreground">Lancez un job pour voir les résultats ici.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
             TAB: SESSIONS
         ══════════════════════════════════════════════════════════════════ */}
         {activeTab === "sessions" && (
