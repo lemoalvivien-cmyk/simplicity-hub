@@ -88,7 +88,7 @@ export default function DashboardEntreprise() {
   const nextAction = introductions.find((i) => i.statut === "en_attente");
 
   return (
-    <UserLayout role="entreprise" jarvisContext="dashboard">
+    <UserLayout role="entreprise" jarvisContext="dashboard-entreprise">
       <VoiceWelcome context="dashboard-entreprise" userName={prenom} />
       <div className="max-w-2xl mx-auto space-y-5">
 
