@@ -158,6 +158,9 @@ export default function DashboardEntreprise() {
         {/* ── OPENCLAW CERVEAU VIVANT ───────────────────────── */}
         <OpenClawBrainWidget variant="entreprise" />
 
+        {/* ── MEILLEUR CHEMIN D'ACCÈS ───────────────────────── */}
+        {!isLaunchMode && <BestAccessPanel title="Meilleur chemin d'accès" context={{ limit: 3 }} compact showAlternatives={false} />}
+
         {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 

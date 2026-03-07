@@ -196,6 +196,9 @@ export default function DashboardFacilitateur() {
         {/* ── OPENCLAW CERVEAU VIVANT ───────────────────────── */}
         <OpenClawBrainWidget variant="facilitateur" />
 
+        {/* ── OPPORTUNITÉS DU MOTEUR ────────────────────────── */}
+        {!isLaunchMode && <BestAccessPanel title="Où votre réseau vaut le plus" context={{ limit: 3 }} compact showAlternatives={false} />}
+
         {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
