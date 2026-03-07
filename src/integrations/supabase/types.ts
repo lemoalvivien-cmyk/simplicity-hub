@@ -3533,6 +3533,31 @@ export type Database = {
         }
         Returns: string
       }
+      find_best_access_path: {
+        Args: {
+          p_limit?: number
+          p_target_corridor?: string
+          p_target_language?: string
+          p_target_sector?: string
+          p_target_zone?: string
+          p_user_id: string
+        }
+        Returns: {
+          conversion_score: number
+          corridor_score: number
+          explanation: string[]
+          facilitator_id: string
+          global_score: number
+          intros_validees: number
+          language_score: number
+          response_score: number
+          revenue: number
+          sector_score: number
+          total_intros: number
+          trust_score: number
+          zone_score: number
+        }[]
+      }
       recompute_edge_weight: { Args: { p_edge_id: string }; Returns: undefined }
       refresh_trust_score: {
         Args: { p_facilitator_id: string }
