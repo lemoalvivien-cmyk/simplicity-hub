@@ -5,14 +5,25 @@ import { CheckCircle2, Tag, Building2, Users, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const enterpriseIncludes = [
-  "Accès complet à toutes les fonctionnalités",
-  "Missions, contacts, campagnes, introductions",
-  "Assistant JARVIS illimité",
-  "Introductions reçues et vérifiées",
-  "Support par e-mail inclus",
-  "Mises à jour automatiques sans surcoût",
+const moteur1Items = [
+  "OpenClaw — cerveau central de la prospection",
+  "Agent OS & Deal Radar",
+  "Campagnes & messages préparés par l'IA",
+  "Diffusion passive & liens traqués",
+  "Ce qui chauffe · signaux d'intention",
+  "Cockpit de pilotage & rapports",
 ];
+
+const moteur2Items = [
+  "Accès au réseau de facilitateurs",
+  "Missions, introductions & validations",
+  "Introductions protégées & tracées",
+  "Gains et confiance — tableau de bord",
+  "Assistant JARVIS IA illimité",
+  "App mobile / PWA incluse",
+];
+
+const enterpriseIncludes = [...moteur1Items, ...moteur2Items];
 
 const apporteurIncludes = [
   "Accès à toutes les missions publiées",

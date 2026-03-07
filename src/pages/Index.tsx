@@ -49,6 +49,12 @@ export default function LandingPage() {
       {/* ══ HERO ══════════════════════════════════════════════ */}
       <HeroSection />
 
+      {/* ══ DOUBLE MOTEUR ════════════════════════════════════ */}
+      <DoubleMoteurSection />
+
+      {/* ══ OPENCLAW / PROSPECTION AUTO ══════════════════════ */}
+      <OpenClawSection />
+
       {/* ══ COMMENT ÇA MARCHE — SIMPLE ════════════════════════ */}
       <section id="comment-ca-marche" className="py-20 bg-background">
         <div className="container max-w-3xl">
