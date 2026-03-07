@@ -419,3 +419,53 @@ export function getAiResponseSync(req: AiRequest): AiResponse {
   }
   return getMockResponse(req);
 }
+
+// ── Backward-compatible aliases ───────────────────────────────────────────────
+export const askAI = getAiResponse;
+
+export const COPILOT_SUGGESTIONS: Record<CopilotContext, Array<{ label: string; prompt: string }>> = {
+  mission:            [{ label: "Améliorer", prompt: "Améliore le titre et la description de cette mission pour attirer plus de facilitateurs." }, { label: "Simplifier", prompt: "Simplifie la description pour qu'elle soit plus claire et directe." }, { label: "Préciser la cible", prompt: "Aide-moi à décrire plus précisément le profil du contact recherché." }],
+  introduction:       [{ label: "Améliorer", prompt: "Améliore ce texte d'introduction pour le rendre plus convaincant." }, { label: "Simplifier", prompt: "Simplifie et raccourcis cette introduction." }, { label: "Contextualiser", prompt: "Aide-moi à mieux expliquer pourquoi ce contact est pertinent." }],
+  profil_entreprise:  [{ label: "Améliorer", prompt: "Améliore la description de cette entreprise." }, { label: "Cibler", prompt: "Aide-moi à décrire mon client idéal plus précisément." }],
+  profil_facilitateur:[{ label: "Améliorer", prompt: "Améliore la description de mon réseau." }, { label: "Clarifier", prompt: "Rends ma description de réseau plus concrète." }],
+  contact:            [{ label: "Relancer", prompt: "Écris un message de relance court et percutant pour ce contact." }],
+  contacts:           [{ label: "Organiser", prompt: "Conseille-moi sur la meilleure façon d'organiser mes contacts." }],
+  campagne:           [{ label: "Améliorer", prompt: "Améliore l'objet et le contenu de cette campagne." }, { label: "Séquence", prompt: "Propose une séquence de 3 messages efficace." }],
+  campaign:           [{ label: "Améliorer", prompt: "Améliore l'objet et le contenu de cette campagne." }, { label: "Séquence", prompt: "Propose une séquence de 3 messages efficace." }],
+  actions:            [{ label: "Prioriser", prompt: "Aide-moi à prioriser mes actions du moment." }],
+  dashboard:          [{ label: "Situation", prompt: "Résume ma situation actuelle sur la plateforme." }],
+  "dashboard-facilitateur": [{ label: "Priorités", prompt: "Quelles sont mes priorités en tant que facilitateur ?" }],
+  "dashboard-entreprise":   [{ label: "Priorités", prompt: "Quelles sont mes priorités en tant qu'entreprise ?" }],
+  gains:              [{ label: "Analyser", prompt: "Analyse mes gains et dis-moi comment les augmenter." }],
+  missions:           [{ label: "Trouver", prompt: "Quelles missions correspondent le mieux à mon réseau ?" }],
+  studio:             [{ label: "Démarrer", prompt: "Aide-moi à démarrer ma campagne étape par étape." }],
+  sources:            [{ label: "Organiser", prompt: "Comment organiser mes sources de contacts ?" }],
+  messages:           [{ label: "Améliorer", prompt: "Améliore ce message pour le rendre plus percutant." }, { label: "Simplifier", prompt: "Simplifie ce message." }],
+  regles:             [{ label: "Conseiller", prompt: "Quelles règles de sécurité me conseilles-tu d'activer ?" }],
+  canaux:             [{ label: "Choisir", prompt: "Quel canal me conseilles-tu pour ma prospection ?" }],
+  opportunites:       [{ label: "Prioriser", prompt: "Quelles opportunités dois-je traiter en priorité ?" }],
+  agents:             [{ label: "État", prompt: "Décris l'état actuel du cerveau OpenClaw." }],
+  dossier:            [{ label: "Améliorer", prompt: "Améliore mon dossier entreprise pour mieux cibler." }, { label: "Cible", prompt: "Aide-moi à affiner mon profil de client idéal." }],
+  "passive-os":       [{ label: "Démarrer", prompt: "Comment démarrer avec le mode passif ?" }],
+  "import-reseau":    [{ label: "Conseiller", prompt: "Comment importer et organiser mon réseau efficacement ?" }],
+  offres:             [{ label: "Choisir", prompt: "Quelle offre correspond le mieux à mon réseau ?" }],
+  "offres-entreprise":[{ label: "Optimiser", prompt: "Comment rendre mon offre plus attractive pour les facilitateurs ?" }],
+  pilotage:           [{ label: "Pipeline", prompt: "Analyse mon pipeline commercial et donne-moi des conseils." }],
+  radar:              [{ label: "Signaux", prompt: "Explique-moi les signaux détectés par le radar." }],
+  validations:        [{ label: "Priorités", prompt: "Quelles validations dois-je traiter en priorité ?" }],
+  chaud:              [{ label: "Agir", prompt: "Sur quels prospects chauds dois-je agir maintenant ?" }],
+  trust:              [{ label: "Améliorer", prompt: "Comment améliorer mon score de confiance ?" }],
+  "mission-creation": [{ label: "Titre", prompt: "Aide-moi à rédiger un titre de mission percutant." }, { label: "Description", prompt: "Aide-moi à rédiger une description claire et attractive." }, { label: "Cible", prompt: "Aide-moi à décrire précisément le contact recherché." }],
+  operations:         [{ label: "Santé", prompt: "Explique-moi l'état de santé actuel du cerveau." }, { label: "Canaux", prompt: "Quels canaux dois-je configurer en priorité ?" }],
+};
+
+export const JARVIS_QUICK_QUESTIONS = [
+  "Que dois-je faire maintenant ?",
+  "Résume ma situation",
+  "Que fait OpenClaw en ce moment ?",
+  "Comment obtenir ma première introduction ?",
+  "Aide-moi à démarrer",
+  "Quelles sont mes priorités ?",
+  "Explique cette page",
+  "Que signifient ces statuts ?",
+];
