@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { OpenClawConfig } from "@/hooks/useOpenClaw";
 import UserLayout from "@/components/layout/UserLayout";
 import {
@@ -7,9 +7,9 @@ import {
   Activity, Radio, Sparkles,
   Users, Cpu, BookOpen, Wifi, WifiOff,
   Settings, RefreshCw, ExternalLink, AlertCircle,
-  Info, RotateCcw, Clock,
+  Info, Clock,
   Link, FlaskConical, Ban, ShieldCheck, ServerCrash,
-  Fingerprint, Layers, PlugZap, ArrowRight,
+  Fingerprint, Layers, PlugZap, ArrowRight, Filter,
 } from "lucide-react";
 import { Link as RouterLink } from "react-router-dom";
 import { useOpenClaw, OpenClawAgent, ConnectionStatus } from "@/hooks/useOpenClaw";
