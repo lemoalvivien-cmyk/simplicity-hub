@@ -779,7 +779,10 @@ export default function Operations() {
             {BRAIN_AGENTS.map((agent) => {
               const access = getEffectiveAccess(agent.id);
               const accessMeta = TOOL_ACCESS_META[access];
-              const matrix = DEFAULT_TOOL_MATRIX[agent.id] ?? {};
+              const matrix = Object.fromEntries(
+                ["lecture","preparation","assiste","semi-auto","etendu"]
+                  .map(level => [level, getEffectiveAccess(agent.id)])
+              );
 
               return (
                 <div key={agent.id} className="card-surface p-4">
