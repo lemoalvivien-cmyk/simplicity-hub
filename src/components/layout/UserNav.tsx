@@ -4,7 +4,8 @@ import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Play, Zap, Activity, Layers, Target, Brain, AlertTriangle,
-  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network
+  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network,
+  Moon, Share2, Upload
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
