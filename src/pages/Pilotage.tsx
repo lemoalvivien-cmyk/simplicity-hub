@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Zap, Play, Target, TrendingUp, Sparkles, ArrowRight,
-  CheckCircle2, Phone, Mail, Send, Clock, AlertCircle,
-  BarChart2, Users, MessageCircle, ChevronRight, Activity
+  CheckCircle2, Phone, Mail, Clock,
+  BarChart2, Users, ChevronRight, Activity, Radar
 } from "lucide-react";
 import { MorningBrief } from "@/components/openclaw/MorningBrief";
 
