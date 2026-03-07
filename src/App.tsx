@@ -73,6 +73,9 @@ import Facilitateurs from "./pages/Facilitateurs";
 import FacilitateurDetail from "./pages/FacilitateurDetail";
 import Signalement from "./pages/Signalement";
 
+// Réseau intelligent — Graph, Proof Ledger, Corridors
+import Reseau from "./pages/Reseau";
+
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/Users";
@@ -157,6 +160,9 @@ const App = () => (
               <Route path="/facilitateurs" element={<ProtectedRoute><Facilitateurs /></ProtectedRoute>} />
               <Route path="/facilitateurs/:id" element={<ProtectedRoute><FacilitateurDetail /></ProtectedRoute>} />
               <Route path="/signalement" element={<ProtectedRoute><Signalement /></ProtectedRoute>} />
+
+              {/* ── Réseau intelligent — Graph + Proof Ledger ── */}
+              <Route path="/reseau" element={<ProtectedRoute><Reseau /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />

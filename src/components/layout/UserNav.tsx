@@ -4,8 +4,9 @@ import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Play, Zap, Activity, Layers, Target, Brain, AlertTriangle,
-  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag
+  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network
 } from "lucide-react";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 type UserRole = "entreprise" | "facilitateur";
 
@@ -58,6 +59,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
            {
              label: "Réseau",
              items: [
+               { to: "/reseau", label: "Réseau intelligent", icon: Network },
                { to: "/facilitateurs", label: "Vitrine facilitateurs", icon: Users },
                { to: "/canaux", label: "WhatsApp & Canaux", icon: MessageSquare },
                { to: "/install", label: "Installer l'app", icon: Smartphone },
@@ -109,6 +111,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
            {
              label: "Réseau",
              items: [
+               { to: "/reseau", label: "Réseau intelligent", icon: Network },
                { to: "/missions", label: "Toutes les missions", icon: Briefcase },
                { to: "/canaux", label: "WhatsApp & Canaux", icon: MessageSquare },
                { to: "/install", label: "Installer l'app", icon: Smartphone },
@@ -176,6 +179,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
 
         {/* Badge rôle + actions */}
         <div className="hidden md:flex items-center gap-2 shrink-0">
+          <NavLink to="/reseau" label="Réseau" icon={Network} pathname={pathname} />
           <span
             className="text-xs font-semibold px-2.5 py-1 rounded-full border"
             style={{
@@ -186,6 +190,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
           >
             {role === "entreprise" ? "Entreprise" : "Apporteur"}
           </span>
+          <LanguageSwitcher compact />
           <Link to="/help" className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
             <HelpCircle size={15} />
           </Link>
