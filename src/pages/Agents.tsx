@@ -15,8 +15,9 @@ import { Link as RouterLink } from "react-router-dom";
 import { useOpenClaw, OpenClawAgent, ConnectionStatus } from "@/hooks/useOpenClaw";
 import { supabase } from "@/integrations/supabase/client";
 import { MorningBrief } from "@/components/openclaw/MorningBrief";
+import BrainActivityPanel from "@/components/openclaw/BrainActivityPanel";
 
-type TabId = "monitoring" | "agents" | "plans" | "configuration" | "preuve";
+type TabId = "cerveau" | "monitoring" | "agents" | "plans" | "configuration" | "preuve";
 
 // ── Métadonnées visuelles par agent ─────────────────────────────────────────
 const AGENT_META: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
