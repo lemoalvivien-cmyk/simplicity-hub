@@ -208,9 +208,37 @@ export default function Agents() {
     config, connectionStatus, agents, logs, loading, syncing, healthChecking,
     activeAgents, pendingValidations, dossierSync, diagnostic,
     lastActivity, lastSyncLog,
-    saveConfig, checkHealth, syncDossier, toggleKillSwitch, createTestValidation,
+    saveConfig, checkHealth, syncDossier, toggleKillSwitch, createTestValidation, runStatusProbe,
     loadAll,
   } = useOpenClaw();
+
+  // Live Proof state
+  const [probeRunning, setProbeRunning] = useState(false);
+  const [probeResult, setProbeResult] = useState<{
+    gateway_configured: boolean;
+    gateway_reachable: boolean;
+    auth_ok: boolean;
+    channels_ok: boolean;
+    health_score: number;
+    probes: { label: string; status: string; detail: string; latency_ms?: number }[];
+    channels?: string[];
+    dossier?: { completion_score: number; last_sync_at: string | null; session_id: string | null; is_fresh: boolean };
+    kill_switch_active?: boolean;
+    last_log?: { summary: string; event_type: string; created_at: string } | null;
+    bootstrap_required?: boolean;
+    bootstrap_steps?: { step: number; label: string; detail: string }[];
+    checked_at?: string;
+  } | null>(null);
+
+  const handleRunProbe = useCallback(async () => {
+    setProbeRunning(true);
+    try {
+      const result = await runStatusProbe();
+      setProbeResult(result);
+    } finally {
+      setProbeRunning(false);
+    }
+  }, [runStatusProbe]);
 
   const handleSaveGateway = async () => {
     const { data: { user } } = await supabase.auth.getUser();
