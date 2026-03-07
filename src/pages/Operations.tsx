@@ -245,10 +245,12 @@ export default function Operations() {
                   pulse: !config?.kill_switch_global,
                 },
                 {
-                  label: "Exécution cloud",
-                  ok: true,
-                  desc: "Hôte cloud Lovable actif",
-                  pulse: true,
+                  label: "Gateway connecté",
+                  ok: !!config?.gateway_url && config?.is_connected !== false,
+                  desc: config?.gateway_url
+                    ? (config?.is_connected ? "Gateway joignable" : "Dernière sonde échouée")
+                    : "Aucun gateway configuré",
+                  pulse: !!config?.gateway_url && config?.is_connected !== false,
                 },
                 {
                   label: "Run actif",
@@ -353,17 +355,32 @@ export default function Operations() {
             {channels.map((ch) => {
               const meta = CHANNEL_STATUS_META[ch.status] ?? CHANNEL_STATUS_META.non_configure;
               const isProbing = probingChannel === ch.channel_id;
+              const probeSource: string = (ch as unknown as { config?: { probe_source?: string } }).config?.probe_source ?? "";
+              const sourceLabel = probeSource === "live_gateway"
+                ? { text: "Vérifié via gateway", color: "hsl(var(--success))" }
+                : probeSource === "native_platform"
+                  ? { text: "Intégré WIINUP", color: "hsl(218 72% 50%)" }
+                  : ch.last_probe_at
+                    ? { text: "Non encore sondé", color: "hsl(var(--muted-foreground))" }
+                    : { text: "Non sondé", color: "hsl(var(--muted-foreground))" };
+
+              const channelEmoji = ch.channel_id === "email" ? "📧"
+                : ch.channel_id === "whatsapp" ? "💬"
+                : ch.channel_id === "introduction" ? "🤝"
+                : ch.channel_id === "phone" ? "📞"
+                : ch.channel_id === "linkedin" ? "💼"
+                : ch.channel_id === "telegram" ? "✈️"
+                : ch.channel_id === "slack" ? "💼"
+                : ch.channel_id === "discord" ? "🎮"
+                : ch.channel_id === "webchat" ? "💬"
+                : "📡";
+
               return (
                 <div key={ch.id} className="card-surface p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
                       style={{ background: ch.is_ready ? "hsl(var(--success-light))" : "hsl(var(--muted))" }}>
-                      {ch.channel_id === "email" ? "📧"
-                        : ch.channel_id === "whatsapp" ? "💬"
-                        : ch.channel_id === "introduction" ? "🤝"
-                        : ch.channel_id === "phone" ? "📞"
-                        : ch.channel_id === "linkedin" ? "💼"
-                        : "📡"}
+                      {channelEmoji}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
@@ -373,23 +390,31 @@ export default function Operations() {
                           {meta.icon} {meta.label}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        OpenClaw : <span className="font-medium" style={{ color: meta.color }}>{meta.openclaw}</span>
+                      {/* Source du statut — honest */}
+                      <p className="text-xs mt-0.5 font-medium" style={{ color: sourceLabel.color }}>
+                        {sourceLabel.text}
                       </p>
                     </div>
                   </div>
 
+                  {/* Probe detail — texte réel retourné par la fonction */}
+                  {ch.probe_detail && (
+                    <p className="text-xs text-muted-foreground mb-2 leading-relaxed italic">
+                      {ch.probe_detail}
+                    </p>
+                  )}
+
                   {/* Latency & last probe */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      {ch.probe_latency_ms && (
+                      {ch.probe_latency_ms != null && (
                         <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                           {ch.probe_latency_ms}ms
                         </span>
                       )}
                       {ch.last_probe_at && (
                         <span className="text-xs text-muted-foreground">
-                          Sondé {formatRelative(ch.last_probe_at)}
+                          Dernière sonde {formatRelative(ch.last_probe_at)}
                         </span>
                       )}
                     </div>
@@ -399,7 +424,7 @@ export default function Operations() {
                           <Brain size={9} /> IA active
                         </span>
                       ) : (
-                        <span className="text-xs text-muted-foreground">IA désactivée</span>
+                        <span className="text-xs text-muted-foreground">IA inactivée</span>
                       )}
                     </div>
                   </div>
@@ -412,12 +437,12 @@ export default function Operations() {
                       className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl transition-all"
                       style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}>
                       {isProbing ? <RefreshCw size={11} className="animate-spin" /> : <Eye size={11} />}
-                      {isProbing ? "Sondage…" : "Sonder"}
+                      {isProbing ? "Sondage en cours…" : "Sonder maintenant"}
                     </button>
-                    {ch.channel_id === "whatsapp" && (
+                    {(ch.status === "non_configure" || !ch.is_ready) && ch.channel_id !== "email" && ch.channel_id !== "introduction" && (
                       <Link to="/canaux"
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 rounded-xl transition-all"
-                        style={{ background: "hsl(142 70% 45% / 0.1)", color: "hsl(142 70% 35%)" }}>
+                        className="flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-xl transition-all"
+                        style={{ background: "hsl(218 72% 50% / 0.1)", color: "hsl(218 72% 50%)" }}>
                         <Settings2 size={11} /> Configurer
                       </Link>
                     )}
@@ -433,18 +458,29 @@ export default function Operations() {
         ══════════════════════════════════════════════════════════════════ */}
         {activeTab === "jobs" && (
           <div className="space-y-3">
+            {/* Honnêteté runtime : ces jobs sont des plans de travail en base */}
             <div className="rounded-2xl p-3 flex items-start gap-2"
               style={{ background: "hsl(var(--muted))" }}>
               <Clock size={13} className="text-primary shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                OpenClaw se réveille automatiquement selon ces cycles. Chaque réveil lance le bon agent au bon moment.
-              </p>
+              <div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Ces cycles sont votre <strong>plan de travail</strong>. OpenClaw les exécutera automatiquement si votre gateway est configuré.
+                  Sans gateway, ils restent planifiés mais ne s'exécutent pas seuls.
+                </p>
+                {!config?.gateway_url && (
+                  <p className="text-xs mt-1 font-semibold" style={{ color: "hsl(38 80% 40%)" }}>
+                    ⚠️ Aucun gateway configuré — les cycles sont préparés, pas encore automatiques.
+                  </p>
+                )}
+              </div>
             </div>
 
             {jobs.map((job) => {
               const typeMeta = JOB_TYPE_META[job.job_type];
               const statusMeta = JOB_STATUS_META[job.status] ?? { label: job.status, color: "hsl(var(--muted-foreground))" };
               const isTriggering = triggeringJob === job.id;
+              // Honest: run_count > 0 means it was manually triggered at least once
+              const everRan = job.run_count > 0;
 
               return (
                 <div key={job.id} className="card-surface p-4">
@@ -463,6 +499,11 @@ export default function Operations() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{typeMeta?.desc ?? ""}</p>
+                      {/* Source honnête */}
+                      <p className="text-xs mt-0.5 font-medium"
+                        style={{ color: everRan ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }}>
+                        {everRan ? `✓ A tourné ${job.run_count} fois` : "Plan de travail — pas encore déclenché"}
+                      </p>
                     </div>
                   </div>
 
@@ -682,19 +723,22 @@ export default function Operations() {
         {activeTab === "boundary" && (
           <div className="space-y-4">
 
-            {/* Isolation badge */}
+            {/* Isolation — honnête : isolation logique RLS en base, pas matérielle */}
             <div className="rounded-2xl p-5 relative overflow-hidden"
               style={{ background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))", border: "1px solid hsl(218 40% 22% / 0.5)" }}>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
                   style={{ background: "hsl(218 72% 40% / 0.2)", border: "1px solid hsl(218 72% 50% / 0.3)" }}>
                   <Lock size={22} style={{ color: "hsl(218 72% 60%)" }} />
                 </div>
                 <div>
-                  <p className="text-white font-bold">Isolation stricte activée</p>
-                  <p className="text-white/40 text-xs mt-0.5">
-                    Vos données, sessions, runs, mémoire et validations sont entièrement isolées.
-                    Aucun autre utilisateur ne peut accéder à votre espace OpenClaw.
+                  <p className="text-white font-bold">Séparation par espace activée</p>
+                  <p className="text-white/40 text-xs mt-1 leading-relaxed">
+                    Chaque espace est isolé par des règles de sécurité en base de données (RLS).
+                    Vos données, sessions, runs, mémoire et validations ne sont accessibles qu'à vous.
+                  </p>
+                  <p className="text-xs mt-2 font-semibold" style={{ color: "hsl(218 72% 55%)" }}>
+                    Isolation logique — pas de VPC dédié au niveau infrastructure (SaaS partagé).
                   </p>
                 </div>
               </div>
@@ -702,16 +746,17 @@ export default function Operations() {
 
             {/* Boundary details */}
             <div className="card-surface p-4 space-y-3">
-              <p className="text-xs font-bold text-foreground">Boundary par espace</p>
+              <p className="text-xs font-bold text-foreground">Ce qui est protégé</p>
               {[
-                { label: "Configuration OpenClaw",   icon: "⚙️", secured: true, desc: "URL gateway, secret, niveau" },
-                { label: "Sessions actives",          icon: "🔄", secured: true, desc: "Contextes métier isolés" },
-                { label: "Runs & historique",         icon: "📡", secured: true, desc: "Cycles de travail isolés" },
-                { label: "Mémoire agentique",         icon: "🧠", secured: true, desc: "Apprentissages privés" },
-                { label: "Validations",               icon: "✅", secured: true, desc: "Boîte de décision privée" },
-                { label: "Canaux connectés",          icon: "📡", secured: true, desc: "Configuration par utilisateur" },
-                { label: "Politiques d'accès outils", icon: "🔐", secured: true, desc: "Matrice d'accès privée" },
-                { label: "Journaux d'activité",       icon: "📋", secured: true, desc: "Logs privés uniquement" },
+                { label: "Configuration OpenClaw",    icon: "⚙️", secured: true,  desc: "URL gateway, secret, niveau d'autonomie — règle RLS stricte" },
+                { label: "Sessions actives",           icon: "🔄", secured: true,  desc: "Contextes métier filtrés par user_id" },
+                { label: "Runs & historique",          icon: "📡", secured: true,  desc: "Cycles de travail isolés par user_id" },
+                { label: "Mémoire agentique",          icon: "🧠", secured: true,  desc: "Apprentissages privés — accès restreint" },
+                { label: "Validations",                icon: "✅", secured: true,  desc: "Boîte de décision privée — filtrée par user_id" },
+                { label: "Canaux configurés",          icon: "📡", secured: true,  desc: "Config canal par utilisateur uniquement" },
+                { label: "Politiques outils",          icon: "🔐", secured: true,  desc: "Matrice d'accès privée par espace" },
+                { label: "Journaux d'activité",        icon: "📋", secured: true,  desc: "Logs non modifiables, accès exclusif" },
+                { label: "Secret gateway",             icon: "🔑", secured: !!(config?.gateway_url), desc: config?.gateway_url ? "Secret stocké côté base sécurisée" : "Non configuré — gateway absent" },
               ].map(({ label, icon, secured, desc }) => (
                 <div key={label} className="flex items-center gap-3">
                   <span className="text-base shrink-0">{icon}</span>
@@ -732,10 +777,10 @@ export default function Operations() {
             <div className="card-surface p-4">
               <div className="flex items-center gap-3 mb-2">
                 <Shield size={16} className="text-primary" />
-                <p className="text-sm font-semibold text-foreground">Arrêt d'urgence</p>
+                <p className="text-sm font-semibold text-foreground">Arrêt d'urgence global</p>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Le Kill Switch stoppe instantanément tous vos agents. Aucune action ne peut être exécutée tant qu'il est activé.
+                Le Kill Switch bloque toutes les actions OpenClaw via le gateway. Aucune exécution possible tant qu'il est activé.
               </p>
               <Link to="/agents"
                 className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all"
@@ -748,20 +793,40 @@ export default function Operations() {
               </Link>
             </div>
 
-            {/* Node host info */}
+            {/* Node host info — honnête */}
             <div className="card-surface p-4">
               <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
                 <Target size={11} className="text-primary" /> Hôte d'exécution
               </p>
               <div className="space-y-2">
                 {[
-                  { label: "Cerveau principal",   host: "Lovable Cloud",     active: true },
-                  { label: "Exécution agents",    host: "Lovable Cloud",     active: true },
-                  { label: "Gateway OpenClaw",    host: config?.gateway_url ? "Votre serveur" : "Non configuré", active: !!config?.gateway_url },
-                ].map(({ label, host, active }) => (
-                  <div key={label} className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">{label}</span>
-                    <span className="text-xs font-medium flex items-center gap-1"
+                  {
+                    label: "Base de données & auth",
+                    host: "Lovable Cloud",
+                    active: true,
+                    note: "Sessions, runs, mémoire, logs",
+                  },
+                  {
+                    label: "Fonctions backend",
+                    host: "Lovable Cloud",
+                    active: true,
+                    note: "Probe, gateway, healthcheck",
+                  },
+                  {
+                    label: "Gateway OpenClaw",
+                    host: config?.gateway_url ? "Votre serveur" : "Non configuré",
+                    active: !!config?.gateway_url,
+                    note: config?.gateway_url
+                      ? `${config.gateway_url.slice(0, 40)}${config.gateway_url.length > 40 ? "…" : ""}`
+                      : "Configurez un gateway pour activer l'exécution autonome",
+                  },
+                ].map(({ label, host, active, note }) => (
+                  <div key={label} className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <span className="text-sm text-foreground">{label}</span>
+                      <p className="text-xs text-muted-foreground">{note}</p>
+                    </div>
+                    <span className="text-xs font-medium flex items-center gap-1 whitespace-nowrap mt-0.5"
                       style={{ color: active ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }}>
                       {active ? <Wifi size={10} /> : <WifiOff size={10} />}
                       {host}
