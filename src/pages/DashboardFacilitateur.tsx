@@ -4,7 +4,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Briefcase, Send, TrendingUp, CheckCircle2, ArrowRight,
   MessageCircle, Users, Zap, Search, Sparkles, Loader2,
-  Brain, Moon, Bot, Flag, Star, Bell, ThumbsUp
+  Brain, Moon, Bot, Flag, Star, Bell, ThumbsUp, Share2
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -84,11 +84,25 @@ export default function DashboardFacilitateur() {
   const nextIntro = introductions.find(i => i.statut === "en_attente");
 
   return (
-    <UserLayout role="facilitateur" jarvisContext="dashboard">
+    <UserLayout role="facilitateur" jarvisContext="dashboard-facilitateur">
       <VoiceWelcome context="dashboard-facilitateur" userName={prenom} />
       <div className="max-w-2xl mx-auto space-y-5">
 
-        {/* ── BLOC 0 — STATUT IA ──────────────────────────────────── */}
+        {/* ── BLOC 0 — MODE PASSIF ────────────────────────────── */}
+        <Link to="/passive" className="rounded-2xl p-5 border flex items-center justify-between gap-4 hover:opacity-90 transition-all" style={{ background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))", border: "1px solid hsl(218 40% 25% / 0.5)" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <Moon size={18} className="text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-white text-sm">Mode passif — Réseau passif</p>
+              <p className="text-white/50 text-xs">Importez votre réseau · Partagez des offres · Liens traqués · Gagnez</p>
+            </div>
+          </div>
+          <ArrowRight size={16} className="text-white/50 shrink-0" />
+        </Link>
+
+        {/* ── BLOC 1 — STATUT IA ──────────────────────────────────── */}
         <div className="rounded-2xl p-5 border" style={{ background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))", border: "1px solid hsl(218 40% 25% / 0.5)" }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">

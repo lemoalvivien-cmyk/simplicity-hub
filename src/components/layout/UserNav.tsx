@@ -4,7 +4,8 @@ import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Play, Zap, Activity, Layers, Target, Brain, AlertTriangle,
-  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network
+  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network,
+  Moon, Share2, Upload
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
@@ -92,14 +93,17 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
               { to: "/actions", label: "À faire", icon: Zap },
             ],
           },
-          {
-            label: "Apport d'affaires",
-            items: [
-              { to: "/missions", label: "Missions", icon: Briefcase },
-              { to: "/introductions", label: "Introductions", icon: Send },
-              { to: "/gains", label: "Mes gains", icon: TrendingUp },
-            ],
-          },
+           {
+             label: "Apport d'affaires",
+             items: [
+               { to: "/missions", label: "Missions", icon: Briefcase },
+               { to: "/introductions", label: "Introductions", icon: Send },
+               { to: "/gains", label: "Mes gains", icon: TrendingUp },
+               { to: "/passive", label: "Mode passif", icon: Moon },
+               { to: "/offres", label: "Offres à partager", icon: Share2 },
+               { to: "/import-reseau", label: "Importer mon réseau", icon: Upload },
+             ],
+           },
            {
              label: "OpenClaw",
              items: [
@@ -167,8 +171,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
               <NavLink to="/gains" label="Gains" icon={TrendingUp} pathname={pathname} />
               <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
               <NavLink to="/contacts" label="Contacts" icon={Users} pathname={pathname} />
-              <NavLink to="/campagnes" label="Campagnes" icon={Play} pathname={pathname} />
-              <NavLink to="/actions" label="À faire" icon={Zap} pathname={pathname} />
+              <NavLink to="/passive" label="Mode passif" icon={Moon} pathname={pathname} highlight />
             </>
           )}
 

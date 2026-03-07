@@ -17,6 +17,8 @@ export type CopilotContext =
   | "campaign"
   | "actions"
   | "dashboard"
+  | "dashboard-facilitateur"
+  | "dashboard-entreprise"
   | "gains"
   | "missions"
   | "studio"
@@ -26,7 +28,10 @@ export type CopilotContext =
   | "canaux"
   | "opportunites"
   | "agents"
-  | "dossier";
+  | "dossier"
+  | "passive-os"
+  | "import-reseau"
+  | "offres";
 
 export interface AiRequest {
   role: AiRole;
@@ -164,6 +169,26 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
     default: "Votre dossier entreprise est la base d'OpenClaw. Plus il est précis, plus vos agents trouvent des contacts pertinents.",
     ameliorer: "Pour améliorer votre dossier : soyez très précis sur votre client idéal, décrivez les signaux d'achat typiques, et indiquez vos contraintes absolues.",
     cible: "Un bon profil de cible répond à : quel secteur, quelle taille, quel décideur, quel problème, quel signal d'achat. Soyez spécifique.",
+  },
+  "dashboard-facilitateur": {
+    default: "Votre dashboard facilitateur est prêt. Vérifiez les demandes d'introduction reçues, puis consultez les missions disponibles.",
+    situation: "Résumé rapide : regardez d'abord les demandes urgentes, puis les missions qui correspondent à votre réseau.",
+  },
+  "dashboard-entreprise": {
+    default: "Votre dashboard entreprise centralise tout. Commencez par valider les introductions en attente.",
+    situation: "Résumé : vos agents travaillent, vos facilitateurs apportent des contacts, et vos validations attendent votre décision.",
+  },
+  "passive-os": {
+    default: "Le mode passif vous permet de monétiser votre réseau sans effort. Importez vos contacts, partagez des offres, gagnez.",
+    comment: "Votre réseau travaille pendant que vous vivez. Chaque lien partagé peut se transformer en gain.",
+  },
+  "import-reseau": {
+    default: "Pour importer votre réseau, préparez un fichier CSV ou Excel avec au minimum le nom et l'email de vos contacts.",
+    conseil: "Plus votre liste est qualitative, mieux OpenClaw peut l'exploiter. Ajoutez le secteur et la zone pour un matching optimal.",
+  },
+  offres: {
+    default: "Choisissez une offre adaptée à votre réseau, obtenez votre lien traqué, et partagez via WhatsApp ou email.",
+    comment: "Chaque clic sur votre lien est tracé. Si un contact montre de l'intérêt, une opportunité est créée automatiquement.",
   },
 };
 
@@ -461,6 +486,26 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
   dossier: [
     { label: "Améliorer ma description", prompt: "Aide-moi à améliorer la description de mon offre" },
     { label: "Définir ma cible", prompt: "Aide-moi à définir précisément ma cible idéale" },
+  ],
+  "dashboard-facilitateur": [
+    { label: "Mes priorités", prompt: "Quelles sont mes priorités du moment ?" },
+    { label: "Comment gagner plus ?", prompt: "Comment puis-je augmenter mes gains ?" },
+  ],
+  "dashboard-entreprise": [
+    { label: "Mes priorités", prompt: "Quelles sont mes priorités du moment ?" },
+    { label: "Quels facilitateurs activer ?", prompt: "Quels facilitateurs me recommandes-tu d'activer ?" },
+  ],
+  "passive-os": [
+    { label: "Par où commencer ?", prompt: "Par où commencer pour activer le mode passif ?" },
+    { label: "Comment gagner sans effort ?", prompt: "Comment monétiser mon réseau avec un minimum d'effort ?" },
+  ],
+  "import-reseau": [
+    { label: "Format recommandé", prompt: "Quel format de fichier est recommandé pour l'import ?" },
+    { label: "Optimiser mon réseau", prompt: "Comment organiser mon réseau pour maximiser les gains ?" },
+  ],
+  offres: [
+    { label: "Quelle offre choisir ?", prompt: "Quelle offre est la plus adaptée à mon réseau ?" },
+    { label: "Comment partager ?", prompt: "Quel est le meilleur canal pour partager ces offres ?" },
   ],
 };
 

@@ -843,6 +843,89 @@ export type Database = {
         }
         Relationships: []
       }
+      offer_share_links: {
+        Row: {
+          clicks_count: number
+          company_id: string | null
+          converted: boolean
+          created_at: string
+          destination_url: string | null
+          facilitator_id: string
+          id: string
+          last_click_at: string | null
+          linked_gain_id: string | null
+          linked_opportunity_id: string | null
+          mission_id: string | null
+          offer_id: string | null
+          tracking_code: string
+          unique_clicks_count: number
+          updated_at: string
+        }
+        Insert: {
+          clicks_count?: number
+          company_id?: string | null
+          converted?: boolean
+          created_at?: string
+          destination_url?: string | null
+          facilitator_id: string
+          id?: string
+          last_click_at?: string | null
+          linked_gain_id?: string | null
+          linked_opportunity_id?: string | null
+          mission_id?: string | null
+          offer_id?: string | null
+          tracking_code?: string
+          unique_clicks_count?: number
+          updated_at?: string
+        }
+        Update: {
+          clicks_count?: number
+          company_id?: string | null
+          converted?: boolean
+          created_at?: string
+          destination_url?: string | null
+          facilitator_id?: string
+          id?: string
+          last_click_at?: string | null
+          linked_gain_id?: string | null
+          linked_opportunity_id?: string | null
+          mission_id?: string | null
+          offer_id?: string | null
+          tracking_code?: string
+          unique_clicks_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_share_links_linked_gain_id_fkey"
+            columns: ["linked_gain_id"]
+            isOneToOne: false
+            referencedRelation: "gains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_share_links_linked_opportunity_id_fkey"
+            columns: ["linked_opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_share_links_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_share_links_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "shared_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       openclaw_agents: {
         Row: {
           action_en_cours: string | null
@@ -1479,6 +1562,59 @@ export type Database = {
           used_by?: string | null
         }
         Relationships: []
+      }
+      shared_offers: {
+        Row: {
+          company_user_id: string
+          created_at: string
+          email_text: string | null
+          id: string
+          mission_id: string | null
+          pitch_vocal: string | null
+          short_description: string | null
+          social_text: string | null
+          status: string
+          title: string
+          updated_at: string
+          whatsapp_text: string | null
+        }
+        Insert: {
+          company_user_id: string
+          created_at?: string
+          email_text?: string | null
+          id?: string
+          mission_id?: string | null
+          pitch_vocal?: string | null
+          short_description?: string | null
+          social_text?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          whatsapp_text?: string | null
+        }
+        Update: {
+          company_user_id?: string
+          created_at?: string
+          email_text?: string | null
+          id?: string
+          mission_id?: string | null
+          pitch_vocal?: string | null
+          short_description?: string | null
+          social_text?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          whatsapp_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_offers_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       signals: {
         Row: {
