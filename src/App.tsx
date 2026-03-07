@@ -89,6 +89,9 @@ import OffresEntreprise from "./pages/OffresEntreprise";
 // Trust Engine
 import Trust from "./pages/Trust";
 
+// System Proof
+import SystemProof from "./pages/SystemProof";
+
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/Users";
@@ -189,6 +192,7 @@ const App = () => (
               <Route path="/trust" element={<ProtectedRoute><Trust /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
+              <Route path="/system-proof" element={<ProtectedRoute><SystemProof /></ProtectedRoute>} />
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
               <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
