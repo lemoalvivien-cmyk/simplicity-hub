@@ -87,6 +87,11 @@ export default function Operations() {
     isCronActive, lastTick, todayRuns, cronRunStatus,
     smokeTesting, lastSmokeResult, runSmokeTest,
   } = useOpenClawScheduledRuns();
+  const {
+    diagnostics: cronDiagnostics, loading: cronDiagLoading,
+    infraScore, allConfiguredInRepo, allConfiguredInDb, tickIsActive, lastChecked: cronCheckedAt,
+    reload: reloadCronDiag,
+  } = useOpenClawCronDiagnostic();
 
   const {
     channels, jobs, contextSessions, loading: runtimeLoading,
