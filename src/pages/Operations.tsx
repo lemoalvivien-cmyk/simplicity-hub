@@ -82,10 +82,10 @@ export default function Operations() {
     preparedActions, pendingApprovals: chPendingApprovals,
     whileYouSlept, approveAction, cancelAction, loadAll: reloadChannelActions,
   } = useOpenClawChannelActions();
-  const { isCronActive, lastTick, todayRuns, SCHEDULE_PLAN: _sp } = (() => {
-    const hook = useOpenClawScheduledRuns();
-    return { ...hook, SCHEDULE_PLAN };
-  })();
+  const {
+    isCronActive, lastTick, todayRuns, cronRunStatus,
+    smokeTesting, lastSmokeResult, runSmokeTest,
+  } = useOpenClawScheduledRuns();
 
   const {
     channels, jobs, contextSessions, loading: runtimeLoading,
