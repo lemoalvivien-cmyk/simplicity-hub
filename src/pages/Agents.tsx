@@ -167,10 +167,17 @@ export default function Agents() {
   };
 
   const handleSaveGateway = async () => {
-    await saveConfig({
-      gateway_url: gatewayUrlInput || config?.gateway_url || null,
-      gateway_secret: gatewaySecretInput || null,
-    });
+    // gateway_secret is saved directly via Supabase upsert, not via saveConfig
+    const { data: { user } } = await import("@/integrations/supabase/client").then(m => m.supabase.auth.getUser());
+    if (user && gatewaySecretInput) {
+      const { supabase } = await import("@/integrations/supabase/client");
+      await supabase.from("openclaw_config").upsert(
+        { user_id: user.id, gateway_url: gatewayUrlInput || config?.gateway_url || null, gateway_secret: gatewaySecretInput },
+        { onConflict: "user_id" }
+      );
+    } else {
+      await saveConfig({ gateway_url: gatewayUrlInput || config?.gateway_url || null });
+    }
     await handleHealthCheck();
   };
 
