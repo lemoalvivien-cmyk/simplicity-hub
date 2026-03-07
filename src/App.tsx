@@ -76,6 +76,11 @@ import Signalement from "./pages/Signalement";
 // Réseau intelligent — Graph, Proof Ledger, Corridors
 import Reseau from "./pages/Reseau";
 
+// Passive Facilitator OS
+import PassiveOS from "./pages/PassiveOS";
+import ImportReseau from "./pages/ImportReseau";
+import Offres from "./pages/Offres";
+
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/Users";
@@ -163,6 +168,11 @@ const App = () => (
 
               {/* ── Réseau intelligent — Graph + Proof Ledger ── */}
               <Route path="/reseau" element={<ProtectedRoute><Reseau /></ProtectedRoute>} />
+
+              {/* ── Passive Facilitator OS ────────────────────── */}
+              <Route path="/passive" element={<ProtectedRoute><PassiveOS /></ProtectedRoute>} />
+              <Route path="/import-reseau" element={<ProtectedRoute><ImportReseau /></ProtectedRoute>} />
+              <Route path="/offres" element={<ProtectedRoute><Offres /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
