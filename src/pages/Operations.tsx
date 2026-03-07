@@ -11,8 +11,8 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
   Radio, Play, RefreshCw, ChevronRight, Activity,
-  Layers, Cpu, Lock, Wifi, AlertCircle,
-  Target, Settings2, BarChart3, XCircle, ListChecks,
+  Layers, Cpu, Lock, Wifi, WifiOff, AlertCircle,
+  Target, Settings2, Eye, BarChart3, XCircle, ListChecks,
   Send, CheckCheck, Package, MessageCircle, TrendingUp,
 } from "lucide-react";
 import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_STATUS_META, JOB_TYPE_META, TOOL_ACCESS_META } from "@/hooks/useOpenClawRuntime";
