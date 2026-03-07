@@ -2,8 +2,14 @@
  * openclaw-job-executor
  * ─────────────────────
  * Real execution engine for OpenClaw business jobs.
- * Produces actual business outputs: recommendations, actions,
- * briefs, trust updates, opportunity rescoring.
+ * Produces actual business outputs AND channel actions per autonomy mode.
+ *
+ * Channel action modes per channel:
+ *   email        → prepared (auto) or pending_approval (assisted)
+ *   whatsapp     → pending_approval always (sensitive channel)
+ *   telegram     → prepared if configured, else skipped
+ *   introduction → prepared (platform-native)
+ *   others       → prepared / skipped based on config
  *
  * Job types:
  *   radar_scan | hot_opportunity_rescore | passive_offer_refresh
@@ -19,14 +25,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
 interface JobRequest {
   job_type: string;
   job_id?: string;
+  queue_job_id?: string;
   session_id?: string;
   trigger_source?: string;
   gateway_url?: string;
+  _scheduled_user_id?: string; // passed by scheduler for service-role execution
 }
 
 interface ExecutionResult {
@@ -39,11 +45,25 @@ interface ExecutionResult {
   alerts_created: number;
   trust_updates: number;
   opportunities_rescored: number;
+  channel_actions_created: number;
   error?: string;
   result_payload?: Record<string, unknown>;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+interface ChannelActionInsert {
+  user_id: string;
+  channel: string;
+  action_type: string;
+  job_type: string;
+  execution_id: string;
+  source_entity_id?: string;
+  source_entity_type?: string;
+  status: string;
+  trigger_mode: string;
+  approval_required: boolean;
+  payload_summary: string;
+  payload: Record<string, unknown>;
+}
 
 function now() { return new Date().toISOString(); }
 
@@ -54,14 +74,35 @@ function nextDayAt(hour: number) {
   return d.toISOString();
 }
 
-// ── Main handler ──────────────────────────────────────────────────────────────
+/** Determine channel action status based on autonomy mode and channel */
+function getChannelActionStatus(channel: string, autonomieLevel: string): {
+  status: string; trigger_mode: string; approval_required: boolean;
+} {
+  // WhatsApp always requires approval (sensitive channel)
+  if (channel === "whatsapp") {
+    return { status: "pending_approval", trigger_mode: "assisted", approval_required: true };
+  }
+  // Fully autonomous mode: email and introduction can be auto
+  if (autonomieLevel === "autonome") {
+    if (channel === "email" || channel === "introduction") {
+      return { status: "prepared", trigger_mode: "auto", approval_required: false };
+    }
+  }
+  // Assisted mode: everything needs approval
+  if (autonomieLevel === "assiste") {
+    return { status: "pending_approval", trigger_mode: "assisted", approval_required: true };
+  }
+  // Default / preparation mode: prepared but not auto-sent
+  return { status: "prepared", trigger_mode: "assisted", approval_required: false };
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    // Auth
     const authHeader = req.headers.get("Authorization");
+    const schedulerUserId = req.headers.get("x-scheduler-user-id");
+
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Missing authorization" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -72,24 +113,28 @@ Deno.serve(async (req) => {
     const serviceKey  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey     = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // User client (respects RLS)
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
-
-    // Service client (bypass RLS for cross-table writes)
     const svc = createClient(supabaseUrl, serviceKey);
 
-    // Verify user
-    const { data: { user }, error: authErr } = await userClient.auth.getUser();
-    if (authErr || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+    // Auth: support both user JWT and scheduler service-role
+    let userId: string;
+    if (schedulerUserId) {
+      // Service-role invocation from scheduler
+      userId = schedulerUserId;
+    } else {
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } }
       });
+      const { data: { user }, error: authErr } = await userClient.auth.getUser();
+      if (authErr || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      userId = user.id;
     }
 
     const body: JobRequest = await req.json();
-    const { job_type, job_id, session_id, trigger_source = "manual" } = body;
+    const { job_type, job_id, queue_job_id, session_id, trigger_source = "manual" } = body;
 
     if (!job_type) {
       return new Response(JSON.stringify({ error: "Missing job_type" }), {
@@ -97,12 +142,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── 1. Create execution record ──────────────────────────────────────────
-
+    // ── 1. Create execution record ────────────────────────────────────────────
     const { data: exec, error: execErr } = await svc
       .from("openclaw_job_executions")
       .insert({
-        user_id: user.id,
+        user_id: userId,
         job_id: job_id || null,
         session_id: session_id || null,
         job_type,
@@ -121,22 +165,56 @@ Deno.serve(async (req) => {
 
     const executionId = exec.id;
 
-    // ── 2. Load user context ────────────────────────────────────────────────
-
-    const [dossierRes, configRes, missionsRes, introsRes] = await Promise.all([
-      svc.from("openclaw_dossier").select("*").eq("user_id", user.id).maybeSingle(),
-      svc.from("openclaw_config").select("*").eq("user_id", user.id).maybeSingle(),
-      svc.from("missions").select("id, titre, statut, secteur, zone").eq("entreprise_id", user.id).eq("statut", "active").limit(10),
-      svc.from("introductions").select("id, contact_nom, statut, created_at, mission_id").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(20),
+    // ── 2. Load user context ──────────────────────────────────────────────────
+    const [dossierRes, configRes, missionsRes, introsRes, channelsRes] = await Promise.all([
+      svc.from("openclaw_dossier").select("*").eq("user_id", userId).maybeSingle(),
+      svc.from("openclaw_config").select("*").eq("user_id", userId).maybeSingle(),
+      svc.from("missions").select("id, titre, statut, secteur, zone").eq("entreprise_id", userId).eq("statut", "active").limit(10),
+      svc.from("introductions").select("id, contact_nom, statut, created_at, mission_id").eq("entreprise_id", userId).order("created_at", { ascending: false }).limit(20),
+      svc.from("openclaw_channels").select("channel_id, is_ready, is_openclaw_enabled, status").eq("user_id", userId),
     ]);
 
-    const dossier = dossierRes.data;
-    const config  = configRes.data;
-    const missions = missionsRes.data || [];
+    const dossier       = dossierRes.data;
+    const config        = configRes.data;
+    const missions      = missionsRes.data || [];
     const introductions = introsRes.data || [];
+    const channels      = (channelsRes.data || []) as Array<{ channel_id: string; is_ready: boolean; is_openclaw_enabled: boolean; status: string }>;
+    const autonomieLevel = config?.autonomie_level || "preparation";
 
-    // ── 3. Execute job logic ────────────────────────────────────────────────
+    // Helper: create channel action if channel is ready and enabled
+    const channelActionBatch: ChannelActionInsert[] = [];
 
+    function prepareChannelAction(
+      channel: string,
+      actionType: string,
+      payloadSummary: string,
+      payload: Record<string, unknown>,
+      entityId?: string,
+      entityType?: string,
+    ) {
+      const ch = channels.find(c => c.channel_id === channel);
+      // If channel not configured/ready: skip (honest mode dégradé)
+      if (!ch || !ch.is_ready || !ch.is_openclaw_enabled) return false;
+
+      const { status, trigger_mode, approval_required } = getChannelActionStatus(channel, autonomieLevel);
+      channelActionBatch.push({
+        user_id: userId,
+        channel,
+        action_type: actionType,
+        job_type,
+        execution_id: executionId,
+        source_entity_id: entityId,
+        source_entity_type: entityType,
+        status,
+        trigger_mode,
+        approval_required,
+        payload_summary: payloadSummary,
+        payload,
+      });
+      return true;
+    }
+
+    // ── 3. Execute job logic ──────────────────────────────────────────────────
     let result: ExecutionResult = {
       execution_id: executionId,
       status: "termine",
@@ -147,20 +225,19 @@ Deno.serve(async (req) => {
       alerts_created: 0,
       trust_updates: 0,
       opportunities_rescored: 0,
+      channel_actions_created: 0,
     };
 
     switch (job_type) {
 
-      // ── RADAR SCAN ──────────────────────────────────────────────────────
+      // ── RADAR SCAN ────────────────────────────────────────────────────────
       case "radar_scan": {
         const recs: Record<string, unknown>[] = [];
-
-        // For each active mission, create/refresh a hot radar recommendation
         for (const mission of missions.slice(0, 5)) {
           const existingRes = await svc
             .from("openclaw_recommendations")
             .select("id")
-            .eq("user_id", user.id)
+            .eq("user_id", userId)
             .eq("type", "radar_signal")
             .eq("linked_entity_id", mission.id)
             .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
@@ -168,7 +245,7 @@ Deno.serve(async (req) => {
 
           if (!existingRes.data) {
             recs.push({
-              user_id: user.id,
+              user_id: userId,
               type: "radar_signal",
               title: `Radar actif — ${mission.titre}`,
               summary: dossier
@@ -182,17 +259,20 @@ Deno.serve(async (req) => {
               execution_id: executionId,
               recommended_action: "Vérifier les opportunités remontées",
             });
+            // Prepare email channel action: daily radar summary
+            prepareChannelAction(
+              "email",
+              "digest",
+              `Résumé radar : signaux détectés pour "${mission.titre}"`,
+              { mission_id: mission.id, mission_titre: mission.titre, type: "radar_digest" },
+              mission.id,
+              "mission",
+            );
           }
         }
 
-        if (recs.length > 0) {
-          await svc.from("openclaw_recommendations").insert(recs);
-        }
-
-        // Update job's next_run_at
-        if (job_id) {
-          await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(8) }).eq("id", job_id);
-        }
+        if (recs.length > 0) await svc.from("openclaw_recommendations").insert(recs);
+        if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(8) }).eq("id", job_id);
 
         result.recommendations_created = recs.length;
         result.output_count = recs.length;
@@ -202,12 +282,12 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── HOT OPPORTUNITY RESCORE ─────────────────────────────────────────
+      // ── HOT OPPORTUNITY RESCORE ───────────────────────────────────────────
       case "hot_opportunity_rescore": {
         const oppsRes = await svc
           .from("opportunities")
           .select("id, title, intent_label, contact_name, context")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .neq("status", "archivee")
           .limit(20);
 
@@ -216,11 +296,10 @@ Deno.serve(async (req) => {
         const hotRecs: Record<string, unknown>[] = [];
 
         for (const opp of opps) {
-          // If opportunity is "eleve" intent, create a hot recommendation
           if (opp.intent_label === "eleve" || opp.intent_label === "moyen") {
             rescored++;
             hotRecs.push({
-              user_id: user.id,
+              user_id: userId,
               type: "opportunite_chaude",
               title: `Opportunité chaude : ${opp.title ?? opp.contact_name ?? "Piste détectée"}`,
               summary: `Le moteur a reclassé cette opportunité comme prioritaire. Action recommandée : relance rapide.`,
@@ -232,30 +311,33 @@ Deno.serve(async (req) => {
               execution_id: executionId,
               recommended_action: "Relancer ce contact",
             });
+            // Prepare relance action via email channel
+            prepareChannelAction(
+              "email",
+              "relance",
+              `Relance préparée : ${opp.title ?? opp.contact_name ?? "Piste"}`,
+              { opportunity_id: opp.id, type: "hot_relance", intent: opp.intent_label },
+              opp.id,
+              "opportunity",
+            );
           }
         }
 
         if (hotRecs.length > 0) {
-          // Deduplicate by linked_entity_id (only create if no recent one exists)
           const recentRes = await svc
             .from("openclaw_recommendations")
             .select("linked_entity_id")
-            .eq("user_id", user.id)
+            .eq("user_id", userId)
             .eq("type", "opportunite_chaude")
             .gte("created_at", new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString());
 
           const recentIds = new Set((recentRes.data || []).map((r: { linked_entity_id: string }) => r.linked_entity_id));
           const newRecs = hotRecs.filter(r => !recentIds.has(r.linked_entity_id as string));
-
-          if (newRecs.length > 0) {
-            await svc.from("openclaw_recommendations").insert(newRecs);
-          }
+          if (newRecs.length > 0) await svc.from("openclaw_recommendations").insert(newRecs);
           rescored = newRecs.length;
         }
 
-        if (job_id) {
-          await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(9) }).eq("id", job_id);
-        }
+        if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(9) }).eq("id", job_id);
 
         result.opportunities_rescored = rescored;
         result.recommendations_created = rescored;
@@ -266,47 +348,50 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── APPROVAL REMINDER ───────────────────────────────────────────────
+      // ── APPROVAL REMINDER ─────────────────────────────────────────────────
       case "approval_reminder": {
-        // Count pending validations and create a reminder action if needed
         const validRes = await svc
           .from("openclaw_validations")
           .select("id, titre", { count: "exact" })
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .eq("statut", "en_attente");
 
         const pendingCount = validRes.count || 0;
         let actionsCreated = 0;
 
         if (pendingCount > 0) {
-          // Create an action reminder
           const { error: actionErr } = await svc.from("actions").insert({
-            owner_user_id: user.id,
+            owner_user_id: userId,
             type_action: "relance",
             titre: `${pendingCount} validation${pendingCount > 1 ? "s" : ""} en attente — accord requis`,
-            description: `Le moteur a détecté ${pendingCount} action${pendingCount > 1 ? "s" : ""} qui attendent votre accord pour être exécutée${pendingCount > 1 ? "s" : ""}. Consultez la page Approbations.`,
+            description: `Le moteur a détecté ${pendingCount} action${pendingCount > 1 ? "s" : ""} qui attendent votre accord.`,
             statut: "a_faire",
             priorite: "haute",
           });
           if (!actionErr) actionsCreated = 1;
 
-          // Also create a recommendation
           await svc.from("openclaw_recommendations").insert({
-            user_id: user.id,
+            user_id: userId,
             type: "relance_validation",
             title: `${pendingCount} action${pendingCount > 1 ? "s" : ""} attend${pendingCount > 1 ? "ent" : ""} votre accord`,
-            summary: `Vos agents ont préparé ${pendingCount} action${pendingCount > 1 ? "s" : ""} qui nécessite${pendingCount > 1 ? "nt" : ""} votre validation avant exécution.`,
+            summary: `Vos agents ont préparé ${pendingCount} action${pendingCount > 1 ? "s" : ""} qui nécessite${pendingCount > 1 ? "nt" : ""} votre validation.`,
             agent_name: "validator",
             priority: "haute",
             status: "nouvelle",
             execution_id: executionId,
             recommended_action: "Consulter les approbations",
           });
+
+          // Rappel email préparé
+          prepareChannelAction(
+            "email",
+            "rappel",
+            `Rappel : ${pendingCount} validation${pendingCount > 1 ? "s" : ""} en attente de votre accord`,
+            { pending_count: pendingCount, type: "approval_reminder" },
+          );
         }
 
-        if (job_id) {
-          await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(10) }).eq("id", job_id);
-        }
+        if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(10) }).eq("id", job_id);
 
         result.actions_created = actionsCreated;
         result.recommendations_created = pendingCount > 0 ? 1 : 0;
@@ -317,14 +402,11 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── TRUST RECOMPUTE ─────────────────────────────────────────────────
+      // ── TRUST RECOMPUTE ───────────────────────────────────────────────────
       case "trust_recompute": {
-        // Refresh trust score for the current user
-        const { error: trustErr } = await svc.rpc("refresh_trust_score", { p_facilitator_id: user.id });
-
-        // Log a trust event
-        const { error: eventErr } = await svc.from("trust_events").insert({
-          user_id: user.id,
+        const { error: trustErr } = await svc.rpc("refresh_trust_score", { p_facilitator_id: userId });
+        await svc.from("trust_events").insert({
+          user_id: userId,
           event_type: "recompute_planifie",
           impact_score: 0,
           summary: "Réévaluation périodique du score de confiance.",
@@ -345,18 +427,17 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── DAILY BRIEF GENERATE ─────────────────────────────────────────────
+      // ── DAILY BRIEF GENERATE ──────────────────────────────────────────────
       case "daily_brief_generate": {
-        // Load recent activity
         const [recsRes, validRes, introsCountRes] = await Promise.all([
-          svc.from("openclaw_recommendations").select("title, type, priority").eq("user_id", user.id).eq("status", "nouvelle").limit(5),
-          svc.from("openclaw_validations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("statut", "en_attente"),
-          svc.from("introductions").select("id", { count: "exact", head: true }).eq("entreprise_id", user.id).eq("statut", "en_attente"),
+          svc.from("openclaw_recommendations").select("title, type, priority").eq("user_id", userId).eq("status", "nouvelle").limit(5),
+          svc.from("openclaw_validations").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("statut", "en_attente"),
+          svc.from("introductions").select("id", { count: "exact", head: true }).eq("entreprise_id", userId).eq("statut", "en_attente"),
         ]);
 
-        const newRecs   = recsRes.data || [];
-        const pendingV  = validRes.count || 0;
-        const pendingI  = introsCountRes.count || 0;
+        const newRecs  = recsRes.data || [];
+        const pendingV = validRes.count || 0;
+        const pendingI = introsCountRes.count || 0;
 
         const priorityItems = [
           ...(pendingV > 0 ? [{ type: "validation", count: pendingV, label: `${pendingV} approbation${pendingV > 1 ? "s" : ""} en attente` }] : []),
@@ -372,9 +453,8 @@ Deno.serve(async (req) => {
         ];
 
         const briefDate = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-
         const { error: briefErr } = await svc.from("openclaw_briefs").insert({
-          user_id: user.id,
+          user_id: userId,
           title: `Brief du ${briefDate}`,
           summary: `Le moteur a analysé votre activité. ${priorityItems.length > 0 ? `${priorityItems.length} point${priorityItems.length > 1 ? "s" : ""} prioritaire${priorityItems.length > 1 ? "s" : ""} à traiter.` : "Tout est à jour."}`,
           priority_items: priorityItems,
@@ -387,9 +467,22 @@ Deno.serve(async (req) => {
           },
         });
 
-        if (job_id) {
-          await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(7) }).eq("id", job_id);
+        // Prepare brief delivery via email
+        if (!briefErr) {
+          prepareChannelAction(
+            "email",
+            "brief",
+            `Brief du ${briefDate} — ${priorityItems.length} point${priorityItems.length > 1 ? "s" : ""} à traiter`,
+            {
+              type: "daily_brief",
+              date: briefDate,
+              priority_count: priorityItems.length,
+              missions_actives: missions.length,
+            },
+          );
         }
+
+        if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(7) }).eq("id", job_id);
 
         result.output_count = briefErr ? 0 : 1;
         result.output_summary = briefErr
@@ -398,25 +491,24 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── PASSIVE ALERT DIGEST ─────────────────────────────────────────────
+      // ── PASSIVE ALERT DIGEST ──────────────────────────────────────────────
       case "passive_alert_digest": {
         const alertsRes = await svc
           .from("passive_alerts")
           .select("id, title, message, type, read")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .eq("read", false)
           .limit(10);
 
         const unreadAlerts = alertsRes.data || [];
-
         let newAlerts = 0;
+
         if (unreadAlerts.length > 0) {
-          // Create a digest recommendation
           await svc.from("openclaw_recommendations").insert({
-            user_id: user.id,
+            user_id: userId,
             type: "alerte_passive",
             title: `${unreadAlerts.length} alerte${unreadAlerts.length > 1 ? "s" : ""} passive${unreadAlerts.length > 1 ? "s" : ""} non lue${unreadAlerts.length > 1 ? "s" : ""}`,
-            summary: `Le moteur passif a détecté ${unreadAlerts.length} signal${unreadAlerts.length > 1 ? "s" : ""} non consulté${unreadAlerts.length > 1 ? "s" : ""}. Vérifiez vos alertes pour ne pas manquer une opportunité.`,
+            summary: `Le moteur passif a détecté ${unreadAlerts.length} signal${unreadAlerts.length > 1 ? "s" : ""} non consulté${unreadAlerts.length > 1 ? "s" : ""}.`,
             agent_name: "passive_distributor",
             priority: unreadAlerts.length >= 3 ? "haute" : "normale",
             status: "nouvelle",
@@ -424,11 +516,17 @@ Deno.serve(async (req) => {
             recommended_action: "Consulter les alertes",
           });
           newAlerts = 1;
+
+          // Prepare diffusion digest via email
+          prepareChannelAction(
+            "email",
+            "digest",
+            `${unreadAlerts.length} alerte${unreadAlerts.length > 1 ? "s" : ""} passive${unreadAlerts.length > 1 ? "s" : ""} à consulter`,
+            { alert_count: unreadAlerts.length, type: "passive_digest" },
+          );
         }
 
-        if (job_id) {
-          await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(12) }).eq("id", job_id);
-        }
+        if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(12) }).eq("id", job_id);
 
         result.alerts_created = newAlerts;
         result.recommendations_created = newAlerts;
@@ -439,20 +537,17 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── NEXT BEST ACTION ─────────────────────────────────────────────────
+      // ── NEXT BEST ACTION ──────────────────────────────────────────────────
       case "next_best_action_generate": {
-        const actionsCreated: string[] = [];
-
-        // Create actions for stuck introductions > 3 days
+        const actionsCreatedIds: string[] = [];
         const stuckIntros = introductions.filter(i => {
           if (i.statut !== "en_attente") return false;
-          const age = Date.now() - new Date(i.created_at).getTime();
-          return age > 3 * 24 * 60 * 60 * 1000;
+          return Date.now() - new Date(i.created_at).getTime() > 3 * 24 * 60 * 60 * 1000;
         });
 
         for (const intro of stuckIntros.slice(0, 3)) {
           const { error: actErr } = await svc.from("actions").insert({
-            owner_user_id: user.id,
+            owner_user_id: userId,
             type_action: "relance",
             titre: `Relancer : introduction de ${intro.contact_nom} en attente`,
             description: `Cette introduction est en attente depuis plus de 3 jours. Le moteur recommande une relance pour débloquer le pipeline.`,
@@ -460,37 +555,44 @@ Deno.serve(async (req) => {
             priorite: "normale",
             introduction_id: intro.id,
           });
-          if (!actErr) actionsCreated.push(intro.id);
+          if (!actErr) {
+            actionsCreatedIds.push(intro.id);
+            // Prepare relance via best available channel
+            prepareChannelAction(
+              "email",
+              "relance",
+              `Relance préparée pour l'introduction de ${intro.contact_nom}`,
+              { intro_id: intro.id, contact_nom: intro.contact_nom, type: "pipeline_relance" },
+              intro.id,
+              "introduction",
+            );
+          }
         }
 
-        if (job_id) {
-          await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(9) }).eq("id", job_id);
-        }
+        if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(9) }).eq("id", job_id);
 
-        result.actions_created = actionsCreated.length;
-        result.output_count = actionsCreated.length;
-        result.output_summary = actionsCreated.length > 0
-          ? `${actionsCreated.length} action${actionsCreated.length > 1 ? "s" : ""} de relance créée${actionsCreated.length > 1 ? "s" : ""} par le moteur.`
+        result.actions_created = actionsCreatedIds.length;
+        result.output_count = actionsCreatedIds.length;
+        result.output_summary = actionsCreatedIds.length > 0
+          ? `${actionsCreatedIds.length} action${actionsCreatedIds.length > 1 ? "s" : ""} de relance créée${actionsCreatedIds.length > 1 ? "s" : ""} par le moteur.`
           : "Aucune relance nécessaire à ce stade.";
         break;
       }
 
-      // ── STUCK PIPELINE RECHECK ───────────────────────────────────────────
+      // ── STUCK PIPELINE RECHECK ────────────────────────────────────────────
       case "stuck_pipeline_recheck": {
-        // Find introductions > 7 days old and still pending
         const stuckOld = introductions.filter(i => {
           if (i.statut !== "en_attente") return false;
-          const age = Date.now() - new Date(i.created_at).getTime();
-          return age > 7 * 24 * 60 * 60 * 1000;
+          return Date.now() - new Date(i.created_at).getTime() > 7 * 24 * 60 * 60 * 1000;
         });
 
         let recs = 0;
         if (stuckOld.length > 0) {
           await svc.from("openclaw_recommendations").insert({
-            user_id: user.id,
+            user_id: userId,
             type: "pipeline_bloque",
             title: `${stuckOld.length} introduction${stuckOld.length > 1 ? "s" : ""} bloquée${stuckOld.length > 1 ? "s" : ""} depuis + de 7 jours`,
-            summary: `Le moteur a détecté des introductions sans réponse depuis plus d'une semaine. Une action est recommandée pour débloquer le pipeline.`,
+            summary: `Le moteur a détecté des introductions sans réponse depuis plus d'une semaine.`,
             agent_name: "validator",
             priority: "haute",
             status: "nouvelle",
@@ -498,11 +600,16 @@ Deno.serve(async (req) => {
             recommended_action: "Vérifier et relancer ces introductions",
           });
           recs = 1;
+          // Prepare WhatsApp action (requires approval) if available
+          prepareChannelAction(
+            "whatsapp",
+            "relance",
+            `${stuckOld.length} pipeline${stuckOld.length > 1 ? "s" : ""} bloqué${stuckOld.length > 1 ? "s" : ""} — relance WhatsApp préparée`,
+            { stuck_count: stuckOld.length, type: "stuck_pipeline" },
+          );
         }
 
-        if (job_id) {
-          await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(11) }).eq("id", job_id);
-        }
+        if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(11) }).eq("id", job_id);
 
         result.recommendations_created = recs;
         result.output_count = stuckOld.length;
@@ -512,9 +619,8 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── FACILITATOR MATCH REFRESH ────────────────────────────────────────
+      // ── FACILITATOR MATCH REFRESH ─────────────────────────────────────────
       case "facilitator_match_refresh": {
-        // Check for missions without any facilitator requests
         const missionsWithNoRequests: string[] = [];
         for (const mission of missions.slice(0, 5)) {
           const reqRes = await svc
@@ -523,16 +629,25 @@ Deno.serve(async (req) => {
             .eq("mission_id", mission.id);
           if ((reqRes.count || 0) === 0) {
             missionsWithNoRequests.push(mission.titre);
+            // Prepare introduction channel action
+            prepareChannelAction(
+              "introduction",
+              "outreach",
+              `Invitation de facilitateur préparée pour "${mission.titre}"`,
+              { mission_id: mission.id, mission_titre: mission.titre, type: "facilitator_invite" },
+              mission.id,
+              "mission",
+            );
           }
         }
 
         let recsCreated = 0;
         if (missionsWithNoRequests.length > 0) {
           await svc.from("openclaw_recommendations").insert({
-            user_id: user.id,
+            user_id: userId,
             type: "match_facilitateur",
             title: `${missionsWithNoRequests.length} mission${missionsWithNoRequests.length > 1 ? "s" : ""} sans facilitateur actif`,
-            summary: `Ces missions n'ont pas encore de facilitateur associé : ${missionsWithNoRequests.join(", ")}. Le moteur recommande d'inviter des apporteurs d'affaires.`,
+            summary: `Ces missions n'ont pas encore de facilitateur associé : ${missionsWithNoRequests.join(", ")}.`,
             agent_name: "matchmaker",
             priority: "normale",
             status: "nouvelle",
@@ -542,9 +657,7 @@ Deno.serve(async (req) => {
           recsCreated = 1;
         }
 
-        if (job_id) {
-          await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(10) }).eq("id", job_id);
-        }
+        if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(10) }).eq("id", job_id);
 
         result.recommendations_created = recsCreated;
         result.output_count = missionsWithNoRequests.length;
@@ -554,12 +667,12 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── PASSIVE OFFER REFRESH ────────────────────────────────────────────
+      // ── PASSIVE OFFER REFRESH ─────────────────────────────────────────────
       case "passive_offer_refresh": {
         const offersRes = await svc
           .from("offers")
           .select("id, title, status")
-          .eq("company_id", user.id)
+          .eq("company_id", userId)
           .in("status", ["active", "ready"])
           .limit(10);
 
@@ -568,7 +681,7 @@ Deno.serve(async (req) => {
 
         if (activeOffers.length > 0) {
           await svc.from("openclaw_recommendations").insert({
-            user_id: user.id,
+            user_id: userId,
             type: "offre_passive",
             title: `${activeOffers.length} offre${activeOffers.length > 1 ? "s" : ""} passive${activeOffers.length > 1 ? "s" : ""} active${activeOffers.length > 1 ? "s" : ""}`,
             summary: `Le moteur a vérifié vos offres passives. ${activeOffers.length} offre${activeOffers.length > 1 ? "s sont" : " est"} actuellement visible${activeOffers.length > 1 ? "s" : ""} par les facilitateurs.`,
@@ -579,11 +692,21 @@ Deno.serve(async (req) => {
             recommended_action: "Vérifier les performances",
           });
           recsCreated = 1;
+
+          // Prepare passive diffusion action
+          for (const offer of activeOffers.slice(0, 2)) {
+            prepareChannelAction(
+              "introduction",
+              "diffusion",
+              `Diffusion passive préparée pour "${offer.title}"`,
+              { offer_id: offer.id, offer_title: offer.title, type: "passive_diffusion" },
+              offer.id,
+              "offer",
+            );
+          }
         }
 
-        if (job_id) {
-          await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(12) }).eq("id", job_id);
-        }
+        if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(12) }).eq("id", job_id);
 
         result.recommendations_created = recsCreated;
         result.output_count = activeOffers.length;
@@ -600,8 +723,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── 4. Complete the execution record ─────────────────────────────────
+    // ── 4. Insert channel actions batch ────────────────────────────────────
+    if (channelActionBatch.length > 0) {
+      await svc.from("openclaw_channel_actions").insert(channelActionBatch);
+      result.channel_actions_created = channelActionBatch.length;
+    }
 
+    // ── 5. Complete the execution record ───────────────────────────────────
     await svc.rpc("complete_job_execution", {
       p_execution_id:    executionId,
       p_status:          result.status,
@@ -613,13 +741,12 @@ Deno.serve(async (req) => {
       p_trust_updates:   result.trust_updates,
       p_opportunities:   result.opportunities_rescored,
       p_error:           result.error || null,
-      p_result_payload:  result.result_payload || {},
+      p_result_payload:  { ...(result.result_payload || {}), channel_actions_created: result.channel_actions_created },
     });
 
-    // ── 5. Create a run record for traceability ────────────────────────────
-
+    // ── 6. Create a run record for traceability ─────────────────────────────
     await svc.from("openclaw_runs").insert({
-      user_id: user.id,
+      user_id: userId,
       run_type: job_type,
       trigger_source: trigger_source,
       status: result.status === "termine" ? "termine" : "erreur",
