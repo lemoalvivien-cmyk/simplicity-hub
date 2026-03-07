@@ -83,6 +83,9 @@ import Offres from "./pages/Offres";
 import Chaud from "./pages/Chaud";
 import OffresEntreprise from "./pages/OffresEntreprise";
 
+// Trust Engine
+import Trust from "./pages/Trust";
+
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/Users";
@@ -177,6 +180,7 @@ const App = () => (
               <Route path="/offres" element={<ProtectedRoute><Offres /></ProtectedRoute>} />
               <Route path="/offres/entreprise" element={<ProtectedRoute><OffresEntreprise /></ProtectedRoute>} />
               <Route path="/chaud" element={<ProtectedRoute><Chaud /></ProtectedRoute>} />
+              <Route path="/trust" element={<ProtectedRoute><Trust /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
