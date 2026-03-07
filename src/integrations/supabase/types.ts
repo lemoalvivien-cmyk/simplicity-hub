@@ -518,6 +518,96 @@ export type Database = {
         }
         Relationships: []
       }
+      facilitator_match_scores: {
+        Row: {
+          avg_response_days: number | null
+          best_corridor: string | null
+          best_language: string | null
+          best_sector: string | null
+          best_zone: string | null
+          computed_at: string | null
+          conversion_score: number | null
+          corridor_score: number | null
+          created_at: string | null
+          explanation: string[] | null
+          facilitator_user_id: string
+          global_score: number | null
+          id: string
+          intros_validees: number | null
+          language_score: number | null
+          mission_types: string[] | null
+          recency_score: number | null
+          response_score: number | null
+          revenue_generated: number | null
+          revenue_score: number | null
+          sector_score: number | null
+          total_gains: number | null
+          total_intros: number | null
+          trust_score: number | null
+          updated_at: string | null
+          user_id: string
+          zone_score: number | null
+        }
+        Insert: {
+          avg_response_days?: number | null
+          best_corridor?: string | null
+          best_language?: string | null
+          best_sector?: string | null
+          best_zone?: string | null
+          computed_at?: string | null
+          conversion_score?: number | null
+          corridor_score?: number | null
+          created_at?: string | null
+          explanation?: string[] | null
+          facilitator_user_id: string
+          global_score?: number | null
+          id?: string
+          intros_validees?: number | null
+          language_score?: number | null
+          mission_types?: string[] | null
+          recency_score?: number | null
+          response_score?: number | null
+          revenue_generated?: number | null
+          revenue_score?: number | null
+          sector_score?: number | null
+          total_gains?: number | null
+          total_intros?: number | null
+          trust_score?: number | null
+          updated_at?: string | null
+          user_id: string
+          zone_score?: number | null
+        }
+        Update: {
+          avg_response_days?: number | null
+          best_corridor?: string | null
+          best_language?: string | null
+          best_sector?: string | null
+          best_zone?: string | null
+          computed_at?: string | null
+          conversion_score?: number | null
+          corridor_score?: number | null
+          created_at?: string | null
+          explanation?: string[] | null
+          facilitator_user_id?: string
+          global_score?: number | null
+          id?: string
+          intros_validees?: number | null
+          language_score?: number | null
+          mission_types?: string[] | null
+          recency_score?: number | null
+          response_score?: number | null
+          revenue_generated?: number | null
+          revenue_score?: number | null
+          sector_score?: number | null
+          total_gains?: number | null
+          total_intros?: number | null
+          trust_score?: number | null
+          updated_at?: string | null
+          user_id?: string
+          zone_score?: number | null
+        }
+        Relationships: []
+      }
       facilitator_requests: {
         Row: {
           company_user_id: string
@@ -697,44 +787,182 @@ export type Database = {
           },
         ]
       }
+      graph_best_paths: {
+        Row: {
+          alternative_paths: Json | null
+          best_facilitator_id: string | null
+          best_facilitator_name: string | null
+          computed_at: string | null
+          corridor: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          language: string | null
+          next_action: string | null
+          path_confidence: number | null
+          path_explanation: string[] | null
+          risk_note: string | null
+          target_id: string
+          target_label: string | null
+          target_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alternative_paths?: Json | null
+          best_facilitator_id?: string | null
+          best_facilitator_name?: string | null
+          computed_at?: string | null
+          corridor?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          language?: string | null
+          next_action?: string | null
+          path_confidence?: number | null
+          path_explanation?: string[] | null
+          risk_note?: string | null
+          target_id: string
+          target_label?: string | null
+          target_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alternative_paths?: Json | null
+          best_facilitator_id?: string | null
+          best_facilitator_name?: string | null
+          computed_at?: string | null
+          corridor?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          language?: string | null
+          next_action?: string | null
+          path_confidence?: number | null
+          path_explanation?: string[] | null
+          risk_note?: string | null
+          target_id?: string
+          target_label?: string | null
+          target_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       graph_edges: {
         Row: {
+          activity_score: number | null
+          confidence_score: number | null
+          conversion_score: number | null
+          corridor_score: number | null
           created_at: string
+          dispute_penalty: number | null
           from_entity_id: string
           from_entity_type: string
           id: string
+          language_fit_score: number | null
+          last_interaction_at: string | null
+          metadata: Json | null
+          recency_score: number | null
           relationship_type: string
+          response_score: number | null
+          revenue_score: number | null
           source: string
           strength_score: number
           to_entity_id: string
           to_entity_type: string
+          total_weight: number | null
+          trust_score: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          activity_score?: number | null
+          confidence_score?: number | null
+          conversion_score?: number | null
+          corridor_score?: number | null
           created_at?: string
+          dispute_penalty?: number | null
           from_entity_id: string
           from_entity_type: string
           id?: string
+          language_fit_score?: number | null
+          last_interaction_at?: string | null
+          metadata?: Json | null
+          recency_score?: number | null
           relationship_type: string
+          response_score?: number | null
+          revenue_score?: number | null
           source?: string
           strength_score?: number
           to_entity_id: string
           to_entity_type: string
+          total_weight?: number | null
+          trust_score?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          activity_score?: number | null
+          confidence_score?: number | null
+          conversion_score?: number | null
+          corridor_score?: number | null
           created_at?: string
+          dispute_penalty?: number | null
           from_entity_id?: string
           from_entity_type?: string
           id?: string
+          language_fit_score?: number | null
+          last_interaction_at?: string | null
+          metadata?: Json | null
+          recency_score?: number | null
           relationship_type?: string
+          response_score?: number | null
+          revenue_score?: number | null
           source?: string
           strength_score?: number
           to_entity_id?: string
           to_entity_type?: string
+          total_weight?: number | null
+          trust_score?: number | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      graph_events: {
+        Row: {
+          created_at: string | null
+          delta_weight: number | null
+          edge_id: string | null
+          entity_id: string | null
+          entity_type: string | null
+          event_type: string
+          id: string
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          delta_weight?: number | null
+          edge_id?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type: string
+          id?: string
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          delta_weight?: number | null
+          edge_id?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type?: string
+          id?: string
+          summary?: string | null
           user_id?: string
         }
         Relationships: []
@@ -3278,6 +3506,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      compute_facilitator_match: {
+        Args: {
+          p_facilitator_id: string
+          p_target_corridor?: string
+          p_target_language?: string
+          p_target_sector?: string
+          p_target_zone?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       enqueue_job: {
         Args: {
           p_dedup_minutes?: number
@@ -3294,6 +3533,7 @@ export type Database = {
         }
         Returns: string
       }
+      recompute_edge_weight: { Args: { p_edge_id: string }; Returns: undefined }
       refresh_trust_score: {
         Args: { p_facilitator_id: string }
         Returns: undefined
@@ -3303,6 +3543,23 @@ export type Database = {
         Returns: undefined
       }
       seed_openclaw_jobs: { Args: { p_user_id: string }; Returns: undefined }
+      upsert_graph_edge: {
+        Args: {
+          p_confidence?: number
+          p_conversion?: number
+          p_from_id: string
+          p_from_type: string
+          p_metadata?: Json
+          p_relationship: string
+          p_revenue?: number
+          p_source?: string
+          p_to_id: string
+          p_to_type: string
+          p_trust?: number
+          p_user_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
