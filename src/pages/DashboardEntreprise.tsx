@@ -1,18 +1,19 @@
 /**
- * Dashboard Entreprise — Launch Mode
- * Focalisé sur le moment Aha : créer une mission → recevoir une introduction
+ * Dashboard Entreprise — Launch Mode + Activation Engine
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  Target, Users, CheckCircle2, ArrowRight, Zap, TrendingUp,
-  Loader2, Brain, ShieldAlert, Bot, Send,
-  Flame, Bell, ShieldCheck, Plus, Briefcase, HelpCircle, Star
+  Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert, Bot,
+  Flame, Bell, Plus, Briefcase, HelpCircle, Star, Users
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import VoiceWelcome from "@/components/ai/VoiceWelcome";
+import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
+import ActivationProgressBar from "@/components/activation/ActivationProgressBar";
+import { useActivation } from "@/hooks/useActivation";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
@@ -27,6 +28,7 @@ export default function DashboardEntreprise() {
   const [passiveAlerts, setPassiveAlerts] = useState<{ id: string; title: string; message: string; type: string; read: boolean }[]>([]);
 
   const prenom = profile?.prenom || "vous";
+  const { stepsCompleted, nextStep } = useActivation("entreprise");
   const isLaunchMode = missions.length === 0;
 
   useEffect(() => {
@@ -92,6 +94,7 @@ export default function DashboardEntreprise() {
               )}
             </div>
           </div>
+
           {/* Stats */}
           <div className="relative z-10 mt-4 grid grid-cols-3 gap-2">
             {[
@@ -106,6 +109,9 @@ export default function DashboardEntreprise() {
               </div>
             ))}
           </div>
+
+          {/* Activation progress bar */}
+          <ActivationProgressBar stepsCompleted={stepsCompleted} nextStep={nextStep} />
         </div>
 
         {/* ── LAUNCH MODE — CRÉER PREMIÈRE MISSION ─────────── */}
@@ -137,7 +143,7 @@ export default function DashboardEntreprise() {
                 </div>
               ))}
             </div>
-            <Link to="/missions" className="btn-primary w-full text-center block py-3.5 text-sm">
+            <Link to="/missions/nouvelle" className="btn-primary w-full text-center block py-3.5 text-sm">
               <Plus size={14} className="inline mr-1" />
               Créer ma première mission
             </Link>
@@ -146,6 +152,9 @@ export default function DashboardEntreprise() {
             </p>
           </div>
         )}
+
+        {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
+        {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
         {/* ── ACTION PRIORITAIRE — INTRO EN ATTENTE ────────── */}
         {nextIntro && (
@@ -171,7 +180,7 @@ export default function DashboardEntreprise() {
               <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
                 <Briefcase size={14} className="text-primary" /> Mes missions
               </h2>
-              <Link to="/missions" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+              <Link to="/missions/nouvelle" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
                 <Plus size={11} /> Nouvelle
               </Link>
             </div>
@@ -197,6 +206,20 @@ export default function DashboardEntreprise() {
               </div>
             )}
           </div>
+        )}
+
+        {/* ── RECOMMANDER UN FACILITATEUR ──────────────────── */}
+        {!isLaunchMode && introductions.length === 0 && !loading && (
+          <Link to="/facilitateurs" className="card-surface p-4 flex items-center gap-3 hover:bg-secondary transition-colors">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <Users size={16} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">Inviter un facilitateur</p>
+              <p className="text-xs text-muted-foreground">Trouvez les meilleurs profils pour votre mission.</p>
+            </div>
+            <ArrowRight size={14} className="text-muted-foreground shrink-0" />
+          </Link>
         )}
 
         {/* ── INTRODUCTIONS REÇUES ─────────────────────────── */}

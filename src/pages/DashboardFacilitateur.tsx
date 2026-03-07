@@ -1,19 +1,20 @@
 /**
- * Dashboard Facilitateur — Launch Mode
- * Focalisé sur le moment Aha : première mission → première intro → premier gain
+ * Dashboard Facilitateur — Launch Mode + Activation Engine
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  Moon, Share2, TrendingUp, CheckCircle2, ArrowRight,
-  MessageCircle, Zap, Sparkles, Loader2, Brain, Bell,
-  Link2, Upload, Star, ShieldCheck, Users, Trophy,
-  Briefcase, Send, HelpCircle
+  Moon, Share2, CheckCircle2, ArrowRight, Zap, Sparkles,
+  Loader2, Brain, Bell, Link2, Star, Trophy, Briefcase,
+  Send, HelpCircle, Flame
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import VoiceWelcome from "@/components/ai/VoiceWelcome";
+import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
+import ActivationProgressBar from "@/components/activation/ActivationProgressBar";
+import { useActivation } from "@/hooks/useActivation";
 
 interface ShareLink {
   id: string;
@@ -44,16 +45,19 @@ export default function DashboardFacilitateur() {
   const [gains, setGains] = useState<Gain[]>([]);
   const [introsCount, setIntrosCount] = useState(0);
   const [missionsCount, setMissionsCount] = useState(0);
+  const [topMission, setTopMission] = useState<{ id: string; titre: string; recompense: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
   const prenom = profile?.prenom || "vous";
+  const { stepsCompleted, nextStep } = useActivation("facilitateur");
+  const isLaunchMode = introsCount === 0 && shareLinks.length === 0;
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const [linksRes, reqRes, gainsRes, introsRes, missionsRes] = await Promise.all([
+      const [linksRes, reqRes, gainsRes, introsRes, missionsRes, topMissionRes] = await Promise.all([
         db.from("offer_share_links").select("id, tracking_code, clicks_count, unique_clicks_count, converted, last_click_at")
           .eq("facilitator_id", user.id).order("created_at", { ascending: false }).limit(5),
         db.from("facilitator_requests").select("id, request_context, status, openclaw_note")
@@ -61,12 +65,14 @@ export default function DashboardFacilitateur() {
         db.from("gains").select("id, montant, statut").eq("facilitateur_id", user.id),
         db.from("introductions").select("id", { count: "exact", head: true }).eq("facilitateur_id", user.id),
         db.from("missions").select("id", { count: "exact", head: true }).eq("statut", "active"),
+        db.from("missions").select("id, titre, recompense").eq("statut", "active").order("created_at", { ascending: false }).limit(1),
       ]);
       setShareLinks(linksRes.data || []);
       setRequests(reqRes.data || []);
       setGains(gainsRes.data || []);
       setIntrosCount(introsRes.count || 0);
       setMissionsCount(missionsRes.count || 0);
+      setTopMission(topMissionRes.data?.[0] ?? null);
       setLoading(false);
     };
     load();
@@ -91,7 +97,6 @@ export default function DashboardFacilitateur() {
   const totalClicks = shareLinks.reduce((s, l) => s + (l.clicks_count || 0), 0);
   const totalValide = gains.filter(g => g.statut === "valide").reduce((s, g) => s + (g.montant || 0), 0);
   const totalAttendu = gains.filter(g => g.statut === "en_attente").reduce((s, g) => s + (g.montant || 0), 0);
-  const isLaunchMode = introsCount === 0;
 
   return (
     <UserLayout role="facilitateur" jarvisContext="dashboard-facilitateur">
@@ -135,9 +140,12 @@ export default function DashboardFacilitateur() {
               </div>
             ))}
           </div>
+
+          {/* Activation progress bar */}
+          <ActivationProgressBar stepsCompleted={stepsCompleted} nextStep={nextStep} />
         </div>
 
-        {/* ── LAUNCH MODE — PREMIÈRE ACTION ────────────────── */}
+        {/* ── LAUNCH MODE — MISSION DU MOMENT ──────────────── */}
         {isLaunchMode && !loading && (
           <div className="rounded-2xl p-6 border-2" style={{
             borderColor: "hsl(var(--accent) / 0.6)",
@@ -152,6 +160,17 @@ export default function DashboardFacilitateur() {
                 <p className="text-white/50 text-xs mt-0.5">Envoyez votre première introduction aujourd'hui.</p>
               </div>
             </div>
+
+            {topMission && (
+              <div className="p-3 rounded-xl mb-4" style={{ background: "hsl(218 40% 14% / 0.8)" }}>
+                <p className="text-xs text-white/50 mb-1">Mission recommandée</p>
+                <p className="text-sm font-semibold text-white">{topMission.titre}</p>
+                {topMission.recompense && (
+                  <p className="text-xs font-bold mt-1" style={{ color: "hsl(var(--accent))" }}>{topMission.recompense}</p>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2 mb-4">
               {[
                 { n: "1", text: "Trouvez une mission qui correspond à votre réseau" },
@@ -171,6 +190,9 @@ export default function DashboardFacilitateur() {
             </Link>
           </div>
         )}
+
+        {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
+        {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
         {/* ── VALIDATIONS EN ATTENTE ────────────────────────── */}
         {requests.length > 0 && (
@@ -215,64 +237,6 @@ export default function DashboardFacilitateur() {
           </div>
         )}
 
-        {/* ── LIENS ACTIFS ─────────────────────────────────── */}
-        {!isLaunchMode && (
-          <div className="card-surface p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
-                <Link2 size={14} className="text-primary" /> Mes liens & résultats
-              </h2>
-              <Link to="/offres" className="text-xs text-primary font-medium hover:underline">Gérer</Link>
-            </div>
-            {loading ? (
-              <div className="flex items-center justify-center py-5"><Loader2 size={18} className="animate-spin text-muted-foreground" /></div>
-            ) : shareLinks.length === 0 ? (
-              <div className="rounded-xl border-2 border-dashed border-border p-5 text-center">
-                <Link2 size={20} className="mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm font-medium text-foreground mb-1">Aucun lien créé</p>
-                <p className="text-xs text-muted-foreground mb-3">Créez un lien traqué depuis une offre ou une mission.</p>
-                <Link to="/offres" className="text-xs text-primary font-semibold hover:underline">Voir les offres →</Link>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                  {[
-                    { label: "Liens actifs", value: shareLinks.length },
-                    { label: "Clics totaux", value: totalClicks },
-                    { label: "Convertis", value: shareLinks.filter(l => l.converted).length },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="text-center py-2.5 rounded-xl bg-muted">
-                      <p className="font-bold text-lg text-foreground">{value}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  {shareLinks.slice(0, 3).map((link) => (
-                    <div key={link.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-secondary transition-colors">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{
-                        background: link.converted ? "hsl(var(--success-light))" : "hsl(var(--secondary))"
-                      }}>
-                        {link.converted
-                          ? <CheckCircle2 size={13} style={{ color: "hsl(var(--success))" }} />
-                          : <Link2 size={13} className="text-primary" />
-                        }
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-mono text-muted-foreground truncate">/r/{link.tracking_code}</p>
-                        <span className="text-xs font-semibold text-foreground">{link.clicks_count} clics</span>
-                      </div>
-                      <button onClick={() => copyLink(link.tracking_code)} className="p-1.5 rounded-lg border border-border hover:bg-background transition-colors">
-                        <Share2 size={12} className="text-muted-foreground" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
         {/* ── CE QUI CHAUFFE ───────────────────────────────── */}
         <Link to="/chaud" className="rounded-xl border-2 p-5 flex items-center justify-between gap-4 hover:opacity-90 transition-all" style={{
           borderColor: "hsl(24 100% 52% / 0.4)",
@@ -290,6 +254,51 @@ export default function DashboardFacilitateur() {
           </div>
           <ArrowRight size={16} className="text-white/50 shrink-0" />
         </Link>
+
+        {/* ── LIENS ACTIFS ─────────────────────────────────── */}
+        {!isLaunchMode && shareLinks.length > 0 && (
+          <div className="card-surface p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
+                <Link2 size={14} className="text-primary" /> Mes liens & résultats
+              </h2>
+              <Link to="/offres" className="text-xs text-primary font-medium hover:underline">Gérer</Link>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {[
+                { label: "Liens actifs", value: shareLinks.length },
+                { label: "Clics totaux", value: totalClicks },
+                { label: "Convertis", value: shareLinks.filter(l => l.converted).length },
+              ].map(({ label, value }) => (
+                <div key={label} className="text-center py-2.5 rounded-xl bg-muted">
+                  <p className="font-bold text-lg text-foreground">{value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2">
+              {shareLinks.slice(0, 3).map((link) => (
+                <div key={link.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-secondary transition-colors">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{
+                    background: link.converted ? "hsl(var(--success-light))" : "hsl(var(--secondary))"
+                  }}>
+                    {link.converted
+                      ? <CheckCircle2 size={13} style={{ color: "hsl(var(--success))" }} />
+                      : <Link2 size={13} className="text-primary" />
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-mono text-muted-foreground truncate">/r/{link.tracking_code}</p>
+                    <span className="text-xs font-semibold text-foreground">{link.clicks_count} clics</span>
+                  </div>
+                  <button onClick={() => copyLink(link.tracking_code)} className="p-1.5 rounded-lg border border-border hover:bg-background transition-colors">
+                    <Share2 size={12} className="text-muted-foreground" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── GAINS ────────────────────────────────────────── */}
         <div className="card-surface p-5">
