@@ -282,6 +282,44 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
+        {/* ── DOUBLE MOTEUR — VISIBLE APRÈS LANCEMENT ──────── */}
+        {!isLaunchMode && (
+          <div className="grid grid-cols-2 gap-3">
+            {/* Moteur 1 */}
+            <Link to="/agents" className="rounded-2xl p-4 hover:opacity-90 transition-all" style={{
+              background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
+              border: "1px solid hsl(218 40% 22% / 0.6)"
+            }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--gradient-primary)" }}>
+                <Brain size={15} className="text-white" />
+              </div>
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(218 72% 65%)" }}>Moteur 1</p>
+              <p className="font-semibold text-white text-sm">Prospection auto</p>
+              <p className="text-white/45 text-xs mt-1">OpenClaw · Radar · Campagnes</p>
+              <div className="flex items-center gap-1 mt-2.5">
+                <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--success))" }} />
+                <span className="text-xs text-white/35">Actif</span>
+              </div>
+            </Link>
+            {/* Moteur 2 */}
+            <Link to="/facilitateurs" className="rounded-2xl p-4 hover:opacity-90 transition-all" style={{
+              background: "linear-gradient(135deg, hsl(24 60% 8%), hsl(38 50% 11%))",
+              border: "1px solid hsl(24 50% 20% / 0.6)"
+            }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--gradient-accent)" }}>
+                <Users size={15} className="text-white" />
+              </div>
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(24 100% 65%)" }}>Moteur 2</p>
+              <p className="font-semibold text-white text-sm">Apport d'affaires</p>
+              <p className="text-white/45 text-xs mt-1">Facilitateurs · Intros · Gains</p>
+              <div className="flex items-center gap-1 mt-2.5">
+                <div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(24 100% 52%)" }} />
+                <span className="text-xs text-white/35">En cours</span>
+              </div>
+            </Link>
+          </div>
+        )}
+
         {/* ── CE QUI CHAUFFE ───────────────────────────────── */}
         <Link to="/chaud" className="rounded-xl p-4 flex items-center justify-between gap-3 hover:opacity-90 transition-all" style={{
           background: "linear-gradient(135deg, hsl(24 80% 8%), hsl(38 70% 11%))",
