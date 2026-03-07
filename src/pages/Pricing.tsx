@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
+import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import { CheckCircle2, Tag, Building2, Users, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const enterpriseIncludes = [
   "Accès complet à toutes les fonctionnalités",
-  "Pilotage, campagnes, contacts, missions",
+  "Missions, contacts, campagnes, introductions",
   "Assistant JARVIS illimité",
   "Introductions reçues et vérifiées",
   "Support par e-mail inclus",
@@ -14,12 +15,12 @@ const enterpriseIncludes = [
 ];
 
 const apporteurIncludes = [
-  "Accès complet à toutes les missions",
+  "Accès à toutes les missions publiées",
   "Envoi d'introductions illimité",
   "Suivi des validations en temps réel",
   "Tableau de bord des gains",
   "Assistant JARVIS inclus",
-  "Aucune commission prélevée",
+  "Aucune commission prélevée par la plateforme",
 ];
 
 export default function Pricing() {
@@ -41,18 +42,20 @@ export default function Pricing() {
       <PublicNav />
 
       {/* Header */}
-      <section className="py-16 text-center container max-w-2xl">
+      <section className="py-14 text-center container max-w-2xl">
         <p className="pill-tag mb-4 mx-auto w-fit">Tarifs</p>
         <h1 className="font-display text-4xl font-bold text-foreground mb-3">
           Simple, honnête, transparent.
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-base">
           Pas de frais cachés. Pas de version light frustrante.
-          {launchAvailable
-            ? " Offre de lancement à 99 € pour les 100 premières entreprises."
-            : " Abonnement annuel à 490 €. Apporteurs gratuits."}
         </p>
       </section>
+
+      {/* Compteur de places */}
+      <div className="container max-w-2xl mb-2">
+        <LaunchQuotaBanner variant="pricing" />
+      </div>
 
       {/* Pricing cards */}
       <div className="container max-w-4xl pb-16">
@@ -117,7 +120,7 @@ export default function Pricing() {
           </div>
 
           {/* Apporteur */}
-          <div className="bg-card rounded-2xl overflow-hidden border-2 border-accent shadow-accent">
+          <div className="bg-card rounded-2xl overflow-hidden border-2 border-accent">
             <div className="p-7 border-b border-border" style={{ background: "var(--gradient-accent)" }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
@@ -160,7 +163,12 @@ export default function Pricing() {
           </h2>
           <div className="space-y-4">
             {[
-              { q: "C'est quoi l'offre de lancement ?", a: launchAvailable ? `Les ${slotsRemaining} premières entreprises bénéficient d'un accès à 99 € TTC pour la première année. Après les 100 premières places, le tarif standard est de 490 € TTC / an.` : "L'offre de lancement à 99 € est épuisée. Le tarif standard est de 490 € TTC par an." },
+              {
+                q: "C'est quoi l'offre de lancement ?",
+                a: launchAvailable
+                  ? `Les ${slotsRemaining} premières entreprises bénéficient d'un accès à 99 € TTC pour la première année. Après les 100 premières places, le tarif standard est de 490 € TTC / an.`
+                  : "L'offre de lancement à 99 € est épuisée. Le tarif standard est de 490 € TTC par an.",
+              },
               { q: "Puis-je annuler à tout moment ?", a: "Oui, sans condition ni préavis. Votre accès reste actif jusqu'à la fin de la période payée." },
               { q: "Qu'est-ce qu'un code d'invitation ?", a: "C'est un code unique qui vous donne 12 mois d'accès gratuit. Si vous en avez un, entrez-le au moment de l'activation." },
               { q: "L'apporteur d'affaires est vraiment gratuit ?", a: "Oui, entièrement et pour toujours. Aucune commission n'est prélevée par la plateforme sur vos gains." },
