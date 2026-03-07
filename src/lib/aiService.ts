@@ -544,10 +544,10 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
     { label: "Expliquer cette validation", prompt: "Explique-moi ce que ferait cette validation" },
     { label: "Est-ce risqué ?", prompt: "Quel est le niveau de risque de cette action ?" },
   ],
-  chaud: {
-    default: "Voici ce qui chauffe dans votre diffusion passive. Concentrez-vous sur les liens avec les scores les plus élevés.",
-    agir: "Votre priorité : contacter les prospects qui ont cliqué plusieurs fois sur vos liens. C'est le signal le plus fort.",
-  },
+  chaud: [
+    { label: "Que faire maintenant ?", prompt: "Quelle est ma priorité avec ces signaux chauds ?" },
+    { label: "Expliquer les signaux", prompt: "Comment fonctionnent les intérêts qualifiés ?" },
+  ],
 };
 
 export const JARVIS_QUICK_QUESTIONS = [
