@@ -2300,7 +2300,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      refresh_trust_score: {
+        Args: { p_facilitator_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
