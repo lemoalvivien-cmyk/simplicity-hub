@@ -9,13 +9,14 @@ import {
 
 // ─── DATA ────────────────────────────────────────────────
 const features = [
+  { icon: Brain, label: "OpenClaw — Cerveau IA", desc: "Agent OS autonome : prospection, recommandations, briefings et actions pendant que vous dormez." },
   { icon: Target, label: "Prospection ciblée", desc: "Organisez vos contacts, lancez des campagnes, suivez chaque action." },
   { icon: Briefcase, label: "Missions business", desc: "Publiez des missions, recevez des candidatures d'apporteurs qualifiés." },
   { icon: Send, label: "Introductions vérifiées", desc: "Chaque introduction est tracée, validée, et reliée à un résultat." },
   { icon: TrendingUp, label: "Gains & résultats", desc: "Suivez ce qui se passe, ce qui fonctionne, ce que vous gagnez." },
-  { icon: Play, label: "Campagnes guidées", desc: "Préparez vos séquences, vos messages, votre rythme de travail." },
   { icon: Bot, label: "Assistant JARVIS", desc: "Une IA qui vous guide, priorise et améliore votre travail au bon moment." },
 ];
+
 
 const forEntreprise = [
   "Trouver de nouvelles opportunités via le réseau",
