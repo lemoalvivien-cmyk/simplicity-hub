@@ -150,6 +150,7 @@ export default function Operations() {
   const tabs: { id: TabId; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: "runtime",    label: "Runtime",    icon: Brain },
     { id: "queue",      label: "File",       icon: ListChecks, badge: (pendingJobs.length + overdueJobs.length) || undefined },
+    { id: "canal",      label: "Canal",      icon: Radio,      badge: (chPendingApprovals.length + preparedActions.length) || undefined },
     { id: "channels",   label: "Canaux",     icon: Wifi,       badge: blockedChannels.length || undefined },
     { id: "jobs",       label: "Cycles",     icon: Clock },
     { id: "executions", label: "Exécutions", icon: BarChart3,  badge: failedExecutions.length || undefined },
