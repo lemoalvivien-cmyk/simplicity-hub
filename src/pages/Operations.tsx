@@ -5,18 +5,20 @@
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
   Radio, Play, Pause, RefreshCw, ChevronRight, Activity,
   Layers, Cpu, Database, Lock, Wifi, WifiOff, AlertCircle,
-  ArrowRight, Sparkles, Target, Settings2, Eye,
+  ArrowRight, Target, Settings2, Eye, BarChart3, XCircle,
 } from "lucide-react";
 import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_STATUS_META, JOB_TYPE_META, TOOL_ACCESS_META, DEFAULT_TOOL_MATRIX } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
 import { useOpenClaw } from "@/hooks/useOpenClaw";
+import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hooks/useOpenClawExecutions";
 
-type TabId = "runtime" | "channels" | "jobs" | "sessions" | "tools" | "boundary";
+type TabId = "runtime" | "channels" | "jobs" | "executions" | "sessions" | "tools" | "boundary";
 
 function formatRelative(iso: string | null) {
   if (!iso) return null;
