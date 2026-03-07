@@ -14,6 +14,7 @@ export type SubscriptionStatus =
   | "loading";
 
 export type AccessType = "stripe" | "promo" | "free" | "none" | "loading";
+export type OfferType = "launch" | "standard" | "promo" | "unknown" | null;
 
 interface SubscriptionInfo {
   status: SubscriptionStatus;
@@ -21,12 +22,15 @@ interface SubscriptionInfo {
   subscriptionEnd: string | null;
   cancelAtPeriodEnd: boolean;
   accessType: AccessType;
+  offerType: OfferType;
+  launchAvailable: boolean;
+  launchSlotsRemaining: number;
   loading: boolean;
 }
 
 interface SubscriptionContextType extends SubscriptionInfo {
   refresh: () => Promise<void>;
-  startCheckout: () => Promise<void>;
+  startCheckout: () => Promise<{ offer_type?: string }>;
   openBillingPortal: () => Promise<void>;
   redeemPromo: (code: string) => Promise<{ valid: boolean; message: string }>;
 }
@@ -41,24 +45,25 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     subscriptionEnd: null,
     cancelAtPeriodEnd: false,
     accessType: "loading",
+    offerType: null,
+    launchAvailable: true,
+    launchSlotsRemaining: 100,
     loading: true,
   });
 
   const checkSubscription = useCallback(async () => {
     if (!user) {
-      setInfo({ status: "none", subscribed: false, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "none", loading: false });
+      setInfo({ status: "none", subscribed: false, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "none", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
       return;
     }
 
-    // Facilitateurs are always free
     if (role === "facilitateur") {
-      setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", loading: false });
+      setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
       return;
     }
 
-    // Admin is always active
     if (role === "admin") {
-      setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", loading: false });
+      setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
       return;
     }
 
@@ -66,7 +71,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       setInfo(prev => ({ ...prev, loading: true }));
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        setInfo({ status: "none", subscribed: false, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "none", loading: false });
+        setInfo({ status: "none", subscribed: false, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "none", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
         return;
       }
 
@@ -82,6 +87,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         subscriptionEnd: data.subscription_end ?? null,
         cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
         accessType: (data.access_type as AccessType) || "none",
+        offerType: (data.offer_type as OfferType) ?? null,
+        launchAvailable: data.launch_available ?? true,
+        launchSlotsRemaining: data.launch_slots_remaining ?? 100,
         loading: false,
       });
     } catch (err) {
@@ -92,7 +100,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     checkSubscription();
-    // Refresh every 5 minutes
     const interval = setInterval(checkSubscription, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [checkSubscription]);
@@ -106,6 +113,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     });
     if (error || !data?.url) throw error || new Error("No checkout URL");
     window.open(data.url, "_blank");
+    return { offer_type: data.offer_type };
   };
 
   const openBillingPortal = async () => {
@@ -131,7 +139,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
 
     if (data?.valid) {
-      // Refresh subscription state
       await checkSubscription();
     }
 
@@ -151,7 +158,14 @@ export function useSubscription() {
   return ctx;
 }
 
-// Helper: is the user's access currently valid?
 export function isAccessActive(status: SubscriptionStatus): boolean {
   return ["active", "trialing", "promo_active"].includes(status);
+}
+
+export function getOfferLabel(offerType: OfferType, accessType: AccessType): string {
+  if (accessType === "free") return "Gratuit — Apporteur d'affaires";
+  if (accessType === "promo") return "Code d'invitation — 12 mois offerts";
+  if (offerType === "launch") return "Offre de lancement — 99 € TTC / an";
+  if (offerType === "standard") return "Abonnement annuel — 490 € TTC / an";
+  return "Aucun abonnement";
 }

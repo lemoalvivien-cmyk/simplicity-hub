@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
-import { CheckCircle2, Tag, Building2, Users } from "lucide-react";
+import { CheckCircle2, Tag, Building2, Users, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const enterpriseIncludes = [
   "Accès complet à toutes les fonctionnalités",
@@ -21,6 +23,19 @@ const apporteurIncludes = [
 ];
 
 export default function Pricing() {
+  const [launchAvailable, setLaunchAvailable] = useState(true);
+  const [slotsRemaining, setSlotsRemaining] = useState(100);
+
+  useEffect(() => {
+    supabase.from("launch_quota").select("total_slots, used_slots").single().then(({ data }) => {
+      if (data) {
+        const remaining = Math.max(0, data.total_slots - data.used_slots);
+        setLaunchAvailable(remaining > 0);
+        setSlotsRemaining(remaining);
+      }
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <PublicNav />
@@ -33,14 +48,16 @@ export default function Pricing() {
         </h1>
         <p className="text-muted-foreground text-lg">
           Pas de frais cachés. Pas de version light frustrante.
-          Entreprises à 29 €. Apporteurs gratuits.
+          {launchAvailable
+            ? " Offre de lancement à 99 € pour les 100 premières entreprises."
+            : " Abonnement annuel à 490 €. Apporteurs gratuits."}
         </p>
       </section>
 
       {/* Pricing cards */}
       <div className="container max-w-4xl pb-16">
         <div className="grid md:grid-cols-2 gap-6">
-          
+
           {/* Entreprise */}
           <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-primary">
             <div className="p-7 border-b border-border" style={{ background: "var(--gradient-primary)" }}>
@@ -50,11 +67,33 @@ export default function Pricing() {
                 </div>
                 <p className="text-white/80 text-sm font-semibold uppercase tracking-wider">Entreprise</p>
               </div>
-              <div className="flex items-end gap-1.5">
-                <span className="font-display text-5xl font-bold text-white">29 €</span>
-                <span className="text-white/60 text-sm pb-1">/mois TTC</span>
-              </div>
-              <p className="text-white/50 text-xs mt-2">Sans engagement — résiliez quand vous voulez</p>
+
+              {launchAvailable ? (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/20 text-white text-xs font-bold">
+                      <Zap size={10} />
+                      Offre lancement — {slotsRemaining} places restantes
+                    </span>
+                  </div>
+                  <div className="flex items-end gap-2 mt-2">
+                    <span className="font-display font-bold text-5xl text-white">99 €</span>
+                    <div className="pb-1">
+                      <span className="text-white/60 text-sm">/an TTC</span>
+                      <p className="text-white/40 text-xs line-through">490 € / an</p>
+                    </div>
+                  </div>
+                  <p className="text-white/50 text-xs mt-2">Offre réservée aux 100 premières entreprises</p>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-end gap-1.5 mt-2">
+                    <span className="font-display font-bold text-5xl text-white">490 €</span>
+                    <span className="text-white/60 text-sm pb-1">/an TTC</span>
+                  </div>
+                  <p className="text-white/50 text-xs mt-2">Abonnement annuel — sans engagement de durée</p>
+                </>
+              )}
             </div>
             <div className="p-7">
               <ul className="space-y-3 mb-7">
@@ -66,7 +105,7 @@ export default function Pricing() {
                 ))}
               </ul>
               <Link to="/checkout" className="btn-primary w-full text-center text-base py-4 block">
-                Démarrer à 29 € / mois →
+                {launchAvailable ? "Démarrer à 99 € / an →" : "Démarrer à 490 € / an →"}
               </Link>
               <div className="mt-4 p-3 rounded-lg border flex items-center gap-2" style={{ background: "hsl(218 72% 18% / 0.05)", borderColor: "hsl(218 72% 18% / 0.12)" }}>
                 <Tag size={14} style={{ color: "hsl(var(--primary))" }} className="shrink-0" />
@@ -121,6 +160,7 @@ export default function Pricing() {
           </h2>
           <div className="space-y-4">
             {[
+              { q: "C'est quoi l'offre de lancement ?", a: launchAvailable ? `Les ${slotsRemaining} premières entreprises bénéficient d'un accès à 99 € TTC pour la première année. Après les 100 premières places, le tarif standard est de 490 € TTC / an.` : "L'offre de lancement à 99 € est épuisée. Le tarif standard est de 490 € TTC par an." },
               { q: "Puis-je annuler à tout moment ?", a: "Oui, sans condition ni préavis. Votre accès reste actif jusqu'à la fin de la période payée." },
               { q: "Qu'est-ce qu'un code d'invitation ?", a: "C'est un code unique qui vous donne 12 mois d'accès gratuit. Si vous en avez un, entrez-le au moment de l'activation." },
               { q: "L'apporteur d'affaires est vraiment gratuit ?", a: "Oui, entièrement et pour toujours. Aucune commission n'est prélevée par la plateforme sur vos gains." },

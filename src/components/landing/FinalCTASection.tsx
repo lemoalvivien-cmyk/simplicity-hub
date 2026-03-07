@@ -18,7 +18,7 @@ export default function FinalCTASection() {
           to="/pricing"
           className="btn-cta inline-flex items-center gap-2 text-base px-10 py-4"
         >
-          Je commence — 59 € / mois
+          Voir les tarifs
           <ArrowRight size={18} />
         </Link>
         <p className="mt-5 text-white/40 text-xs">

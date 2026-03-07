@@ -392,6 +392,27 @@ export type Database = {
           },
         ]
       }
+      launch_quota: {
+        Row: {
+          id: string
+          total_slots: number
+          updated_at: string
+          used_slots: number
+        }
+        Insert: {
+          id?: string
+          total_slots?: number
+          updated_at?: string
+          used_slots?: number
+        }
+        Update: {
+          id?: string
+          total_slots?: number
+          updated_at?: string
+          used_slots?: number
+        }
+        Relationships: []
+      }
       liste_contacts: {
         Row: {
           contact_id: string
@@ -614,6 +635,7 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          offer_type: string | null
           status: string
           stripe_customer_id: string | null
           stripe_price_id: string | null
@@ -627,6 +649,7 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          offer_type?: string | null
           status?: string
           stripe_customer_id?: string | null
           stripe_price_id?: string | null
@@ -640,6 +663,7 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          offer_type?: string | null
           status?: string
           stripe_customer_id?: string | null
           stripe_price_id?: string | null

@@ -49,7 +49,7 @@ const differentiators = [
 const faq = [
   { q: "C'est quoi WIINUP MAX exactement ?", a: "Une plateforme qui combine deux moteurs : la prospection business (contacts, campagnes, actions) et l'apport d'affaires (missions, introductions, gains). Le tout piloté par un assistant IA." },
   { q: "À qui s'adresse WIINUP MAX ?", a: "Aux entreprises qui veulent trouver des clients, et aux apporteurs d'affaires qui veulent valoriser leur réseau. Les deux profils coexistent sur la même plateforme." },
-  { q: "Combien coûte la plateforme ?", a: "29€ TTC / mois pour les entreprises. Entièrement gratuit pour les apporteurs d'affaires, sans limite de temps." },
+  { q: "Combien coûte la plateforme ?", a: "Les 100 premières entreprises bénéficient d'une offre de lancement à 99 € TTC pour la première année. Ensuite, l'abonnement annuel est à 490 € TTC. Les apporteurs d'affaires accèdent gratuitement, sans limite de temps." },
   { q: "Faut-il être technique pour l'utiliser ?", a: "Absolument pas. WIINUP MAX est conçu pour des professionnels non techniques. Tout est guidé, expliqué, simplifié." },
   { q: "Comment fonctionne l'assistant JARVIS ?", a: "JARVIS vous guide en temps réel : il priorise vos actions, améliore vos messages, explique les statuts, et vous indique toujours la prochaine étape utile." },
   { q: "Puis-je annuler à tout moment ?", a: "Oui. Sans condition. Votre accès reste actif jusqu'à la fin de la période payée." },
@@ -106,7 +106,7 @@ export default function LandingPage() {
 
           {/* Trust bar */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-white/40 text-xs">
-            <span>✓ Entreprise à 29€ / mois</span>
+            <span>✓ Offre lancement 99 € / an</span>
             <span className="hidden sm:block">·</span>
             <span>✓ Apporteur d'affaires — gratuit</span>
             <span className="hidden sm:block">·</span>
@@ -227,7 +227,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <p className="font-display font-bold text-white text-lg">Vous êtes une entreprise</p>
-                    <p className="text-white/65 text-sm">29 € TTC / mois</p>
+                    <p className="text-white/65 text-sm">Offre lancement — 99 € TTC / an</p>
                   </div>
                 </div>
               </div>
@@ -241,7 +241,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link to="/pricing" className="btn-primary w-full text-center block py-3 text-sm">
-                  Commencer à 29 € / mois →
+                  Voir l'offre entreprise →
                 </Link>
               </div>
             </div>
@@ -468,12 +468,15 @@ export default function LandingPage() {
             {/* Entreprise */}
             <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-primary">
               <div className="p-7 border-b border-border" style={{ background: "var(--gradient-primary)" }}>
-                <p className="text-white/65 text-sm font-medium mb-2">Entreprise</p>
+              <p className="text-white/65 text-sm font-medium mb-2">Entreprise</p>
                 <div className="flex items-end gap-1.5">
-                  <span className="font-display font-bold text-5xl text-white">29 €</span>
-                  <span className="text-white/60 text-sm pb-1">TTC / mois</span>
+                  <span className="font-display font-bold text-5xl text-white">99 €</span>
+                  <div className="pb-1">
+                    <p className="text-white/60 text-sm">TTC / an</p>
+                    <p className="text-white/35 text-xs line-through">490 € / an</p>
+                  </div>
                 </div>
-                <p className="text-white/50 text-xs mt-1.5">Sans engagement · Annulation libre</p>
+                <p className="text-white/50 text-xs mt-1.5">Offre lancement — 100 premières entreprises</p>
               </div>
               <div className="p-6">
                 <ul className="space-y-2.5 mb-6">
@@ -492,7 +495,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link to="/pricing" className="btn-primary w-full text-center block py-3.5 text-sm">
-                  Commencer à 29 € / mois →
+                  Voir l'offre entreprise →
                 </Link>
               </div>
             </div>
@@ -578,7 +581,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/pricing" className="btn-cta text-base px-8 py-4">
-              Entreprise — 29 € / mois <ArrowRight size={18} />
+              Entreprise — à partir de 99 € / an <ArrowRight size={18} />
             </Link>
             <Link to="/signup" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white/80 border border-white/20 font-semibold text-base hover:bg-white/8 transition-colors">
               Apporteur — Gratuit <ArrowRight size={18} />
