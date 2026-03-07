@@ -128,6 +128,9 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
               <NavLink to="/actions" label="À faire" icon={Zap} pathname={pathname} />
             </>
           )}
+
+          <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
+          <NavLink to="/agents" label="OpenClaw" icon={Brain} pathname={pathname} openclaw />
         </nav>
 
         {/* Badge rôle + actions */}
