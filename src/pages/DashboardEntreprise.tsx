@@ -74,6 +74,7 @@ export default function DashboardEntreprise() {
       setTotalShareClicks(shareLinks.reduce((s: number, l: { clicks_count: number }) => s + (l.clicks_count || 0), 0));
       const uniqueFacilitators = new Set(shareLinks.map((l: { facilitator_id: string }) => l.facilitator_id));
       setActiveFacilitatorsCount(uniqueFacilitators.size);
+      setPassiveAlerts(alertsRes.data || []);
 
       // Compute top facilitators
       const facs = facsRes.data || [];
