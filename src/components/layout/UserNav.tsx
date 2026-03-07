@@ -45,6 +45,13 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
             ],
           },
           {
+            label: "OpenClaw",
+            items: [
+              { to: "/agents", label: "Agents & Autonomie", icon: Brain },
+              { to: "/dossier", label: "Dossier entreprise", icon: Building2 },
+            ],
+          },
+          {
             label: "Compte",
             items: [
               { to: "/help", label: "Aide", icon: HelpCircle },
@@ -76,6 +83,10 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
               { to: "/introductions", label: "Introductions", icon: Send },
               { to: "/gains", label: "Mes gains", icon: TrendingUp },
             ],
+          },
+          {
+            label: "OpenClaw",
+            items: [{ to: "/agents", label: "Agents & Autonomie", icon: Brain }],
           },
           {
             label: "Compte",
