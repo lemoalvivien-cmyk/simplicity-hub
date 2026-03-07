@@ -87,6 +87,15 @@ export default function Operations() {
     executeJob, loading: execLoading,
   } = useOpenClawExecutions();
 
+  const {
+    queue, heartbeats, loading: schedulerLoading,
+    pendingJobs, runningJobs: queueRunning, failedJobs: queueFailed, doneToday,
+    overdueJobs, autoJobs, manualJobs,
+    latestHeartbeat, engineHealthy,
+    totalOutputToday, motor1Done, motor2Done,
+    triggerScheduler, enqueueEvent, triggering: schedulerTriggering,
+  } = useOpenClawScheduler();
+
   const loading = runtimeLoading || runsLoading;
 
   const handleProbe = async (channelId: string) => {
@@ -112,11 +121,25 @@ export default function Operations() {
     }
   };
 
+  const handleSchedulerTick = async () => {
+    const result = await triggerScheduler();
+    if (result.ok) {
+      toast.success(`Cycle autonome exécuté.`, {
+        description: result.completed > 0
+          ? `${result.completed} job${result.completed > 1 ? "s" : ""} terminé${result.completed > 1 ? "s" : ""}`
+          : result.claimed === 0 ? "Aucun job en attente pour l'instant." : undefined,
+      });
+    } else {
+      toast.error("Le scheduler a rencontré un problème.", { description: result.error });
+    }
+  };
+
   const tabs: { id: TabId; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: "runtime",    label: "Runtime",    icon: Brain },
-    { id: "channels",   label: "Canaux",     icon: Wifi,      badge: blockedChannels.length || undefined },
+    { id: "queue",      label: "File",       icon: ListChecks, badge: (pendingJobs.length + overdueJobs.length) || undefined },
+    { id: "channels",   label: "Canaux",     icon: Wifi,       badge: blockedChannels.length || undefined },
     { id: "jobs",       label: "Cycles",     icon: Clock },
-    { id: "executions", label: "Exécutions", icon: BarChart3, badge: failedExecutions.length || undefined },
+    { id: "executions", label: "Exécutions", icon: BarChart3,  badge: failedExecutions.length || undefined },
     { id: "sessions",   label: "Sessions",   icon: Layers },
     { id: "tools",      label: "Outils",     icon: Cpu },
     { id: "boundary",   label: "Sécurité",   icon: Lock },
