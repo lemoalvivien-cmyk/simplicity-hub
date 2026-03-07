@@ -97,6 +97,54 @@ export type Database = {
           },
         ]
       }
+      anti_circumvention_flags: {
+        Row: {
+          created_at: string
+          description: string
+          flag_type: string
+          id: string
+          related_entity_id: string | null
+          related_entity_type: string | null
+          resolution_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          flag_type: string
+          id?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          resolution_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          flag_type?: string
+          id?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          resolution_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       billing_events: {
         Row: {
           created_at: string
@@ -280,6 +328,63 @@ export type Database = {
           prenom_nom?: string
           statut?: string | null
           telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      disputes: {
+        Row: {
+          admin_note: string | null
+          created_at: string
+          description: string
+          dispute_type: string
+          id: string
+          impact_applied: boolean
+          priority: string
+          related_entity_id: string | null
+          related_entity_type: string | null
+          reported_user_id: string | null
+          reporter_user_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          created_at?: string
+          description: string
+          dispute_type: string
+          id?: string
+          impact_applied?: boolean
+          priority?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          reported_user_id?: string | null
+          reporter_user_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          created_at?: string
+          description?: string
+          dispute_type?: string
+          id?: string
+          impact_applied?: boolean
+          priority?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          reported_user_id?: string | null
+          reporter_user_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -631,6 +736,48 @@ export type Database = {
           to_entity_type?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      intro_escrow: {
+        Row: {
+          company_id: string | null
+          converted: boolean
+          created_at: string
+          facilitator_id: string
+          gain_id: string | null
+          id: string
+          introduction_id: string
+          proof_accumulated: boolean
+          protected: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          converted?: boolean
+          created_at?: string
+          facilitator_id: string
+          gain_id?: string | null
+          id?: string
+          introduction_id: string
+          proof_accumulated?: boolean
+          protected?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          converted?: boolean
+          created_at?: string
+          facilitator_id?: string
+          gain_id?: string | null
+          id?: string
+          introduction_id?: string
+          proof_accumulated?: boolean
+          protected?: boolean
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2054,6 +2201,96 @@ export type Database = {
           stripe_price_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trust_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          impact_score: number
+          source_entity_id: string | null
+          source_entity_type: string | null
+          summary: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          impact_score?: number
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          summary: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          impact_score?: number
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trust_scores: {
+        Row: {
+          badges: string[] | null
+          compliance_score: number
+          created_at: string
+          gains_confirmes: number
+          global_score: number
+          id: string
+          intros_validees: number
+          last_updated_at: string
+          quality_score: number
+          reliability_score: number
+          responsiveness_score: number
+          role: string
+          signalements_recus: number
+          total_gains: number
+          total_intros: number
+          user_id: string
+        }
+        Insert: {
+          badges?: string[] | null
+          compliance_score?: number
+          created_at?: string
+          gains_confirmes?: number
+          global_score?: number
+          id?: string
+          intros_validees?: number
+          last_updated_at?: string
+          quality_score?: number
+          reliability_score?: number
+          responsiveness_score?: number
+          role?: string
+          signalements_recus?: number
+          total_gains?: number
+          total_intros?: number
+          user_id: string
+        }
+        Update: {
+          badges?: string[] | null
+          compliance_score?: number
+          created_at?: string
+          gains_confirmes?: number
+          global_score?: number
+          id?: string
+          intros_validees?: number
+          last_updated_at?: string
+          quality_score?: number
+          reliability_score?: number
+          responsiveness_score?: number
+          role?: string
+          signalements_recus?: number
+          total_gains?: number
+          total_intros?: number
           user_id?: string
         }
         Relationships: []

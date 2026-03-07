@@ -8,7 +8,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Target, Users, CheckCircle2, ArrowRight, Zap, TrendingUp,
   Sparkles, Loader2, Brain, ShieldAlert, Moon, Bot, Radar,
-  Star, Send, Link2, Share2, BarChart3, Plus, Flame, Bell
+  Star, Send, Link2, Share2, BarChart3, Plus, Flame, Bell, ShieldCheck
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -326,6 +326,26 @@ export default function DashboardEntreprise() {
               <Sparkles size={11} /> OpenClaw sélectionne ces profils selon votre secteur, langue et corridors.
             </p>
           </div>
+        )}
+
+        {/* ── CONFIANCE — CTA ──────────────────────────────── */}
+        {!loading && (
+          <Link to="/trust" className="rounded-xl border p-4 flex items-center justify-between gap-3 hover:opacity-90 transition-all" style={{
+            background: "linear-gradient(135deg, hsl(142 62% 4%), hsl(218 65% 8%))",
+            borderColor: "hsl(142 62% 35% / 0.35)"
+          }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "linear-gradient(135deg, hsl(142 62% 35%), hsl(218 72% 45%))" }}>
+                <ShieldCheck size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">Confiance & protection</p>
+                <p className="text-white/50 text-xs">Introductions protégées · Litiges · Réputation</p>
+              </div>
+            </div>
+            <ArrowRight size={15} className="text-white/50 shrink-0" />
+          </Link>
         )}
 
         {/* ── MISSIONS & INTRODUCTIONS ─────────────────────── */}
