@@ -32,6 +32,7 @@ export interface OpenClawSession {
   last_run_at: string | null;
   next_scheduled_at: string | null;
   session_score: number;
+  node_host?: string | null;
   started_at: string;
   ended_at: string | null;
   memory_snapshot: Record<string, unknown>;
