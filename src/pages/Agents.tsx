@@ -265,9 +265,9 @@ export default function Agents() {
               <h1 className="font-display text-xl font-bold text-foreground">Agent OS · OpenClaw</h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <ConnectionBadge status={connectionStatus} />
-                {activeAgents > 0 && (
+                {activeAgents.length > 0 && (
                   <span className="text-xs text-muted-foreground">
-                    {activeAgents} agent{activeAgents > 1 ? "s" : ""} actif{activeAgents > 1 ? "s" : ""}
+                    {activeAgents.length} agent{activeAgents.length > 1 ? "s" : ""} actif{activeAgents.length > 1 ? "s" : ""}
                   </span>
                 )}
               </div>
