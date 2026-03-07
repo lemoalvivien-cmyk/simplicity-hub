@@ -5,7 +5,7 @@ import {
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Zap, Activity, Layers, Brain, AlertTriangle,
   MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network,
-  Moon, Share2, Upload, ChevronDown, Lock
+  Moon, Share2, Upload, ChevronDown, Lock, Swords, Cpu
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
