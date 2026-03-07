@@ -454,6 +454,14 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
     { label: "Que traiter en premier ?", prompt: "Quelle opportunité dois-je traiter en priorité ?" },
     { label: "Comprendre les statuts", prompt: "Explique-moi les différents statuts des opportunités" },
   ],
+  agents: [
+    { label: "Comment ça fonctionne ?", prompt: "Explique-moi comment fonctionnent mes agents OpenClaw" },
+    { label: "Quel niveau d'autonomie ?", prompt: "Quel niveau d'autonomie me conseilles-tu ?" },
+  ],
+  dossier: [
+    { label: "Améliorer ma description", prompt: "Aide-moi à améliorer la description de mon offre" },
+    { label: "Définir ma cible", prompt: "Aide-moi à définir précisément ma cible idéale" },
+  ],
 };
 
 export const JARVIS_QUICK_QUESTIONS = [
