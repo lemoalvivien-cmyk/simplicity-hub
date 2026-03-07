@@ -16,6 +16,7 @@ import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
 import ActivationProgressBar from "@/components/activation/ActivationProgressBar";
 import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
+import BestAccessPanel from "@/components/graph/BestAccessPanel";
 
 interface ShareLink {
   id: string;

@@ -15,6 +15,7 @@ import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
 import ActivationProgressBar from "@/components/activation/ActivationProgressBar";
 import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
+import BestAccessPanel from "@/components/graph/BestAccessPanel";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
