@@ -15,6 +15,7 @@ import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
 import ActivationProgressBar from "@/components/activation/ActivationProgressBar";
 import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
+import BestAccessPanel from "@/components/graph/BestAccessPanel";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
@@ -156,6 +157,9 @@ export default function DashboardEntreprise() {
 
         {/* ── OPENCLAW CERVEAU VIVANT ───────────────────────── */}
         <OpenClawBrainWidget variant="entreprise" />
+
+        {/* ── MEILLEUR CHEMIN D'ACCÈS ───────────────────────── */}
+        {!isLaunchMode && <BestAccessPanel title="Meilleur chemin d'accès" context={{ limit: 3 }} compact showAlternatives={false} />}
 
         {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
