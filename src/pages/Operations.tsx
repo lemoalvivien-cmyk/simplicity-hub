@@ -19,7 +19,10 @@ import { useOpenClaw } from "@/hooks/useOpenClaw";
 import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hooks/useOpenClawExecutions";
 import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_META } from "@/hooks/useOpenClawScheduler";
 
-type TabId = "runtime" | "channels" | "queue" | "jobs" | "executions" | "sessions" | "tools" | "boundary";
+import { useOpenClawChannelActions, CHANNEL_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
+import { useOpenClawScheduledRuns, SCHEDULE_PLAN } from "@/hooks/useOpenClawScheduledRuns";
+
+type TabId = "runtime" | "channels" | "queue" | "jobs" | "executions" | "canal" | "sessions" | "tools" | "boundary";
 
 function formatRelative(iso: string | null) {
   if (!iso) return null;
