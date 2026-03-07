@@ -36,7 +36,8 @@ export type CopilotContext =
   | "pilotage"
   | "radar"
   | "validations"
-  | "chaud";
+  | "chaud"
+  | "trust";
 
 export interface AiRequest {
   role: AiRole;
@@ -214,6 +215,12 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
   chaud: {
     default: "Concentrez-vous sur les liens avec les scores les plus élevés.",
     agir: "Votre priorité : contacter les prospects qui ont cliqué plusieurs fois.",
+  },
+  trust: {
+    default: "Votre réputation se construit sur des faits réels. Chaque introduction validée, chaque avis positif et chaque réponse rapide fait progresser votre score.",
+    ameliorer: "Pour progresser : répondez vite aux demandes, envoyez des introductions de qualité, et complétez votre profil. Ce sont les meilleurs leviers.",
+    badge: "Les badges de confiance sont accordés automatiquement selon vos résultats réels. Ils attestent de votre sérieux sur la plateforme.",
+    protection: "Vos introductions sont tracées et horodatées. En cas de litige, la plateforme dispose de toutes les preuves pour défendre vos droits.",
   },
 };
 
