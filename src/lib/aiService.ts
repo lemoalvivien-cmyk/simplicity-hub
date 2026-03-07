@@ -216,18 +216,6 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
     agir: "Votre priorité : contacter les prospects qui ont cliqué plusieurs fois.",
   },
 };
-    default: "Chaque validation est une action critique soumise à votre approbation.",
-    comment: "Validez rapidement pour ne pas bloquer vos agents.",
-  },
-  chaud: {
-    default: "Concentrez-vous sur les liens avec les scores les plus élevés — ce sont vos signaux les plus forts.",
-    agir: "Votre priorité : contacter les prospects qui ont cliqué plusieurs fois.",
-  },
-}; // END_CONTEXT_MOCK
-    default: "Chaque validation est une action critique que vos agents ont soumise à votre approbation.",
-    comment: "Validez rapidement pour ne pas bloquer vos agents. Refusez si l'action vous semble trop risquée.",
-  },
-};
 
 // ── Router simple (détermine la route de réponse) ────────────────────────────
 function routeRequest(req: AiRequest): "faq" | "model_light" | "model_strong" {
