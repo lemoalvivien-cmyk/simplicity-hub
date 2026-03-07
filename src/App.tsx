@@ -61,12 +61,9 @@ import Agents from "./pages/Agents";
 import Dossier from "./pages/Dossier";
 import Validations from "./pages/Validations";
 
-// Deal Radar
-import Radar from "./pages/Radar";
-
-// Mobile / PWA
-import Install from "./pages/Install";
-import Autonomie from "./pages/Autonomie";
+// Routes App.tsx — add Facilitateurs + Signalement
+import Facilitateurs from "./pages/Facilitateurs";
+import Signalement from "./pages/Signalement";
 
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
@@ -147,6 +144,10 @@ const App = () => (
 
               {/* ── Deal Radar ───────────────────────────── */}
               <Route path="/radar" element={<ProtectedRoute><Radar /></ProtectedRoute>} />
+
+              {/* ── Facilitateurs & Signalement ──────────── */}
+              <Route path="/facilitateurs" element={<ProtectedRoute><Facilitateurs /></ProtectedRoute>} />
+              <Route path="/signalement" element={<ProtectedRoute><Signalement /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
