@@ -35,7 +35,8 @@ export type CopilotContext =
   | "offres-entreprise"
   | "pilotage"
   | "radar"
-  | "validations";
+  | "validations"
+  | "chaud";
 
 export interface AiRequest {
   role: AiRole;
@@ -207,6 +208,22 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
     signal: "Les signaux d'intention (recrutement, levée de fonds, expansion) sont les indicateurs les plus fiables.",
   },
   validations: {
+    default: "Chaque validation est une action critique soumise à votre approbation.",
+    comment: "Validez rapidement pour ne pas bloquer vos agents.",
+  },
+  chaud: {
+    default: "Concentrez-vous sur les liens avec les scores les plus élevés.",
+    agir: "Votre priorité : contacter les prospects qui ont cliqué plusieurs fois.",
+  },
+};
+    default: "Chaque validation est une action critique soumise à votre approbation.",
+    comment: "Validez rapidement pour ne pas bloquer vos agents.",
+  },
+  chaud: {
+    default: "Concentrez-vous sur les liens avec les scores les plus élevés — ce sont vos signaux les plus forts.",
+    agir: "Votre priorité : contacter les prospects qui ont cliqué plusieurs fois.",
+  },
+}; // END_CONTEXT_MOCK
     default: "Chaque validation est une action critique que vos agents ont soumise à votre approbation.",
     comment: "Validez rapidement pour ne pas bloquer vos agents. Refusez si l'action vous semble trop risquée.",
   },
@@ -542,6 +559,10 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
   validations: [
     { label: "Expliquer cette validation", prompt: "Explique-moi ce que ferait cette validation" },
     { label: "Est-ce risqué ?", prompt: "Quel est le niveau de risque de cette action ?" },
+  ],
+  chaud: [
+    { label: "Que faire maintenant ?", prompt: "Quelle est ma priorité avec ces signaux chauds ?" },
+    { label: "Expliquer les signaux", prompt: "Comment fonctionnent les intérêts qualifiés ?" },
   ],
 };
 

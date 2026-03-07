@@ -529,6 +529,9 @@ export type Database = {
           introduction_id: string | null
           mission_id: string | null
           montant: number | null
+          share_link_id: string | null
+          shared_offer_id: string | null
+          source: string | null
           statut: string | null
           updated_at: string
         }
@@ -539,6 +542,9 @@ export type Database = {
           introduction_id?: string | null
           mission_id?: string | null
           montant?: number | null
+          share_link_id?: string | null
+          shared_offer_id?: string | null
+          source?: string | null
           statut?: string | null
           updated_at?: string
         }
@@ -549,6 +555,9 @@ export type Database = {
           introduction_id?: string | null
           mission_id?: string | null
           montant?: number | null
+          share_link_id?: string | null
+          shared_offer_id?: string | null
+          source?: string | null
           statut?: string | null
           updated_at?: string
         }
@@ -565,6 +574,20 @@ export type Database = {
             columns: ["mission_id"]
             isOneToOne: false
             referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gains_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "offer_share_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gains_shared_offer_id_fkey"
+            columns: ["shared_offer_id"]
+            isOneToOne: false
+            referencedRelation: "shared_offers"
             referencedColumns: ["id"]
           },
         ]
@@ -1656,6 +1679,45 @@ export type Database = {
           },
         ]
       }
+      passive_alerts: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          message: string
+          priority: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          message: string
+          priority?: string
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          message?: string
+          priority?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1777,6 +1839,70 @@ export type Database = {
           used_by?: string | null
         }
         Relationships: []
+      }
+      qualified_interests: {
+        Row: {
+          click_count: number
+          created_at: string
+          facilitator_id: string
+          id: string
+          metadata: Json | null
+          offer_id: string | null
+          opportunity_id: string | null
+          share_link_id: string | null
+          status: string
+          updated_at: string
+          visitor_fingerprint: string | null
+        }
+        Insert: {
+          click_count?: number
+          created_at?: string
+          facilitator_id: string
+          id?: string
+          metadata?: Json | null
+          offer_id?: string | null
+          opportunity_id?: string | null
+          share_link_id?: string | null
+          status?: string
+          updated_at?: string
+          visitor_fingerprint?: string | null
+        }
+        Update: {
+          click_count?: number
+          created_at?: string
+          facilitator_id?: string
+          id?: string
+          metadata?: Json | null
+          offer_id?: string | null
+          opportunity_id?: string | null
+          share_link_id?: string | null
+          status?: string
+          updated_at?: string
+          visitor_fingerprint?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_interests_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "shared_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualified_interests_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualified_interests_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "offer_share_links"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shared_offers: {
         Row: {
