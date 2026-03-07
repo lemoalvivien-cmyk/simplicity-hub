@@ -43,7 +43,7 @@ export default function DashboardEntreprise() {
       const missionIds = (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
 
       const [missionsRes, introsRes, validRes, recoRes, agentsRes, hotOppsRes, reqRes,
-        facsRes, profilesRes, introsAllRes, offersRes, shareLinksRes] = await Promise.all([
+        facsRes, profilesRes, introsAllRes, offersRes, shareLinksRes, alertsRes] = await Promise.all([
         db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).limit(3),
         missionIds.length > 0
           ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).limit(3)
@@ -58,6 +58,7 @@ export default function DashboardEntreprise() {
         db.from("introductions").select("facilitateur_id, statut"),
         db.from("shared_offers").select("id", { count: "exact", head: true }).eq("company_user_id", user.id),
         db.from("offer_share_links").select("clicks_count, facilitator_id").eq("company_id", user.id),
+        db.from("passive_alerts").select("id, title, message, type, read").eq("user_id", user.id).eq("read", false).order("created_at", { ascending: false }).limit(3),
       ]);
 
       setMissions(missionsRes.data || []);
