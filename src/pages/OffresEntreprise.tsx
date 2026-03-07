@@ -389,7 +389,7 @@ export default function OffresEntreprise() {
               {
                 icon: "🎯",
                 title: "Titre actionnable",
-                tip: "Un bon titre dit exactement ce que vous cherchez. Ex : "Cherche décideurs RH dans les PME industrielles du Maghreb".",
+                tip: "Un bon titre dit exactement ce que vous cherchez. Ex : 'Cherche decideurs RH dans les PME industrielles du Maghreb'.",
               },
               {
                 icon: "💰",
