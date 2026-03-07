@@ -5,9 +5,9 @@ import {
   Pause, Play, ChevronRight, Eye, Target, MessageSquare,
   BarChart3, Filter, Activity, Lock, Radio, Sparkles,
   TrendingUp, Users, XCircle, Cpu, BookOpen, FlaskConical,
-  Database, Globe, Phone, Mail, FileText, Upload, List,
+  Database, Globe, Mail, FileText,
   ArrowRight, ThumbsUp, ThumbsDown, Lightbulb, RotateCcw,
-  ChevronDown, Star
+  ChevronDown
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
