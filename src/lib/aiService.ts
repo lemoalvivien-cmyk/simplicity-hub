@@ -168,9 +168,14 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
     prioriser: "Traitez en priorité les opportunités 'à traiter' et 'en attente'. Une réponse rapide augmente vos chances de succès.",
   },
   agents: {
-    default: "Vos agents sont prêts à travailler. Commencez par compléter votre dossier entreprise pour qu'ils aient toutes les informations nécessaires.",
-    status: "OpenClaw coordonne vos agents en arrière-plan. Vérifiez les validations en attente — ce sont les décisions qui vous appartiennent.",
-    autonomie: "En mode assisté, vous gardez le contrôle total. Passez en semi-autonome quand vous faites confiance aux recommandations de vos agents.",
+    default: "OpenClaw est en train de préparer la suite. Le cerveau coordonne vos agents spécialisés : Signal Hunter, Matchmaker, Message Crafter et Brief Writer travaillent en parallèle.",
+    status: "Le cerveau est actif. Consultez les cycles récents pour voir ce qu'OpenClaw a accompli. Les validations en attente sont les décisions qui vous appartiennent.",
+    autonomie: "En mode Assisté, vous gardez le contrôle total. Passez en Semi-autonome quand vous faites confiance aux cycles planifiés. En Intensif, OpenClaw prospèce à pleine puissance.",
+    run: "Le cerveau vient de terminer un cycle. Consultez l'onglet Cerveau pour voir les détails : quels agents ont travaillé, quelles opportunités ont été détectées.",
+    blocked: "Cette action attend votre accord. OpenClaw a préparé tout le contexte pour vous. Il vous suffit de valider ou refuser en un clic.",
+    next: "Le prochain cycle est planifié. Pendant ce temps, vos agents passifs continuent de surveiller les signaux.",
+    memory: "OpenClaw a appris quelque chose d'utile sur votre réseau. Il utilisera ces apprentissages pour améliorer les prochains cycles.",
+    swarm: "L'essaim d'agents OpenClaw comprend 8 spécialistes : Signal Hunter détecte les opportunités, Matchmaker associe les facilitateurs, Message Crafter prépare les messages, Trust Sentinel surveille la confiance.",
   },
   dossier: {
     default: "Votre dossier entreprise est la base d'OpenClaw. Plus il est précis, plus vos agents trouvent des contacts pertinents.",

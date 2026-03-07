@@ -14,6 +14,7 @@ import VoiceWelcome from "@/components/ai/VoiceWelcome";
 import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
 import ActivationProgressBar from "@/components/activation/ActivationProgressBar";
 import { useActivation } from "@/hooks/useActivation";
+import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
@@ -152,6 +153,9 @@ export default function DashboardEntreprise() {
             </p>
           </div>
         )}
+
+        {/* ── OPENCLAW CERVEAU VIVANT ───────────────────────── */}
+        <OpenClawBrainWidget variant="entreprise" />
 
         {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}

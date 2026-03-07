@@ -15,8 +15,9 @@ import { Link as RouterLink } from "react-router-dom";
 import { useOpenClaw, OpenClawAgent, ConnectionStatus } from "@/hooks/useOpenClaw";
 import { supabase } from "@/integrations/supabase/client";
 import { MorningBrief } from "@/components/openclaw/MorningBrief";
+import BrainActivityPanel from "@/components/openclaw/BrainActivityPanel";
 
-type TabId = "monitoring" | "agents" | "plans" | "configuration" | "preuve";
+type TabId = "cerveau" | "monitoring" | "agents" | "plans" | "configuration" | "preuve";
 
 // ── Métadonnées visuelles par agent ─────────────────────────────────────────
 const AGENT_META: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
@@ -200,7 +201,7 @@ function LogEntry({ log }: { log: { event_type: string; summary: string; created
 // PAGE PRINCIPALE
 // ══════════════════════════════════════════════════════════════════════════════
 export default function Agents() {
-  const [activeTab, setActiveTab] = useState<TabId>("monitoring");
+  const [activeTab, setActiveTab] = useState<TabId>("cerveau");
   const [gatewayUrlInput, setGatewayUrlInput] = useState("");
   const [gatewaySecretInput, setGatewaySecretInput] = useState("");
 
@@ -261,6 +262,7 @@ export default function Agents() {
   };
 
   const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
+    { id: "cerveau",       label: "Cerveau",      icon: Brain },
     { id: "monitoring",    label: "Monitoring",   icon: Activity },
     { id: "agents",        label: "Mes agents",   icon: Cpu },
     { id: "plans",         label: "Plans",        icon: BookOpen },
@@ -364,6 +366,13 @@ export default function Agents() {
             );
           })}
         </div>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            TAB : CERVEAU (NOUVEAU — GOD MODE)
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeTab === "cerveau" && (
+          <BrainActivityPanel showModes={true} />
+        )}
 
         {/* ══════════════════════════════════════════════════════════════════
             TAB : MONITORING
