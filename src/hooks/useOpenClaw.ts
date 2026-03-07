@@ -498,7 +498,7 @@ export function useOpenClaw() {
     // Dérivés
     lastActivity, lastSyncLog, lastHealthLog, diagnostic,
     // Actions
-    loadAll, saveConfig, checkHealth, syncDossier,
+    loadAll, saveConfig, checkHealth, syncDossier, runStatusProbe,
     toggleKillSwitch, processValidation, callGateway, createTestValidation,
   };
 }
