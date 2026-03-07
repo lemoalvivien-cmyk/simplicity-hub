@@ -105,55 +105,78 @@ export default function Checkout() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <PublicNav />
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="max-w-md w-full">
-            <div className="card-surface p-8 text-center">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
-                style={{ background: isPromo ? "hsl(var(--accent)/0.15)" : "hsl(var(--success-light))" }}>
-                {isPromo
-                  ? <Gift size={32} className="text-accent" />
-                  : <CheckCircle2 size={32} className="text-success" />
-                }
-              </div>
-
-              <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-                {isPromo ? "Accès gratuit activé ! 🎉" : "Bienvenue dans WIINUP MAX ! 🎉"}
-              </h1>
-
-              {isPromo ? (
-                <div className="space-y-3 mb-6">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Votre accès gratuit de 12 mois est activé.
-                    Aucun paiement n'est nécessaire avec ce code.
-                  </p>
-                  <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-xl text-sm">
-                    <ShieldCheck size={16} className="text-accent shrink-0" />
-                    <p className="text-left text-muted-foreground">
-                      Accès complet à toutes les fonctionnalités pendant <strong className="text-foreground">12 mois</strong>, sans engagement.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="mb-6">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-3">
-                    <Zap size={14} />
-                    {successType === "stripe_launch" ? "Offre de lancement — 99 € TTC / an" : "Abonnement annuel — 490 € TTC / an"}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Votre abonnement est actif. Configurez votre espace pour commencer.
-                  </p>
-                </div>
-              )}
-
-              <Link
-                to={user ? "/onboarding" : "/signup"}
-                className="btn-cta text-sm px-8 py-4 block text-center"
-              >
-                {user ? "Configurer mon espace →" : "Créer mon compte →"}
-              </Link>
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="max-w-md w-full">
+          <div className="card-surface p-8 text-center">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+              style={{ background: isPromo ? "hsl(var(--accent)/0.15)" : "hsl(var(--success-light))" }}>
+              {isPromo
+                ? <Gift size={32} className="text-accent" />
+                : <CheckCircle2 size={32} className="text-success" />
+              }
             </div>
+
+            <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+              {isPromo ? "Accès gratuit activé ! 🎉" : "Bienvenue dans WIINUP MAX ! 🎉"}
+            </h1>
+
+            {isPromo ? (
+              <div className="space-y-3 mb-6">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Votre accès gratuit de 12 mois est activé.
+                  Aucun paiement n'est nécessaire avec ce code.
+                </p>
+                <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-xl text-sm">
+                  <ShieldCheck size={16} className="text-accent shrink-0" />
+                  <p className="text-left text-muted-foreground">
+                    Accès complet à toutes les fonctionnalités pendant <strong className="text-foreground">12 mois</strong>, sans engagement.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-6 space-y-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold">
+                  <Zap size={14} />
+                  {successType === "stripe_launch" ? "Offre de lancement — 99 € TTC / an" : "Abonnement annuel — 490 € TTC / an"}
+                </div>
+                {/* Deux moteurs activés */}
+                <div className="grid grid-cols-2 gap-3 text-left">
+                  <div className="p-3.5 rounded-xl border" style={{
+                    background: "linear-gradient(135deg, hsl(218 65% 8%), hsl(218 55% 11%))",
+                    borderColor: "hsl(218 40% 22% / 0.6)"
+                  }}>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(218 72% 65%)" }}>
+                      Moteur 1
+                    </p>
+                    <p className="font-semibold text-white text-sm">Prospection automatisée</p>
+                    <p className="text-white/50 text-xs mt-1">OpenClaw est prêt.</p>
+                  </div>
+                  <div className="p-3.5 rounded-xl border" style={{
+                    background: "linear-gradient(135deg, hsl(24 60% 8%), hsl(38 50% 11%))",
+                    borderColor: "hsl(24 50% 22% / 0.6)"
+                  }}>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(24 100% 65%)" }}>
+                      Moteur 2
+                    </p>
+                    <p className="font-semibold text-white text-sm">Apport d'affaires</p>
+                    <p className="text-white/50 text-xs mt-1">Votre réseau est activé.</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Vous pouvez maintenant utiliser la prospection automatisée et l'apport d'affaires dans un seul cockpit.
+                </p>
+              </div>
+            )}
+
+            <Link
+              to={user ? "/onboarding" : "/signup"}
+              className="btn-cta text-sm px-8 py-4 block text-center"
+            >
+              {user ? "Configurer mon espace →" : "Créer mon compte →"}
+            </Link>
           </div>
         </div>
+      </div>
       </div>
     );
   }

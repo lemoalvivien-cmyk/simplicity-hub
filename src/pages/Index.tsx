@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import HeroSection from "@/components/landing/HeroSection";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
+import DoubleMoteurSection from "@/components/landing/DoubleMoteurSection";
+import OpenClawSection from "@/components/landing/OpenClawSection";
 import {
   ArrowRight, CheckCircle2, Shield, Star, Building2, Users,
   MessageSquare, Bot, Zap, Send, TrendingUp
@@ -46,6 +48,12 @@ export default function LandingPage() {
 
       {/* ══ HERO ══════════════════════════════════════════════ */}
       <HeroSection />
+
+      {/* ══ DOUBLE MOTEUR ════════════════════════════════════ */}
+      <DoubleMoteurSection />
+
+      {/* ══ OPENCLAW / PROSPECTION AUTO ══════════════════════ */}
+      <OpenClawSection />
 
       {/* ══ COMMENT ÇA MARCHE — SIMPLE ════════════════════════ */}
       <section id="comment-ca-marche" className="py-20 bg-background">

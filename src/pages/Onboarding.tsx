@@ -111,6 +111,29 @@ export default function Onboarding() {
         <p className="text-muted-foreground leading-relaxed">{welcomeMsg}</p>
       </div>
 
+      {/* Double moteur */}
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="rounded-2xl p-4" style={{
+          background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
+          border: "1px solid hsl(218 40% 22% / 0.6)"
+        }}>
+          <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(218 72% 65%)" }}>Moteur 1</p>
+          <p className="font-semibold text-white text-sm">Prospection automatisée</p>
+          <p className="text-white/45 text-xs mt-1">OpenClaw pilote vos agents 24h/24</p>
+        </div>
+        <div className="rounded-2xl p-4" style={{
+          background: "linear-gradient(135deg, hsl(24 60% 8%), hsl(38 50% 11%))",
+          border: "1px solid hsl(24 50% 20% / 0.6)"
+        }}>
+          <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(24 100% 65%)" }}>Moteur 2</p>
+          <p className="font-semibold text-white text-sm">Apport d'affaires</p>
+          <p className="text-white/45 text-xs mt-1">Votre réseau ouvre des portes</p>
+        </div>
+      </div>
+      <p className="text-xs text-center text-muted-foreground mb-5">
+        Les deux ensemble = plus puissant. Vous activez un double moteur d'acquisition.
+      </p>
+
       <div className="card-surface p-5 mb-6 space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Ce qui vous attend
