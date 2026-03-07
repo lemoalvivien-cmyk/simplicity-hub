@@ -227,7 +227,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <p className="font-display font-bold text-white text-lg">Vous êtes une entreprise</p>
-                    <p className="text-white/65 text-sm">29 € TTC / mois</p>
+                    <p className="text-white/65 text-sm">Offre lancement — 99 € TTC / an</p>
                   </div>
                 </div>
               </div>
@@ -241,7 +241,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link to="/pricing" className="btn-primary w-full text-center block py-3 text-sm">
-                  Commencer à 29 € / mois →
+                  Voir l'offre entreprise →
                 </Link>
               </div>
             </div>
