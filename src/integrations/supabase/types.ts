@@ -1590,6 +1590,115 @@ export type Database = {
         }
         Relationships: []
       }
+      openclaw_job_executions: {
+        Row: {
+          actions_created: number
+          alerts_created: number
+          approved_at: string | null
+          created_at: string
+          duration_ms: number | null
+          ended_at: string | null
+          id: string
+          job_id: string | null
+          job_type: string
+          last_error: string | null
+          opportunities_rescored: number
+          output_count: number
+          output_summary: string | null
+          output_type: string | null
+          recommendations_created: number
+          requires_approval: boolean
+          result_payload: Json | null
+          retry_count: number
+          run_id: string | null
+          session_id: string | null
+          started_at: string | null
+          status: string
+          trigger_source: string
+          trust_updates: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actions_created?: number
+          alerts_created?: number
+          approved_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          id?: string
+          job_id?: string | null
+          job_type: string
+          last_error?: string | null
+          opportunities_rescored?: number
+          output_count?: number
+          output_summary?: string | null
+          output_type?: string | null
+          recommendations_created?: number
+          requires_approval?: boolean
+          result_payload?: Json | null
+          retry_count?: number
+          run_id?: string | null
+          session_id?: string | null
+          started_at?: string | null
+          status?: string
+          trigger_source?: string
+          trust_updates?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actions_created?: number
+          alerts_created?: number
+          approved_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          id?: string
+          job_id?: string | null
+          job_type?: string
+          last_error?: string | null
+          opportunities_rescored?: number
+          output_count?: number
+          output_summary?: string | null
+          output_type?: string | null
+          recommendations_created?: number
+          requires_approval?: boolean
+          result_payload?: Json | null
+          retry_count?: number
+          run_id?: string | null
+          session_id?: string | null
+          started_at?: string | null
+          status?: string
+          trigger_source?: string
+          trust_updates?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "openclaw_job_executions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "openclaw_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "openclaw_job_executions_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "openclaw_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "openclaw_job_executions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "openclaw_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       openclaw_jobs: {
         Row: {
           config: Json | null
@@ -1740,6 +1849,7 @@ export type Database = {
         Row: {
           agent_name: string
           created_at: string
+          execution_id: string | null
           id: string
           linked_entity_id: string | null
           linked_entity_type: string | null
@@ -1756,6 +1866,7 @@ export type Database = {
         Insert: {
           agent_name?: string
           created_at?: string
+          execution_id?: string | null
           id?: string
           linked_entity_id?: string | null
           linked_entity_type?: string | null
@@ -1772,6 +1883,7 @@ export type Database = {
         Update: {
           agent_name?: string
           created_at?: string
+          execution_id?: string | null
           id?: string
           linked_entity_id?: string | null
           linked_entity_type?: string | null
@@ -1785,7 +1897,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "openclaw_recommendations_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "openclaw_job_executions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       openclaw_runs: {
         Row: {
@@ -1795,6 +1915,7 @@ export type Database = {
           duration_ms: number | null
           ended_at: string | null
           error_detail: string | null
+          execution_id: string | null
           id: string
           next_run_at: string | null
           node_host: string | null
@@ -1818,6 +1939,7 @@ export type Database = {
           duration_ms?: number | null
           ended_at?: string | null
           error_detail?: string | null
+          execution_id?: string | null
           id?: string
           next_run_at?: string | null
           node_host?: string | null
@@ -1841,6 +1963,7 @@ export type Database = {
           duration_ms?: number | null
           ended_at?: string | null
           error_detail?: string | null
+          execution_id?: string | null
           id?: string
           next_run_at?: string | null
           node_host?: string | null
@@ -1858,6 +1981,13 @@ export type Database = {
           validation_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "openclaw_runs_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "openclaw_job_executions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "openclaw_runs_session_id_fkey"
             columns: ["session_id"]
@@ -2673,6 +2803,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_job_execution: {
+        Args: {
+          p_actions: number
+          p_alerts: number
+          p_error: string
+          p_execution_id: string
+          p_opportunities: number
+          p_output_count: number
+          p_output_summary: string
+          p_recommendations: number
+          p_result_payload: Json
+          p_status: string
+          p_trust_updates: number
+        }
+        Returns: undefined
+      }
       refresh_trust_score: {
         Args: { p_facilitator_id: string }
         Returns: undefined
