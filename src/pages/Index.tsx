@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
+import HeroSection from "@/components/landing/HeroSection";
 import {
   ArrowRight, Zap, Target, Users, Send, TrendingUp, Play,
   Briefcase, CheckCircle2, Shield, Star, ChevronRight,
