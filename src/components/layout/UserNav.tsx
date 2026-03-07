@@ -4,8 +4,9 @@ import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Play, Zap, Activity, Layers, Target, Brain, AlertTriangle,
-  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag
+  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network
 } from "lucide-react";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 type UserRole = "entreprise" | "facilitateur";
 
@@ -58,6 +59,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
            {
              label: "Réseau",
              items: [
+               { to: "/reseau", label: "Réseau intelligent", icon: Network },
                { to: "/facilitateurs", label: "Vitrine facilitateurs", icon: Users },
                { to: "/canaux", label: "WhatsApp & Canaux", icon: MessageSquare },
                { to: "/install", label: "Installer l'app", icon: Smartphone },
