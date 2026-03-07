@@ -32,7 +32,15 @@ export default function UserNav({ role = "facilitateur", introCount = 0 }: UserN
   const [open, setOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const level = useProgressLevel(introCount);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+    setOpen(false);
+  };
 
   const dashboardPath = role === "entreprise" ? "/dashboard/entreprise" : "/dashboard/facilitateur";
 
