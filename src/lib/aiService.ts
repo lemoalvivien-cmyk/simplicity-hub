@@ -24,7 +24,9 @@ export type CopilotContext =
   | "messages"
   | "regles"
   | "canaux"
-  | "opportunites";
+  | "opportunites"
+  | "agents"
+  | "dossier";
 
 export interface AiRequest {
   role: AiRole;
@@ -152,6 +154,16 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
   opportunites: {
     default: "Voici vos opportunités actives. Commencez par celles en attente de validation — elles peuvent avancer rapidement.",
     prioriser: "Traitez en priorité les opportunités 'à traiter' et 'en attente'. Une réponse rapide augmente vos chances de succès.",
+  },
+  agents: {
+    default: "Vos agents sont prêts à travailler. Commencez par compléter votre dossier entreprise pour qu'ils aient toutes les informations nécessaires.",
+    status: "OpenClaw coordonne vos agents en arrière-plan. Vérifiez les validations en attente — ce sont les décisions qui vous appartiennent.",
+    autonomie: "En mode assisté, vous gardez le contrôle total. Passez en semi-autonome quand vous faites confiance aux recommandations de vos agents.",
+  },
+  dossier: {
+    default: "Votre dossier entreprise est la base d'OpenClaw. Plus il est précis, plus vos agents trouvent des contacts pertinents.",
+    ameliorer: "Pour améliorer votre dossier : soyez très précis sur votre client idéal, décrivez les signaux d'achat typiques, et indiquez vos contraintes absolues.",
+    cible: "Un bon profil de cible répond à : quel secteur, quelle taille, quel décideur, quel problème, quel signal d'achat. Soyez spécifique.",
   },
 };
 
@@ -441,6 +453,14 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
   opportunites: [
     { label: "Que traiter en premier ?", prompt: "Quelle opportunité dois-je traiter en priorité ?" },
     { label: "Comprendre les statuts", prompt: "Explique-moi les différents statuts des opportunités" },
+  ],
+  agents: [
+    { label: "Comment ça fonctionne ?", prompt: "Explique-moi comment fonctionnent mes agents OpenClaw" },
+    { label: "Quel niveau d'autonomie ?", prompt: "Quel niveau d'autonomie me conseilles-tu ?" },
+  ],
+  dossier: [
+    { label: "Améliorer ma description", prompt: "Aide-moi à améliorer la description de mon offre" },
+    { label: "Définir ma cible", prompt: "Aide-moi à définir précisément ma cible idéale" },
   ],
 };
 
