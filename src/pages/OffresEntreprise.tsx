@@ -160,10 +160,7 @@ export default function OffresEntreprise() {
   };
 
   const totalClicks = Object.values(stats).reduce((s, v) => s + v.clicks, 0);
-  const totalFacilitators = new Set(
-    Object.values(stats).flatMap(() => [])
-  ).size;
-  const activeFacilitators = Object.values(stats).reduce((max, v) => max + v.facilitators, 0);
+  const activeFacilitators = Object.values(stats).reduce((s, v) => s + v.facilitators, 0);
 
   return (
     <UserLayout role="entreprise" jarvisContext="offres-entreprise">
