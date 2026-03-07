@@ -385,7 +385,13 @@ export default function Offres() {
           <>
             {tab === "offres" && (
               <>
-                {offers.length === 0 ? (
+                {sortedOffers.length > 0 && (
+                  <div className="flex items-center gap-2 px-1">
+                    <Flame size={12} style={{ color: "hsl(24 100% 52%)" }} />
+                    <p className="text-xs text-muted-foreground">Classées par chaleur — les meilleures d'abord</p>
+                  </div>
+                )}
+                {sortedOffers.length === 0 ? (
                   <div className="card-surface p-10 text-center">
                     <Share2 size={30} className="mx-auto text-muted-foreground mb-3" />
                     <p className="font-semibold text-foreground mb-1">Aucune offre disponible</p>
@@ -393,17 +399,26 @@ export default function Offres() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {offers.map(offer => (
-                      <OfferCard
-                        key={offer.id}
-                        offer={offer}
-                        myLinks={myLinks}
-                        pack={packs[offer.id] || null}
-                        onGetLink={getOfferLink}
-                        onCopy={copyText}
-                        onGeneratePack={generatePack}
-                        generatingId={generatingId}
-                      />
+                    {sortedOffers.map((offer, index) => (
+                      <div key={offer.id} className="relative">
+                        {index === 0 && (heatScores[offer.id] || 0) >= 40 && (
+                          <div className="absolute -top-2 left-3 z-10">
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white"
+                              style={{ background: "linear-gradient(135deg, hsl(24 100% 52%), hsl(38 80% 45%))" }}>
+                              🔥 Meilleure offre à pousser
+                            </span>
+                          </div>
+                        )}
+                        <OfferCard
+                          offer={offer}
+                          myLinks={myLinks}
+                          pack={packs[offer.id] || null}
+                          onGetLink={getOfferLink}
+                          onCopy={copyText}
+                          onGeneratePack={generatePack}
+                          generatingId={generatingId}
+                        />
+                      </div>
                     ))}
                   </div>
                 )}
