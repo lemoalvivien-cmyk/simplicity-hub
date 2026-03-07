@@ -1458,6 +1458,176 @@ export type Database = {
         }
         Relationships: []
       }
+      openclaw_channel_capabilities: {
+        Row: {
+          availability: string
+          can_auto_send: boolean
+          can_export_human: boolean
+          can_prepare: boolean
+          can_receive_receipt: boolean
+          can_send_validated: boolean
+          can_track_reply: boolean
+          channel: string
+          channel_name: string
+          emoji: string
+          honest_note: string | null
+          requires_external_api: boolean
+          requires_gateway: boolean
+          updated_at: string
+        }
+        Insert: {
+          availability?: string
+          can_auto_send?: boolean
+          can_export_human?: boolean
+          can_prepare?: boolean
+          can_receive_receipt?: boolean
+          can_send_validated?: boolean
+          can_track_reply?: boolean
+          channel: string
+          channel_name: string
+          emoji?: string
+          honest_note?: string | null
+          requires_external_api?: boolean
+          requires_gateway?: boolean
+          updated_at?: string
+        }
+        Update: {
+          availability?: string
+          can_auto_send?: boolean
+          can_export_human?: boolean
+          can_prepare?: boolean
+          can_receive_receipt?: boolean
+          can_send_validated?: boolean
+          can_track_reply?: boolean
+          channel?: string
+          channel_name?: string
+          emoji?: string
+          honest_note?: string | null
+          requires_external_api?: boolean
+          requires_gateway?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      openclaw_channel_deliveries: {
+        Row: {
+          approval_given_at: string | null
+          cancelled_at: string | null
+          channel: string
+          channel_action_id: string
+          created_at: string
+          delivered_at: string | null
+          dispatch_mode: string | null
+          dispatch_status: string
+          dispatched_at: string | null
+          dispatched_by: string | null
+          engagement_detected: boolean | null
+          error_code: string | null
+          error_summary: string | null
+          error_type: string | null
+          expired_at: string | null
+          external_thread_id: string | null
+          failed_at: string | null
+          id: string
+          linked_gain_id: string | null
+          linked_introduction_id: string | null
+          linked_opportunity_id: string | null
+          outcome_type: string | null
+          provider_message_id: string | null
+          provider_response: Json | null
+          provider_status: string | null
+          queued_at: string | null
+          replied_at: string | null
+          reply_sentiment: string | null
+          reply_summary: string | null
+          requires_approval: boolean | null
+          source_job_id: string | null
+          source_run_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approval_given_at?: string | null
+          cancelled_at?: string | null
+          channel: string
+          channel_action_id: string
+          created_at?: string
+          delivered_at?: string | null
+          dispatch_mode?: string | null
+          dispatch_status?: string
+          dispatched_at?: string | null
+          dispatched_by?: string | null
+          engagement_detected?: boolean | null
+          error_code?: string | null
+          error_summary?: string | null
+          error_type?: string | null
+          expired_at?: string | null
+          external_thread_id?: string | null
+          failed_at?: string | null
+          id?: string
+          linked_gain_id?: string | null
+          linked_introduction_id?: string | null
+          linked_opportunity_id?: string | null
+          outcome_type?: string | null
+          provider_message_id?: string | null
+          provider_response?: Json | null
+          provider_status?: string | null
+          queued_at?: string | null
+          replied_at?: string | null
+          reply_sentiment?: string | null
+          reply_summary?: string | null
+          requires_approval?: boolean | null
+          source_job_id?: string | null
+          source_run_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approval_given_at?: string | null
+          cancelled_at?: string | null
+          channel?: string
+          channel_action_id?: string
+          created_at?: string
+          delivered_at?: string | null
+          dispatch_mode?: string | null
+          dispatch_status?: string
+          dispatched_at?: string | null
+          dispatched_by?: string | null
+          engagement_detected?: boolean | null
+          error_code?: string | null
+          error_summary?: string | null
+          error_type?: string | null
+          expired_at?: string | null
+          external_thread_id?: string | null
+          failed_at?: string | null
+          id?: string
+          linked_gain_id?: string | null
+          linked_introduction_id?: string | null
+          linked_opportunity_id?: string | null
+          outcome_type?: string | null
+          provider_message_id?: string | null
+          provider_response?: Json | null
+          provider_status?: string | null
+          queued_at?: string | null
+          replied_at?: string | null
+          reply_sentiment?: string | null
+          reply_summary?: string | null
+          requires_approval?: boolean | null
+          source_job_id?: string | null
+          source_run_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "openclaw_channel_deliveries_channel_action_id_fkey"
+            columns: ["channel_action_id"]
+            isOneToOne: false
+            referencedRelation: "openclaw_channel_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       openclaw_channels: {
         Row: {
           channel_id: string

@@ -63,4 +63,7 @@ verify_jwt = false
 [functions.openclaw-smoke-test]
 verify_jwt = false
 
+[functions.openclaw-channel-dispatch]
+verify_jwt = false
+
 
