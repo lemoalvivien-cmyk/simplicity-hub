@@ -61,6 +61,8 @@ import ProfilEntreprise from "./pages/ProfilEntreprise";
 import Agents from "./pages/Agents";
 import Dossier from "./pages/Dossier";
 import Validations from "./pages/Validations";
+import Operations from "./pages/Operations";
+import WarRoom from "./pages/WarRoom";
 
 // Deal Radar
 import Radar from "./pages/Radar";
