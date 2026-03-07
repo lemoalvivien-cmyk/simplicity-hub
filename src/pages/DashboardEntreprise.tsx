@@ -1,22 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import { Target, Users, CheckCircle2, ArrowRight, MessageCircle, HelpCircle, Zap, Play, TrendingUp, Sparkles, Loader2 } from "lucide-react";
+import { Target, Users, CheckCircle2, ArrowRight, MessageCircle, Zap, TrendingUp, Sparkles, Loader2, Brain, ShieldAlert, Moon, Bot } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import VoiceWelcome from "@/components/ai/VoiceWelcome";
 
-interface Mission {
-  id: string;
-  titre: string;
-  statut: string;
-}
-
-interface Introduction {
-  id: string;
-  contact_nom: string;
-  mission_id: string;
-  statut: string;
-}
+interface Mission { id: string; titre: string; statut: string; }
+interface Introduction { id: string; contact_nom: string; mission_id: string; statut: string; }
 
 export default function DashboardEntreprise() {
   const { user, profile } = useAuth();
@@ -25,6 +16,9 @@ export default function DashboardEntreprise() {
   const [loading, setLoading] = useState(true);
   const [contactsCount, setContactsCount] = useState(0);
   const [campagnesCount, setCampagnesCount] = useState(0);
+  const [validationsCount, setValidationsCount] = useState(0);
+  const [recommendationsCount, setRecommendationsCount] = useState(0);
+  const [agentsActifs, setAgentsActifs] = useState(0);
 
   const prenom = profile?.prenom || "vous";
 
@@ -32,18 +26,24 @@ export default function DashboardEntreprise() {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const [missionsRes, introsRes, contactsRes, campagnesRes] = await Promise.all([
+      const [missionsRes, introsRes, contactsRes, campagnesRes, validRes, recoRes, agentsRes] = await Promise.all([
         db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).limit(3),
         db.from("introductions").select("id, contact_nom, mission_id, statut")
           .in("mission_id", (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: Mission) => m.id) || [])
           .limit(3),
         db.from("contacts").select("id", { count: "exact", head: true }).eq("owner_user_id", user.id),
         db.from("campagnes").select("id", { count: "exact", head: true }).eq("owner_user_id", user.id).eq("statut", "en_cours"),
+        db.from("openclaw_validations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("statut", "en_attente"),
+        db.from("openclaw_recommendations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "pending"),
+        db.from("openclaw_agents").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("statut", "actif"),
       ]);
       setMissions(missionsRes.data || []);
       setIntroductions(introsRes.data || []);
       setContactsCount(contactsRes.count || 0);
       setCampagnesCount(campagnesRes.count || 0);
+      setValidationsCount(validRes.count || 0);
+      setRecommendationsCount(recoRes.count || 0);
+      setAgentsActifs(agentsRes.count || 0);
       setLoading(false);
     };
     load();
@@ -59,8 +59,65 @@ export default function DashboardEntreprise() {
   const nextAction = introductions.find((i) => i.statut === "en_attente");
 
   return (
-    <UserLayout role="entreprise">
+    <UserLayout role="entreprise" jarvisContext="dashboard">
+      <VoiceWelcome context="dashboard-entreprise" userName={prenom} />
       <div className="max-w-2xl mx-auto space-y-5">
+
+        {/* ── BLOC 0 — STATUT IA ──────────────────────────────────── */}
+        <div
+          className="rounded-2xl p-5 border"
+          style={{
+            background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))",
+            border: "1px solid hsl(218 40% 25% / 0.5)",
+          }}
+        >
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                <Brain size={18} className="text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">OpenClaw — Cerveau actif</p>
+                <p className="text-white/50 text-xs">
+                  {agentsActifs > 0
+                    ? `${agentsActifs} agent${agentsActifs > 1 ? "s" : ""} en activité · Vos agents travaillent déjà.`
+                    : "Configurez vos agents pour démarrer"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {validationsCount > 0 && (
+                <Link
+                  to="/validations"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold"
+                  style={{ background: "hsl(38 90% 55% / 0.2)", border: "1px solid hsl(38 90% 55% / 0.3)", color: "hsl(38 90% 65%)" }}
+                >
+                  <ShieldAlert size={12} />
+                  {validationsCount} validation{validationsCount > 1 ? "s" : ""}
+                </Link>
+              )}
+              <Link
+                to="/agents"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white/70 transition-colors hover:text-white"
+                style={{ background: "hsl(218 40% 20% / 0.6)", border: "1px solid hsl(218 40% 30% / 0.4)" }}
+              >
+                <Bot size={12} />
+                Agents
+              </Link>
+            </div>
+          </div>
+
+          {/* Tagline */}
+          <div className="mt-4 pt-4 border-t" style={{ borderColor: "hsl(218 40% 25% / 0.4)" }}>
+            <p className="text-white/35 text-xs italic flex items-center gap-2">
+              <Moon size={11} />
+              « Va te coucher, je prospecte pendant que tu dors. »
+            </p>
+          </div>
+        </div>
 
         {/* ── BLOC 1 — BIENVENUE ─────────────────────────────────── */}
         <div className="card-surface p-6">
@@ -70,7 +127,9 @@ export default function DashboardEntreprise() {
                 Bonjour {prenom} 👋
               </h1>
               <p className="text-muted-foreground text-sm">
-                Voici votre tableau de bord. Prospection et apport d'affaires en un seul endroit.
+                {recommendationsCount > 0
+                  ? `OpenClaw a préparé ${recommendationsCount} recommandation${recommendationsCount > 1 ? "s" : ""} pour vous.`
+                  : "Votre espace est prêt. Vos agents peuvent commencer à travailler."}
               </p>
             </div>
             <span className="badge-success shrink-0">
@@ -78,6 +137,28 @@ export default function DashboardEntreprise() {
               Compte actif
             </span>
           </div>
+
+          {/* Raccourcis rapides IA */}
+          {recommendationsCount > 0 && (
+            <div className="mt-4 flex gap-2">
+              <Link
+                to="/pilotage"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                style={{ background: "hsl(24 100% 52% / 0.1)", border: "1px solid hsl(24 100% 52% / 0.25)", color: "hsl(24 100% 52%)" }}
+              >
+                <Sparkles size={12} />
+                Voir les recommandations
+              </Link>
+              <Link
+                to="/validations"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))", color: "hsl(var(--foreground))" }}
+              >
+                <ShieldAlert size={12} />
+                Mes validations
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* ── BLOC 2 — ACTION PRIORITAIRE ────────────────────────── */}
@@ -96,8 +177,7 @@ export default function DashboardEntreprise() {
               Une introduction attend votre validation
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
-              <strong>{nextAction.contact_nom}</strong> a été présenté pour une de vos missions.
-              Validez ou refusez ce contact en moins d'une minute.
+              <strong>{nextAction.contact_nom}</strong> a été présenté pour une de vos missions. Validez ou refusez en moins d'une minute.
             </p>
             <Link to="/entreprise/introductions" className="btn-cta text-sm py-2.5 px-5 inline-flex">
               Voir l'introduction <ArrowRight size={14} />
@@ -105,48 +185,23 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
-        {/* ── BLOC 3 — PROSPECTION EN COURS ──────────────────────── */}
-        <div className="card-surface p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <Zap size={16} className="text-primary" />
-              Ma prospection
-            </h2>
-            <Link to="/contacts" className="text-xs text-primary font-medium hover:underline">
-              Voir les contacts
-            </Link>
+        {/* ── BLOC 3 — CHIFFRES CLÉS ─────────────────────────────── */}
+        {!loading && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: "Contacts", value: contactsCount, icon: Users, to: "/contacts" },
+              { label: "Campagnes actives", value: campagnesCount, icon: Zap, to: "/campagnes" },
+              { label: "Validations en attente", value: validationsCount, icon: ShieldAlert, to: "/validations" },
+              { label: "Recommandations IA", value: recommendationsCount, icon: Sparkles, to: "/pilotage" },
+            ].map(({ label, value, icon: Icon, to }) => (
+              <Link key={label} to={to} className="card-surface p-4 text-center hover:shadow-md transition-shadow">
+                <Icon size={16} className="mx-auto mb-1.5 text-muted-foreground" />
+                <p className="font-display text-2xl font-bold text-foreground">{value}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{label}</p>
+              </Link>
+            ))}
           </div>
-          {loading ? (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 size={20} className="animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                {[
-                  { label: "Contacts", value: contactsCount, color: "hsl(var(--foreground))", bg: "hsl(var(--muted))" },
-                  { label: "Campagnes actives", value: campagnesCount, color: "hsl(220 80% 45%)", bg: "hsl(220 80% 95%)" },
-                ].map(({ label, value, color, bg }) => (
-                  <div key={label} className="rounded-xl p-3 text-center" style={{ background: bg }}>
-                    <p className="font-display text-xl font-bold" style={{ color }}>{value}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-3">
-                <Link to="/campagnes" className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
-                  <Play size={12} /> Campagnes
-                </Link>
-                <Link to="/actions" className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl border border-border text-foreground hover:bg-muted transition-colors">
-                  <Zap size={12} /> À faire
-                </Link>
-                <Link to="/listes" className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl border border-border text-foreground hover:bg-muted transition-colors">
-                  <Users size={12} /> Listes
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
+        )}
 
         {/* ── BLOC 4 — MISSIONS & INTRODUCTIONS ──────────────────── */}
         <div className="card-surface p-6">
@@ -155,59 +210,28 @@ export default function DashboardEntreprise() {
               <Target size={16} className="text-primary" />
               Apport d'affaires
             </h2>
-            <Link to="/entreprise/introductions" className="text-xs text-primary font-medium hover:underline">
-              Voir tout
-            </Link>
+            <Link to="/entreprise/introductions" className="text-xs text-primary font-medium hover:underline">Voir tout</Link>
           </div>
           {loading ? (
-            <div className="flex items-center justify-center py-6">
-              <Loader2 size={20} className="animate-spin text-muted-foreground" />
-            </div>
+            <div className="flex items-center justify-center py-6"><Loader2 size={20} className="animate-spin text-muted-foreground" /></div>
           ) : missions.length === 0 ? (
             <div className="text-center py-6">
               <Target size={28} className="mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground mb-3">Aucune mission créée pour l'instant.</p>
-              <Link to="/missions" className="btn-cta text-sm py-2 px-4 inline-flex">
-                Créer une mission
-              </Link>
+              <p className="text-sm text-muted-foreground mb-3">Aucune mission créée.</p>
+              <Link to="/missions" className="btn-cta text-sm py-2 px-4 inline-flex">Créer une mission</Link>
             </div>
           ) : (
-            <>
-              <div className="space-y-3 mb-4">
-                {missions.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "hsl(var(--success))" }} />
-                      <p className="text-sm font-medium text-foreground">{m.titre}</p>
-                    </div>
-                    <Link to={`/missions/${m.id}`} className="text-xs text-primary font-medium hover:underline shrink-0">
-                      Voir
-                    </Link>
+            <div className="space-y-2">
+              {missions.map((m) => (
+                <div key={m.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "hsl(var(--success))" }} />
+                    <p className="text-sm font-medium text-foreground">{m.titre}</p>
                   </div>
-                ))}
-              </div>
-              <div className="space-y-2">
-                {introductions.map((intro) => {
-                  const cfg = statusConfig[intro.statut] || statusConfig.en_cours;
-                  return (
-                    <Link key={intro.id} to="/entreprise/introductions"
-                      className="flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-muted transition-colors">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
-                          style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
-                          {intro.contact_nom.charAt(0)}
-                        </div>
-                        <p className="text-sm text-foreground truncate">{intro.contact_nom}</p>
-                      </div>
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0"
-                        style={{ color: cfg.color, background: cfg.bg }}>
-                        {cfg.label}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </>
+                  <Link to={`/missions/${m.id}`} className="text-xs text-primary font-medium hover:underline shrink-0">Voir</Link>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -235,7 +259,7 @@ export default function DashboardEntreprise() {
         <div className="card-surface p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
-              <Sparkles size={16} style={{ color: "hsl(var(--primary-foreground))" }} />
+              <Sparkles size={16} className="text-white" />
             </div>
             <div>
               <h2 className="font-semibold text-foreground text-sm">Besoin d'aide ?</h2>
@@ -246,8 +270,8 @@ export default function DashboardEntreprise() {
             <Link to="/assistant" className="btn-primary text-sm py-2.5 px-4 flex-1 justify-center">
               <MessageCircle size={14} /> Ouvrir JARVIS
             </Link>
-            <Link to="/help" className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
-              <HelpCircle size={14} /> Aide
+            <Link to="/agents" className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
+              <Brain size={14} /> Agents IA
             </Link>
           </div>
         </div>

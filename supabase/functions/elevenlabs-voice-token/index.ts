@@ -1,5 +1,3 @@
-import Deno from "https://deno.land/std@0.168.0/node/global.ts";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -16,29 +14,27 @@ Deno.serve(async (req: Request) => {
 
     if (!ELEVENLABS_API_KEY) {
       return new Response(
-        JSON.stringify({ error: "ELEVENLABS_API_KEY not configured" }),
+        JSON.stringify({ error: "ELEVENLABS_API_KEY non configuré" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (!agentId) {
       return new Response(
-        JSON.stringify({ error: "agentId required" }),
+        JSON.stringify({ error: "agentId requis" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${agentId}`,
-      {
-        headers: { "xi-api-key": ELEVENLABS_API_KEY },
-      }
+      { headers: { "xi-api-key": ELEVENLABS_API_KEY } }
     );
 
     if (!response.ok) {
       const err = await response.text();
       return new Response(
-        JSON.stringify({ error: "ElevenLabs error", detail: err }),
+        JSON.stringify({ error: "Erreur ElevenLabs", detail: err }),
         { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -50,7 +46,7 @@ Deno.serve(async (req: Request) => {
     );
   } catch (err) {
     return new Response(
-      JSON.stringify({ error: "Internal error", detail: String(err) }),
+      JSON.stringify({ error: "Erreur interne", detail: String(err) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
