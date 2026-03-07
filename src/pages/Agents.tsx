@@ -262,6 +262,7 @@ export default function Agents() {
   };
 
   const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
+    { id: "cerveau",       label: "Cerveau",      icon: Brain },
     { id: "monitoring",    label: "Monitoring",   icon: Activity },
     { id: "agents",        label: "Mes agents",   icon: Cpu },
     { id: "plans",         label: "Plans",        icon: BookOpen },
