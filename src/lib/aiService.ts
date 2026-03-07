@@ -559,6 +559,11 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
     { label: "Que faire maintenant ?", prompt: "Quelle est ma priorité avec ces signaux chauds ?" },
     { label: "Expliquer les signaux", prompt: "Comment fonctionnent les intérêts qualifiés ?" },
   ],
+  trust: [
+    { label: "Comment progresser ?", prompt: "Comment puis-je améliorer mon score de confiance ?" },
+    { label: "Que prouve mon score ?", prompt: "Que signifie mon score de confiance pour les entreprises ?" },
+    { label: "Mes introductions sont protégées ?", prompt: "Comment la plateforme protège mes introductions ?" },
+  ],
 };
 
 export const JARVIS_QUICK_QUESTIONS = [
