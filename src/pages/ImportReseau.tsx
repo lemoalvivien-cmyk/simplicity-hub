@@ -63,6 +63,12 @@ function detectColumn(headers: string[], keys: string[]): number {
   return -1;
 }
 
+interface SuggestedOffer {
+  id: string;
+  title: string;
+  short_description: string | null;
+}
+
 export default function ImportReseau() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -72,6 +78,8 @@ export default function ImportReseau() {
   const [importing, setImporting] = useState(false);
   const [imported, setImported] = useState(0);
   const [fileName, setFileName] = useState("");
+  const [suggestedOffers, setSuggestedOffers] = useState<SuggestedOffer[]>([]);
+  const [graphFed, setGraphFed] = useState(false);
 
   const handleFile = (file: File) => {
     setFileName(file.name);
@@ -153,10 +161,34 @@ export default function ImportReseau() {
         if (!e) count++;
       }
     }
+
+    // ── Feed graph with import event ──────────────────────────
+    // Log a graph_event so the passive engine knows the network grew
+    try {
+      await db.from("graph_events").insert({
+        user_id: user.id,
+        event_type: "network_import",
+        entity_type: "contact",
+        entity_id: user.id,
+        delta_weight: Math.min(20, Math.round(count / 5)),
+        summary: `Import réseau : ${count} contacts ajoutés. Signal passif enrichi.`,
+      });
+      setGraphFed(true);
+    } catch (_) { /* silent */ }
+
+    // ── Load suggested offers based on imported data ───────────
+    try {
+      const { data: offers } = await db.from("shared_offers")
+        .select("id, title, short_description")
+        .eq("status", "active")
+        .limit(3);
+      setSuggestedOffers(offers || []);
+    } catch (_) { /* silent */ }
+
     setImported(count);
     setImporting(false);
     setStep("done");
-    toast({ title: `${count} contacts importés ✓`, description: "Votre réseau est maintenant dans WIINUP MAX." });
+    toast({ title: `${count} contacts importés ✓`, description: "Votre réseau enrichit maintenant le moteur." });
   };
 
   const valid = parsed.filter(c => !c._duplicate && c._valid);
