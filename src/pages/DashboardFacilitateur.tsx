@@ -84,7 +84,7 @@ export default function DashboardFacilitateur() {
   const nextIntro = introductions.find(i => i.statut === "en_attente");
 
   return (
-    <UserLayout role="facilitateur" jarvisContext="dashboard">
+    <UserLayout role="facilitateur" jarvisContext="dashboard-facilitateur">
       <VoiceWelcome context="dashboard-facilitateur" userName={prenom} />
       <div className="max-w-2xl mx-auto space-y-5">
 
