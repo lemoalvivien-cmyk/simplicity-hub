@@ -235,7 +235,7 @@ export function useOpenClawRuntime() {
       last_run_id: run?.id,
       last_run_at: new Date().toISOString(),
       run_count: (job.run_count || 0) + 1,
-    }).eq("id", jobId: job.id);
+    }).eq("id", job.id);
     await loadAll();
   }, [user, loadAll]);
 
