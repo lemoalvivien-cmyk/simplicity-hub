@@ -93,6 +93,12 @@ export default function Operations() {
     infraScore, allConfiguredInRepo, allConfiguredInDb, tickIsActive, lastChecked: cronCheckedAt,
     reload: reloadCronDiag,
   } = useOpenClawCronDiagnostic();
+  const {
+    deliveries, dispatchedToday, failedToday, repliedToday, pendingApproval: deliveryPendingApproval,
+    queued: deliveryQueued, allDispatched, allFailed: allDeliveryFailed, allReplied,
+    byChannel: deliveriesByChannel, deliveryRate,
+    dispatchAction, loadAll: reloadDeliveries, dispatching,
+  } = useOpenClawDeliveries();
 
   const {
     channels, jobs, contextSessions, loading: runtimeLoading,
