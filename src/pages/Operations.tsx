@@ -12,6 +12,7 @@ import {
   Radio, Play, RefreshCw, ChevronRight, Activity,
   Layers, Cpu, Lock, Wifi, WifiOff, AlertCircle,
   Target, Settings2, Eye, BarChart3, XCircle, ListChecks,
+  Send, Mail, MessageSquare, CheckCheck,
 } from "lucide-react";
 import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_STATUS_META, JOB_TYPE_META, TOOL_ACCESS_META } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
@@ -150,6 +151,7 @@ export default function Operations() {
   const tabs: { id: TabId; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: "runtime",    label: "Runtime",    icon: Brain },
     { id: "queue",      label: "File",       icon: ListChecks, badge: (pendingJobs.length + overdueJobs.length) || undefined },
+    { id: "canal",      label: "Canal",      icon: Radio,      badge: (chPendingApprovals.length + preparedActions.length) || undefined },
     { id: "channels",   label: "Canaux",     icon: Wifi,       badge: blockedChannels.length || undefined },
     { id: "jobs",       label: "Cycles",     icon: Clock },
     { id: "executions", label: "Exécutions", icon: BarChart3,  badge: failedExecutions.length || undefined },
@@ -910,6 +912,184 @@ export default function Operations() {
                 <p className="text-xs text-muted-foreground">Lancez un job pour voir les résultats ici.</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+            TAB: CANAL — Actions canal préparées ou exécutées par OpenClaw
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeTab === "canal" && (
+          <div className="space-y-4">
+
+            {/* Stats rapides */}
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: "Prêtes",         value: preparedActions.length,        color: "hsl(218 72% 55%)" },
+                { label: "Accord requis",  value: chPendingApprovals.length,     color: "hsl(38 80% 45%)" },
+                { label: "Envoyées",       value: channelActions.filter(a => a.status === "sent").length,     color: "hsl(var(--success))" },
+                { label: "Échouées",       value: channelActions.filter(a => a.status === "failed").length,   color: "hsl(0 65% 45%)" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="card-surface p-3 text-center">
+                  <p className="text-base font-bold" style={{ color }}>{value}</p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Pendant votre absence — contexte rapide */}
+            {whileYouSlept.length > 0 && (
+              <div className="rounded-2xl p-3 flex items-start gap-2.5"
+                style={{ background: "hsl(280 50% 8%)", border: "1px solid hsl(280 40% 22% / 0.5)" }}>
+                <span className="text-sm">🌙</span>
+                <p className="text-xs" style={{ color: "hsl(280 60% 65%)" }}>
+                  <strong style={{ color: "hsl(280 60% 75%)" }}>{whileYouSlept.length} action{whileYouSlept.length > 1 ? "s" : ""}</strong> préparée{whileYouSlept.length > 1 ? "s" : ""} pendant votre absence — déclenchées automatiquement ou en mode assisté.
+                </p>
+              </div>
+            )}
+
+            {/* Approbations en attente */}
+            {chPendingApprovals.length > 0 && (
+              <div>
+                <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                  <AlertTriangle size={11} style={{ color: "hsl(38 80% 45%)" }} />
+                  Accord requis ({chPendingApprovals.length})
+                </p>
+                <div className="space-y-2">
+                  {chPendingApprovals.map((a) => {
+                    const chMeta = CHANNEL_META[a.channel] ?? { emoji: "📡", label: a.channel, color: "hsl(var(--muted-foreground))" };
+                    const tmMeta = TRIGGER_MODE_META[a.trigger_mode as "auto" | "assisted" | "manual"];
+                    return (
+                      <div key={a.id} className="card-surface p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
+                            style={{ background: "hsl(38 80% 40% / 0.12)" }}>
+                            {chMeta.emoji}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2 mb-0.5">
+                              <p className="text-xs font-semibold text-foreground">{chMeta.label}</p>
+                              <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md"
+                                style={{ background: `${tmMeta.color}22`, color: tmMeta.color }}>
+                                {tmMeta.badge} {a.trigger_mode === "auto" ? "Auto" : "Assisté"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                              {a.payload_summary || `Action ${a.action_type} préparée`}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {a.job_type} · {new Date(a.created_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => { approveAction(a.id); toast.success("Action approuvée."); }}
+                            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl transition-all"
+                            style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+                            <CheckCheck size={11} /> Approuver
+                          </button>
+                          <button
+                            onClick={() => { cancelAction(a.id); toast("Action annulée."); }}
+                            className="flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-xl transition-all"
+                            style={{ background: "hsl(0 65% 95%)", color: "hsl(0 65% 40%)" }}>
+                            <XCircle size={11} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Actions préparées */}
+            {preparedActions.length > 0 && (
+              <div>
+                <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Prêtes à envoyer</p>
+                <div className="space-y-2">
+                  {preparedActions.map((a) => {
+                    const chMeta = CHANNEL_META[a.channel] ?? { emoji: "📡", label: a.channel, color: "hsl(var(--muted-foreground))" };
+                    return (
+                      <div key={a.id} className="card-surface p-3 flex items-start gap-3">
+                        <span className="text-base shrink-0 mt-0.5">{chMeta.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-foreground">{chMeta.label}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                            {a.payload_summary || `Action ${a.action_type}`}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{a.job_type}</p>
+                        </div>
+                        <div className="shrink-0 flex flex-col items-end gap-1">
+                          <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                            style={{ background: "hsl(218 72% 50% / 0.12)", color: "hsl(218 72% 55%)" }}>
+                            🔵 Prêt
+                          </span>
+                          <button
+                            onClick={() => { cancelAction(a.id); toast("Action annulée."); }}
+                            className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                            <XCircle size={11} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Historique toutes actions */}
+            {channelActions.filter(a => a.status === "sent" || a.status === "failed").length > 0 && (
+              <div>
+                <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Historique récent</p>
+                <div className="space-y-1.5">
+                  {channelActions.filter(a => a.status === "sent" || a.status === "failed").slice(0, 10).map((a) => {
+                    const chMeta = CHANNEL_META[a.channel] ?? { emoji: "📡", label: a.channel, color: "hsl(var(--muted-foreground))" };
+                    const stMeta = STATUS_META[a.status];
+                    const tmMeta = TRIGGER_MODE_META[a.trigger_mode as "auto" | "assisted" | "manual"];
+                    return (
+                      <div key={a.id} className="flex items-center gap-2.5 p-2.5 rounded-xl"
+                        style={{ background: "hsl(var(--muted))" }}>
+                        <span className="text-sm shrink-0">{chMeta.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-foreground truncate">{a.payload_summary || `${chMeta.label} — ${a.action_type}`}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs font-semibold" style={{ color: stMeta.color }}>{stMeta.badge} {stMeta.label}</span>
+                            <span className="text-xs px-1.5 py-0.5 rounded-md"
+                              style={{ background: `${tmMeta.color}22`, color: tmMeta.color, fontSize: "10px" }}>
+                              {tmMeta.badge} {a.trigger_mode}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground shrink-0">
+                          {new Date(a.created_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {channelActions.length === 0 && (
+              <div className="card-surface p-8 text-center">
+                <Radio size={28} className="mx-auto mb-3 opacity-30" />
+                <p className="text-sm font-medium text-foreground mb-1">Aucune action canal encore</p>
+                <p className="text-xs text-muted-foreground">
+                  OpenClaw générera des actions canal lors des prochains cycles automatiques.
+                </p>
+              </div>
+            )}
+
+            {/* Mode canal honnête */}
+            <div className="rounded-2xl p-3 flex items-start gap-2"
+              style={{ background: "hsl(var(--muted))" }}>
+              <Radio size={13} className="text-primary shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Les actions canal sont préparées par OpenClaw lors des cycles autonomes.
+                Selon votre mode d'autonomie, elles sont envoyées directement, soumises à validation, ou simplement préparées.
+              </p>
+            </div>
+
           </div>
         )}
 
