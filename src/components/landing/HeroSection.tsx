@@ -7,7 +7,7 @@ export default function HeroSection() {
       <div className="container max-w-3xl text-center">
         {/* Badge */}
         <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white/80 border border-white/15 mb-8">
-          ✦ Offre de lancement — 59 € TTC / mois
+          ✦ Offre de lancement — 99 € TTC / an pour les 100 premières entreprises
         </span>
 
         {/* Title */}
@@ -42,7 +42,7 @@ export default function HeroSection() {
 
         {/* Trust bar */}
         <p className="mt-8 text-sm text-white/45">
-          Aucune carte bancaire pour tester · Annulation libre · Aide incluse
+          Offre lancement 99 € / an · Apporteurs gratuits · Annulation libre · Aide incluse
         </p>
       </div>
 

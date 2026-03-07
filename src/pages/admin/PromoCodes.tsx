@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { Plus, Copy, CheckCircle2, XCircle, Clock, Tag, Loader2, AlertCircle } from "lucide-react";
+import { Plus, Copy, CheckCircle2, XCircle, Clock, Tag, Loader2, AlertCircle, Zap } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { toast } from "sonner";
 
@@ -35,19 +35,25 @@ export default function AdminPromoCodes() {
   const [newExpiry, setNewExpiry] = useState("");
   const [creating, setCreating] = useState(false);
   const [filter, setFilter] = useState<"tous" | CodeStatus>("tous");
+  const [launchUsed, setLaunchUsed] = useState(0);
+  const [launchTotal, setLaunchTotal] = useState(100);
 
   const loadCodes = async () => {
     setLoading(true);
     setError("");
     try {
-      const { data, error: err } = await db
-        .from("promo_codes")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (err) throw err;
-      setCodes(data || []);
-    } catch (e) {
-      setError("Impossible de charger les codes.");
+      const [codesRes, quotaRes] = await Promise.all([
+        db.from("promo_codes").select("*").order("created_at", { ascending: false }),
+        db.from("launch_quota").select("total_slots, used_slots").single(),
+      ]);
+      if (codesRes.error) throw codesRes.error;
+      setCodes(codesRes.data || []);
+      if (quotaRes.data) {
+        setLaunchUsed(quotaRes.data.used_slots);
+        setLaunchTotal(quotaRes.data.total_slots);
+      }
+    } catch {
+      setError("Impossible de charger les données.");
     } finally {
       setLoading(false);
     }
@@ -82,7 +88,7 @@ export default function AdminPromoCodes() {
       setNewExpiry("");
       setShowCreate(false);
       await loadCodes();
-    } catch (e) {
+    } catch {
       toast.error("Erreur lors de la création.");
     } finally {
       setCreating(false);
@@ -106,6 +112,9 @@ export default function AdminPromoCodes() {
 
   const filtered = filter === "tous" ? codes : codes.filter((c) => c.status === filter);
 
+  const launchRemaining = Math.max(0, launchTotal - launchUsed);
+  const launchPct = Math.min(100, (launchUsed / launchTotal) * 100);
+
   const stats = [
     { label: "Codes créés", value: codes.length, color: "text-primary" },
     { label: "Codes actifs", value: codes.filter(c => c.status === "actif").length, color: "text-success" },
@@ -115,6 +124,29 @@ export default function AdminPromoCodes() {
 
   return (
     <AdminLayout title="Codes d'invitation" subtitle="Gérez les codes d'accès et suivez leur utilisation.">
+      {/* Launch quota */}
+      <div className="card-surface p-5 mb-6 border-2 border-accent/20">
+        <div className="flex items-center gap-2 mb-3">
+          <Zap size={16} className="text-accent" />
+          <h3 className="font-semibold text-foreground text-sm">Offre de lancement — 100 premières entreprises</h3>
+        </div>
+        <div className="flex items-center justify-between text-sm mb-2">
+          <span className="text-muted-foreground">{launchUsed} places utilisées sur {launchTotal}</span>
+          <span className="font-semibold text-foreground">{launchRemaining} restantes</span>
+        </div>
+        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{ width: `${launchPct}%`, background: launchRemaining > 20 ? "hsl(var(--accent))" : "hsl(var(--destructive))" }}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          {launchRemaining > 0
+            ? `L'offre à 99 € / an est encore disponible pour ${launchRemaining} entreprise${launchRemaining > 1 ? "s" : ""}.`
+            : "L'offre de lancement est épuisée. Le tarif standard à 490 € / an s'applique désormais."}
+        </p>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {stats.map(({ label, value, color }) => (
@@ -166,7 +198,6 @@ export default function AdminPromoCodes() {
               value={newExpiry}
               onChange={(e) => setNewExpiry(e.target.value)}
               className="px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Date d'expiration"
             />
             <button onClick={createCode} disabled={!newCode || creating} className="btn-primary text-sm px-4 py-2.5 flex items-center gap-2">
               {creating ? <Loader2 size={14} className="animate-spin" /> : null}
@@ -179,7 +210,6 @@ export default function AdminPromoCodes() {
         </div>
       )}
 
-      {/* Error */}
       {error && (
         <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg mb-4">
           <AlertCircle size={14} className="text-destructive" />
@@ -201,7 +231,7 @@ export default function AdminPromoCodes() {
                   <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Code</th>
                   <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Statut</th>
                   <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Durée</th>
-                  <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Date d'utilisation</th>
+                  <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Utilisé le</th>
                   <th className="text-left px-5 py-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">Expiration</th>
                   <th className="px-5 py-3 text-right font-medium text-muted-foreground text-xs uppercase tracking-wider">Actions</th>
                 </tr>
