@@ -11,18 +11,18 @@ import { toast } from "sonner";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
-  Radio, Play, RefreshCw, ChevronRight, Activity,
+  Radio, RefreshCw, ChevronRight, Activity,
   Wifi, AlertCircle, Lock, TrendingUp,
   Target, BarChart3, XCircle,
-  Moon, Send, MessageCircle, Package,
+  Moon, Send, Package,
 } from "lucide-react";
 import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_TYPE_META } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
 import { useOpenClaw } from "@/hooks/useOpenClaw";
 import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hooks/useOpenClawExecutions";
-import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_META } from "@/hooks/useOpenClawScheduler";
-import { useOpenClawChannelActions, CHANNEL_META, ACTION_TYPE_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
-import { useOpenClawScheduledRuns, SCHEDULE_PLAN, CRON_JOBS_PROOF } from "@/hooks/useOpenClawScheduledRuns";
+import { useOpenClawScheduler } from "@/hooks/useOpenClawScheduler";
+import { useOpenClawChannelActions, CHANNEL_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
+import { useOpenClawScheduledRuns } from "@/hooks/useOpenClawScheduledRuns";
 import { useOpenClawCronDiagnostic } from "@/hooks/useOpenClawCronDiagnostic";
 import { useOpenClawDeliveries, DELIVERY_STATUS_META, CHANNEL_CAPABILITY_MATRIX, getChannelCapability, getDispatchLabel } from "@/hooks/useOpenClawDeliveries";
 
@@ -81,7 +81,7 @@ export default function WarRoom() {
 
   const { channels, jobs, loading: runtimeLoading, readyChannels, blockedChannels, nextJob, healthScore, triggerJob } = useOpenClawRuntime();
   const { runs, memory, activeRun, loading: runsLoading } = useOpenClawRuns();
-  const { config, pendingValidations, logs } = useOpenClaw();
+  const { config, pendingValidations } = useOpenClaw();
   const {
     recentExecutions, failedExecutions, runningExecutions,
     totalOutputs, totalRecs, totalActions,
@@ -93,20 +93,25 @@ export default function WarRoom() {
     triggerScheduler, triggering: schedulerTriggering,
   } = useOpenClawScheduler();
   const {
-    actions: channelActions, loading: channelLoading,
-    preparedActions, pendingApprovals: chPendingApprovals, sentActions, failedActions: chFailedActions,
+    actions: channelActions,
+    preparedActions, pendingApprovals: chPendingApprovals,
     whileYouSlept, byChannel,
     approveAction, cancelAction, loadAll: reloadChannelActions,
   } = useOpenClawChannelActions();
   const {
-    isCronActive, lastTick, lastDailySweep, totalAutoToday, todayRuns,
-    hasEverRun, cronRunStatus, smokeTesting, lastSmokeResult, runSmokeTest,
+    isCronActive, lastTick, totalAutoToday, todayRuns,
+    smokeTesting, lastSmokeResult, runSmokeTest,
   } = useOpenClawScheduledRuns();
   const {
-    diagnostics: cronDiagnostics, loading: cronDiagLoading,
+    diagnostics: cronDiagnostics,
     infraScore, allConfiguredInRepo, allConfiguredInDb, tickIsActive, lastChecked: cronCheckedAt,
-    reload: reloadCronDiag,
   } = useOpenClawCronDiagnostic();
+  const {
+    deliveries, dispatchedToday, failedToday, repliedToday,
+    pendingApproval: deliveryPendingApproval, allDispatched, allFailed: allDeliveryFailed, allReplied,
+    byChannel: deliveriesByChannel, deliveryRate, totalToday: deliveriesToday,
+    dispatchAction, dispatching, loadAll: reloadDeliveries,
+  } = useOpenClawDeliveries();
 
   const loading = runtimeLoading || runsLoading || execLoading;
 
@@ -132,6 +137,7 @@ export default function WarRoom() {
         description: result.completed > 0 ? `${result.completed} job${result.completed > 1 ? "s" : ""} terminé${result.completed > 1 ? "s" : ""}` : "Aucun job en attente."
       });
       reloadChannelActions();
+      reloadDeliveries();
     } else {
       toast.error("Le scheduler a rencontré un problème.", { description: result.error });
     }
@@ -566,98 +572,218 @@ export default function WarRoom() {
         {activeSection === "canal" && (
           <div className="space-y-4">
 
-            {/* Légende modes */}
+            {/* Delivery stats today */}
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: "Préparées",   value: chPendingApprovals.length + (channelActions.filter(a => a.status === "prepared").length), color: "hsl(218 72% 55%)" },
+                { label: "Envoyées",   value: allDispatched.length,        color: "hsl(var(--success))" },
+                { label: "Réponses",   value: allReplied.length,           color: "hsl(280 60% 55%)" },
+                { label: "Échecs",     value: allDeliveryFailed.length,    color: "hsl(0 65% 45%)" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="card-surface p-3 text-center">
+                  <p className="text-base font-bold" style={{ color }}>{value}</p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Accord requis — avec dispatch honnête */}
+            {chPendingApprovals.length > 0 && (
+              <div>
+                <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-1.5 uppercase tracking-wider">
+                  <AlertTriangle size={11} style={{ color: "hsl(38 80% 45%)" }} />
+                  Accord requis ({chPendingApprovals.length})
+                </p>
+                <div className="space-y-2">
+                  {chPendingApprovals.map((a) => {
+                    const chMeta = CHANNEL_META[a.channel] ?? { emoji: "📡", label: a.channel, color: "hsl(var(--muted-foreground))" };
+                    const cap = getChannelCapability(a.channel);
+                    const dispatch = getDispatchLabel(cap);
+                    return (
+                      <div key={a.id} className="card-surface p-3">
+                        <div className="flex items-start gap-3 mb-2">
+                          <span className="text-base shrink-0 mt-0.5">{chMeta.emoji}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                              <p className="text-xs font-semibold text-foreground">{chMeta.label}</p>
+                              <TriggerBadge mode={a.trigger_mode as "auto" | "assisted" | "manual"} />
+                              <span className="text-xs font-semibold px-1.5 py-0.5 rounded-md"
+                                style={{ background: `${dispatch.color}22`, color: dispatch.color }}>
+                                {dispatch.badge} {dispatch.label}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-2">
+                              {a.payload_summary || `Action ${a.action_type} préparée`}
+                            </p>
+                            {cap.honest_note && (
+                              <p className="text-xs mt-1 italic" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+                                {cap.honest_note}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          {cap.can_send_validated ? (
+                            <button
+                              onClick={async () => {
+                                const r = await dispatchAction(a.id, "validated");
+                                if (r.ok) { toast.success("Envoyé après validation."); reloadChannelActions(); }
+                                else { approveAction(a.id); toast.success("Action approuvée."); }
+                              }}
+                              disabled={dispatching === a.id}
+                              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl transition-all"
+                              style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+                              {dispatching === a.id ? <RefreshCw size={11} className="animate-spin" /> : <Send size={11} />}
+                              Envoyer
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => { approveAction(a.id); toast.success("Prêt à exporter."); }}
+                              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl transition-all"
+                              style={{ background: "hsl(218 72% 50% / 0.12)", color: "hsl(218 72% 55%)" }}>
+                              <Package size={11} /> Prêt à exporter
+                            </button>
+                          )}
+                          <button
+                            onClick={() => { cancelAction(a.id); toast("Action annulée."); }}
+                            className="flex items-center justify-center px-3 py-2 rounded-xl transition-all"
+                            style={{ background: "hsl(0 65% 95%)", color: "hsl(0 65% 40%)" }}>
+                            <XCircle size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Matrice canal honnête */}
             <div className="card-surface p-4">
               <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
-                <Send size={12} className="text-primary" /> Actions canal — états réels
+                <Wifi size={12} className="text-primary" /> Canaux — capacité réelle
               </p>
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                {(["auto", "assisted", "manual"] as const).map(mode => {
-                  const meta = TRIGGER_MODE_META[mode];
-                  const count = channelActions.filter(a => a.trigger_mode === mode).length;
+              <div className="space-y-1.5">
+                {CHANNEL_CAPABILITY_MATRIX.map(cap => {
+                  const dispatch = getDispatchLabel(cap);
+                  const sent = (deliveriesByChannel[cap.channel] || [])
+                    .filter(d => d.dispatch_status === "dispatched" || d.dispatch_status === "delivered").length;
                   return (
-                    <div key={mode} className="text-center p-2.5 rounded-xl" style={{ background: "hsl(var(--muted))" }}>
-                      <p className="text-base">{meta.badge}</p>
-                      <p className="text-sm font-bold text-foreground">{count}</p>
-                      <p className="text-xs text-muted-foreground leading-tight">
-                        {mode === "auto" ? "Auto" : mode === "assisted" ? "Assisté" : "Manuel"}
-                      </p>
+                    <div key={cap.channel} className="flex items-center gap-2.5 py-1.5 border-b border-border/20 last:border-0">
+                      <span className="text-sm shrink-0">{cap.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground">{cap.channel_name}</p>
+                        <p className="text-xs" style={{ color: dispatch.color }}>{dispatch.badge} {dispatch.label}</p>
+                      </div>
+                      {sent > 0 ? (
+                        <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0"
+                          style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+                          {sent} ✓
+                        </span>
+                      ) : (
+                        <span className="text-xs px-1.5 py-0.5 rounded shrink-0"
+                          style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                          {cap.availability === "export" ? "Export" : "Préparé"}
+                        </span>
+                      )}
                     </div>
                   );
                 })}
               </div>
+            </div>
 
-              {channelActions.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-4">
-                  Aucune action canal encore. Lancez un job pour générer des actions.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {channelActions.slice(0, 20).map(action => {
-                    const chMeta = CHANNEL_META[action.channel] ?? { emoji: "📡", label: action.channel, color: "hsl(var(--muted-foreground))" };
-                    const stMeta = STATUS_META[action.status];
+            {/* Historique d'envois */}
+            {deliveries.length > 0 && (
+              <div>
+                <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Historique d'envois</p>
+                <div className="space-y-1.5">
+                  {deliveries.slice(0, 12).map((d) => {
+                    const cap = getChannelCapability(d.channel);
+                    const stMeta = DELIVERY_STATUS_META[d.dispatch_status as keyof typeof DELIVERY_STATUS_META] ?? DELIVERY_STATUS_META.prepared;
                     return (
-                      <div key={action.id}
-                        className="flex items-start gap-3 p-3 rounded-xl"
+                      <div key={d.id} className="flex items-center gap-2.5 p-2.5 rounded-xl"
                         style={{ background: "hsl(var(--muted))" }}>
-                        <span className="text-lg shrink-0 mt-0.5">{chMeta.emoji}</span>
+                        <span className="text-sm shrink-0">{cap.emoji}</span>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <p className="text-xs font-semibold text-foreground">{chMeta.label}</p>
-                            <TriggerBadge mode={action.trigger_mode as "auto" | "assisted" | "manual"} />
+                          <p className="text-xs font-medium text-foreground truncate">{cap.channel_name}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
                             <span className="text-xs font-semibold" style={{ color: stMeta.color }}>
                               {stMeta.badge} {stMeta.label}
                             </span>
+                            {d.dispatch_mode && (
+                              <span className="text-xs text-muted-foreground">
+                                {d.dispatch_mode === "auto" ? "⚡ Auto"
+                                  : d.dispatch_mode === "validated" ? "✅ Validé"
+                                  : "📋 Export"}
+                              </span>
+                            )}
                           </div>
-                          <p className="text-xs text-muted-foreground truncate">{action.payload_summary}</p>
-                          <p className="text-xs mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
-                            {formatRelative(action.created_at)}
-                          </p>
+                          {d.error_summary && (
+                            <p className="text-xs mt-0.5 truncate" style={{ color: "hsl(0 65% 45%)" }}>{d.error_summary}</p>
+                          )}
                         </div>
-                        {action.status === "pending_approval" && (
-                          <div className="flex flex-col gap-1 shrink-0">
-                            <button
-                              onClick={() => approveAction(action.id)}
-                              className="text-xs font-semibold px-2 py-1 rounded-lg transition-all"
-                              style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
-                              Approuver
-                            </button>
-                            <button
-                              onClick={() => cancelAction(action.id)}
-                              className="text-xs font-semibold px-2 py-1 rounded-lg transition-all"
-                              style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
-                              Annuler
-                            </button>
-                          </div>
+                        <p className="text-xs text-muted-foreground shrink-0">
+                          {new Date(d.created_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Par action (préparées restantes) */}
+            {channelActions.filter(a => a.status === "prepared").length > 0 && (
+              <div>
+                <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Prêtes à envoyer</p>
+                <div className="space-y-1.5">
+                  {channelActions.filter(a => a.status === "prepared").slice(0, 8).map(action => {
+                    const chMeta = CHANNEL_META[action.channel] ?? { emoji: "📡", label: action.channel, color: "hsl(var(--muted-foreground))" };
+                    const cap = getChannelCapability(action.channel);
+                    const dispatch = getDispatchLabel(cap);
+                    return (
+                      <div key={action.id} className="flex items-center gap-2.5 p-2.5 rounded-xl"
+                        style={{ background: "hsl(var(--muted))" }}>
+                        <span className="text-sm shrink-0">{chMeta.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-foreground truncate">{action.payload_summary || `${chMeta.label} — ${action.action_type}`}</p>
+                          <span className="text-xs font-semibold" style={{ color: dispatch.color }}>
+                            {dispatch.badge} {dispatch.label}
+                          </span>
+                        </div>
+                        {cap.can_send_validated ? (
+                          <button
+                            onClick={async () => {
+                              const r = await dispatchAction(action.id, "validated");
+                              if (r.ok) { toast.success("Envoyé."); reloadChannelActions(); }
+                              else toast.error(r.error ?? "Erreur");
+                            }}
+                            disabled={dispatching === action.id}
+                            className="text-xs font-bold px-2 py-1.5 rounded-lg flex items-center gap-1 shrink-0 transition-all"
+                            style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+                            {dispatching === action.id ? <RefreshCw size={9} className="animate-spin" /> : <Send size={9} />}
+                            Envoyer
+                          </button>
+                        ) : (
+                          <span className="text-xs px-2 py-1 rounded-lg shrink-0"
+                            style={{ background: "hsl(218 72% 50% / 0.1)", color: "hsl(218 72% 55%)" }}>
+                            {cap.availability === "export" ? "Export" : "Préparé"}
+                          </span>
                         )}
                       </div>
                     );
                   })}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Channel breakdown */}
-            {Object.keys(byChannel).length > 0 && (
-              <div className="card-surface p-4">
-                <p className="text-xs font-bold text-foreground mb-3">Par canal</p>
-                <div className="space-y-2">
-                  {Object.entries(byChannel).map(([ch, acts]) => {
-                    const meta = CHANNEL_META[ch] ?? { emoji: "📡", label: ch, color: "hsl(var(--muted-foreground))" };
-                    const prepared = acts.filter(a => a.status === "prepared").length;
-                    const pending = acts.filter(a => a.status === "pending_approval").length;
-                    const sent = acts.filter(a => a.status === "sent").length;
-                    return (
-                      <div key={ch} className="flex items-center gap-3">
-                        <span className="text-base">{meta.emoji}</span>
-                        <span className="text-xs font-semibold text-foreground flex-1">{meta.label}</span>
-                        {prepared > 0 && <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "hsl(218 72% 55% / 0.15)", color: "hsl(218 72% 55%)" }}>{prepared} prêt{prepared > 1 ? "s" : ""}</span>}
-                        {pending > 0 && <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "hsl(38 80% 45% / 0.15)", color: "hsl(38 80% 45%)" }}>{pending} accord</span>}
-                        {sent > 0 && <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>{sent} envoyé{sent > 1 ? "s" : ""}</span>}
-                      </div>
-                    );
-                  })}
-                </div>
+            {channelActions.length === 0 && deliveries.length === 0 && (
+              <div className="card-surface p-8 text-center">
+                <Radio size={28} className="mx-auto mb-3 opacity-30" />
+                <p className="text-sm font-medium text-foreground mb-1">Aucune action canal encore</p>
+                <p className="text-xs text-muted-foreground">
+                  OpenClaw générera des actions canal lors des prochains cycles autonomes.
+                </p>
               </div>
             )}
           </div>
