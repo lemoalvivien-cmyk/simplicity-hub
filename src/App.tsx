@@ -58,6 +58,7 @@ import ProfilEntreprise from "./pages/ProfilEntreprise";
 // OpenClaw — Cerveau central agentique
 import Agents from "./pages/Agents";
 import Dossier from "./pages/Dossier";
+import Validations from "./pages/Validations";
 
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
