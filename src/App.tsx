@@ -61,6 +61,9 @@ import Agents from "./pages/Agents";
 import Dossier from "./pages/Dossier";
 import Validations from "./pages/Validations";
 
+// Deal Radar
+import Radar from "./pages/Radar";
+
 // Mobile / PWA
 import Install from "./pages/Install";
 import Autonomie from "./pages/Autonomie";
@@ -141,6 +144,9 @@ const App = () => (
               <Route path="/agents" element={<ProtectedRoute><Agents /></ProtectedRoute>} />
               <Route path="/dossier" element={<ProtectedRoute><Dossier /></ProtectedRoute>} />
               <Route path="/validations" element={<ProtectedRoute><Validations /></ProtectedRoute>} />
+
+              {/* ── Deal Radar ───────────────────────────── */}
+              <Route path="/radar" element={<ProtectedRoute><Radar /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
