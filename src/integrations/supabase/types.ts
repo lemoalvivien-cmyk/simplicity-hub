@@ -1392,6 +1392,72 @@ export type Database = {
         }
         Relationships: []
       }
+      openclaw_channel_actions: {
+        Row: {
+          action_type: string
+          approval_required: boolean
+          approved_at: string | null
+          channel: string
+          created_at: string
+          error_detail: string | null
+          executed_at: string | null
+          execution_id: string | null
+          id: string
+          job_type: string
+          payload: Json | null
+          payload_summary: string | null
+          source_entity_id: string | null
+          source_entity_type: string | null
+          source_run_id: string | null
+          status: string
+          trigger_mode: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          approval_required?: boolean
+          approved_at?: string | null
+          channel: string
+          created_at?: string
+          error_detail?: string | null
+          executed_at?: string | null
+          execution_id?: string | null
+          id?: string
+          job_type: string
+          payload?: Json | null
+          payload_summary?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          source_run_id?: string | null
+          status?: string
+          trigger_mode?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          approval_required?: boolean
+          approved_at?: string | null
+          channel?: string
+          created_at?: string
+          error_detail?: string | null
+          executed_at?: string | null
+          execution_id?: string | null
+          id?: string
+          job_type?: string
+          payload?: Json | null
+          payload_summary?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          source_run_id?: string | null
+          status?: string
+          trigger_mode?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       openclaw_channels: {
         Row: {
           channel_id: string
@@ -2086,6 +2152,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      openclaw_scheduled_runs: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          ended_at: string | null
+          error_detail: string | null
+          id: string
+          jobs_claimed: number
+          jobs_completed: number
+          jobs_enqueued: number
+          jobs_failed: number
+          next_run_at: string | null
+          run_key: string
+          started_at: string
+          status: string
+          trigger_source: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          error_detail?: string | null
+          id?: string
+          jobs_claimed?: number
+          jobs_completed?: number
+          jobs_enqueued?: number
+          jobs_failed?: number
+          next_run_at?: string | null
+          run_key: string
+          started_at?: string
+          status?: string
+          trigger_source?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          error_detail?: string | null
+          id?: string
+          jobs_claimed?: number
+          jobs_completed?: number
+          jobs_enqueued?: number
+          jobs_failed?: number
+          next_run_at?: string | null
+          run_key?: string
+          started_at?: string
+          status?: string
+          trigger_source?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       openclaw_scheduler_heartbeats: {
         Row: {
