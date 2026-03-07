@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import HeroSection from "@/components/landing/HeroSection";
+import GuichetUniqueSection from "@/components/landing/GuichetUniqueSection";
 import {
   ArrowRight, Zap, Target, Users, Send, TrendingUp, Play,
   Briefcase, CheckCircle2, Shield, Star, ChevronRight,
@@ -66,32 +67,8 @@ export default function LandingPage() {
       {/* ══ HERO + SECTION IA AUTONOME ═══════════════════ */}
       <HeroSection />
 
-      {/* ══ CE QUE FAIT WIINUP MAX ════════════════════════ */}
-      <section className="py-24 bg-background">
-        <div className="container max-w-5xl">
-          <div className="text-center mb-16">
-            <p className="pill-tag mb-4">La plateforme complète</p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Tout ce dont vous avez besoin.<br />Dans un seul espace.
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              WIINUP MAX réunit prospection, réseau, missions et pilotage. Rien ne manque. Rien n'est de trop.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            {features.map(({ icon: Icon, label, desc }) => (
-              <div key={label} className="card-premium p-6">
-                <div className="w-11 h-11 rounded-xl mb-4 flex items-center justify-center" style={{ background: "hsl(218 72% 18% / 0.08)", border: "1px solid hsl(218 72% 18% / 0.12)" }}>
-                  <Icon size={20} style={{ color: "hsl(var(--primary))" }} />
-                </div>
-                <h3 className="font-semibold text-foreground text-base mb-2">{label}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ══ GUICHET UNIQUE + AUTOPILOT + APPORT D'AFFAIRES ══ */}
+      <GuichetUniqueSection />
 
       {/* ══ POUR LES ENTREPRISES + APPORTEURS ════════════ */}
       <section className="py-24 bg-muted">

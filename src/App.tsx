@@ -68,6 +68,10 @@ import Radar from "./pages/Radar";
 import Install from "./pages/Install";
 import Autonomie from "./pages/Autonomie";
 
+// Facilitateurs & Signalement
+import Facilitateurs from "./pages/Facilitateurs";
+import Signalement from "./pages/Signalement";
+
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/Users";
@@ -147,6 +151,10 @@ const App = () => (
 
               {/* ── Deal Radar ───────────────────────────── */}
               <Route path="/radar" element={<ProtectedRoute><Radar /></ProtectedRoute>} />
+
+              {/* ── Facilitateurs & Signalement ──────────── */}
+              <Route path="/facilitateurs" element={<ProtectedRoute><Facilitateurs /></ProtectedRoute>} />
+              <Route path="/signalement" element={<ProtectedRoute><Signalement /></ProtectedRoute>} />
 
               {/* ── Utilitaires ──────────────────────────── */}
               <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />

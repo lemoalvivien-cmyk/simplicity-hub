@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import { Briefcase, Send, TrendingUp, CheckCircle2, ArrowRight, MessageCircle, Users, Zap, Search, Sparkles, Loader2, Brain, Moon, Bot, ShieldAlert } from "lucide-react";
+import { Briefcase, Send, TrendingUp, CheckCircle2, ArrowRight, MessageCircle, Users, Zap, Search, Sparkles, Loader2, Brain, Moon, Bot, ShieldAlert, Flag } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import VoiceWelcome from "@/components/ai/VoiceWelcome";
@@ -281,12 +281,18 @@ export default function DashboardFacilitateur() {
               <p className="text-xs text-muted-foreground">JARVIS répond en quelques secondes.</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Link to="/assistant" className="btn-primary text-sm py-2.5 px-4 flex-1 justify-center">
-              <MessageCircle size={14} /> Ouvrir JARVIS
+          <div className="grid grid-cols-2 gap-2">
+            <Link to="/assistant" className="btn-primary text-sm py-2.5 px-4 flex items-center justify-center gap-1.5">
+              <MessageCircle size={14} /> JARVIS
             </Link>
-            <Link to="/agents" className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
+            <Link to="/agents" className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
               <Brain size={14} /> Agents IA
+            </Link>
+            <Link to="/missions" className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
+              <Briefcase size={14} /> Voir missions
+            </Link>
+            <Link to="/signalement" className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
+              <Flag size={14} /> Signaler
             </Link>
           </div>
         </div>
