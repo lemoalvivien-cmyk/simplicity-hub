@@ -49,10 +49,7 @@ Deno.serve(async (req) => {
 
     const steps = proof.steps as Array<{ step: string; ok: boolean; detail?: string }>;
 
-    // ── Step 1: Verify pg_cron jobs exist ────────────────────────────────────
-    const { data: cronJobs } = await svc.rpc("query_cron_jobs").catch(() => ({ data: null }));
-    // pg_cron is not queryable via RPC — use a known-good check instead
-    // We rely on the fact that cron.job is in pg_cron schema (readable by service role)
+    // ── Step 1: Verify scheduled_runs table accessible ───────────────────────
     const cronCheck = await svc.from("openclaw_scheduled_runs").select("id", { count: "exact", head: true });
     steps.push({
       step: "1_cron_table_accessible",
