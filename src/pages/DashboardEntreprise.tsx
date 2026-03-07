@@ -8,7 +8,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Target, Users, CheckCircle2, ArrowRight, Zap, TrendingUp,
   Sparkles, Loader2, Brain, ShieldAlert, Moon, Bot, Radar,
-  Star, Send, Link2, Share2, BarChart3, Plus
+  Star, Send, Link2, Share2, BarChart3, Plus, Flame, Bell
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
