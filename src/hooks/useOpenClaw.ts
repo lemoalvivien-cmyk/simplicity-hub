@@ -1,10 +1,21 @@
 /**
- * Hook React pour interagir avec le vrai gateway OpenClaw
- * Toutes les calls passent par les edge functions Supabase (jamais côté client direct)
+ * useOpenClaw — Hook central pour l'intégration réelle OpenClaw
+ * ─────────────────────────────────────────────────────────────
+ * Toutes les interactions avec OpenClaw passent par les edge functions Supabase.
+ * Jamais d'appel direct au gateway depuis le frontend.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+// ── Types exportés ────────────────────────────────────────────────────────────
+
+export type ConnectionStatus =
+  | "not_configured"   // pas d'URL gateway
+  | "checking"         // healthcheck en cours
+  | "connected"        // gateway répond OK
+  | "error"            // gateway ne répond pas
+  | "kill_switch_on";  // kill switch global actif
 
 export interface OpenClawConfig {
   gateway_url: string | null;
@@ -26,6 +37,7 @@ export interface OpenClawAgent {
   actions_aujourd_hui: number;
   outils_autorises: { label: string; niveau: string }[];
   derniere_activite_at: string | null;
+  updated_at?: string;
 }
 
 export interface OpenClawValidation {
@@ -53,7 +65,73 @@ export interface OpenClawLog {
   created_at: string;
 }
 
-async function callEdgeFunction(name: string, body: Record<string, unknown>) {
+export interface DossierSyncStatus {
+  synced: boolean;
+  last_sync_at: string | null;
+  error: string | null;
+  completion_score: number;
+}
+
+// ── Diagnostic humain ─────────────────────────────────────────────────────────
+
+export function getConnectionDiagnostic(
+  config: OpenClawConfig | null,
+  connectionStatus: ConnectionStatus
+): { title: string; message: string; action: string | null; severity: "ok" | "warn" | "error" | "info" } {
+  if (!config?.gateway_url) {
+    return {
+      title: "Gateway non configuré",
+      message: "Entrez l'URL de votre gateway OpenClaw pour connecter le cerveau central.",
+      action: "Configurer",
+      severity: "info",
+    };
+  }
+  if (config.kill_switch_global) {
+    return {
+      title: "Kill Switch activé",
+      message: "Tous les agents sont en pause. Désactivez le Kill Switch pour reprendre.",
+      action: "Désactiver",
+      severity: "warn",
+    };
+  }
+  if (connectionStatus === "checking") {
+    return {
+      title: "Vérification en cours…",
+      message: "Nous testons la connexion avec votre gateway OpenClaw.",
+      action: null,
+      severity: "info",
+    };
+  }
+  if (connectionStatus === "connected") {
+    const lastCheck = config.last_healthcheck_at
+      ? new Date(config.last_healthcheck_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+      : null;
+    return {
+      title: "OpenClaw connecté",
+      message: `Le cerveau central répond correctement.${lastCheck ? ` Dernière vérification à ${lastCheck}.` : ""}`,
+      action: null,
+      severity: "ok",
+    };
+  }
+  if (connectionStatus === "error") {
+    return {
+      title: "Le cerveau ne répond pas",
+      message: "Votre gateway OpenClaw est inaccessible. Vérifiez qu'il est démarré et que l'URL est correcte.",
+      action: "Réessayer",
+      severity: "error",
+    };
+  }
+  return {
+    title: "Statut inconnu",
+    message: "Lancez un test de connexion pour vérifier l'état d'OpenClaw.",
+    action: "Tester",
+    severity: "info",
+  };
+}
+
+// ── Appel edge function ───────────────────────────────────────────────────────
+
+async function callEdgeFunction(name: string, body: Record<string, unknown> = {}) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("Non authentifié");
 
@@ -71,63 +149,95 @@ async function callEdgeFunction(name: string, body: Record<string, unknown>) {
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Edge function ${name} failed (${res.status}): ${text}`);
+    const text = await res.text().catch(() => "Erreur inconnue");
+    throw new Error(`${name} (${res.status}): ${text}`);
   }
 
   return res.json();
 }
 
+// ── Hook principal ─────────────────────────────────────────────────────────────
+
 export function useOpenClaw() {
   const { toast } = useToast();
   const [config, setConfig] = useState<OpenClawConfig | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("not_configured");
   const [agents, setAgents] = useState<OpenClawAgent[]>([]);
   const [validations, setValidations] = useState<OpenClawValidation[]>([]);
   const [logs, setLogs] = useState<OpenClawLog[]>([]);
+  const [dossierSync, setDossierSync] = useState<DossierSyncStatus>({
+    synced: false, last_sync_at: null, error: null, completion_score: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [healthChecking, setHealthChecking] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Charger la config depuis Supabase ─────────────────────────────────────
-  const loadConfig = useCallback(async () => {
+  // ── Charger depuis Supabase ─────────────────────────────────────────────────
+  const loadAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const [configRes, agentsRes, validationsRes, logsRes] = await Promise.all([
+    const [configRes, agentsRes, validationsRes, logsRes, dossierRes] = await Promise.all([
       supabase.from("openclaw_config").select("*").eq("user_id", user.id).maybeSingle(),
       supabase.from("openclaw_agents").select("*").eq("user_id", user.id).order("agent_id"),
       supabase.from("openclaw_validations").select("*").eq("user_id", user.id)
         .order("created_at", { ascending: false }).limit(50),
       supabase.from("openclaw_logs").select("*").eq("user_id", user.id)
-        .order("created_at", { ascending: false }).limit(30),
+        .order("created_at", { ascending: false }).limit(40),
+      supabase.from("openclaw_dossier").select("completion_score, derniere_sync_openclaw_at, openclaw_session_id")
+        .eq("user_id", user.id).maybeSingle(),
     ]);
 
-    if (configRes.data) {
-      setConfig(configRes.data as OpenClawConfig);
+    const cfg = configRes.data as OpenClawConfig | null;
+    setConfig(cfg ?? {
+      gateway_url: null, autonomie_level: "preparation",
+      kill_switch_global: false, is_connected: false,
+      healthcheck_status: "unknown", last_healthcheck_at: null,
+    });
+
+    // Déduire le connectionStatus depuis la config DB
+    if (!cfg?.gateway_url) {
+      setConnectionStatus("not_configured");
+    } else if (cfg.kill_switch_global) {
+      setConnectionStatus("kill_switch_on");
+    } else if (cfg.healthcheck_status === "ok" && cfg.is_connected) {
+      setConnectionStatus("connected");
+    } else if (cfg.healthcheck_status === "error") {
+      setConnectionStatus("error");
     } else {
-      // Config par défaut si pas encore créée
-      setConfig({
-        gateway_url: null,
-        autonomie_level: "preparation",
-        kill_switch_global: false,
-        is_connected: false,
-        healthcheck_status: "unknown",
-        last_healthcheck_at: null,
-      });
+      setConnectionStatus("not_configured");
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setAgents((agentsRes.data ?? []) as unknown as OpenClawAgent[]);
+    setAgents((agentsRes.data ?? []) as any as OpenClawAgent[]);
     setValidations((validationsRes.data ?? []) as OpenClawValidation[]);
     setLogs((logsRes.data ?? []) as OpenClawLog[]);
+
+    const dos = dossierRes.data;
+    setDossierSync({
+      synced: !!dos?.derniere_sync_openclaw_at,
+      last_sync_at: dos?.derniere_sync_openclaw_at ?? null,
+      error: null,
+      completion_score: dos?.completion_score ?? 0,
+    });
+
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    loadConfig();
-  }, [loadConfig]);
+    loadAll();
+    // Polling léger toutes les 30s pour actualiser l'état des agents + logs
+    pollRef.current = setInterval(() => {
+      loadAll();
+    }, 30_000);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [loadAll]);
 
-  // ── Sauvegarder la config gateway ─────────────────────────────────────────
-  const saveConfig = useCallback(async (updates: Partial<OpenClawConfig>) => {
+  // ── Sauvegarder config ─────────────────────────────────────────────────────
+  const saveConfig = useCallback(async (updates: Partial<OpenClawConfig & { gateway_secret?: string }>) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -135,51 +245,113 @@ export function useOpenClaw() {
       { user_id: user.id, ...updates },
       { onConflict: "user_id" }
     );
+
     setConfig((prev) => prev ? { ...prev, ...updates } : null);
+
+    // Si URL changée → recalculer statut
+    if (updates.gateway_url !== undefined) {
+      setConnectionStatus(updates.gateway_url ? "error" : "not_configured");
+    }
   }, []);
 
-  // ── Healthcheck ────────────────────────────────────────────────────────────
-  const checkHealth = useCallback(async () => {
+  // ── Healthcheck réel ───────────────────────────────────────────────────────
+  const checkHealth = useCallback(async (silent = false) => {
+    if (!config?.gateway_url) {
+      if (!silent) toast({
+        title: "URL manquante",
+        description: "Configurez l'URL de votre gateway OpenClaw d'abord.",
+        variant: "destructive",
+      });
+      return { connected: false, status: "no_gateway" };
+    }
+
+    setHealthChecking(true);
+    setConnectionStatus("checking");
+
     try {
       const result = await callEdgeFunction("openclaw-healthcheck", {});
+      const newStatus: ConnectionStatus = result.connected ? "connected" : "error";
+      setConnectionStatus(newStatus);
       setConfig((prev) => prev ? {
         ...prev,
         is_connected: result.connected,
         healthcheck_status: result.status,
         last_healthcheck_at: result.checked_at,
       } : null);
+
+      if (!silent) {
+        toast({
+          title: result.connected ? "OpenClaw répond ✓" : "Le cerveau ne répond pas",
+          description: result.connected
+            ? "La connexion avec votre gateway OpenClaw est opérationnelle."
+            : "Vérifiez qu'OpenClaw est démarré et que l'URL est correcte.",
+          variant: result.connected ? "default" : "destructive",
+        });
+      }
       return result;
     } catch (err) {
-      console.error("[useOpenClaw] healthcheck failed:", err);
+      setConnectionStatus("error");
+      if (!silent) toast({
+        title: "Erreur de connexion",
+        description: "Impossible de contacter le gateway. Réessayez dans quelques instants.",
+        variant: "destructive",
+      });
       return { connected: false, status: "error" };
+    } finally {
+      setHealthChecking(false);
     }
-  }, []);
+  }, [config?.gateway_url, toast]);
 
-  // ── Synchroniser le dossier avec OpenClaw ─────────────────────────────────
+  // ── Synchroniser le dossier ────────────────────────────────────────────────
   const syncDossier = useCallback(async () => {
     setSyncing(true);
+    setDossierSync((prev) => ({ ...prev, error: null }));
+
     try {
       const result = await callEdgeFunction("openclaw-dossier-sync", { force: true });
+
       if (result.success || result.agents_initialized) {
-        await loadConfig();
+        setDossierSync({
+          synced: !!result.gateway_connected,
+          last_sync_at: result.gateway_connected ? new Date().toISOString() : null,
+          error: result.gateway_connected ? null : (result.setup_required ? null : "sync_failed"),
+          completion_score: dossierSync.completion_score,
+        });
+        await loadAll();
         toast({
           title: result.gateway_connected
-            ? "Dossier synchronisé avec OpenClaw ✓"
-            : "Agents initialisés",
+            ? "Dossier synchronisé ✓"
+            : result.agents_initialized
+              ? "Agents initialisés"
+              : "Synchronisation terminée",
           description: result.message,
+        });
+      } else {
+        setDossierSync((prev) => ({
+          ...prev, error: "sync_failed",
+        }));
+        toast({
+          title: "Synchronisation incomplète",
+          description: result.message ?? "Réessayez dans quelques instants.",
+          variant: "destructive",
         });
       }
       return result;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Erreur inconnue";
-      toast({ title: "Erreur de synchronisation", description: msg, variant: "destructive" });
-      return { success: false, message: msg };
+      setDossierSync((prev) => ({ ...prev, error: msg }));
+      toast({
+        title: "Erreur de synchronisation",
+        description: "Le dossier n'a pas pu être envoyé. Vérifiez votre connexion OpenClaw.",
+        variant: "destructive",
+      });
+      return { success: false };
     } finally {
       setSyncing(false);
     }
-  }, [loadConfig, toast]);
+  }, [loadAll, toast, dossierSync.completion_score]);
 
-  // ── Kill Switch ────────────────────────────────────────────────────────────
+  // ── Kill Switch ─────────────────────────────────────────────────────────────
   const toggleKillSwitch = useCallback(async (
     type: "global" | "agent",
     activate: boolean,
@@ -188,18 +360,18 @@ export function useOpenClaw() {
   ) => {
     try {
       const result = await callEdgeFunction("openclaw-kill-switch", {
-        type,
-        activate,
-        agent_id: agentId,
-        reason,
+        type, activate, agent_id: agentId, reason,
       });
 
       if (result.success) {
-        await loadConfig();
+        await loadAll();
+        if (type === "global") {
+          setConnectionStatus(activate ? "kill_switch_on" : (config?.is_connected ? "connected" : "error"));
+        }
         toast({
           title: activate
-            ? type === "global" ? "Kill Switch activé" : `Agent ${agentId} mis en pause`
-            : type === "global" ? "Kill Switch désactivé" : `Agent ${agentId} réactivé`,
+            ? type === "global" ? "⛔ Kill Switch activé" : `Agent mis en pause`
+            : type === "global" ? "Kill Switch désactivé" : `Agent réactivé`,
           description: result.message,
           variant: activate ? "destructive" : "default",
         });
@@ -210,9 +382,9 @@ export function useOpenClaw() {
       toast({ title: "Erreur", description: msg, variant: "destructive" });
       return { success: false };
     }
-  }, [loadConfig, toast]);
+  }, [loadAll, toast, config?.is_connected]);
 
-  // ── Valider / Refuser une action ──────────────────────────────────────────
+  // ── Valider / Refuser ──────────────────────────────────────────────────────
   const processValidation = useCallback(async (
     validationId: string,
     decision: "approve" | "reject",
@@ -220,9 +392,7 @@ export function useOpenClaw() {
   ) => {
     try {
       const result = await callEdgeFunction("openclaw-validate", {
-        validation_id: validationId,
-        decision,
-        note,
+        validation_id: validationId, decision, note,
       });
 
       if (result.success) {
@@ -231,7 +401,7 @@ export function useOpenClaw() {
             ? { ...v, statut: decision === "approve" ? "validee" : "refusee" }
             : v
         ));
-        await loadConfig(); // recharge les logs aussi
+        await loadAll();
         toast({
           title: decision === "approve" ? "Action approuvée ✓" : "Action refusée",
           description: result.message,
@@ -243,46 +413,60 @@ export function useOpenClaw() {
       toast({ title: "Erreur", description: msg, variant: "destructive" });
       return { success: false };
     }
-  }, [loadConfig, toast]);
+  }, [loadAll, toast]);
 
-  // ── Appel gateway direct (pour fonctions avancées) ────────────────────────
+  // ── Appel gateway direct ───────────────────────────────────────────────────
   const callGateway = useCallback(async (
     tool: string,
     args: Record<string, unknown> = {},
     agentId?: string,
     dryRun = false
   ) => {
-    try {
-      return await callEdgeFunction("openclaw-gateway", {
-        tool,
-        args,
-        agent_id: agentId,
-        dry_run: dryRun,
-      });
-    } catch (err) {
-      console.error("[useOpenClaw] gateway call failed:", err);
-      throw err;
-    }
+    return callEdgeFunction("openclaw-gateway", {
+      tool, args, agent_id: agentId, dry_run: dryRun,
+    });
   }, []);
 
+  // ── Insérer une validation de test (démo / debug) ──────────────────────────
+  const createTestValidation = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    await supabase.from("openclaw_validations").insert({
+      user_id: user.id,
+      agent_id: "execution",
+      type_validation: "action",
+      titre: "Envoi de 5 messages LinkedIn — Test",
+      description: "Ceci est une validation de test générée pour prouver le fonctionnement du circuit de validation.",
+      consequence_valide: "Les 5 messages seraient envoyés (test uniquement, aucun envoi réel).",
+      consequence_refuse: "Le test est annulé.",
+      risque: "faible",
+      details: ["5 contacts test", "Canal : LinkedIn", "Généré automatiquement pour démonstration"],
+      payload: { tool: "test_validation", args: {}, test: true },
+    });
+
+    await loadAll();
+    toast({ title: "Validation de test créée", description: "Consultez la boîte de validation." });
+  }, [loadAll, toast]);
+
+  // ── Données dérivées ───────────────────────────────────────────────────────
   const pendingValidations = validations.filter((v) => v.statut === "en_attente");
+  const activeAgents = agents.filter((a) => a.statut === "actif" && !a.kill_switch);
+
+  const lastActivity = logs[0] ?? null;
+  const lastSyncLog = logs.find((l) => l.event_type === "dossier_sent");
+  const lastHealthLog = logs.find((l) => l.event_type === "healthcheck");
+
+  const diagnostic = getConnectionDiagnostic(config, connectionStatus);
 
   return {
     // State
-    config,
-    agents,
-    validations,
-    pendingValidations,
-    logs,
-    loading,
-    syncing,
+    config, connectionStatus, agents, validations, pendingValidations,
+    activeAgents, logs, dossierSync, loading, syncing, healthChecking,
+    // Dérivés
+    lastActivity, lastSyncLog, lastHealthLog, diagnostic,
     // Actions
-    loadConfig,
-    saveConfig,
-    checkHealth,
-    syncDossier,
-    toggleKillSwitch,
-    processValidation,
-    callGateway,
+    loadAll, saveConfig, checkHealth, syncDossier,
+    toggleKillSwitch, processValidation, callGateway, createTestValidation,
   };
 }
