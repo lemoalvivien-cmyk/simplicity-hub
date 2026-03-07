@@ -13,6 +13,7 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { useOpenClaw, OpenClawAgent, ConnectionStatus } from "@/hooks/useOpenClaw";
 import { supabase } from "@/integrations/supabase/client";
+import { MorningBrief } from "@/components/openclaw/MorningBrief";
 
 type TabId = "monitoring" | "agents" | "plans" | "configuration";
 
