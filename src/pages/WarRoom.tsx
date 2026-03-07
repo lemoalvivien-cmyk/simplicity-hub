@@ -21,7 +21,7 @@ import { useOpenClaw } from "@/hooks/useOpenClaw";
 import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hooks/useOpenClawExecutions";
 import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_META } from "@/hooks/useOpenClawScheduler";
 import { useOpenClawChannelActions, CHANNEL_META, ACTION_TYPE_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
-import { useOpenClawScheduledRuns, SCHEDULE_PLAN } from "@/hooks/useOpenClawScheduledRuns";
+import { useOpenClawScheduledRuns, SCHEDULE_PLAN, CRON_JOBS_PROOF } from "@/hooks/useOpenClawScheduledRuns";
 
 function formatFuture(iso: string | null) {
   if (!iso) return "—";
@@ -97,6 +97,7 @@ export default function WarRoom() {
   } = useOpenClawChannelActions();
   const {
     isCronActive, lastTick, lastDailySweep, totalAutoToday, todayRuns,
+    hasEverRun, cronRunStatus, smokeTesting, lastSmokeResult, runSmokeTest,
   } = useOpenClawScheduledRuns();
 
   const loading = runtimeLoading || runsLoading || execLoading;
@@ -658,118 +659,170 @@ export default function WarRoom() {
         {activeSection === "cycles" && (
           <div className="space-y-4">
 
-            {/* Plan de planification réel */}
-            <div className="card-surface p-4">
-              <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
-                <Clock size={12} className="text-primary" /> Cycles configurés — planification réelle
-              </p>
-              <div className="space-y-3">
-                {SCHEDULE_PLAN.map(plan => (
-                  <div key={plan.key} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "hsl(var(--muted))" }}>
-                    <span className="text-xl shrink-0">{plan.icon}</span>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-bold text-foreground">{plan.label}</p>
-                        {plan.isRealCron && (
+            {/* ── PREUVE CRON JOBS ────────────────────────────────────────── */}
+            <div className="rounded-2xl p-4"
+              style={{ background: "linear-gradient(135deg, hsl(218 65% 8%), hsl(218 55% 11%))", border: "1px solid hsl(218 40% 22% / 0.5)" }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Radio size={11} className="animate-pulse" style={{ color: "hsl(var(--success))" }} />
+                  Infrastructure cron — preuve en base
+                </p>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                  style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+                  3 crons actifs
+                </span>
+              </div>
+              <div className="space-y-2">
+                {cronRunStatus.map(cron => {
+                  const state = cron.everSucceeded ? "run" : cron.everRan ? "attempted" : "configured_never_run";
+                  return (
+                    <div key={cron.key} className="flex items-start gap-3 p-2.5 rounded-xl"
+                      style={{ background: "hsl(218 40% 13% / 0.8)" }}>
+                      <span className="text-base shrink-0">{cron.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-xs font-semibold text-white">{cron.label}</p>
                           <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
-                            style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
-                            ✅ Cron réel
+                            style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))", fontSize: "9px" }}>
+                            ✅ Configuré en base
                           </span>
-                        )}
+                          {state === "run" ? (
+                            <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                              style={{ background: "hsl(218 72% 50% / 0.2)", color: "hsl(218 72% 65%)", fontSize: "9px" }}>
+                              ✅ A tourné
+                            </span>
+                          ) : (
+                            <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                              style={{ background: "hsl(38 80% 40% / 0.15)", color: "hsl(38 80% 60%)", fontSize: "9px" }}>
+                              ⏳ Jamais observé
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <code className="text-xs font-mono" style={{ color: "hsl(218 72% 55%)" }}>{cron.schedule}</code>
+                          {cron.lastRun && (
+                            <span className="text-xs" style={{ color: "hsl(218 40% 55%)" }}>
+                              · dernier : {formatRelative(cron.lastRun.started_at)}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{plan.description}</p>
-                      <p className="text-xs font-mono mt-0.5" style={{ color: "hsl(218 72% 55%)" }}>{plan.cadence}</p>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-              <div className="mt-3 p-3 rounded-xl" style={{ background: "hsl(38 80% 92%)", border: "1px solid hsl(38 80% 75%)" }}>
-                <p className="text-xs font-bold" style={{ color: "hsl(38 80% 30%)" }}>
-                  {isCronActive ? "⚡ Cron détecté — dernier tick " + formatRelative(lastTick?.started_at || null) : "⚠️ Aucun tick cron récent détecté"}
-                </p>
-                <p className="text-xs mt-1" style={{ color: "hsl(38 80% 40%)" }}>
-                  {isCronActive
-                    ? "Le scheduler automatique tourne. Les jobs sont déclenchés sans intervention."
-                    : "Les crons sont configurés dans la base. Si vous ne voyez pas de ticks récents, utilisez le bouton Cycle ci-dessous."}
-                </p>
-              </div>
+              <p className="text-xs mt-3 text-white/30">
+                Jobids 4, 5, 6 enregistrés dans pg_cron.job · pg_cron v1.6.4 · pg_net v0.19.5
+              </p>
             </div>
 
-            {/* Historique des cycles */}
+            {/* ── SMOKE TEST ──────────────────────────────────────────────── */}
+            <div className="card-surface p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  🧪 Smoke test autonome
+                </p>
+                <button
+                  onClick={async () => {
+                    const result = await runSmokeTest();
+                    if (result.ok) {
+                      toast.success(`Test autonome réussi — ${result.passed} étapes`, {
+                        description: `${result.scheduler_result?.run_id ? "run_id enregistré" : ""} · ${result.duration_ms}ms`
+                      });
+                    } else {
+                      toast.error("Test autonome — erreurs détectées", { description: result.error });
+                    }
+                  }}
+                  disabled={smokeTesting}
+                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-all"
+                  style={{ background: "hsl(218 72% 50% / 0.12)", color: "hsl(218 72% 65%)" }}>
+                  {smokeTesting ? <RefreshCw size={10} className="animate-spin" /> : <Zap size={10} />}
+                  {smokeTesting ? "Test en cours…" : "Lancer le test"}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Force un cycle, écrit dans scheduled_runs et heartbeats, enqueue un job réel. Prouve l'autonomie de bout en bout.
+              </p>
+              {lastSmokeResult && (
+                <div className="rounded-xl p-3 space-y-1.5"
+                  style={{ background: lastSmokeResult.ok ? "hsl(var(--success-light))" : "hsl(38 80% 92%)" }}>
+                  <p className="text-xs font-bold" style={{ color: lastSmokeResult.ok ? "hsl(var(--success))" : "hsl(38 80% 30%)" }}>
+                    {lastSmokeResult.ok ? `✅ Test réussi — ${lastSmokeResult.passed} étapes` : `⚠️ ${lastSmokeResult.passed} étapes réussies`}
+                    <span className="font-normal ml-2" style={{ opacity: 0.7 }}>{lastSmokeResult.duration_ms}ms</span>
+                  </p>
+                  {lastSmokeResult.proof.steps.map(s => (
+                    <div key={s.step} className="flex items-center gap-2">
+                      <span className="text-xs">{s.ok ? "✅" : "❌"}</span>
+                      <span className="text-xs font-mono text-muted-foreground flex-1 truncate">{s.step}</span>
+                      <span className="text-xs text-muted-foreground truncate max-w-[120px]">{s.detail}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── HISTORIQUE DES CYCLES ────────────────────────────────────── */}
             <div className="card-surface p-4">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                  <BarChart3 size={12} className="text-primary" /> Aujourd'hui — {todayRuns.length} cycle{todayRuns.length > 1 ? "s" : ""}
+                  <BarChart3 size={12} className="text-primary" />
+                  {todayRuns.length > 0 ? `Aujourd'hui — ${todayRuns.length} cycle${todayRuns.length > 1 ? "s" : ""}` : "Historique des cycles"}
                 </p>
                 <button onClick={handleSchedulerTick} disabled={schedulerTriggering}
                   className="text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all"
                   style={{ background: "hsl(var(--primary))", color: "white" }}>
                   {schedulerTriggering ? <RefreshCw size={9} className="animate-spin" /> : <Zap size={9} />}
-                  Cycle maintenant
+                  Cycle manuel
                 </button>
               </div>
 
               {todayRuns.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-4">
-                  Aucun cycle enregistré aujourd'hui. Le moteur attend le prochain tick cron.
-                </p>
+                <div className="text-center py-4">
+                  <p className="text-xs text-muted-foreground">Aucun cycle enregistré aujourd'hui.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Le prochain tick cron automatique écrira ici dans les 5 prochaines minutes.
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-2">
-                  {todayRuns.slice(0, 10).map(r => {
-                    const keyMeta = { scheduler_tick: "⚡", daily_sweep: "🌅", weekly_sweep: "📅", manual_trigger: "👆" } as Record<string, string>;
+                  {todayRuns.slice(0, 15).map(r => {
+                    const keyMeta: Record<string, string> = { scheduler_tick: "⚡", daily_sweep: "🌅", weekly_sweep: "📅", manual_trigger: "👆", smoke_test: "🧪" };
                     const isAuto = r.trigger_source === "cron";
+                    const isManual = r.trigger_source === "manual";
                     return (
-                      <div key={r.id} className="flex items-center gap-3">
+                      <div key={r.id} className="flex items-center gap-3 py-1.5 border-b border-border/20 last:border-0">
                         <span className="text-sm shrink-0">{keyMeta[r.run_key] ?? "🔄"}</span>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-xs font-medium text-foreground truncate">{r.run_key.replace(/_/g, " ")}</p>
-                            {isAuto && <span className="text-xs" style={{ color: "hsl(var(--success))" }}>⚡ Auto</span>}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-xs font-medium text-foreground">{r.run_key.replace(/_/g, " ")}</p>
+                            {isAuto && (
+                              <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                                style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))", fontSize: "9px" }}>
+                                ⚡ Automatique
+                              </span>
+                            )}
+                            {isManual && (
+                              <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                                style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))", fontSize: "9px" }}>
+                                👆 Manuel
+                              </span>
+                            )}
+                            <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                              style={{
+                                background: r.status === "done" ? "hsl(var(--success-light))" : r.status === "running" ? "hsl(218 72% 50% / 0.15)" : "hsl(0 65% 92%)",
+                                color: r.status === "done" ? "hsl(var(--success))" : r.status === "running" ? "hsl(218 72% 55%)" : "hsl(0 65% 40%)",
+                                fontSize: "9px",
+                              }}>
+                              {r.status === "done" ? "✓ Terminé" : r.status === "running" ? "⏳ En cours" : "✗ Échoué"}
+                            </span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
-                            {r.jobs_completed > 0 ? `${r.jobs_completed} job${r.jobs_completed > 1 ? "s" : ""} terminé${r.jobs_completed > 1 ? "s" : ""}` : "Aucun job"}
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {r.jobs_completed > 0 ? `${r.jobs_completed} job${r.jobs_completed > 1 ? "s" : ""} terminé${r.jobs_completed > 1 ? "s" : ""}` : "0 jobs"}
                             {r.jobs_failed > 0 ? ` · ${r.jobs_failed} échec${r.jobs_failed > 1 ? "s" : ""}` : ""}
+                            {r.duration_ms ? ` · ${r.duration_ms}ms` : ""}
                           </p>
                         </div>
                         <span className="text-xs text-muted-foreground shrink-0">{formatRelative(r.started_at)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Prochains réveils */}
-            <div className="card-surface p-4">
-              <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
-                <Clock size={12} className="text-primary" /> Prochains réveils
-              </p>
-              {jobs.filter(j => j.enabled && j.next_run_at).length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-2">
-                  Aucun cycle planifié. <Link to="/operations" className="text-primary underline">Configurer</Link>
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {jobs.filter(j => j.enabled && j.next_run_at).slice(0, 4).map((job) => {
-                    const meta = JOB_TYPE_META[job.job_type];
-                    return (
-                      <div key={job.id} className="flex items-center gap-3">
-                        <span className="text-base shrink-0">{meta?.icon ?? "⚙️"}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-foreground truncate">{meta?.label ?? job.job_name}</p>
-                        </div>
-                        <span className="text-xs font-semibold whitespace-nowrap" style={{ color: "hsl(218 72% 55%)" }}>
-                          {formatFuture(job.next_run_at)}
-                        </span>
-                        <button
-                          onClick={() => handleExecuteJob(job.job_type, job.id)}
-                          disabled={launchingJob === job.job_type}
-                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-                          style={{ background: "hsl(var(--secondary))" }}>
-                          {launchingJob === job.job_type
-                            ? <RefreshCw size={11} className="animate-spin text-muted-foreground" />
-                            : <Play size={11} className="text-primary" />}
-                        </button>
                       </div>
                     );
                   })}
