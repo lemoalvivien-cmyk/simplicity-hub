@@ -1392,6 +1392,54 @@ export type Database = {
         }
         Relationships: []
       }
+      openclaw_channels: {
+        Row: {
+          channel_id: string
+          channel_name: string
+          config: Json | null
+          created_at: string
+          id: string
+          is_openclaw_enabled: boolean
+          is_ready: boolean
+          last_probe_at: string | null
+          probe_detail: string | null
+          probe_latency_ms: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          channel_name: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          is_openclaw_enabled?: boolean
+          is_ready?: boolean
+          last_probe_at?: string | null
+          probe_detail?: string | null
+          probe_latency_ms?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          channel_name?: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          is_openclaw_enabled?: boolean
+          is_ready?: boolean
+          last_probe_at?: string | null
+          probe_detail?: string | null
+          probe_latency_ms?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       openclaw_config: {
         Row: {
           autonomie_level: string
@@ -1542,6 +1590,71 @@ export type Database = {
         }
         Relationships: []
       }
+      openclaw_jobs: {
+        Row: {
+          config: Json | null
+          created_at: string
+          cron_expression: string | null
+          enabled: boolean
+          error_count: number
+          id: string
+          job_name: string
+          job_type: string
+          last_error: string | null
+          last_run_at: string | null
+          last_run_id: string | null
+          next_run_at: string | null
+          run_count: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          cron_expression?: string | null
+          enabled?: boolean
+          error_count?: number
+          id?: string
+          job_name: string
+          job_type: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_run_id?: string | null
+          next_run_at?: string | null
+          run_count?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          cron_expression?: string | null
+          enabled?: boolean
+          error_count?: number
+          id?: string
+          job_name?: string
+          job_type?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          last_run_id?: string | null
+          next_run_at?: string | null
+          run_count?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "openclaw_jobs_last_run_id_fkey"
+            columns: ["last_run_id"]
+            isOneToOne: false
+            referencedRelation: "openclaw_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       openclaw_logs: {
         Row: {
           agent_id: string | null
@@ -1677,18 +1790,22 @@ export type Database = {
       openclaw_runs: {
         Row: {
           agent_names: string[] | null
+          channel_id: string | null
           created_at: string
           duration_ms: number | null
           ended_at: string | null
           error_detail: string | null
           id: string
           next_run_at: string | null
+          node_host: string | null
           outcome: Json | null
           requires_validation: boolean
           run_type: string
+          session_id: string | null
           started_at: string | null
           status: string
           summary: string | null
+          tool_policy: Json | null
           trigger_source: string
           updated_at: string
           user_id: string
@@ -1696,18 +1813,22 @@ export type Database = {
         }
         Insert: {
           agent_names?: string[] | null
+          channel_id?: string | null
           created_at?: string
           duration_ms?: number | null
           ended_at?: string | null
           error_detail?: string | null
           id?: string
           next_run_at?: string | null
+          node_host?: string | null
           outcome?: Json | null
           requires_validation?: boolean
           run_type?: string
+          session_id?: string | null
           started_at?: string | null
           status?: string
           summary?: string | null
+          tool_policy?: Json | null
           trigger_source?: string
           updated_at?: string
           user_id: string
@@ -1715,36 +1836,53 @@ export type Database = {
         }
         Update: {
           agent_names?: string[] | null
+          channel_id?: string | null
           created_at?: string
           duration_ms?: number | null
           ended_at?: string | null
           error_detail?: string | null
           id?: string
           next_run_at?: string | null
+          node_host?: string | null
           outcome?: Json | null
           requires_validation?: boolean
           run_type?: string
+          session_id?: string | null
           started_at?: string | null
           status?: string
           summary?: string | null
+          tool_policy?: Json | null
           trigger_source?: string
           updated_at?: string
           user_id?: string
           validation_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "openclaw_runs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "openclaw_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       openclaw_sessions: {
         Row: {
           autonomie_level: string
+          channel_ids: string[] | null
           context: Json | null
+          context_type: string | null
           created_at: string
           ended_at: string | null
           id: string
           last_run_at: string | null
           last_run_id: string | null
+          linked_entity_id: string | null
+          linked_entity_type: string | null
           memory_snapshot: Json | null
           next_scheduled_at: string | null
+          node_host: string | null
           runs_count: number
           session_score: number | null
           session_type: string
@@ -1755,14 +1893,19 @@ export type Database = {
         }
         Insert: {
           autonomie_level?: string
+          channel_ids?: string[] | null
           context?: Json | null
+          context_type?: string | null
           created_at?: string
           ended_at?: string | null
           id?: string
           last_run_at?: string | null
           last_run_id?: string | null
+          linked_entity_id?: string | null
+          linked_entity_type?: string | null
           memory_snapshot?: Json | null
           next_scheduled_at?: string | null
+          node_host?: string | null
           runs_count?: number
           session_score?: number | null
           session_type?: string
@@ -1773,14 +1916,19 @@ export type Database = {
         }
         Update: {
           autonomie_level?: string
+          channel_ids?: string[] | null
           context?: Json | null
+          context_type?: string | null
           created_at?: string
           ended_at?: string | null
           id?: string
           last_run_at?: string | null
           last_run_id?: string | null
+          linked_entity_id?: string | null
+          linked_entity_type?: string | null
           memory_snapshot?: Json | null
           next_scheduled_at?: string | null
+          node_host?: string | null
           runs_count?: number
           session_score?: number | null
           session_type?: string
@@ -1791,9 +1939,52 @@ export type Database = {
         }
         Relationships: []
       }
+      openclaw_tool_policies: {
+        Row: {
+          access_level: string
+          agent_id: string
+          autonomie_level: string | null
+          channel_id: string | null
+          context_type: string | null
+          created_at: string
+          id: string
+          override_reason: string | null
+          tool_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_level?: string
+          agent_id: string
+          autonomie_level?: string | null
+          channel_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          id?: string
+          override_reason?: string | null
+          tool_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_level?: string
+          agent_id?: string
+          autonomie_level?: string | null
+          channel_id?: string | null
+          context_type?: string | null
+          created_at?: string
+          id?: string
+          override_reason?: string | null
+          tool_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       openclaw_validations: {
         Row: {
           agent_id: string
+          channel_id: string | null
           consequence_refuse: string
           consequence_valide: string
           created_at: string
@@ -1802,8 +1993,14 @@ export type Database = {
           expires_at: string | null
           gateway_callback_url: string | null
           id: string
+          last_relance_at: string | null
+          node_host: string | null
+          outcome_injected: boolean | null
           payload: Json | null
+          relance_count: number | null
           risque: string
+          run_id: string | null
+          session_id: string | null
           statut: string
           titre: string
           type_validation: string
@@ -1814,6 +2011,7 @@ export type Database = {
         }
         Insert: {
           agent_id: string
+          channel_id?: string | null
           consequence_refuse: string
           consequence_valide: string
           created_at?: string
@@ -1822,8 +2020,14 @@ export type Database = {
           expires_at?: string | null
           gateway_callback_url?: string | null
           id?: string
+          last_relance_at?: string | null
+          node_host?: string | null
+          outcome_injected?: boolean | null
           payload?: Json | null
+          relance_count?: number | null
           risque?: string
+          run_id?: string | null
+          session_id?: string | null
           statut?: string
           titre: string
           type_validation: string
@@ -1834,6 +2038,7 @@ export type Database = {
         }
         Update: {
           agent_id?: string
+          channel_id?: string | null
           consequence_refuse?: string
           consequence_valide?: string
           created_at?: string
@@ -1842,8 +2047,14 @@ export type Database = {
           expires_at?: string | null
           gateway_callback_url?: string | null
           id?: string
+          last_relance_at?: string | null
+          node_host?: string | null
+          outcome_injected?: boolean | null
           payload?: Json | null
+          relance_count?: number | null
           risque?: string
+          run_id?: string | null
+          session_id?: string | null
           statut?: string
           titre?: string
           type_validation?: string
@@ -2466,6 +2677,11 @@ export type Database = {
         Args: { p_facilitator_id: string }
         Returns: undefined
       }
+      seed_openclaw_channels: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      seed_openclaw_jobs: { Args: { p_user_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
