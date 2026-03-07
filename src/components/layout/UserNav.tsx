@@ -44,10 +44,11 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
               { to: "/entreprise/introductions", label: "Introductions", icon: Send },
             ],
           },
-          {
+           {
             label: "OpenClaw",
             items: [
               { to: "/agents", label: "Agents & Autonomie", icon: Brain },
+              { to: "/validations", label: "Boîte de validation", icon: AlertTriangle },
               { to: "/dossier", label: "Dossier entreprise", icon: Building2 },
             ],
           },
