@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.elevenlabs-voice-token]
 verify_jwt = false
+
+[functions.deal-radar-score]
+verify_jwt = false

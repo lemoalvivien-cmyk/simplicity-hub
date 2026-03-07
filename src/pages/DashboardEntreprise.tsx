@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import { Target, Users, CheckCircle2, ArrowRight, MessageCircle, Zap, TrendingUp, Sparkles, Loader2, Brain, ShieldAlert, Moon, Bot } from "lucide-react";
+import { Target, Users, CheckCircle2, ArrowRight, MessageCircle, Zap, TrendingUp, Sparkles, Loader2, Brain, ShieldAlert, Moon, Bot, Radar } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import VoiceWelcome from "@/components/ai/VoiceWelcome";
@@ -19,6 +19,8 @@ export default function DashboardEntreprise() {
   const [validationsCount, setValidationsCount] = useState(0);
   const [recommendationsCount, setRecommendationsCount] = useState(0);
   const [agentsActifs, setAgentsActifs] = useState(0);
+  const [hotOpps, setHotOpps] = useState(0);
+  const [newSignals, setNewSignals] = useState(0);
 
   const prenom = profile?.prenom || "vous";
 
@@ -26,16 +28,19 @@ export default function DashboardEntreprise() {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const [missionsRes, introsRes, contactsRes, campagnesRes, validRes, recoRes, agentsRes] = await Promise.all([
+      const missionIds = (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: Mission) => m.id) || [];
+      const [missionsRes, introsRes, contactsRes, campagnesRes, validRes, recoRes, agentsRes, hotOppsRes, sigRes] = await Promise.all([
         db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).limit(3),
-        db.from("introductions").select("id, contact_nom, mission_id, statut")
-          .in("mission_id", (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: Mission) => m.id) || [])
-          .limit(3),
+        missionIds.length > 0
+          ? db.from("introductions").select("id, contact_nom, mission_id, statut").in("mission_id", missionIds).limit(3)
+          : Promise.resolve({ data: [] }),
         db.from("contacts").select("id", { count: "exact", head: true }).eq("owner_user_id", user.id),
         db.from("campagnes").select("id", { count: "exact", head: true }).eq("owner_user_id", user.id).eq("statut", "en_cours"),
         db.from("openclaw_validations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("statut", "en_attente"),
         db.from("openclaw_recommendations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "pending"),
         db.from("openclaw_agents").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("statut", "actif"),
+        db.from("opportunities").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("intent_label", "eleve").neq("status", "archivee"),
+        db.from("signals").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "nouveau"),
       ]);
       setMissions(missionsRes.data || []);
       setIntroductions(introsRes.data || []);
@@ -44,17 +49,12 @@ export default function DashboardEntreprise() {
       setValidationsCount(validRes.count || 0);
       setRecommendationsCount(recoRes.count || 0);
       setAgentsActifs(agentsRes.count || 0);
+      setHotOpps(hotOppsRes.count || 0);
+      setNewSignals(sigRes.count || 0);
       setLoading(false);
     };
     load();
   }, [user]);
-
-  const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
-    en_attente: { color: "hsl(38 80% 30%)", bg: "hsl(var(--accent-light))", label: "À valider" },
-    validee: { color: "hsl(var(--success))", bg: "hsl(var(--success-light))", label: "Validée" },
-    en_cours: { color: "hsl(var(--primary))", bg: "hsl(var(--secondary))", label: "En cours" },
-    refusee: { color: "hsl(var(--destructive))", bg: "hsl(0 72% 95%)", label: "Refusée" },
-  };
 
   const nextAction = introductions.find((i) => i.statut === "en_attente");
 
@@ -138,7 +138,6 @@ export default function DashboardEntreprise() {
             </span>
           </div>
 
-          {/* Raccourcis rapides IA */}
           {recommendationsCount > 0 && (
             <div className="mt-4 flex gap-2">
               <Link
@@ -191,7 +190,7 @@ export default function DashboardEntreprise() {
             {[
               { label: "Contacts", value: contactsCount, icon: Users, to: "/contacts" },
               { label: "Campagnes actives", value: campagnesCount, icon: Zap, to: "/campagnes" },
-              { label: "Validations en attente", value: validationsCount, icon: ShieldAlert, to: "/validations" },
+              { label: "Validations", value: validationsCount, icon: ShieldAlert, to: "/validations" },
               { label: "Recommandations IA", value: recommendationsCount, icon: Sparkles, to: "/pilotage" },
             ].map(({ label, value, icon: Icon, to }) => (
               <Link key={label} to={to} className="card-surface p-4 text-center hover:shadow-md transition-shadow">
@@ -201,6 +200,33 @@ export default function DashboardEntreprise() {
               </Link>
             ))}
           </div>
+        )}
+
+        {/* ── BLOC 3b — DEAL RADAR ───────────────────────────────── */}
+        {!loading && (hotOpps > 0 || newSignals > 0) && (
+          <Link
+            to="/radar"
+            className="rounded-xl p-4 flex items-center justify-between gap-3 hover:opacity-90 transition-all"
+            style={{
+              background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))",
+              border: "1px solid hsl(218 40% 25% / 0.5)",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+                <Radar size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">Deal Radar</p>
+                <p className="text-white/50 text-xs">
+                  {hotOpps > 0
+                    ? `${hotOpps} opportunité${hotOpps > 1 ? "s" : ""} à fort potentiel détectée${hotOpps > 1 ? "s" : ""}`
+                    : `${newSignals} signal${newSignals > 1 ? "s" : ""} récent${newSignals > 1 ? "s" : ""} à explorer`}
+                </p>
+              </div>
+            </div>
+            <ArrowRight size={16} className="text-white/50 shrink-0" />
+          </Link>
         )}
 
         {/* ── BLOC 4 — MISSIONS & INTRODUCTIONS ──────────────────── */}
@@ -270,8 +296,8 @@ export default function DashboardEntreprise() {
             <Link to="/assistant" className="btn-primary text-sm py-2.5 px-4 flex-1 justify-center">
               <MessageCircle size={14} /> Ouvrir JARVIS
             </Link>
-            <Link to="/agents" className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
-              <Brain size={14} /> Agents IA
+            <Link to="/radar" className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
+              <Radar size={14} /> Deal Radar
             </Link>
           </div>
         </div>

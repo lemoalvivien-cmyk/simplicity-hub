@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Play, Zap, Activity, Layers, Target, Brain, AlertTriangle,
-  MessageSquare, Smartphone, SlidersHorizontal
+  MessageSquare, Smartphone, SlidersHorizontal, Radar
 } from "lucide-react";
 
 type UserRole = "entreprise" | "facilitateur";
@@ -26,6 +26,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
             label: "Pilotage",
             items: [
               { to: "/pilotage", label: "Pilotage", icon: Activity },
+              { to: "/radar", label: "Deal Radar", icon: Radar },
               { to: "/opportunites", label: "Opportunités", icon: Target },
             ],
           },
@@ -74,6 +75,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
             label: "Pilotage",
             items: [
               { to: "/pilotage", label: "Pilotage", icon: Activity },
+              { to: "/radar", label: "Deal Radar", icon: Radar },
               { to: "/opportunites", label: "Opportunités", icon: Target },
             ],
           },
@@ -162,6 +164,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
           )}
 
           <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
+          <NavLink to="/radar" label="Radar" icon={Radar} pathname={pathname} highlight />
           <NavLink to="/agents" label="OpenClaw" icon={Brain} pathname={pathname} openclaw />
         </nav>
 

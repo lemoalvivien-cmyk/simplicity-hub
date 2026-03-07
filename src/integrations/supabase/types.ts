@@ -174,6 +174,39 @@ export type Database = {
           },
         ]
       }
+      companies: {
+        Row: {
+          created_at: string
+          description: string | null
+          domain: string | null
+          id: string
+          industry: string | null
+          location: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          domain?: string | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           created_at: string
@@ -893,6 +926,84 @@ export type Database = {
         }
         Relationships: []
       }
+      opportunities: {
+        Row: {
+          company_id: string | null
+          company_name: string
+          created_at: string
+          dossier_match_label: string | null
+          dossier_match_reason: string | null
+          id: string
+          intent_label: string
+          intent_score: number
+          openclaw_recommendation_id: string | null
+          origin: string
+          recommended_next_action: string | null
+          recommended_sector: string | null
+          signal_id: string | null
+          status: string
+          suggested_facilitators: Json | null
+          summary: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id?: string | null
+          company_name: string
+          created_at?: string
+          dossier_match_label?: string | null
+          dossier_match_reason?: string | null
+          id?: string
+          intent_label?: string
+          intent_score?: number
+          openclaw_recommendation_id?: string | null
+          origin?: string
+          recommended_next_action?: string | null
+          recommended_sector?: string | null
+          signal_id?: string | null
+          status?: string
+          suggested_facilitators?: Json | null
+          summary: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string | null
+          company_name?: string
+          created_at?: string
+          dossier_match_label?: string | null
+          dossier_match_reason?: string | null
+          id?: string
+          intent_label?: string
+          intent_score?: number
+          openclaw_recommendation_id?: string | null
+          origin?: string
+          recommended_next_action?: string | null
+          recommended_sector?: string | null
+          signal_id?: string | null
+          status?: string
+          suggested_facilitators?: Json | null
+          summary?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1008,6 +1119,62 @@ export type Database = {
           used_by?: string | null
         }
         Relationships: []
+      }
+      signals: {
+        Row: {
+          company_id: string | null
+          company_name: string
+          created_at: string
+          detected_at: string
+          id: string
+          normalized_summary: string | null
+          raw_summary: string | null
+          signal_strength: number
+          signal_type: string
+          source: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id?: string | null
+          company_name: string
+          created_at?: string
+          detected_at?: string
+          id?: string
+          normalized_summary?: string | null
+          raw_summary?: string | null
+          signal_strength?: number
+          signal_type?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string | null
+          company_name?: string
+          created_at?: string
+          detected_at?: string
+          id?: string
+          normalized_summary?: string | null
+          raw_summary?: string | null
+          signal_strength?: number
+          signal_type?: string
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
