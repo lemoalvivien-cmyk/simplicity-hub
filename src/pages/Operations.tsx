@@ -77,6 +77,16 @@ export default function Operations() {
   const [triggeringJob, setTriggeringJob] = useState<string | null>(null);
 
   const {
+    actions: channelActions,
+    preparedActions, pendingApprovals: chPendingApprovals,
+    whileYouSlept, approveAction, cancelAction, loadAll: reloadChannelActions,
+  } = useOpenClawChannelActions();
+  const { isCronActive, lastTick, todayRuns, SCHEDULE_PLAN: _sp } = (() => {
+    const hook = useOpenClawScheduledRuns();
+    return { ...hook, SCHEDULE_PLAN };
+  })();
+
+  const {
     channels, jobs, contextSessions, loading: runtimeLoading,
     readyChannels, blockedChannels, activeJobs, nextJob, healthScore,
     autonomieLevel, getEffectiveAccess, toggleJob, triggerJob, probeChannel,
