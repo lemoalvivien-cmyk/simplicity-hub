@@ -219,19 +219,31 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
 }
 
 function NavLink({
-  to, label, icon: Icon, pathname, highlight,
-}: { to: string; label: string; icon: React.ElementType; pathname: string; highlight?: boolean }) {
+  to, label, icon: Icon, pathname, highlight, openclaw,
+}: { to: string; label: string; icon: React.ElementType; pathname: string; highlight?: boolean; openclaw?: boolean }) {
   const isActive = pathname === to || pathname.startsWith(to + "/");
   return (
     <Link
       to={to}
       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
         isActive
-          ? "bg-primary text-primary-foreground shadow-sm"
+          ? openclaw
+            ? "shadow-sm text-white"
+            : "bg-primary text-primary-foreground shadow-sm"
           : highlight
           ? "text-primary bg-secondary hover:bg-primary hover:text-primary-foreground"
+          : openclaw
+          ? "hover:opacity-80"
           : "text-muted-foreground hover:text-foreground hover:bg-muted"
       }`}
+      style={
+        openclaw
+          ? {
+              background: isActive ? "var(--gradient-primary)" : "hsl(var(--secondary))",
+              color: isActive ? "white" : "hsl(var(--primary))",
+            }
+          : undefined
+      }
     >
       <Icon size={13} />
       {label}
