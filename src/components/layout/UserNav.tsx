@@ -111,6 +111,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
            {
              label: "Réseau",
              items: [
+               { to: "/reseau", label: "Réseau intelligent", icon: Network },
                { to: "/missions", label: "Toutes les missions", icon: Briefcase },
                { to: "/canaux", label: "WhatsApp & Canaux", icon: MessageSquare },
                { to: "/install", label: "Installer l'app", icon: Smartphone },
