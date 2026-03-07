@@ -91,7 +91,7 @@ export default function Facilitateurs() {
         const facs = facRes.data || [];
         const intros = introsRes.data || [];
         const profiles = profilesRes.data || [];
-        const favSet = new Set((favRes.data || []).map((f: { facilitator_user_id: string }) => f.facilitator_user_id));
+        const favSet = new Set<string>((favRes.data || []).map((f: { facilitator_user_id: string }) => f.facilitator_user_id));
         setFavorites(favSet);
 
         const facWithStats: FacilitateurWithStats[] = facs.map(f => {
