@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
-  Play, Zap, Activity, Layers, Target
+  Play, Zap, Activity, Layers, Target, Brain
 } from "lucide-react";
 
 type UserRole = "entreprise" | "facilitateur";
