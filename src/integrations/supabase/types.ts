@@ -290,39 +290,180 @@ export type Database = {
       }
       facilitateur_profiles: {
         Row: {
+          avatar_url: string | null
+          average_rating: number | null
           created_at: string
           description_reseau: string | null
           id: string
+          response_rate: number | null
           secteur: string | null
           statut: string | null
+          total_reviews: number | null
           types_contacts: string | null
           updated_at: string
           user_id: string
           zone: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          average_rating?: number | null
           created_at?: string
           description_reseau?: string | null
           id?: string
+          response_rate?: number | null
           secteur?: string | null
           statut?: string | null
+          total_reviews?: number | null
           types_contacts?: string | null
           updated_at?: string
           user_id: string
           zone?: string | null
         }
         Update: {
+          avatar_url?: string | null
+          average_rating?: number | null
           created_at?: string
           description_reseau?: string | null
           id?: string
+          response_rate?: number | null
           secteur?: string | null
           statut?: string | null
+          total_reviews?: number | null
           types_contacts?: string | null
           updated_at?: string
           user_id?: string
           zone?: string | null
         }
         Relationships: []
+      }
+      facilitator_favorites: {
+        Row: {
+          company_user_id: string
+          created_at: string
+          facilitator_user_id: string
+          id: string
+        }
+        Insert: {
+          company_user_id: string
+          created_at?: string
+          facilitator_user_id: string
+          id?: string
+        }
+        Update: {
+          company_user_id?: string
+          created_at?: string
+          facilitator_user_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      facilitator_requests: {
+        Row: {
+          company_user_id: string
+          created_at: string
+          facilitator_user_id: string
+          id: string
+          mission_id: string | null
+          openclaw_note: string | null
+          opportunity_id: string | null
+          request_context: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_user_id: string
+          created_at?: string
+          facilitator_user_id: string
+          id?: string
+          mission_id?: string | null
+          openclaw_note?: string | null
+          opportunity_id?: string | null
+          request_context?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_user_id?: string
+          created_at?: string
+          facilitator_user_id?: string
+          id?: string
+          mission_id?: string | null
+          openclaw_note?: string | null
+          opportunity_id?: string | null
+          request_context?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facilitator_requests_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facilitator_requests_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      facilitator_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          facilitator_user_id: string
+          id: string
+          introduction_id: string | null
+          rating: number
+          recommended: boolean | null
+          request_id: string | null
+          reviewer_user_id: string
+          tags: Json | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          facilitator_user_id: string
+          id?: string
+          introduction_id?: string | null
+          rating: number
+          recommended?: boolean | null
+          request_id?: string | null
+          reviewer_user_id: string
+          tags?: Json | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          facilitator_user_id?: string
+          id?: string
+          introduction_id?: string | null
+          rating?: number
+          recommended?: boolean | null
+          request_id?: string | null
+          reviewer_user_id?: string
+          tags?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facilitator_reviews_introduction_id_fkey"
+            columns: ["introduction_id"]
+            isOneToOne: false
+            referencedRelation: "introductions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facilitator_reviews_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "facilitator_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gains: {
         Row: {
