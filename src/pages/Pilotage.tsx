@@ -126,6 +126,29 @@ export default function Pilotage() {
         {/* ── BRIEF OPENCLAW ─────────────────────────────────────── */}
         <MorningBrief compact />
 
+        {/* ── DEAL RADAR CALLOUT ─────────────────────────────────── */}
+        <Link
+          to="/radar"
+          className="rounded-xl p-4 flex items-center justify-between gap-3 hover:opacity-90 transition-all"
+          style={{ background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))", border: "1px solid hsl(218 40% 25% / 0.5)" }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <Radar size={14} className="text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-white text-sm">Deal Radar actif</p>
+              <p className="text-white/50 text-xs">OpenClaw surveille les signaux business pour vous</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+              Voir les opportunités
+            </span>
+            <ChevronRight size={14} className="text-white/40" />
+          </div>
+        </Link>
+
         {/* ── MODES D'ACTION ─────────────────────────────────────── */}
         <div className="card-surface p-5">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
