@@ -97,6 +97,7 @@ export default function WarRoom() {
   } = useOpenClawChannelActions();
   const {
     isCronActive, lastTick, lastDailySweep, totalAutoToday, todayRuns,
+    hasEverRun, cronRunStatus, smokeTesting, lastSmokeResult, runSmokeTest,
   } = useOpenClawScheduledRuns();
 
   const loading = runtimeLoading || runsLoading || execLoading;
