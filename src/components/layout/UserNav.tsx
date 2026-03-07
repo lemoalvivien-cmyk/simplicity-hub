@@ -171,8 +171,7 @@ export default function UserNav({ role = "facilitateur" }: UserNavProps) {
               <NavLink to="/gains" label="Gains" icon={TrendingUp} pathname={pathname} />
               <div className="w-px h-5 mx-1.5" style={{ background: "hsl(var(--border))" }} />
               <NavLink to="/contacts" label="Contacts" icon={Users} pathname={pathname} />
-              <NavLink to="/campagnes" label="Campagnes" icon={Play} pathname={pathname} />
-              <NavLink to="/actions" label="À faire" icon={Zap} pathname={pathname} />
+              <NavLink to="/passive" label="Mode passif" icon={Moon} pathname={pathname} highlight />
             </>
           )}
 
