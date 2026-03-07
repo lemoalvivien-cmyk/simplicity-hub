@@ -744,6 +744,53 @@ export type Database = {
         }
         Relationships: []
       }
+      link_events: {
+        Row: {
+          channel: string | null
+          created_at: string
+          event_type: string
+          facilitator_id: string
+          id: string
+          ip_country: string | null
+          language: string | null
+          metadata: Json | null
+          share_link_id: string | null
+          visitor_fingerprint: string | null
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          event_type: string
+          facilitator_id: string
+          id?: string
+          ip_country?: string | null
+          language?: string | null
+          metadata?: Json | null
+          share_link_id?: string | null
+          visitor_fingerprint?: string | null
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          event_type?: string
+          facilitator_id?: string
+          id?: string
+          ip_country?: string | null
+          language?: string | null
+          metadata?: Json | null
+          share_link_id?: string | null
+          visitor_fingerprint?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_events_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "offer_share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       liste_contacts: {
         Row: {
           contact_id: string
@@ -843,54 +890,153 @@ export type Database = {
         }
         Relationships: []
       }
+      offer_packs: {
+        Row: {
+          approved_at: string | null
+          company_id: string
+          created_at: string
+          email_premium: string | null
+          email_simple: string | null
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          language: string
+          offer_id: string | null
+          pitch_ultra_short: string | null
+          post_short: string | null
+          private_message: string | null
+          shared_offer_id: string | null
+          status: string
+          updated_at: string
+          whatsapp_natural: string | null
+          whatsapp_short: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          company_id: string
+          created_at?: string
+          email_premium?: string | null
+          email_simple?: string | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          language?: string
+          offer_id?: string | null
+          pitch_ultra_short?: string | null
+          post_short?: string | null
+          private_message?: string | null
+          shared_offer_id?: string | null
+          status?: string
+          updated_at?: string
+          whatsapp_natural?: string | null
+          whatsapp_short?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          company_id?: string
+          created_at?: string
+          email_premium?: string | null
+          email_simple?: string | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          language?: string
+          offer_id?: string | null
+          pitch_ultra_short?: string | null
+          post_short?: string | null
+          private_message?: string | null
+          shared_offer_id?: string | null
+          status?: string
+          updated_at?: string
+          whatsapp_natural?: string | null
+          whatsapp_short?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_packs_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_packs_shared_offer_id_fkey"
+            columns: ["shared_offer_id"]
+            isOneToOne: false
+            referencedRelation: "shared_offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offer_share_links: {
         Row: {
+          channel: string | null
           clicks_count: number
           company_id: string | null
           converted: boolean
           created_at: string
           destination_url: string | null
           facilitator_id: string
+          gain_count: number
           id: string
+          introduction_count: number
+          language: string | null
           last_click_at: string | null
           linked_gain_id: string | null
           linked_opportunity_id: string | null
           mission_id: string | null
           offer_id: string | null
+          opportunity_count: number
+          pack_id: string | null
+          qualified_interest_count: number
           tracking_code: string
           unique_clicks_count: number
           updated_at: string
         }
         Insert: {
+          channel?: string | null
           clicks_count?: number
           company_id?: string | null
           converted?: boolean
           created_at?: string
           destination_url?: string | null
           facilitator_id: string
+          gain_count?: number
           id?: string
+          introduction_count?: number
+          language?: string | null
           last_click_at?: string | null
           linked_gain_id?: string | null
           linked_opportunity_id?: string | null
           mission_id?: string | null
           offer_id?: string | null
+          opportunity_count?: number
+          pack_id?: string | null
+          qualified_interest_count?: number
           tracking_code?: string
           unique_clicks_count?: number
           updated_at?: string
         }
         Update: {
+          channel?: string | null
           clicks_count?: number
           company_id?: string | null
           converted?: boolean
           created_at?: string
           destination_url?: string | null
           facilitator_id?: string
+          gain_count?: number
           id?: string
+          introduction_count?: number
+          language?: string | null
           last_click_at?: string | null
           linked_gain_id?: string | null
           linked_opportunity_id?: string | null
           mission_id?: string | null
           offer_id?: string | null
+          opportunity_count?: number
+          pack_id?: string | null
+          qualified_interest_count?: number
           tracking_code?: string
           unique_clicks_count?: number
           updated_at?: string
@@ -922,6 +1068,75 @@ export type Database = {
             columns: ["offer_id"]
             isOneToOne: false
             referencedRelation: "shared_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_share_links_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "offer_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          company_id: string
+          created_at: string
+          full_description: string | null
+          id: string
+          mission_id: string | null
+          primary_cta: string | null
+          reward_model: string | null
+          sector: string | null
+          status: string
+          summary: string | null
+          target_geo: string | null
+          target_languages: string[] | null
+          target_profile: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          full_description?: string | null
+          id?: string
+          mission_id?: string | null
+          primary_cta?: string | null
+          reward_model?: string | null
+          sector?: string | null
+          status?: string
+          summary?: string | null
+          target_geo?: string | null
+          target_languages?: string[] | null
+          target_profile?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          full_description?: string | null
+          id?: string
+          mission_id?: string | null
+          primary_cta?: string | null
+          reward_model?: string | null
+          sector?: string | null
+          status?: string
+          summary?: string | null
+          target_geo?: string | null
+          target_languages?: string[] | null
+          target_profile?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
             referencedColumns: ["id"]
           },
         ]

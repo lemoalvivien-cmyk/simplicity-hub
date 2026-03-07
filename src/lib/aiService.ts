@@ -31,7 +31,11 @@ export type CopilotContext =
   | "dossier"
   | "passive-os"
   | "import-reseau"
-  | "offres";
+  | "offres"
+  | "offres-entreprise"
+  | "pilotage"
+  | "radar"
+  | "validations";
 
 export interface AiRequest {
   role: AiRole;
@@ -189,6 +193,22 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
   offres: {
     default: "Choisissez une offre adaptée à votre réseau, obtenez votre lien traqué, et partagez via WhatsApp ou email.",
     comment: "Chaque clic sur votre lien est tracé. Si un contact montre de l'intérêt, une opportunité est créée automatiquement.",
+  },
+  "offres-entreprise": {
+    default: "Publiez une offre et laissez OpenClaw générer les packs de diffusion. Vos facilitateurs n'ont plus besoin d'improviser.",
+    conseil: "Plus votre offre est précise, meilleures sont les introductions que vous recevrez.",
+  },
+  pilotage: {
+    default: "Le pilotage centralise vos opportunités, actions et recommandations OpenClaw.",
+    situation: "Voici où en est votre pipeline commercial. Traitez les opportunités les plus chaudes en priorité.",
+  },
+  radar: {
+    default: "Le Deal Radar détecte automatiquement les entreprises qui semblent prêtes à acheter.",
+    signal: "Les signaux d'intention (recrutement, levée de fonds, expansion) sont les indicateurs les plus fiables.",
+  },
+  validations: {
+    default: "Chaque validation est une action critique que vos agents ont soumise à votre approbation.",
+    comment: "Validez rapidement pour ne pas bloquer vos agents. Refusez si l'action vous semble trop risquée.",
   },
 };
 
@@ -506,6 +526,22 @@ export const COPILOT_SUGGESTIONS: Record<CopilotContext, { label: string; prompt
   offres: [
     { label: "Quelle offre choisir ?", prompt: "Quelle offre est la plus adaptée à mon réseau ?" },
     { label: "Comment partager ?", prompt: "Quel est le meilleur canal pour partager ces offres ?" },
+  ],
+  "offres-entreprise": [
+    { label: "Générer un pack IA", prompt: "Comment générer un pack de messages pour mon offre ?" },
+    { label: "Activer des facilitateurs", prompt: "Comment activer plus de facilitateurs sur cette offre ?" },
+  ],
+  pilotage: [
+    { label: "Quoi traiter en premier ?", prompt: "Quelle opportunité dois-je traiter en priorité ?" },
+    { label: "Résume la situation", prompt: "Résume l'état de mon pipeline commercial" },
+  ],
+  radar: [
+    { label: "Expliquer les signaux", prompt: "Que signifient ces signaux d'intention ?" },
+    { label: "Quelle action suggères-tu ?", prompt: "Quelle est la meilleure action pour cette opportunité ?" },
+  ],
+  validations: [
+    { label: "Expliquer cette validation", prompt: "Explique-moi ce que ferait cette validation" },
+    { label: "Est-ce risqué ?", prompt: "Quel est le niveau de risque de cette action ?" },
   ],
 };
 
