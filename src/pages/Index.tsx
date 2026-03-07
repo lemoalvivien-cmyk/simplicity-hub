@@ -581,7 +581,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/pricing" className="btn-cta text-base px-8 py-4">
-              Entreprise — 29 € / mois <ArrowRight size={18} />
+              Entreprise — à partir de 99 € / an <ArrowRight size={18} />
             </Link>
             <Link to="/signup" className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white/80 border border-white/20 font-semibold text-base hover:bg-white/8 transition-colors">
               Apporteur — Gratuit <ArrowRight size={18} />
