@@ -560,7 +560,7 @@ export default function Operations() {
                         background: job.enabled ? "hsl(0 65% 95%)" : "hsl(var(--success-light))",
                         color: job.enabled ? "hsl(0 65% 40%)" : "hsl(var(--success))",
                       }}>
-                      {job.enabled ? <Pause size={11} /> : <Play size={11} />}
+                      {job.enabled ? <XCircle size={11} /> : <Play size={11} />}
                     </button>
                   </div>
                 </div>
@@ -729,7 +729,7 @@ export default function Operations() {
             {memory.length > 0 && (
               <div className="card-surface p-4">
                 <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
-                  <Database size={11} className="text-primary" /> Ce que le cerveau a appris
+                  <Brain size={11} className="text-primary" /> Ce que le cerveau a appris
                 </p>
                 <div className="space-y-2">
                   {memory.slice(0, 5).map((m) => (
@@ -756,7 +756,7 @@ export default function Operations() {
                 <p className="text-sm text-muted-foreground">Aucune session active.</p>
                 <p className="text-xs text-muted-foreground mt-1">Lancez un cycle depuis l'onglet Cycles pour créer une session.</p>
                 <Link to="/agents" className="mt-3 text-xs font-semibold text-primary flex items-center gap-1 justify-center">
-                  Démarrer <ArrowRight size={10} />
+                  Démarrer <ChevronRight size={10} />
                 </Link>
               </div>
             )}
