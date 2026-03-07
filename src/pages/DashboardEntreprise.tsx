@@ -32,6 +32,7 @@ export default function DashboardEntreprise() {
   const [sharedOffersCount, setSharedOffersCount] = useState(0);
   const [totalShareClicks, setTotalShareClicks] = useState(0);
   const [activeFacilitatorsCount, setActiveFacilitatorsCount] = useState(0);
+  const [passiveAlerts, setPassiveAlerts] = useState<{ id: string; title: string; message: string; type: string; read: boolean }[]>([]);
 
   const prenom = profile?.prenom || "vous";
 
