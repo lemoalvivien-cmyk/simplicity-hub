@@ -1578,6 +1578,51 @@ export type Database = {
         }
         Relationships: []
       }
+      openclaw_memory: {
+        Row: {
+          confidence: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          key: string
+          last_used_at: string | null
+          memory_type: string
+          source: string | null
+          times_used: number
+          updated_at: string
+          user_id: string
+          value: Json
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key: string
+          last_used_at?: string | null
+          memory_type: string
+          source?: string | null
+          times_used?: number
+          updated_at?: string
+          user_id: string
+          value?: Json
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key?: string
+          last_used_at?: string | null
+          memory_type?: string
+          source?: string | null
+          times_used?: number
+          updated_at?: string
+          user_id?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       openclaw_recommendations: {
         Row: {
           agent_name: string
@@ -1624,6 +1669,123 @@ export type Database = {
           summary?: string
           title?: string
           type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      openclaw_runs: {
+        Row: {
+          agent_names: string[] | null
+          created_at: string
+          duration_ms: number | null
+          ended_at: string | null
+          error_detail: string | null
+          id: string
+          next_run_at: string | null
+          outcome: Json | null
+          requires_validation: boolean
+          run_type: string
+          started_at: string | null
+          status: string
+          summary: string | null
+          trigger_source: string
+          updated_at: string
+          user_id: string
+          validation_id: string | null
+        }
+        Insert: {
+          agent_names?: string[] | null
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          error_detail?: string | null
+          id?: string
+          next_run_at?: string | null
+          outcome?: Json | null
+          requires_validation?: boolean
+          run_type?: string
+          started_at?: string | null
+          status?: string
+          summary?: string | null
+          trigger_source?: string
+          updated_at?: string
+          user_id: string
+          validation_id?: string | null
+        }
+        Update: {
+          agent_names?: string[] | null
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          error_detail?: string | null
+          id?: string
+          next_run_at?: string | null
+          outcome?: Json | null
+          requires_validation?: boolean
+          run_type?: string
+          started_at?: string | null
+          status?: string
+          summary?: string | null
+          trigger_source?: string
+          updated_at?: string
+          user_id?: string
+          validation_id?: string | null
+        }
+        Relationships: []
+      }
+      openclaw_sessions: {
+        Row: {
+          autonomie_level: string
+          context: Json | null
+          created_at: string
+          ended_at: string | null
+          id: string
+          last_run_at: string | null
+          last_run_id: string | null
+          memory_snapshot: Json | null
+          next_scheduled_at: string | null
+          runs_count: number
+          session_score: number | null
+          session_type: string
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autonomie_level?: string
+          context?: Json | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          last_run_at?: string | null
+          last_run_id?: string | null
+          memory_snapshot?: Json | null
+          next_scheduled_at?: string | null
+          runs_count?: number
+          session_score?: number | null
+          session_type?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autonomie_level?: string
+          context?: Json | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          last_run_at?: string | null
+          last_run_id?: string | null
+          memory_snapshot?: Json | null
+          next_scheduled_at?: string | null
+          runs_count?: number
+          session_score?: number | null
+          session_type?: string
+          started_at?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
