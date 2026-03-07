@@ -223,6 +223,12 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
     badge: "Les badges de confiance sont accordés automatiquement selon vos résultats réels. Ils attestent de votre sérieux sur la plateforme.",
     protection: "Vos introductions sont tracées et horodatées. En cas de litige, la plateforme dispose de toutes les preuves pour défendre vos droits.",
   },
+  "mission-creation": {
+    default: "Votre mission semble bien construite. Pour attirer les meilleurs facilitateurs, soyez précis sur le profil du contact recherché et proposez une récompense claire.",
+    ameliorer: "Reformulez le titre pour qu'il soit une phrase d'action. Ex : 'Je cherche des dirigeants de PME en Île-de-France prêts à découvrir une solution RH.'",
+    simplifier: "Raccourcissez la description : 3 lignes maximum. Indiquez qui vous cherchez, dans quel secteur, et pourquoi vous payez une récompense.",
+    cible: "Précisez le type de décideur : 'Dirigeant', 'DRH', 'Responsable IT'... Plus c'est précis, plus les facilitateurs peuvent cibler juste.",
+  },
 };
 
 // ── Router simple (détermine la route de réponse) ────────────────────────────
