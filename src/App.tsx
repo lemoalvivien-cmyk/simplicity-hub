@@ -89,6 +89,9 @@ import OffresEntreprise from "./pages/OffresEntreprise";
 // Trust Engine
 import Trust from "./pages/Trust";
 
+// System Proof
+import SystemProof from "./pages/SystemProof";
+
 // Admin pages
 import AdminOverview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/Users";
