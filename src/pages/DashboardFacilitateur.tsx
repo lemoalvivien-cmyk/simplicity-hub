@@ -15,6 +15,7 @@ import VoiceWelcome from "@/components/ai/VoiceWelcome";
 import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
 import ActivationProgressBar from "@/components/activation/ActivationProgressBar";
 import { useActivation } from "@/hooks/useActivation";
+import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 
 interface ShareLink {
   id: string;
