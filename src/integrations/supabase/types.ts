@@ -299,36 +299,45 @@ export type Database = {
           email: string | null
           entreprise: string | null
           id: string
+          langue: string | null
           origine: string | null
           owner_user_id: string
           prenom_nom: string
+          secteur: string | null
           statut: string | null
           telephone: string | null
           updated_at: string
+          zone: string | null
         }
         Insert: {
           created_at?: string
           email?: string | null
           entreprise?: string | null
           id?: string
+          langue?: string | null
           origine?: string | null
           owner_user_id: string
           prenom_nom: string
+          secteur?: string | null
           statut?: string | null
           telephone?: string | null
           updated_at?: string
+          zone?: string | null
         }
         Update: {
           created_at?: string
           email?: string | null
           entreprise?: string | null
           id?: string
+          langue?: string | null
           origine?: string | null
           owner_user_id?: string
           prenom_nom?: string
+          secteur?: string | null
           statut?: string | null
           telephone?: string | null
           updated_at?: string
+          zone?: string | null
         }
         Relationships: []
       }
