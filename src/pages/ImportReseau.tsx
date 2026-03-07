@@ -1,5 +1,5 @@
 /**
- * ImportReseau — Import CSV/Excel ultra simple pour facilitateurs
+ * ImportReseau — Import CSV/Excel + graph feeding + smart offer suggestions
  * "Importez votre réseau, laissez l'IA faire le reste."
  */
 import { useState, useRef } from "react";
@@ -7,11 +7,12 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Upload, CheckCircle2, AlertCircle, ArrowRight, Users,
-  FileText, X, Loader2, Sparkles, ChevronDown, Info
+  FileText, X, Loader2, Sparkles, Info, Flame, Share2, ChevronRight
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type ParsedContact = {
   prenom_nom: string;
