@@ -110,16 +110,32 @@ export default function Pricing() {
               )}
             </div>
             <div className="p-7">
-              <ul className="space-y-3 mb-7">
-                {enterpriseIncludes.map((item) => (
+              {/* Moteur 1 */}
+              <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "hsl(var(--primary))" }}>
+                Moteur 1 — Prospection automatisée
+              </p>
+              <ul className="space-y-2 mb-4">
+                {moteur1Items.map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <CheckCircle2 size={16} style={{ color: "hsl(var(--primary))" }} className="shrink-0 mt-0.5" />
+                    <CheckCircle2 size={14} style={{ color: "hsl(var(--primary))" }} className="shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              {/* Moteur 2 */}
+              <p className="text-xs font-bold uppercase tracking-wider mb-3 mt-5" style={{ color: "hsl(var(--accent))" }}>
+                Moteur 2 — Apport d'affaires
+              </p>
+              <ul className="space-y-2 mb-7">
+                {moteur2Items.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <CheckCircle2 size={14} style={{ color: "hsl(var(--accent))" }} className="shrink-0 mt-0.5" />
                     <span className="text-sm text-foreground">{item}</span>
                   </li>
                 ))}
               </ul>
               <Link to="/checkout" className="btn-primary w-full text-center text-base py-4 block">
-                {launchAvailable ? "Démarrer à 99 € / an →" : "Démarrer à 490 € / an →"}
+                {launchAvailable ? "Activer les deux moteurs — 99 € / an →" : "Activer les deux moteurs — 490 € / an →"}
               </Link>
               <div className="mt-4 p-3 rounded-lg border flex items-center gap-2" style={{ background: "hsl(218 72% 18% / 0.05)", borderColor: "hsl(218 72% 18% / 0.12)" }}>
                 <Tag size={14} style={{ color: "hsl(var(--primary))" }} className="shrink-0" />
