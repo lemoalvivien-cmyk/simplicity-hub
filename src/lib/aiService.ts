@@ -165,6 +165,11 @@ const CONTEXT_MOCK: Record<CopilotContext, Record<string, string>> = {
     ameliorer: "Pour améliorer votre dossier : soyez très précis sur votre client idéal, décrivez les signaux d'achat typiques, et indiquez vos contraintes absolues.",
     cible: "Un bon profil de cible répond à : quel secteur, quelle taille, quel décideur, quel problème, quel signal d'achat. Soyez spécifique.",
   },
+};
+    default: "Votre dossier entreprise est la base d'OpenClaw. Plus il est précis, plus vos agents trouvent des contacts pertinents.",
+    ameliorer: "Pour améliorer votre dossier : soyez très précis sur votre client idéal, décrivez les signaux d'achat typiques, et indiquez vos contraintes absolues.",
+    cible: "Un bon profil de cible répond à : quel secteur, quelle taille, quel décideur, quel problème, quel signal d'achat. Soyez spécifique.",
+  },
 
 // ── Router simple (détermine la route de réponse) ────────────────────────────
 function routeRequest(req: AiRequest): "faq" | "model_light" | "model_strong" {
