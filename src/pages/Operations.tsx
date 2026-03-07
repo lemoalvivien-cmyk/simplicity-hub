@@ -1,7 +1,7 @@
 /**
  * OpenClaw Operations — Vue runtime maximale
- * Health, channels, sessions, runs, jobs, approvals, memory, tool policy, security boundary
- * UX premium, zéro jargon technique brut
+ * Health, channels, sessions, jobs, scheduler queue, heartbeats, boundary
+ * Autonomous execution layer: real queue, real cron, real events
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -9,16 +9,17 @@ import { toast } from "sonner";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
-  Radio, Play, Pause, RefreshCw, ChevronRight, Activity,
-  Layers, Cpu, Database, Lock, Wifi, WifiOff, AlertCircle,
-  ArrowRight, Target, Settings2, Eye, BarChart3, XCircle,
+  Radio, Play, RefreshCw, ChevronRight, Activity,
+  Layers, Cpu, Lock, Wifi, WifiOff, AlertCircle,
+  Target, Settings2, Eye, BarChart3, XCircle, ListChecks,
 } from "lucide-react";
-import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_STATUS_META, JOB_TYPE_META, TOOL_ACCESS_META, DEFAULT_TOOL_MATRIX } from "@/hooks/useOpenClawRuntime";
+import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_STATUS_META, JOB_TYPE_META, TOOL_ACCESS_META } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
 import { useOpenClaw } from "@/hooks/useOpenClaw";
 import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hooks/useOpenClawExecutions";
+import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_META } from "@/hooks/useOpenClawScheduler";
 
-type TabId = "runtime" | "channels" | "jobs" | "executions" | "sessions" | "tools" | "boundary";
+type TabId = "runtime" | "channels" | "queue" | "jobs" | "executions" | "sessions" | "tools" | "boundary";
 
 function formatRelative(iso: string | null) {
   if (!iso) return null;
