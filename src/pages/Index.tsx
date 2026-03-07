@@ -71,6 +71,9 @@ export default function LandingPage() {
       {/* ══ GUICHET UNIQUE + AUTOPILOT + APPORT D'AFFAIRES ══ */}
       <GuichetUniqueSection />
 
+      {/* ══ PASSIVE FACILITATOR OS ════════════════════════ */}
+      <PassiveSectionLanding />
+
       {/* ══ POUR LES ENTREPRISES + APPORTEURS ════════════ */}
       <section className="py-24 bg-muted">
         <div className="container max-w-5xl">
