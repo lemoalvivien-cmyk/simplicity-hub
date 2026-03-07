@@ -192,6 +192,9 @@ export default function DashboardFacilitateur() {
           </div>
         )}
 
+        {/* ── OPENCLAW CERVEAU VIVANT ───────────────────────── */}
+        <OpenClawBrainWidget variant="facilitateur" />
+
         {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 

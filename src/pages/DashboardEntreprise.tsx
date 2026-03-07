@@ -154,6 +154,9 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
+        {/* ── OPENCLAW CERVEAU VIVANT ───────────────────────── */}
+        <OpenClawBrainWidget variant="entreprise" />
+
         {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
