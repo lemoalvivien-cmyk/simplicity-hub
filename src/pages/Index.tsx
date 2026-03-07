@@ -49,7 +49,7 @@ const differentiators = [
 const faq = [
   { q: "C'est quoi WIINUP MAX exactement ?", a: "Une plateforme qui combine deux moteurs : la prospection business (contacts, campagnes, actions) et l'apport d'affaires (missions, introductions, gains). Le tout piloté par un assistant IA." },
   { q: "À qui s'adresse WIINUP MAX ?", a: "Aux entreprises qui veulent trouver des clients, et aux apporteurs d'affaires qui veulent valoriser leur réseau. Les deux profils coexistent sur la même plateforme." },
-  { q: "Combien coûte la plateforme ?", a: "29€ TTC / mois pour les entreprises. Entièrement gratuit pour les apporteurs d'affaires, sans limite de temps." },
+  { q: "Combien coûte la plateforme ?", a: "Les 100 premières entreprises bénéficient d'une offre de lancement à 99 € TTC pour la première année. Ensuite, l'abonnement annuel est à 490 € TTC. Les apporteurs d'affaires accèdent gratuitement, sans limite de temps." },
   { q: "Faut-il être technique pour l'utiliser ?", a: "Absolument pas. WIINUP MAX est conçu pour des professionnels non techniques. Tout est guidé, expliqué, simplifié." },
   { q: "Comment fonctionne l'assistant JARVIS ?", a: "JARVIS vous guide en temps réel : il priorise vos actions, améliore vos messages, explique les statuts, et vous indique toujours la prochaine étape utile." },
   { q: "Puis-je annuler à tout moment ?", a: "Oui. Sans condition. Votre accès reste actif jusqu'à la fin de la période payée." },
@@ -106,7 +106,7 @@ export default function LandingPage() {
 
           {/* Trust bar */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-white/40 text-xs">
-            <span>✓ Entreprise à 29€ / mois</span>
+            <span>✓ Offre lancement 99 € / an</span>
             <span className="hidden sm:block">·</span>
             <span>✓ Apporteur d'affaires — gratuit</span>
             <span className="hidden sm:block">·</span>
