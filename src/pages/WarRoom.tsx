@@ -81,7 +81,7 @@ export default function WarRoom() {
 
   const { channels, jobs, loading: runtimeLoading, readyChannels, blockedChannels, nextJob, healthScore, triggerJob } = useOpenClawRuntime();
   const { runs, memory, activeRun, loading: runsLoading } = useOpenClawRuns();
-  const { config, pendingValidations, logs } = useOpenClaw();
+  const { config, pendingValidations } = useOpenClaw();
   const {
     recentExecutions, failedExecutions, runningExecutions,
     totalOutputs, totalRecs, totalActions,
@@ -93,20 +93,25 @@ export default function WarRoom() {
     triggerScheduler, triggering: schedulerTriggering,
   } = useOpenClawScheduler();
   const {
-    actions: channelActions, loading: channelLoading,
-    preparedActions, pendingApprovals: chPendingApprovals, sentActions, failedActions: chFailedActions,
+    actions: channelActions,
+    preparedActions, pendingApprovals: chPendingApprovals,
     whileYouSlept, byChannel,
     approveAction, cancelAction, loadAll: reloadChannelActions,
   } = useOpenClawChannelActions();
   const {
-    isCronActive, lastTick, lastDailySweep, totalAutoToday, todayRuns,
-    hasEverRun, cronRunStatus, smokeTesting, lastSmokeResult, runSmokeTest,
+    isCronActive, lastTick, totalAutoToday, todayRuns,
+    smokeTesting, lastSmokeResult, runSmokeTest,
   } = useOpenClawScheduledRuns();
   const {
-    diagnostics: cronDiagnostics, loading: cronDiagLoading,
+    diagnostics: cronDiagnostics,
     infraScore, allConfiguredInRepo, allConfiguredInDb, tickIsActive, lastChecked: cronCheckedAt,
-    reload: reloadCronDiag,
   } = useOpenClawCronDiagnostic();
+  const {
+    deliveries, dispatchedToday, failedToday, repliedToday,
+    pendingApproval: deliveryPendingApproval, allDispatched, allFailed: allDeliveryFailed, allReplied,
+    byChannel: deliveriesByChannel, deliveryRate, totalToday: deliveriesToday,
+    dispatchAction, dispatching, loadAll: reloadDeliveries,
+  } = useOpenClawDeliveries();
 
   const loading = runtimeLoading || runsLoading || execLoading;
 
