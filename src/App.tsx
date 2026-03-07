@@ -80,6 +80,7 @@ import Reseau from "./pages/Reseau";
 import PassiveOS from "./pages/PassiveOS";
 import ImportReseau from "./pages/ImportReseau";
 import Offres from "./pages/Offres";
+import Chaud from "./pages/Chaud";
 import OffresEntreprise from "./pages/OffresEntreprise";
 
 // Admin pages

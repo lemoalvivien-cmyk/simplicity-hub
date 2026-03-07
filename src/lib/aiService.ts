@@ -35,7 +35,8 @@ export type CopilotContext =
   | "offres-entreprise"
   | "pilotage"
   | "radar"
-  | "validations";
+  | "validations"
+  | "chaud";
 
 export interface AiRequest {
   role: AiRole;
