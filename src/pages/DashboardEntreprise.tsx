@@ -19,6 +19,8 @@ export default function DashboardEntreprise() {
   const [validationsCount, setValidationsCount] = useState(0);
   const [recommendationsCount, setRecommendationsCount] = useState(0);
   const [agentsActifs, setAgentsActifs] = useState(0);
+  const [hotOpps, setHotOpps] = useState(0);
+  const [newSignals, setNewSignals] = useState(0);
 
   const prenom = profile?.prenom || "vous";
 
