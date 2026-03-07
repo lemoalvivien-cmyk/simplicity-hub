@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface SharedOffer {
   id: string;
+  company_user_id: string;
   title: string;
   short_description: string | null;
   whatsapp_text: string | null;
