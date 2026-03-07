@@ -46,6 +46,7 @@ import Actions from "./pages/Actions";
 
 // Apport d'affaires — facilitateur
 import Missions from "./pages/Missions";
+import MissionDetail from "./pages/MissionDetail";
 import MissionNouvelle from "./pages/MissionNouvelle";
 import Introductions from "./pages/Introductions";
 import IntroductionDetail from "./pages/IntroductionDetail";
