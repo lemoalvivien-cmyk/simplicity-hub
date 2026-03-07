@@ -3,6 +3,7 @@
  * TRUE UNATTENDED MODE: shows what ran while you were away,
  * channel actions backlog, auto/assisted/manual distinction,
  * honest scheduler health.
+ * Real Channel Delivery + Receipts + Outcome Loop
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -11,9 +12,9 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
   Radio, Play, RefreshCw, ChevronRight, Activity,
-  Wifi, WifiOff, AlertCircle, Lock, TrendingUp,
-  Target, BarChart3, Sparkles, XCircle, ListChecks, Cpu,
-  Moon, Send, Mail, MessageSquare, Eye
+  Wifi, AlertCircle, Lock, TrendingUp,
+  Target, BarChart3, XCircle,
+  Moon, Send, MessageCircle, Package,
 } from "lucide-react";
 import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_TYPE_META } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
@@ -23,6 +24,7 @@ import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_
 import { useOpenClawChannelActions, CHANNEL_META, ACTION_TYPE_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
 import { useOpenClawScheduledRuns, SCHEDULE_PLAN, CRON_JOBS_PROOF } from "@/hooks/useOpenClawScheduledRuns";
 import { useOpenClawCronDiagnostic } from "@/hooks/useOpenClawCronDiagnostic";
+import { useOpenClawDeliveries, DELIVERY_STATUS_META, CHANNEL_CAPABILITY_MATRIX, getChannelCapability, getDispatchLabel } from "@/hooks/useOpenClawDeliveries";
 
 function formatFuture(iso: string | null) {
   if (!iso) return "—";

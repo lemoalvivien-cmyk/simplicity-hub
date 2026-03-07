@@ -2,6 +2,7 @@
  * OpenClaw Operations — Vue runtime maximale
  * Health, channels, sessions, jobs, scheduler queue, heartbeats, boundary
  * Autonomous execution layer: real queue, real cron, real events
+ * Real Channel Delivery + Receipts + Outcome Loop
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -10,19 +11,19 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
   Radio, Play, RefreshCw, ChevronRight, Activity,
-  Layers, Cpu, Lock, Wifi, WifiOff, AlertCircle,
-  Target, Settings2, Eye, BarChart3, XCircle, ListChecks,
-  Send, Mail, MessageSquare, CheckCheck,
+  Layers, Cpu, Lock, Wifi, AlertCircle,
+  Target, Settings2, BarChart3, XCircle, ListChecks,
+  Send, CheckCheck, Package, MessageCircle, TrendingUp,
 } from "lucide-react";
 import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_STATUS_META, JOB_TYPE_META, TOOL_ACCESS_META } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
 import { useOpenClaw } from "@/hooks/useOpenClaw";
 import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hooks/useOpenClawExecutions";
 import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_META } from "@/hooks/useOpenClawScheduler";
-
 import { useOpenClawChannelActions, CHANNEL_META, STATUS_META, TRIGGER_MODE_META } from "@/hooks/useOpenClawChannelActions";
 import { useOpenClawScheduledRuns, SCHEDULE_PLAN, CRON_JOBS_PROOF } from "@/hooks/useOpenClawScheduledRuns";
 import { useOpenClawCronDiagnostic } from "@/hooks/useOpenClawCronDiagnostic";
+import { useOpenClawDeliveries, DELIVERY_STATUS_META, CHANNEL_CAPABILITY_MATRIX, getChannelCapability, getDispatchLabel } from "@/hooks/useOpenClawDeliveries";
 
 type TabId = "runtime" | "channels" | "queue" | "jobs" | "executions" | "canal" | "sessions" | "tools" | "boundary";
 
