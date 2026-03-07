@@ -31,7 +31,11 @@ export type CopilotContext =
   | "dossier"
   | "passive-os"
   | "import-reseau"
-  | "offres";
+  | "offres"
+  | "offres-entreprise"
+  | "pilotage"
+  | "radar"
+  | "validations";
 
 export interface AiRequest {
   role: AiRole;

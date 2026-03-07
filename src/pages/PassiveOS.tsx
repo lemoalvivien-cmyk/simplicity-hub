@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ShareLink {
   id: string;
+  offer_id: string | null;
   tracking_code: string;
   clicks_count: number;
   unique_clicks_count: number;
