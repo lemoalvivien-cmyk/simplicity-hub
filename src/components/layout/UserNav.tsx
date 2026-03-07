@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
@@ -8,6 +8,7 @@ import {
   Moon, Share2, Upload, ChevronDown, Lock, Swords, Cpu
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useAuth } from "@/contexts/AuthContext";
 
 type UserRole = "entreprise" | "facilitateur";
 
