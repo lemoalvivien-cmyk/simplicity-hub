@@ -214,6 +214,55 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
+        {/* ── ALERTES PASSIVES ─────────────────────────────── */}
+        {!loading && passiveAlerts.length > 0 && (
+          <div className="card-surface p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
+                <Bell size={14} className="text-primary" /> Alertes passives
+                <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "hsl(24 100% 52%)" }}>
+                  {passiveAlerts.length}
+                </span>
+              </h2>
+              <Link to="/chaud" className="text-xs text-primary font-medium hover:underline">Tout voir</Link>
+            </div>
+            <div className="space-y-2">
+              {passiveAlerts.map(alert => (
+                <div key={alert.id} className="p-3 rounded-xl flex items-start gap-2.5" style={{
+                  background: "hsl(24 100% 52% / 0.06)",
+                  border: "1px solid hsl(24 100% 52% / 0.2)"
+                }}>
+                  <Flame size={13} className="shrink-0 mt-0.5" style={{ color: "hsl(24 100% 52%)" }} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-snug">{alert.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{alert.message}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── CE QUI CHAUFFE — CTA ─────────────────────────── */}
+        {!loading && (
+          <Link to="/chaud" className="rounded-xl p-4 flex items-center justify-between gap-3 hover:opacity-90 transition-all" style={{
+            background: "linear-gradient(135deg, hsl(24 80% 8%), hsl(38 70% 11%))",
+            border: "1px solid hsl(24 100% 52% / 0.3)"
+          }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "linear-gradient(135deg, hsl(24 100% 52%), hsl(38 80% 45%))" }}>
+                <Flame size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-white text-sm">Ce qui chauffe</p>
+                <p className="text-white/50 text-xs">Leads chauds · Intérêts passifs · Opportunités</p>
+              </div>
+            </div>
+            <ArrowRight size={16} className="text-white/50 shrink-0" />
+          </Link>
+        )}
+
         {/* ── DEAL RADAR ───────────────────────────────────── */}
         {!loading && hotOpps > 0 && (
           <Link to="/radar" className="rounded-xl p-4 flex items-center justify-between gap-3 hover:opacity-90 transition-all" style={{
