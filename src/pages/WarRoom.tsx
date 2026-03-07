@@ -137,6 +137,7 @@ export default function WarRoom() {
         description: result.completed > 0 ? `${result.completed} job${result.completed > 1 ? "s" : ""} terminé${result.completed > 1 ? "s" : ""}` : "Aucun job en attente."
       });
       reloadChannelActions();
+      reloadDeliveries();
     } else {
       toast.error("Le scheduler a rencontré un problème.", { description: result.error });
     }
