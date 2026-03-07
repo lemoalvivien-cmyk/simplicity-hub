@@ -721,19 +721,22 @@ export default function Operations() {
         {activeTab === "boundary" && (
           <div className="space-y-4">
 
-            {/* Isolation badge */}
+            {/* Isolation — honnête : isolation logique RLS en base, pas matérielle */}
             <div className="rounded-2xl p-5 relative overflow-hidden"
               style={{ background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))", border: "1px solid hsl(218 40% 22% / 0.5)" }}>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 mt-0.5"
                   style={{ background: "hsl(218 72% 40% / 0.2)", border: "1px solid hsl(218 72% 50% / 0.3)" }}>
                   <Lock size={22} style={{ color: "hsl(218 72% 60%)" }} />
                 </div>
                 <div>
-                  <p className="text-white font-bold">Isolation stricte activée</p>
-                  <p className="text-white/40 text-xs mt-0.5">
-                    Vos données, sessions, runs, mémoire et validations sont entièrement isolées.
-                    Aucun autre utilisateur ne peut accéder à votre espace OpenClaw.
+                  <p className="text-white font-bold">Séparation par espace activée</p>
+                  <p className="text-white/40 text-xs mt-1 leading-relaxed">
+                    Chaque espace est isolé par des règles de sécurité en base de données (RLS).
+                    Vos données, sessions, runs, mémoire et validations ne sont accessibles qu'à vous.
+                  </p>
+                  <p className="text-xs mt-2 font-semibold" style={{ color: "hsl(218 72% 55%)" }}>
+                    Isolation logique — pas de VPC dédié au niveau infrastructure (SaaS partagé).
                   </p>
                 </div>
               </div>
@@ -741,16 +744,17 @@ export default function Operations() {
 
             {/* Boundary details */}
             <div className="card-surface p-4 space-y-3">
-              <p className="text-xs font-bold text-foreground">Boundary par espace</p>
+              <p className="text-xs font-bold text-foreground">Ce qui est protégé</p>
               {[
-                { label: "Configuration OpenClaw",   icon: "⚙️", secured: true, desc: "URL gateway, secret, niveau" },
-                { label: "Sessions actives",          icon: "🔄", secured: true, desc: "Contextes métier isolés" },
-                { label: "Runs & historique",         icon: "📡", secured: true, desc: "Cycles de travail isolés" },
-                { label: "Mémoire agentique",         icon: "🧠", secured: true, desc: "Apprentissages privés" },
-                { label: "Validations",               icon: "✅", secured: true, desc: "Boîte de décision privée" },
-                { label: "Canaux connectés",          icon: "📡", secured: true, desc: "Configuration par utilisateur" },
-                { label: "Politiques d'accès outils", icon: "🔐", secured: true, desc: "Matrice d'accès privée" },
-                { label: "Journaux d'activité",       icon: "📋", secured: true, desc: "Logs privés uniquement" },
+                { label: "Configuration OpenClaw",    icon: "⚙️", secured: true,  desc: "URL gateway, secret, niveau d'autonomie — règle RLS stricte" },
+                { label: "Sessions actives",           icon: "🔄", secured: true,  desc: "Contextes métier filtrés par user_id" },
+                { label: "Runs & historique",          icon: "📡", secured: true,  desc: "Cycles de travail isolés par user_id" },
+                { label: "Mémoire agentique",          icon: "🧠", secured: true,  desc: "Apprentissages privés — accès restreint" },
+                { label: "Validations",                icon: "✅", secured: true,  desc: "Boîte de décision privée — filtrée par user_id" },
+                { label: "Canaux configurés",          icon: "📡", secured: true,  desc: "Config canal par utilisateur uniquement" },
+                { label: "Politiques outils",          icon: "🔐", secured: true,  desc: "Matrice d'accès privée par espace" },
+                { label: "Journaux d'activité",        icon: "📋", secured: true,  desc: "Logs non modifiables, accès exclusif" },
+                { label: "Secret gateway",             icon: "🔑", secured: !!(config?.gateway_url), desc: config?.gateway_url ? "Secret stocké côté base sécurisée" : "Non configuré — gateway absent" },
               ].map(({ label, icon, secured, desc }) => (
                 <div key={label} className="flex items-center gap-3">
                   <span className="text-base shrink-0">{icon}</span>
@@ -771,10 +775,10 @@ export default function Operations() {
             <div className="card-surface p-4">
               <div className="flex items-center gap-3 mb-2">
                 <Shield size={16} className="text-primary" />
-                <p className="text-sm font-semibold text-foreground">Arrêt d'urgence</p>
+                <p className="text-sm font-semibold text-foreground">Arrêt d'urgence global</p>
               </div>
               <p className="text-xs text-muted-foreground mb-3">
-                Le Kill Switch stoppe instantanément tous vos agents. Aucune action ne peut être exécutée tant qu'il est activé.
+                Le Kill Switch bloque toutes les actions OpenClaw via le gateway. Aucune exécution possible tant qu'il est activé.
               </p>
               <Link to="/agents"
                 className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all"
@@ -787,20 +791,40 @@ export default function Operations() {
               </Link>
             </div>
 
-            {/* Node host info */}
+            {/* Node host info — honnête */}
             <div className="card-surface p-4">
               <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
                 <Target size={11} className="text-primary" /> Hôte d'exécution
               </p>
               <div className="space-y-2">
                 {[
-                  { label: "Cerveau principal",   host: "Lovable Cloud",     active: true },
-                  { label: "Exécution agents",    host: "Lovable Cloud",     active: true },
-                  { label: "Gateway OpenClaw",    host: config?.gateway_url ? "Votre serveur" : "Non configuré", active: !!config?.gateway_url },
-                ].map(({ label, host, active }) => (
-                  <div key={label} className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">{label}</span>
-                    <span className="text-xs font-medium flex items-center gap-1"
+                  {
+                    label: "Base de données & auth",
+                    host: "Lovable Cloud",
+                    active: true,
+                    note: "Sessions, runs, mémoire, logs",
+                  },
+                  {
+                    label: "Fonctions backend",
+                    host: "Lovable Cloud",
+                    active: true,
+                    note: "Probe, gateway, healthcheck",
+                  },
+                  {
+                    label: "Gateway OpenClaw",
+                    host: config?.gateway_url ? "Votre serveur" : "Non configuré",
+                    active: !!config?.gateway_url,
+                    note: config?.gateway_url
+                      ? `${config.gateway_url.slice(0, 40)}${config.gateway_url.length > 40 ? "…" : ""}`
+                      : "Configurez un gateway pour activer l'exécution autonome",
+                  },
+                ].map(({ label, host, active, note }) => (
+                  <div key={label} className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <span className="text-sm text-foreground">{label}</span>
+                      <p className="text-xs text-muted-foreground">{note}</p>
+                    </div>
+                    <span className="text-xs font-medium flex items-center gap-1 whitespace-nowrap mt-0.5"
                       style={{ color: active ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }}>
                       {active ? <Wifi size={10} /> : <WifiOff size={10} />}
                       {host}
