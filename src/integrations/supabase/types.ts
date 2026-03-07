@@ -1699,6 +1699,96 @@ export type Database = {
           },
         ]
       }
+      openclaw_job_queue: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          ended_at: string | null
+          error_summary: string | null
+          execution_id: string | null
+          id: string
+          job_type: string
+          lock_owner: string | null
+          locked_at: string | null
+          max_retries: number
+          next_retry_at: string | null
+          output_count: number
+          output_summary: string | null
+          priority: string
+          requires_approval: boolean
+          retry_count: number
+          run_id: string | null
+          scheduled_at: string
+          session_id: string | null
+          source_entity_id: string | null
+          source_entity_type: string | null
+          source_event: string | null
+          started_at: string | null
+          status: string
+          trigger_source: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          ended_at?: string | null
+          error_summary?: string | null
+          execution_id?: string | null
+          id?: string
+          job_type: string
+          lock_owner?: string | null
+          locked_at?: string | null
+          max_retries?: number
+          next_retry_at?: string | null
+          output_count?: number
+          output_summary?: string | null
+          priority?: string
+          requires_approval?: boolean
+          retry_count?: number
+          run_id?: string | null
+          scheduled_at?: string
+          session_id?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          source_event?: string | null
+          started_at?: string | null
+          status?: string
+          trigger_source?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          ended_at?: string | null
+          error_summary?: string | null
+          execution_id?: string | null
+          id?: string
+          job_type?: string
+          lock_owner?: string | null
+          locked_at?: string | null
+          max_retries?: number
+          next_retry_at?: string | null
+          output_count?: number
+          output_summary?: string | null
+          priority?: string
+          requires_approval?: boolean
+          retry_count?: number
+          run_id?: string | null
+          scheduled_at?: string
+          session_id?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          source_event?: string | null
+          started_at?: string | null
+          status?: string
+          trigger_source?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       openclaw_jobs: {
         Row: {
           config: Json | null
@@ -1996,6 +2086,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      openclaw_scheduler_heartbeats: {
+        Row: {
+          beat_at: string
+          engine_status: string
+          id: string
+          jobs_claimed: number
+          jobs_completed: number
+          jobs_due: number
+          jobs_failed: number
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          beat_at?: string
+          engine_status?: string
+          id?: string
+          jobs_claimed?: number
+          jobs_completed?: number
+          jobs_due?: number
+          jobs_failed?: number
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          beat_at?: string
+          engine_status?: string
+          id?: string
+          jobs_claimed?: number
+          jobs_completed?: number
+          jobs_due?: number
+          jobs_failed?: number
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       openclaw_sessions: {
         Row: {
@@ -2803,6 +2929,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_next_job: {
+        Args: {
+          p_lock_owner?: string
+          p_lock_timeout?: number
+          p_user_id: string
+        }
+        Returns: {
+          job_id: string
+          job_type: string
+          priority: string
+          queue_row: Json
+          retry_count: number
+          source_event: string
+          trigger_source: string
+        }[]
+      }
       complete_job_execution: {
         Args: {
           p_actions: number
@@ -2818,6 +2960,34 @@ export type Database = {
           p_trust_updates: number
         }
         Returns: undefined
+      }
+      complete_queue_job: {
+        Args: {
+          p_error_summary?: string
+          p_execution_id?: string
+          p_job_id: string
+          p_output_count?: number
+          p_output_summary?: string
+          p_retry_backoff_mins?: number
+          p_status: string
+        }
+        Returns: undefined
+      }
+      enqueue_job: {
+        Args: {
+          p_dedup_minutes?: number
+          p_job_type: string
+          p_max_retries?: number
+          p_priority?: string
+          p_requires_approval?: boolean
+          p_scheduled_at?: string
+          p_source_entity_id?: string
+          p_source_entity_type?: string
+          p_source_event?: string
+          p_trigger_source?: string
+          p_user_id: string
+        }
+        Returns: string
       }
       refresh_trust_score: {
         Args: { p_facilitator_id: string }

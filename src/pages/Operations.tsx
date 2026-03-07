@@ -1,7 +1,7 @@
 /**
  * OpenClaw Operations — Vue runtime maximale
- * Health, channels, sessions, runs, jobs, approvals, memory, tool policy, security boundary
- * UX premium, zéro jargon technique brut
+ * Health, channels, sessions, jobs, scheduler queue, heartbeats, boundary
+ * Autonomous execution layer: real queue, real cron, real events
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -9,16 +9,17 @@ import { toast } from "sonner";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
-  Radio, Play, Pause, RefreshCw, ChevronRight, Activity,
-  Layers, Cpu, Database, Lock, Wifi, WifiOff, AlertCircle,
-  ArrowRight, Target, Settings2, Eye, BarChart3, XCircle,
+  Radio, Play, RefreshCw, ChevronRight, Activity,
+  Layers, Cpu, Lock, Wifi, WifiOff, AlertCircle,
+  Target, Settings2, Eye, BarChart3, XCircle, ListChecks,
 } from "lucide-react";
-import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_STATUS_META, JOB_TYPE_META, TOOL_ACCESS_META, DEFAULT_TOOL_MATRIX } from "@/hooks/useOpenClawRuntime";
+import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_STATUS_META, JOB_TYPE_META, TOOL_ACCESS_META } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
 import { useOpenClaw } from "@/hooks/useOpenClaw";
 import { useOpenClawExecutions, JOB_TYPE_LIBRARY, EXEC_STATUS_META } from "@/hooks/useOpenClawExecutions";
+import { useOpenClawScheduler, PRIORITY_META, TRIGGER_SOURCE_META, QUEUE_STATUS_META } from "@/hooks/useOpenClawScheduler";
 
-type TabId = "runtime" | "channels" | "jobs" | "executions" | "sessions" | "tools" | "boundary";
+type TabId = "runtime" | "channels" | "queue" | "jobs" | "executions" | "sessions" | "tools" | "boundary";
 
 function formatRelative(iso: string | null) {
   if (!iso) return null;
@@ -86,6 +87,15 @@ export default function Operations() {
     executeJob, loading: execLoading,
   } = useOpenClawExecutions();
 
+  const {
+    queue, heartbeats, loading: schedulerLoading,
+    pendingJobs, runningJobs: queueRunning, failedJobs: queueFailed, doneToday,
+    overdueJobs, autoJobs, manualJobs,
+    latestHeartbeat, engineHealthy,
+    totalOutputToday, motor1Done, motor2Done,
+    triggerScheduler, enqueueEvent, triggering: schedulerTriggering,
+  } = useOpenClawScheduler();
+
   const loading = runtimeLoading || runsLoading;
 
   const handleProbe = async (channelId: string) => {
@@ -111,11 +121,25 @@ export default function Operations() {
     }
   };
 
+  const handleSchedulerTick = async () => {
+    const result = await triggerScheduler();
+    if (result.ok) {
+      toast.success(`Cycle autonome exécuté.`, {
+        description: result.completed > 0
+          ? `${result.completed} job${result.completed > 1 ? "s" : ""} terminé${result.completed > 1 ? "s" : ""}`
+          : result.claimed === 0 ? "Aucun job en attente pour l'instant." : undefined,
+      });
+    } else {
+      toast.error("Le scheduler a rencontré un problème.", { description: result.error });
+    }
+  };
+
   const tabs: { id: TabId; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: "runtime",    label: "Runtime",    icon: Brain },
-    { id: "channels",   label: "Canaux",     icon: Wifi,      badge: blockedChannels.length || undefined },
+    { id: "queue",      label: "File",       icon: ListChecks, badge: (pendingJobs.length + overdueJobs.length) || undefined },
+    { id: "channels",   label: "Canaux",     icon: Wifi,       badge: blockedChannels.length || undefined },
     { id: "jobs",       label: "Cycles",     icon: Clock },
-    { id: "executions", label: "Exécutions", icon: BarChart3, badge: failedExecutions.length || undefined },
+    { id: "executions", label: "Exécutions", icon: BarChart3,  badge: failedExecutions.length || undefined },
     { id: "sessions",   label: "Sessions",   icon: Layers },
     { id: "tools",      label: "Outils",     icon: Cpu },
     { id: "boundary",   label: "Sécurité",   icon: Lock },
@@ -359,6 +383,207 @@ export default function Operations() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════
+            TAB: QUEUE — File d'attente autonome réelle
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeTab === "queue" && (
+          <div className="space-y-4">
+
+            {/* Scheduler health + trigger */}
+            <div className="rounded-2xl p-4 relative overflow-hidden"
+              style={{
+                background: engineHealthy
+                  ? "linear-gradient(135deg, hsl(218 65% 8%), hsl(218 55% 11%))"
+                  : "linear-gradient(135deg, hsl(38 80% 10%), hsl(38 65% 13%))",
+                border: `1px solid ${engineHealthy ? "hsl(218 40% 22% / 0.5)" : "hsl(38 80% 35% / 0.5)"}`,
+              }}>
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`inline-block w-2 h-2 rounded-full ${engineHealthy ? "animate-pulse" : ""}`}
+                      style={{ background: engineHealthy ? "hsl(var(--success))" : "hsl(38 80% 60%)" }} />
+                    <p className="text-white font-bold text-sm">
+                      {latestHeartbeat
+                        ? latestHeartbeat.engine_status === "idle" ? "Moteur autonome — en attente"
+                          : latestHeartbeat.engine_status === "ok" ? "Moteur autonome — actif"
+                          : latestHeartbeat.engine_status === "degraded" ? "Moteur autonome — dégradé"
+                          : "Moteur autonome — erreur"
+                        : "Moteur autonome — pas encore de heartbeat"}
+                    </p>
+                  </div>
+                  <p className="text-white/40 text-xs">
+                    {latestHeartbeat
+                      ? `Dernier cycle : ${new Date(latestHeartbeat.beat_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })} · ${latestHeartbeat.jobs_completed} terminé${latestHeartbeat.jobs_completed !== 1 ? "s" : ""} · ${latestHeartbeat.jobs_failed} échoué${latestHeartbeat.jobs_failed !== 1 ? "s" : ""}`
+                      : "Le scheduler tourne automatiquement toutes les 5 minutes via pg_cron."}
+                  </p>
+                </div>
+                <button
+                  onClick={handleSchedulerTick}
+                  disabled={schedulerTriggering}
+                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-all whitespace-nowrap"
+                  style={{ background: "hsl(218 72% 50% / 0.15)", color: "hsl(218 72% 65%)" }}>
+                  {schedulerTriggering
+                    ? <><RefreshCw size={11} className="animate-spin" /> En cours…</>
+                    : <><Zap size={11} /> Cycle maintenant</>}
+                </button>
+              </div>
+
+              {/* Moteur stats */}
+              <div className="mt-3 grid grid-cols-4 gap-2">
+                {[
+                  { label: "En attente",   value: pendingJobs.length,  color: "hsl(218 72% 55%)" },
+                  { label: "En retard",    value: overdueJobs.length,  color: overdueJobs.length > 0 ? "hsl(38 80% 60%)" : "hsl(var(--success))" },
+                  { label: "Terminés/j",   value: doneToday.length,    color: "hsl(var(--success))" },
+                  { label: "Sorties/j",    value: totalOutputToday,    color: "hsl(var(--success))" },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="text-center py-2 rounded-xl" style={{ background: "hsl(218 40% 14% / 0.8)" }}>
+                    <p className="text-xs font-bold" style={{ color }}>{value}</p>
+                    <p className="text-xs text-white/30">{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Motor split */}
+              <div className="mt-2 flex gap-2">
+                <div className="flex-1 rounded-xl px-3 py-2" style={{ background: "hsl(218 40% 14% / 0.6)" }}>
+                  <p className="text-xs text-white/40">Moteur 1 — Prospection</p>
+                  <p className="text-sm font-bold" style={{ color: "hsl(218 72% 55%)" }}>{motor1Done} jobs aujourd'hui</p>
+                </div>
+                <div className="flex-1 rounded-xl px-3 py-2" style={{ background: "hsl(218 40% 14% / 0.6)" }}>
+                  <p className="text-xs text-white/40">Moteur 2 — Apport</p>
+                  <p className="text-sm font-bold" style={{ color: "hsl(250 60% 60%)" }}>{motor2Done} jobs aujourd'hui</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Overdue alert */}
+            {overdueJobs.length > 0 && (
+              <div className="rounded-2xl p-3 flex items-center gap-2"
+                style={{ background: "hsl(38 80% 92%)", border: "1px solid hsl(38 80% 75%)" }}>
+                <AlertTriangle size={13} style={{ color: "hsl(38 80% 30%)" }} />
+                <p className="text-xs font-semibold flex-1" style={{ color: "hsl(38 80% 30%)" }}>
+                  {overdueJobs.length} job{overdueJobs.length > 1 ? "s" : ""} en retard — le scheduler devrait les traiter dans le prochain cycle.
+                </p>
+              </div>
+            )}
+
+            {/* Queue items */}
+            {queue.length === 0 ? (
+              <div className="card-surface p-8 text-center">
+                <ListChecks size={28} className="mx-auto mb-3 opacity-30" />
+                <p className="text-sm text-muted-foreground">File d'attente vide.</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Les jobs se remplissent automatiquement via les événements métier et les cycles planifiés.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {/* Active / pending first */}
+                {[...queue]
+                  .sort((a, b) => {
+                    const order = { locked: 0, pending: 1, failed: 2, done: 3, cancelled: 4, waiting_approval: 1 };
+                    return (order[a.status as keyof typeof order] ?? 5) - (order[b.status as keyof typeof order] ?? 5);
+                  })
+                  .slice(0, 30)
+                  .map((job) => {
+                    const jobMeta = JOB_TYPE_LIBRARY[job.job_type];
+                    const statusMeta = QUEUE_STATUS_META[job.status] ?? { label: job.status, color: "hsl(var(--muted-foreground))" };
+                    const priorityMeta = PRIORITY_META[job.priority] ?? PRIORITY_META.normale;
+                    const triggerMeta = TRIGGER_SOURCE_META[job.trigger_source] ?? { label: job.trigger_source, icon: "⚙️" };
+                    const isActive = job.status === "locked" || job.status === "pending";
+
+                    return (
+                      <div key={job.id} className="card-surface p-3">
+                        <div className="flex items-start gap-2.5">
+                          <span className="text-base shrink-0 mt-0.5">{jobMeta?.icon ?? "⚙️"}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2 mb-0.5">
+                              <p className="text-xs font-semibold text-foreground truncate">
+                                {jobMeta?.label ?? job.job_type}
+                              </p>
+                              <span className="text-xs font-bold whitespace-nowrap px-1.5 py-0.5 rounded-full"
+                                style={{ background: `${statusMeta.color}18`, color: statusMeta.color }}>
+                                {statusMeta.label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs" style={{ color: priorityMeta.color }}>
+                                {priorityMeta.badge} {priorityMeta.label}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {triggerMeta.icon} {triggerMeta.label}
+                              </span>
+                              {job.source_event && (
+                                <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+                                  {job.source_event}
+                                </span>
+                              )}
+                            </div>
+                            {job.error_summary && (
+                              <p className="text-xs mt-1 truncate" style={{ color: "hsl(0 65% 45%)" }}>
+                                ⚠️ {job.error_summary}
+                              </p>
+                            )}
+                            {job.output_summary && job.status === "done" && (
+                              <p className="text-xs mt-1 text-muted-foreground truncate">✓ {job.output_summary}</p>
+                            )}
+                            {job.retry_count > 0 && (
+                              <p className="text-xs mt-0.5 text-muted-foreground">
+                                Relancé {job.retry_count}× / max {job.max_retries}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-xs text-muted-foreground">
+                              {job.status === "pending"
+                                ? new Date(job.scheduled_at) <= new Date()
+                                  ? "Dû maintenant"
+                                  : `Prévu ${new Date(job.scheduled_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+                                : job.ended_at
+                                  ? new Date(job.ended_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+                                  : "—"}
+                            </p>
+                            {isActive && (
+                              <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse mt-1"
+                                style={{ background: "hsl(218 72% 55%)" }} />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+
+            {/* Heartbeat log */}
+            {heartbeats.length > 0 && (
+              <div className="card-surface p-4">
+                <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
+                  <Activity size={11} className="text-primary" /> Derniers heartbeats scheduler
+                </p>
+                <div className="space-y-1.5">
+                  {heartbeats.slice(0, 5).map((hb) => (
+                    <div key={hb.id} className="flex items-center gap-2 text-xs">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ background: hb.engine_status === "ok" ? "hsl(var(--success))" : hb.engine_status === "idle" ? "hsl(var(--muted-foreground))" : "hsl(38 80% 40%)" }} />
+                      <span className="text-muted-foreground">
+                        {new Date(hb.beat_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      <span className="flex-1 text-foreground">
+                        {hb.engine_status === "idle" ? "Inactif" : `${hb.jobs_completed} terminé${hb.jobs_completed !== 1 ? "s" : ""}`}
+                        {hb.jobs_failed > 0 && ` · ${hb.jobs_failed} échoué${hb.jobs_failed !== 1 ? "s" : ""}`}
+                        {hb.jobs_due > 0 && hb.jobs_claimed === 0 && ` · ${hb.jobs_due} en attente`}
+                      </span>
+                      <span className="text-muted-foreground/60">{hb.note || ""}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
             TAB: CHANNELS
         ══════════════════════════════════════════════════════════════════ */}
         {activeTab === "channels" && (
@@ -559,7 +784,7 @@ export default function Operations() {
                         background: job.enabled ? "hsl(0 65% 95%)" : "hsl(var(--success-light))",
                         color: job.enabled ? "hsl(0 65% 40%)" : "hsl(var(--success))",
                       }}>
-                      {job.enabled ? <Pause size={11} /> : <Play size={11} />}
+                      {job.enabled ? <XCircle size={11} /> : <Play size={11} />}
                     </button>
                   </div>
                 </div>
@@ -728,7 +953,7 @@ export default function Operations() {
             {memory.length > 0 && (
               <div className="card-surface p-4">
                 <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
-                  <Database size={11} className="text-primary" /> Ce que le cerveau a appris
+                  <Brain size={11} className="text-primary" /> Ce que le cerveau a appris
                 </p>
                 <div className="space-y-2">
                   {memory.slice(0, 5).map((m) => (
@@ -755,7 +980,7 @@ export default function Operations() {
                 <p className="text-sm text-muted-foreground">Aucune session active.</p>
                 <p className="text-xs text-muted-foreground mt-1">Lancez un cycle depuis l'onglet Cycles pour créer une session.</p>
                 <Link to="/agents" className="mt-3 text-xs font-semibold text-primary flex items-center gap-1 justify-center">
-                  Démarrer <ArrowRight size={10} />
+                  Démarrer <ChevronRight size={10} />
                 </Link>
               </div>
             )}
@@ -778,7 +1003,10 @@ export default function Operations() {
             {BRAIN_AGENTS.map((agent) => {
               const access = getEffectiveAccess(agent.id);
               const accessMeta = TOOL_ACCESS_META[access];
-              const matrix = DEFAULT_TOOL_MATRIX[agent.id] ?? {};
+              const matrix = Object.fromEntries(
+                ["lecture","preparation","assiste","semi-auto","etendu"]
+                  .map(level => [level, getEffectiveAccess(agent.id)])
+              );
 
               return (
                 <div key={agent.id} className="card-surface p-4">
