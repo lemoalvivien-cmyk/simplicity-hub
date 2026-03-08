@@ -5,191 +5,160 @@ const features = [
     icon: Target,
     name: "Missions",
     what: "Publiez ce que vous recherchez",
-    problem: "Vos apporteurs ne savent pas exactement qui vous cherchez",
-    benefit: "Chaque facilitateur sait précisément comment vous aider",
-    impact: "Plus d'introductions pertinentes, moins de bruit",
+    problem: "Vos apporteurs ne savent pas exactement qui vous cherchez.",
+    impact: "Plus d'introductions pertinentes, moins de bruit.",
     color: "hsl(218 72% 55%)",
-    bg: "hsl(218 72% 55% / 0.08)",
-    border: "hsl(218 72% 55% / 0.2)",
   },
   {
     icon: Send,
     name: "Introductions",
     what: "Mises en relation vérifiées",
-    problem: "Les intros informelles ne sont pas traçables et se perdent",
-    benefit: "Chaque introduction arrive structurée, avec contexte et contact",
-    impact: "Zéro intro perdue. Tout est suivi automatiquement",
-    color: "hsl(152 62% 40%)",
-    bg: "hsl(152 62% 40% / 0.08)",
-    border: "hsl(152 62% 40% / 0.2)",
+    problem: "Les intros informelles ne sont pas traçables et se perdent.",
+    impact: "Zéro intro perdue. Tout est suivi automatiquement.",
+    color: "hsl(152 62% 42%)",
   },
   {
     icon: CheckCircle2,
     name: "Validation",
     what: "Qualifiez ce qui vaut votre temps",
     problem: "Comment savoir si une intro est sérieuse avant d'investir du temps ?",
-    benefit: "Un processus clair de qualification en 1 clic",
-    impact: "Vous ne traitez que ce qui mérite votre attention",
+    impact: "Vous ne traitez que ce qui mérite votre attention.",
     color: "hsl(38 95% 50%)",
-    bg: "hsl(38 95% 50% / 0.08)",
-    border: "hsl(38 95% 50% / 0.2)",
   },
   {
     icon: TrendingUp,
     name: "Gains",
-    what: "Commissions tracées pour les facilitateurs",
-    problem: "Les apporteurs ne savent jamais si et quand ils seront payés",
-    benefit: "Chaque gain est lié à une intro, une validation, une preuve",
-    impact: "Confiance maximale des apporteurs → plus d'intros actives",
+    what: "Commissions tracées en temps réel",
+    problem: "Les apporteurs ne savent jamais si et quand ils seront payés.",
+    impact: "Confiance maximale des apporteurs → plus d'intros actives.",
     color: "hsl(24 100% 55%)",
-    bg: "hsl(24 100% 55% / 0.08)",
-    border: "hsl(24 100% 55% / 0.2)",
   },
   {
     icon: Users,
     name: "Contacts & Import",
-    what: "Votre base de prospects centralisée",
-    problem: "Vos contacts sont éparpillés entre CSV, LinkedIn et votre mémoire",
-    benefit: "Import rapide, enrichissement auto, segmentation immédiate",
-    impact: "Votre base devient actionnable dès le premier jour",
+    what: "Base de prospects centralisée",
+    problem: "Vos contacts sont éparpillés entre CSV, LinkedIn et votre mémoire.",
+    impact: "Votre base devient actionnable dès le premier jour.",
     color: "hsl(262 72% 58%)",
-    bg: "hsl(262 72% 58% / 0.08)",
-    border: "hsl(262 72% 58% / 0.2)",
   },
   {
     icon: Megaphone,
     name: "Campagnes & Actions",
     what: "Séquences de prospection automatisées",
-    problem: "Les relances manuelles ne se font jamais, ou trop tard",
-    benefit: "Des séquences qui tournent seules sur vos contacts ciblés",
-    impact: "Plus de contacts touchés, moins d'effort manuel",
+    problem: "Les relances manuelles ne se font jamais, ou trop tard.",
+    impact: "Plus de contacts touchés, moins d'effort manuel.",
     color: "hsl(218 72% 62%)",
-    bg: "hsl(218 72% 62% / 0.08)",
-    border: "hsl(218 72% 62% / 0.2)",
   },
   {
     icon: Brain,
     name: "OpenClaw",
     what: "Cerveau central de prospection autonome",
-    problem: "Vous n'avez pas le temps de prospecter tous les jours",
-    benefit: "Il détecte les opportunités et prépare tout pendant que vous dormez",
-    impact: "Prospection continue sans effort humain quotidien",
+    problem: "Vous n'avez pas le temps de prospecter tous les jours.",
+    impact: "Prospection continue sans effort humain quotidien.",
     color: "hsl(218 80% 65%)",
-    bg: "hsl(218 80% 65% / 0.08)",
-    border: "hsl(218 80% 65% / 0.2)",
   },
   {
     icon: Radar,
     name: "Deal Radar",
-    what: "Détection de signaux d'intention d'achat",
-    problem: "Vous contactez des prospects froids et essuyez des refus",
-    benefit: "Il identifie ceux qui montrent des signaux d'intérêt réels",
-    impact: "Vos efforts vont là où les chances de conversion sont les plus hautes",
+    what: "Signaux d'intention d'achat",
+    problem: "Vous contactez des prospects froids et essuyez des refus.",
+    impact: "Vos efforts vont là où les chances de conversion sont les plus hautes.",
     color: "hsl(152 62% 42%)",
-    bg: "hsl(152 62% 42% / 0.08)",
-    border: "hsl(152 62% 42% / 0.2)",
   },
   {
     icon: ShoppingBag,
     name: "Marketplace facilitateurs",
     what: "Réseau d'apporteurs actifs et qualifiés",
-    problem: "Vous ne savez pas qui dans votre réseau peut vous apporter des clients",
-    benefit: "Des facilitateurs scorés, avec historique et taux de conversion visible",
-    impact: "Vous choisissez les meilleurs apporteurs pour chaque mission",
+    problem: "Vous ne savez pas qui peut vous apporter des clients.",
+    impact: "Vous choisissez les meilleurs apporteurs pour chaque mission.",
     color: "hsl(24 100% 58%)",
-    bg: "hsl(24 100% 58% / 0.08)",
-    border: "hsl(24 100% 58% / 0.2)",
   },
   {
     icon: Link2,
     name: "Diffusion passive",
     what: "Liens traqués pour partager votre offre",
-    problem: "Vous partagez votre offre mais ne savez jamais qui clique ni d'où vient la conversion",
-    benefit: "Chaque lien est traçable, chaque clic est enregistré",
-    impact: "Votre réseau travaille pour vous même quand vous dormez",
+    problem: "Vous partagez votre offre mais ne savez jamais qui clique.",
+    impact: "Votre réseau travaille pour vous même quand vous dormez.",
     color: "hsl(38 95% 52%)",
-    bg: "hsl(38 95% 52% / 0.08)",
-    border: "hsl(38 95% 52% / 0.2)",
   },
   {
     icon: Bot,
-    name: "JARVIS — Assistant IA",
-    what: "Votre copilote qui sait toujours quoi faire",
-    problem: "Vous arrivez dans la plateforme et ne savez pas par où commencer",
-    benefit: "Il priorise vos actions, améliore vos messages, vous guide",
-    impact: "Vous ne perdez jamais de temps à réfléchir à la prochaine étape",
+    name: "JARVIS",
+    what: "Copilote IA qui sait toujours quoi faire",
+    problem: "Vous arrivez dans la plateforme et ne savez pas par où commencer.",
+    impact: "Vous ne perdez jamais de temps à réfléchir à la prochaine étape.",
     color: "hsl(218 72% 68%)",
-    bg: "hsl(218 72% 68% / 0.08)",
-    border: "hsl(218 72% 68% / 0.2)",
   },
   {
     icon: LayoutDashboard,
     name: "Cockpit central",
     what: "Vue unifiée de toute votre acquisition",
-    problem: "Vous ne savez jamais où en est votre pipeline en temps réel",
-    benefit: "Tout remonte ici : intros, validations, gains, actions en cours",
+    problem: "Vous ne savez jamais où en est votre pipeline en temps réel.",
     impact: "Décisions plus rapides. Pilotage en temps réel. Zéro surprise.",
-    color: "hsl(218 55% 72%)",
-    bg: "hsl(218 55% 72% / 0.08)",
-    border: "hsl(218 55% 72% / 0.2)",
+    color: "hsl(218 55% 70%)",
   },
 ];
 
 export default function FeaturesValueSection() {
   return (
-    <section className="py-20 bg-muted">
+    <section className="py-20 md:py-24 bg-muted">
       <div className="container max-w-5xl">
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">Ce que vous obtenez</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Chaque fonctionnalité résout un vrai problème.
           </h2>
-          <p className="text-muted-foreground text-base max-w-xl mx-auto">
-            Pas de gadgets. Pas de fonctions dont vous n'avez pas besoin. Chaque module est traduit en valeur business réelle.
+          <p className="text-muted-foreground text-base max-w-lg mx-auto">
+            Pas de gadgets. Chaque module est traduit en valeur business réelle.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {features.map(({ icon: Icon, name, what, problem, benefit, impact, color, bg, border }) => (
-            <div
-              key={name}
-              className="bg-card rounded-2xl p-5 border flex flex-col gap-4"
-              style={{ borderColor: border }}
-            >
-              {/* Header */}
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: bg, border: `1px solid ${border}` }}
-                >
-                  <Icon size={16} style={{ color }} aria-hidden="true" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {features.map(({ icon: Icon, name, what, problem, impact, color }) => {
+            const bgAlpha = color.replace(")", " / 0.07)");
+            const borderAlpha = color.replace(")", " / 0.18)");
+            return (
+              <div
+                key={name}
+                className="bg-card rounded-2xl p-5 border flex flex-col gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                style={{ borderColor: borderAlpha }}
+              >
+                {/* Header */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: bgAlpha, border: `1px solid ${borderAlpha}` }}
+                  >
+                    <Icon size={15} style={{ color }} aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm leading-tight">{name}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{what}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-foreground text-sm">{name}</p>
-                  <p className="text-xs text-muted-foreground">{what}</p>
-                </div>
-              </div>
 
-              {/* Value rows */}
-              <div className="space-y-2.5 text-xs">
-                <div className="flex gap-2">
-                  <span className="shrink-0 text-muted-foreground font-medium w-20">Problème</span>
-                  <span className="text-foreground/80 leading-relaxed">{problem}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span className="shrink-0 text-muted-foreground font-medium w-20">Bénéfice</span>
-                  <span className="text-foreground/80 leading-relaxed">{benefit}</span>
-                </div>
-                <div
-                  className="flex gap-2 rounded-lg px-3 py-2"
-                  style={{ background: bg }}
-                >
-                  <span className="shrink-0 font-semibold w-20" style={{ color }}>Impact</span>
-                  <span className="leading-relaxed font-medium" style={{ color }}>{impact}</span>
+                {/* Separator */}
+                <div className="h-px bg-border" />
+
+                {/* Value rows */}
+                <div className="space-y-2.5 text-xs flex-1">
+                  <div>
+                    <p className="text-muted-foreground/70 font-medium uppercase tracking-wide text-[9px] mb-1">Problème</p>
+                    <p className="text-foreground/75 leading-relaxed">{problem}</p>
+                  </div>
+                  <div
+                    className="rounded-xl px-3 py-2.5"
+                    style={{ background: bgAlpha }}
+                  >
+                    <p className="font-medium uppercase tracking-wide text-[9px] mb-1" style={{ color: color.replace(")", " / 0.7)") }}>
+                      Impact business
+                    </p>
+                    <p className="font-semibold leading-relaxed" style={{ color }}>{impact}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
