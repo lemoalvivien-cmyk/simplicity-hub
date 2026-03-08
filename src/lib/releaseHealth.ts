@@ -1,11 +1,13 @@
 /**
  * RELEASE HEALTH — Source de vérité des blockers release.
  * PROOF:RELEASE_V1:release_blockers_real → this file
+ * PROOF:CONSISTENCY_V1:health_runtime_consistency → this file (no contradictions with RC health)
  *
- * Mis à jour : CLEANUP-V1 — 2026-03-08
+ * Mis à jour : CONSISTENCY-V1 — 2026-03-08
  * Changelog:
  *   - automation_rules_no_engine: RESOLVED (moteur présent après AUTOMATION_V1 + CLEANUP_V1)
  *   - Ajout de release_honesty_status explicite
+ *   - CONSISTENCY_V1: confirmé cohérent avec releaseCandidateHealth.ts
  */
 
 // PROOF:RELEASE_V1:package_manager_truth

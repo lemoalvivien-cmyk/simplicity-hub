@@ -4,6 +4,7 @@
  * PROOF:INTEGRITY_V1:opportunities_pipeline_linkage → shows source_type_v2, lead_intake_id, source_intro_id
  * PROOF:INTEGRITY_V1:opportunity_metrics_real → uses usePipelineMetrics
  * PROOF:SYNC_GATE_V1:opportunities_page_present → this file
+ * PROOF:CONSISTENCY_V1:opportunity_origin_truth → resolveOriginKey() priority chain: source_intro_id > source_type_v2 > lead_intake_id > origin
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";

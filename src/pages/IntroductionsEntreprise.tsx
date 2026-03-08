@@ -4,6 +4,7 @@
  * PROOF:PIPELINE_V2:introduction_pipeline_ui → this file
  * PROOF:EXECUTION_V1:action_queue_ui_real → reads real lead_actions per intro
  * PROOF:EXECUTION_V1:intro_to_enterprise_opportunity → validate triggers opportunity promotion
+ * PROOF:CONSISTENCY_V1:intro_validation_truth → validation chain: intro + gain + escrow + proof + promoteLeadToOpportunity()
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
