@@ -20,6 +20,7 @@ import BestAccessPanel from "@/components/graph/BestAccessPanel";
 import BestOfferToPush from "@/components/passive/BestOfferToPush";
 import NetworkValueMap from "@/components/passive/NetworkValueMap";
 import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
+import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/lib/formatLocale";
 import i18n from "@/lib/i18n";
