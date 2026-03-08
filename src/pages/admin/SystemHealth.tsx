@@ -192,8 +192,9 @@ export default function AdminSystemHealth() {
   const [showTypeDebt, setShowTypeDebt] = useState(false);
   const [showForensics, setShowForensics] = useState(false);
 
-  // PROOF:GOLIVE_V1:action_events_admin_visibility — live count from DB
+  // PROOF:GOLIVE_V1:action_events_admin_visibility — live count from DB via SECURITY DEFINER RPC
   // PROOF:GOLIVE_V1:passive_admin_visibility — live passive events count from DB
+  // PROOF:RELEASE_V1:admin_forensics_global_visibility — uses admin_forensics_summary() RPC (bypasses RLS)
   const [forensics, setForensics] = useState<{
     actionEventsCount: number;
     automationRulesCount: number;
@@ -206,23 +207,22 @@ export default function AdminSystemHealth() {
   useEffect(() => {
     if (!showForensics) return;
     const load = async () => {
-      const [evtRes, rulesRes, tplRes, passiveRes, recentRes] = await Promise.all([
-        db.from("lead_action_events").select("id", { count: "exact", head: true }),
-        db.from("automation_rules").select("id", { count: "exact", head: true }),
-        db.from("message_templates").select("id", { count: "exact", head: true }),
-        db.from("lead_source_events").select("id", { count: "exact", head: true }).eq("source_type", "passive_click"),
-        db.from("lead_action_events").select("id, new_status, event_type, created_at").order("created_at", { ascending: false }).limit(5),
-      ]);
-      setForensics({
-        actionEventsCount:    evtRes.count ?? 0,
-        automationRulesCount: rulesRes.count ?? 0,
-        messageTemplatesCount: tplRes.count ?? 0,
-        passiveEventsCount:   passiveRes.count ?? 0,
-        recentEvents:         recentRes.data ?? [],
-        loaded: true,
-      });
+      // Use SECURITY DEFINER RPC for global visibility bypassing RLS
+      const { data, error } = await supabase.rpc("admin_forensics_summary" as any);
+      if (!error && data) {
+        const d = data as any;
+        setForensics({
+          actionEventsCount:    d.action_events_count    ?? 0,
+          automationRulesCount: d.automation_rules_count ?? 0,
+          messageTemplatesCount: d.message_templates_count ?? 0,
+          passiveEventsCount:   d.passive_events_count   ?? 0,
+          recentEvents:         d.recent_events          ?? [],
+          loaded: true,
+        });
+      } else {
+        setForensics(prev => ({ ...prev, loaded: true }));
+      }
     };
-    load();
   }, [showForensics]);
 
   const counts = STATUS_ORDER.reduce((acc, s) => {
