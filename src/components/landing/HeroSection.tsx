@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Users, CheckCircle2, Shield, TrendingUp } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
+import { AB, track } from "@/lib/landingTracking";
 
 const trustItems = [
   { icon: CheckCircle2, label: "Introductions traçées" },
@@ -8,7 +9,29 @@ const trustItems = [
   { icon: TrendingUp, label: "Résultats mesurables" },
 ];
 
+// A/B copy variants
+const HEADLINE_VARIANTS = {
+  v1_clients: {
+    top: "Trouvez vos prochains clients.",
+    sub: "Via votre réseau. Via l'IA.\nDans un seul cockpit.",
+  },
+  v2_cockpit: {
+    top: "Un cockpit. Deux moteurs. Des clients.",
+    sub: "Prospection IA + réseau humain structuré.\nTout dans le même système.",
+  },
+};
+
+const CTA_VARIANTS = {
+  v1_demarrer: "Lancer ma première mission",
+  v2_activer: "Activer mon acquisition",
+};
+
 export default function HeroSection() {
+  const headlineVariant = AB.heroHeadline();
+  const ctaVariant = AB.heroCTA();
+  const copy = HEADLINE_VARIANTS[headlineVariant];
+  const ctaLabel = CTA_VARIANTS[ctaVariant];
+
   return (
     <section className="hero-bg pt-20 pb-16 md:pt-32 md:pb-28 relative overflow-hidden">
       {/* Atmospheric glow */}
@@ -39,34 +62,35 @@ export default function HeroSection() {
                 backgroundClip: "text",
               }}
             >
-              Trouvez vos prochains clients.
+              {copy.top}
             </span>
-            <span className="block text-[clamp(1.7rem,5vw,2.9rem)] text-white/90 mt-3 font-semibold">
-              Via votre réseau. Via l'IA.
-              <br className="hidden sm:block" /> Dans un seul cockpit.
+            <span className="block text-[clamp(1.55rem,4.5vw,2.6rem)] text-white/85 mt-3 font-semibold whitespace-pre-line">
+              {copy.sub}
             </span>
           </h1>
 
-          <p className="text-[clamp(1rem,2.5vw,1.18rem)] text-white/55 mb-9 max-w-xl mx-auto leading-[1.7] font-light px-2">
+          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/52 mb-9 max-w-lg mx-auto leading-[1.75] font-light px-2">
             Wiinup Max combine{" "}
             <span className="text-white/80 font-medium">prospection pilotée par IA</span> et{" "}
             <span className="text-white/80 font-medium">apport d'affaires structuré</span>.
             Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
 
-          {/* CTAs */}
+          {/* CTAs — clear hierarchy */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-9 px-2">
             <Link
               to="/pricing"
               className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
-              style={{ fontSize: "clamp(0.9rem, 2vw, 1rem)" }}
+              style={{ fontSize: "clamp(0.9rem, 2vw, 1.02rem)" }}
+              onClick={() => track("cta_hero_enterprise", { label: ctaLabel, variant: ctaVariant })}
             >
-              Je veux plus de clients
+              {ctaLabel}
               <ArrowRight size={17} />
             </Link>
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl font-medium text-sm text-white/60 border border-white/15 hover:border-white/30 hover:text-white/80 transition-all duration-200 w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl font-medium text-sm text-white/55 border border-white/12 hover:border-white/28 hover:text-white/75 transition-all duration-200 w-full sm:w-auto"
+              onClick={() => track("cta_hero_facilitator")}
             >
               <Users size={14} className="shrink-0" />
               Monétiser mon réseau — Gratuit
@@ -74,7 +98,7 @@ export default function HeroSection() {
           </div>
 
           {/* Trust bar */}
-          <div className="flex flex-wrap items-center justify-center gap-5 text-white/30 text-xs">
+          <div className="flex flex-wrap items-center justify-center gap-5 text-white/28 text-xs">
             {trustItems.map(({ icon: Icon, label }) => (
               <span key={label} className="flex items-center gap-1.5">
                 <Icon size={10} aria-hidden="true" /> {label}

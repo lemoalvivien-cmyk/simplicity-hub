@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Zap, ArrowRight } from "lucide-react";
 import PublicNav from "@/components/layout/PublicNav";
@@ -12,43 +13,49 @@ import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FAQSection from "@/components/landing/FAQSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
+import { initScrollTracking, track } from "@/lib/landingTracking";
 
 export default function LandingPage() {
+  useEffect(() => {
+    const cleanup = initScrollTracking();
+    return cleanup;
+  }, []);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <PublicNav />
 
-      {/* 1 — HERO */}
+      {/* 1 — HERO — Domination, promesse immédiate */}
       <HeroSection />
 
-      {/* 2 — PROBLÈMES */}
+      {/* 2 — PROBLÈMES — Identification de la douleur */}
       <ProblemSection />
 
-      {/* 3 — MÉCANISME / DOUBLE MOTEUR */}
+      {/* 3 — MÉCANISME — Double moteur, positionnement unique */}
       <MecanismeSection />
 
       {/* 4 — FONCTIONNALITÉS = VALEUR BUSINESS */}
       <FeaturesValueSection />
 
-      {/* 5 — COMMENT ÇA MARCHE (ENTREPRISE) */}
+      {/* 5 — COMMENT ÇA MARCHE (ENTREPRISE) — Flow simple */}
       <HowItWorksEntrepriseSection />
 
-      {/* 6 — FACILITATEUR */}
+      {/* 6 — FACILITATEUR — Parcours secondaire, clair et distinct */}
       <FacilitateurSection />
 
-      {/* 7 — PREUVES DE SÉRIEUX */}
+      {/* 7 — PREUVES DE SÉRIEUX — Crédibilité & traçabilité */}
       <ProofSection />
 
-      {/* 8 — ANTI-BULLSHIT / OBJECTIONS */}
+      {/* 8 — ANTI-BULLSHIT / OBJECTIONS — Lever les freins */}
       <AntiBullshitSection />
 
-      {/* 9 — PRICING */}
+      {/* 9 — PRICING — Offre claire, hiérarchie nette */}
       <PricingSection />
 
-      {/* 10 — FAQ */}
+      {/* 10 — FAQ — Derniers doutes */}
       <FAQSection />
 
-      {/* 11 — CTA FINAL */}
+      {/* 11 — CTA FINAL — Décision */}
       <FinalCTASection />
 
       {/* FOOTER */}
@@ -90,8 +97,9 @@ export default function LandingPage() {
           <Link
             to="/pricing"
             className="btn-cta w-full flex items-center justify-center gap-2 py-3.5 text-sm"
+            onClick={() => track("cta_sticky_mobile")}
           >
-            Je veux plus de clients
+            Lancer ma première mission
             <ArrowRight size={15} />
           </Link>
         </div>

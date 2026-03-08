@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, ArrowRight, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AB, track } from "@/lib/landingTracking";
 
 const entrepriseFeatures = [
   "Missions illimitées",
@@ -21,12 +22,30 @@ const facilitateurFeatures = [
   "Suivi des gains en temps réel",
   "Protection de chaque intro",
   "Score de confiance visible",
-  "Aucune commission prélevée",
+  "Aucune commission prélevée par la plateforme",
 ];
+
+// A/B pricing frame variants
+const PRICING_FRAME = {
+  v1_offre: {
+    badge: "Offre lancement",
+    headline: "Simple, honnête, transparent.",
+    sub: "L'offre entreprise est payante. L'accès facilitateur est gratuit. Il n'y a rien de caché.",
+    ctaLabel: (isLaunch: boolean) => isLaunch ? "Démarrer — 99 € / an" : "S'abonner — 490 € / an",
+  },
+  v2_investissement: {
+    badge: "Investissement acquisition",
+    headline: "Moins qu'un commercial junior. Pour tout un système.",
+    sub: "99 € pour activer prospection IA + réseau humain structuré + cockpit de suivi. Pour la première année.",
+    ctaLabel: (isLaunch: boolean) => isLaunch ? "Activer mon acquisition — 99 €" : "Activer mon acquisition — 490 €",
+  },
+};
 
 export default function PricingSection() {
   const [launchAvailable, setLaunchAvailable] = useState(true);
   const [slotsRemaining, setSlotsRemaining] = useState(100);
+  const pricingVariant = AB.pricingFrame();
+  const frame = PRICING_FRAME[pricingVariant];
 
   useEffect(() => {
     supabase
@@ -43,15 +62,15 @@ export default function PricingSection() {
   }, []);
 
   return (
-    <section className="py-20 bg-background">
+    <section className="py-20 bg-background" id="pricing">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
-          <p className="pill-tag mb-4 mx-auto w-fit">Tarifs</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">{frame.badge}</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
-            Simple, honnête, transparent.
+            {frame.headline}
           </h2>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
-            L'offre entreprise est payante. L'accès facilitateur est gratuit. Il n'y a rien de caché.
+            {frame.sub}
           </p>
         </div>
 
@@ -66,7 +85,7 @@ export default function PricingSection() {
               {launchAvailable && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold mb-4">
                   <Zap size={10} />
-                  Offre lancement — {slotsRemaining} place{slotsRemaining > 1 ? "s" : ""} restante{slotsRemaining > 1 ? "s" : ""}
+                  {slotsRemaining} place{slotsRemaining > 1 ? "s" : ""} restante{slotsRemaining > 1 ? "s" : ""} — Offre lancement
                 </div>
               )}
               <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
@@ -83,8 +102,8 @@ export default function PricingSection() {
               </div>
               <p className="text-white/45 text-xs">
                 {launchAvailable
-                  ? "Offre réservée aux 100 premières entreprises"
-                  : "Abonnement annuel renouvelable"}
+                  ? "Réservée aux 100 premières entreprises — accès complet immédiat"
+                  : "Abonnement annuel — accès complet"}
               </p>
             </div>
 
@@ -101,12 +120,13 @@ export default function PricingSection() {
               <Link
                 to="/pricing"
                 className="btn-cta w-full text-center flex items-center justify-center gap-2 py-4"
+                onClick={() => track("cta_pricing_enterprise", { variant: pricingVariant })}
               >
-                {launchAvailable ? "Je démarre — 99 € / an" : "Je m'abonne — 490 € / an"}
+                {frame.ctaLabel(launchAvailable)}
                 <ArrowRight size={16} />
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
-                Annulation libre · Aucun engagement
+                Annulation libre à tout moment · Aucun engagement
               </p>
             </div>
           </div>
@@ -118,11 +138,11 @@ export default function PricingSection() {
               className="px-7 pt-7 pb-5"
               style={{ background: "var(--gradient-accent)" }}
             >
-              <p className="text-white/80 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur</p>
+              <p className="text-white/80 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur / Apporteur</p>
               <div className="flex items-end gap-2 mb-1">
                 <span className="font-display font-bold text-5xl text-white">Gratuit</span>
               </div>
-              <p className="text-white/65 text-xs mt-1">Pour toujours · Sans carte bancaire</p>
+              <p className="text-white/65 text-xs mt-1">Pour toujours · Sans carte bancaire · Zéro frais caché</p>
             </div>
 
             {/* Features */}
@@ -137,24 +157,25 @@ export default function PricingSection() {
               </ul>
               <Link
                 to="/signup"
-                className="w-full text-center flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-sm transition-colors border-2"
+                className="w-full text-center flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-sm transition-all duration-200 border-2 hover:opacity-90"
                 style={{
                   borderColor: "hsl(var(--accent))",
                   color: "hsl(var(--accent))",
                 }}
+                onClick={() => track("cta_pricing_facilitator")}
               >
                 <Users size={15} />
-                Créer mon compte — Gratuit
+                Créer mon accès facilitateur — Gratuit
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
-                Ce n'est pas du MLM · Apport d'affaires structuré
+                Ce n'est pas du MLM · Apport d'affaires structuré et traçable
               </p>
             </div>
           </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Paiement sécurisé · Données protégées · Facturation annuelle
+          Paiement sécurisé · Données protégées · Facturation annuelle · Aucun frais caché
         </p>
       </div>
     </section>
