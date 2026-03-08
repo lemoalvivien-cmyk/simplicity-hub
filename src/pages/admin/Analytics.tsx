@@ -92,8 +92,8 @@ export default function AdminAnalytics() {
       ]);
 
       // ── Reactivation jobs pending ─────────────────────────────────────────
-      const { count: reactivationPending } = await supabase
-        .from("reactivation_jobs" as "profiles")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { count: reactivationPending } = await (supabase.from("reactivation_jobs") as any)
         .select("*", { count: "exact", head: true })
         .eq("status", "pending");
 
