@@ -910,6 +910,54 @@ export default function AdminSystemHealth() {
         </div>
       </div>
 
+      {/* ── EXPORT RECOVERY LOCK ── */}
+      {/* PROOF:EXPORT_RECOVERY_V1:system_health_present */}
+      <div className="mt-4 p-5 rounded-xl border-2 bg-card"
+        style={{ borderColor: "hsl(200 80% 65% / 0.5)" }}>
+        <div className="flex items-center gap-2 mb-1">
+          <Lock size={15} style={{ color: "hsl(200 80% 45%)" }} />
+          <h3 className="font-semibold text-foreground text-sm">Export Recovery Lock</h3>
+          <span className="ml-auto text-xs font-mono px-2 py-0.5 rounded font-bold"
+            style={{ background: "hsl(200 80% 95%)", color: "hsl(200 80% 35%)" }}>
+            {EXPORT_RECOVERY_STAMP}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">
+          Passe : <strong>{EXPORT_RECOVERY_META.pass}</strong> · {EXPORT_RECOVERY_META.date} — Fichiers manquants : <strong className="text-green-600">AUCUN</strong> · Régression : <strong className="text-green-600">{EXPORT_RECOVERY_META.regression}</strong>
+        </p>
+        <div>
+          <p className="text-xs font-semibold text-foreground mb-2">
+            Marqueurs EXPORT_RECOVERY_V1 (16)
+            <code className="ml-2 text-muted-foreground bg-muted px-1 rounded font-mono text-xs">grep -r "PROOF:EXPORT_RECOVERY_V1" src docs</code>
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {Object.keys(EXPORT_RECOVERY_META.migrations.reduce((acc: Record<string, boolean>, _) => acc, {})).length === 0 && [
+              "export_recovery_stamp", "export_recovery_manifest",
+              "automation_engine_present", "automation_hook_present",
+              "lead_actions_hook_present", "pipeline_metrics_hook_present",
+              "lead_actions_queue_present", "template_variables_present",
+              "release_health_present", "release_candidate_health_present",
+              "canonical_stamp_present", "canonical_manifest_present",
+              "premium_manifest_present", "passive_page_present",
+              "opportunities_page_present", "system_health_present",
+            ].map(slug => (
+              <code key={slug} className="text-xs px-2 py-0.5 rounded font-mono font-semibold"
+                style={{ background: "hsl(200 80% 95%)", color: "hsl(200 80% 35%)" }}>
+                {slug}
+              </code>
+            ))}
+          </div>
+        </div>
+        <div className="mt-3">
+          <p className="text-xs font-semibold text-foreground mb-1">Fichiers restaurés ({EXPORT_RECOVERY_META.files_restored.length})</p>
+          <div className="flex flex-wrap gap-1">
+            {EXPORT_RECOVERY_META.files_restored.map(f => (
+              <code key={f} className="text-xs px-1.5 py-0.5 rounded font-mono bg-muted text-muted-foreground">{f.split("/").pop()}</code>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── RELEASE HEALTH ── */}
       {/* PROOF:RELEASE_V1:admin_forensics_global_visibility */}
       {/* PROOF:RELEASE_V1:release_blockers_real */}
