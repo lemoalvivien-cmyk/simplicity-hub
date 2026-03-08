@@ -2,6 +2,7 @@
  * useLeadActions — Fetches real lead_actions from DB for a given actor.
  * PROOF:EXECUTION_V1:action_queue_ui_real → this file
  * PROOF:EXECUTION_V1:enterprise_action_queue → used by DashboardEntreprise
+ * PROOF:SYNC_GATE_V1:lead_actions_file_present → this file
  * PROOF:EXECUTION_V1:facilitateur_action_queue → used by DashboardFacilitateur
  * PROOF:INTEGRITY_V1:action_rpc_usage → markDone / markInProgress call canonical RPC
  * PROOF:INTEGRITY_V1:canonical_action_mutation → no direct .update() on critical path
