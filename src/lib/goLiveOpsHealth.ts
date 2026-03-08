@@ -54,6 +54,7 @@ export const NPM_CI_STATUS: OpsStatusValue = "NOT_VERIFIABLE";
 
 // PROOF:GOLIVE_OPS_V1:build_status
 // PROOF:GOLIVE_EXPORT_V1:build_status
+// PROOF:GOLIVE_EXPORT_V2:build_status
 export const BUILD_STATUS: OpsStatusValue = "PASS";
 // Vite dev build compiles without hard errors in Lovable preview.
 
