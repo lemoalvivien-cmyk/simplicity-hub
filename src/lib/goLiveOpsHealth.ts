@@ -104,6 +104,7 @@ export const TEMPLATE_SUBSTITUTION_MODE: OpsStatusValue = "CLIENT_ONLY";
 
 // PROOF:GOLIVE_OPS_V1:top_blockers
 // PROOF:GOLIVE_EXPORT_V1:top_blockers
+// PROOF:GOLIVE_EXPORT_V2:top_blockers
 export const OPS_CHECKS: OpsCheck[] = [
   // ── HARD BLOCKERS ────────────────────────────────────────────────────────
   {
