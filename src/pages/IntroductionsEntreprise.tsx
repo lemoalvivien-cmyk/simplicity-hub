@@ -309,17 +309,29 @@ export default function IntroductionsEntreprise() {
         if (l.introduction_id) leadsMap[l.introduction_id] = l;
       });
 
-      const enriched: IntroReçue[] = introData.map((i: IntroReçue) => ({
-        ...i,
-        mission_titre: i.mission_id ? missionsMap[i.mission_id] : null,
-        facilitateur_prenom: profilesMap[i.facilitateur_id] || null,
-        gain_id: gainsMap[i.id] || null,
-        lead_qualification_status: leadsMap[i.id]?.qualification_status ?? null,
-        lead_next_best_action: leadsMap[i.id]?.next_best_action ?? null,
-        lead_dedup_status: leadsMap[i.id]?.dedup_status ?? null,
-        lead_intake_id: leadsMap[i.id]?.id ?? null,
-        lead_opportunity_id: leadsMap[i.id]?.linked_opportunity_id ?? null,
-      }));
+      // Build map: lead_intake_id → first open action
+      // PROOF:EXECUTION_V1:action_queue_ui_real
+      const actionsMap: Record<string, { id: string; action_type: NextBestAction; status: string; priority: string }> = {};
+      (actionsRes.data || []).forEach((a: { id: string; lead_intake_id: string; action_type: NextBestAction; status: string; priority: string }) => {
+        if (!actionsMap[a.lead_intake_id]) actionsMap[a.lead_intake_id] = a;
+      });
+
+      const enriched: IntroReçue[] = introData.map((i: IntroReçue) => {
+        const lead = leadsMap[i.id];
+        const activeAction = lead ? actionsMap[lead.id] ?? null : null;
+        return {
+          ...i,
+          mission_titre: i.mission_id ? missionsMap[i.mission_id] : null,
+          facilitateur_prenom: profilesMap[i.facilitateur_id] || null,
+          gain_id: gainsMap[i.id] || null,
+          lead_qualification_status: lead?.qualification_status ?? null,
+          lead_next_best_action: lead?.next_best_action ?? null,
+          lead_dedup_status: lead?.dedup_status ?? null,
+          lead_intake_id: lead?.id ?? null,
+          lead_opportunity_id: lead?.linked_opportunity_id ?? null,
+          active_lead_action: activeAction,
+        };
+      });
 
       setIntros(enriched);
       setLoading(false);
