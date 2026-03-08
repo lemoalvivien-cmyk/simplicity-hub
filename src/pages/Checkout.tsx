@@ -35,11 +35,14 @@ export default function Checkout() {
   const [localLaunchAvailable, setLocalLaunchAvailable] = useState(true);
   const [localSlotsRemaining, setLocalSlotsRemaining] = useState(100);
 
+  // PASSE E: refresh subscription immediately when Stripe redirects back with ?success=true
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       const offerParam = searchParams.get("offer");
       setSuccessType(offerParam === "launch" ? "stripe_launch" : offerParam === "standard" ? "stripe_standard" : "promo");
       setStep("success");
+      // Trigger immediate subscription refresh — don't wait for the 5-min interval
+      refresh();
     }
     supabase.from("launch_quota").select("total_slots, used_slots").single().then(({ data }) => {
       if (data) {
@@ -48,7 +51,7 @@ export default function Checkout() {
         setLocalSlotsRemaining(remaining);
       }
     });
-  }, [searchParams]);
+  }, [searchParams, refresh]);
 
   const effectiveLaunchAvailable = user ? launchAvailable : localLaunchAvailable;
   const effectiveSlotsRemaining = user ? launchSlotsRemaining : localSlotsRemaining;
