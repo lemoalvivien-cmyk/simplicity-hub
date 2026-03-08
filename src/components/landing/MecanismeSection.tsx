@@ -1,21 +1,25 @@
-import { Brain, Users, BarChart3 } from "lucide-react";
+import { Brain, Users, BarChart3, ArrowDown } from "lucide-react";
 
 export default function MecanismeSection() {
   return (
     <section className="py-20 md:py-24 bg-background">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
-          <p className="pill-tag mb-4 mx-auto w-fit">Le mécanisme</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">Comment ça fonctionne</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Un double moteur. Un seul cockpit.
           </h2>
-          <p className="text-muted-foreground text-base max-w-xl mx-auto">
-            Ce n'est pas un CRM. Ce n'est pas un outil d'emailing. C'est une infrastructure d'acquisition qui combine deux moteurs complémentaires.
+          <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed">
+            Ce n'est pas un CRM. Ce n'est pas un outil d'emailing.{" "}
+            <strong className="text-foreground font-semibold">
+              C'est une infrastructure d'acquisition
+            </strong>{" "}
+            qui active deux sources d'opportunités en parallèle.
           </p>
         </div>
 
         {/* Two engines */}
-        <div className="grid md:grid-cols-2 gap-4 mb-4">
+        <div className="grid md:grid-cols-2 gap-4 mb-3">
           {/* Moteur 1 */}
           <div
             className="rounded-2xl overflow-hidden transition-shadow duration-200 hover:shadow-xl"
@@ -42,9 +46,9 @@ export default function MecanismeSection() {
                   </p>
                 </div>
               </div>
-              <p className="text-white/50 text-sm leading-relaxed">
-                OpenClaw prospecte pendant que vous dormez. Il détecte les signaux, prépare les messages,
-                pilote vos campagnes sans intervention manuelle.
+              <p className="text-white/55 text-sm leading-relaxed">
+                OpenClaw prospecte pendant que vous dormez. Il détecte les signaux d'intention,
+                rédige les messages, pilote vos campagnes — sans intervention manuelle.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
@@ -61,7 +65,7 @@ export default function MecanismeSection() {
                     style={{ background: "hsl(218 72% 55%)" }}
                     aria-hidden="true"
                   />
-                  <span className="text-sm text-white/65">{item}</span>
+                  <span className="text-sm text-white/68">{item}</span>
                 </li>
               ))}
             </ul>
@@ -93,9 +97,9 @@ export default function MecanismeSection() {
                   </p>
                 </div>
               </div>
-              <p className="text-white/50 text-sm leading-relaxed">
-                Un réseau de facilitateurs actifs recommande votre offre à leurs contacts.
-                Chaque introduction est tracée, vérifiée et prouvable.
+              <p className="text-white/55 text-sm leading-relaxed">
+                Un réseau de facilitateurs actifs recommande votre offre à leurs contacts qualifiés.
+                Chaque introduction est tracée, vérifiée, et prouvable.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
@@ -103,29 +107,34 @@ export default function MecanismeSection() {
                 "Marketplace de facilitateurs qualifiés",
                 "Introductions vérifiées avant livraison",
                 "Protection de chaque mise en relation",
-                "Gains traçables en temps réel",
+                "Gains traçables et visibles en temps réel",
                 "Validation en un clic, sans ambiguïté",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-3">
                   <span
-                    className="w-1 h-1 rounded-full shrink-0"
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
                     style={{ background: "hsl(24 100% 60%)" }}
                     aria-hidden="true"
                   />
-                  <span className="text-sm text-white/65">{item}</span>
+                  <span className="text-sm text-white/68">{item}</span>
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
+        {/* Arrow connector */}
+        <div className="flex justify-center -my-1">
+          <ArrowDown size={18} className="text-muted-foreground/30" />
+        </div>
+
         {/* Cockpit central — bridge */}
         <div
-          className="rounded-2xl p-5 md:p-6 text-center"
+          className="rounded-2xl p-5 md:p-6 text-center mt-3"
           style={{
             background: "linear-gradient(135deg, hsl(218 50% 8%), hsl(218 45% 12%))",
-            border: "1px solid hsl(218 40% 24% / 0.6)",
-            boxShadow: "0 2px 12px hsl(218 72% 5% / 0.4)",
+            border: "1px solid hsl(218 40% 28% / 0.5)",
+            boxShadow: "0 2px 12px hsl(218 72% 5% / 0.4), 0 0 0 1px hsl(218 72% 45% / 0.06)",
           }}
         >
           <div className="flex items-center justify-center gap-2.5 mb-2">
@@ -137,9 +146,9 @@ export default function MecanismeSection() {
             </div>
             <p className="font-display font-bold text-white text-base">Cockpit central</p>
           </div>
-          <p className="text-white/45 text-sm max-w-md mx-auto leading-relaxed">
+          <p className="text-white/50 text-sm max-w-md mx-auto leading-relaxed">
             Les deux moteurs remontent dans le même tableau de bord.
-            Validation, suivi, gains, priorités — tout est là. JARVIS vous dit toujours quoi faire ensuite.
+            Validation, suivi, gains, priorités — tout est visible. JARVIS vous dit toujours quoi faire ensuite.
           </p>
         </div>
       </div>
