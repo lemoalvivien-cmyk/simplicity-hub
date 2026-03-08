@@ -3,9 +3,12 @@
  * PROOF:EXECUTION_V1:action_queue_ui_real → this file
  * PROOF:EXECUTION_V1:enterprise_action_queue → used by DashboardEntreprise
  * PROOF:EXECUTION_V1:facilitateur_action_queue → used by DashboardFacilitateur
+ * PROOF:INTEGRITY_V1:action_rpc_usage → markDone / markInProgress call canonical RPC
+ * PROOF:INTEGRITY_V1:canonical_action_mutation → no direct .update() on critical path
  */
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/lib/supabase";
 
 export type ActionStatus = "open" | "in_progress" | "done" | "superseded" | "cancelled";
@@ -31,6 +34,11 @@ export interface LeadAction {
   created_at: string;
   updated_at: string;
   completed_at: string | null;
+  // Joined context fields (from lead_intakes join)
+  person_name?: string | null;
+  company_name?: string | null;
+  source_type?: string | null;
+  linked_opportunity_id?: string | null;
 }
 
 interface UseLeadActionsReturn {
@@ -39,11 +47,13 @@ interface UseLeadActionsReturn {
   urgentCount: number;
   loading: boolean;
   reload: () => void;
-  markDone: (actionId: string) => Promise<void>;
+  markDone: (actionId: string, note?: string) => Promise<void>;
   markInProgress: (actionId: string) => Promise<void>;
+  markCancelled: (actionId: string, note?: string) => Promise<void>;
 }
 
-// PROOF:EXECUTION_V1:action_status_mutations → markDone / markInProgress
+// PROOF:EXECUTION_V1:action_status_mutations → markDone / markInProgress / markCancelled
+// PROOF:INTEGRITY_V1:action_rpc_usage → all mutations use canonical RPC update_lead_action_status
 export function useLeadActions(statusFilter: ActionStatus[] = ["open", "in_progress"]): UseLeadActionsReturn {
   const { user } = useAuth();
   const [actions, setActions] = useState<LeadAction[]>([]);
@@ -56,17 +66,36 @@ export function useLeadActions(statusFilter: ActionStatus[] = ["open", "in_progr
 
     const load = async () => {
       setLoading(true);
-      // PROOF:EXECUTION_V1:action_queue_ui_real — reads real lead_actions table
+      // PROOF:EXECUTION_V1:action_queue_ui_real — reads real lead_actions table with context join
+      // PROOF:INTEGRITY_V1:action_context_ui — join with lead_intakes for business context
       const { data } = await db
         .from("lead_actions")
-        .select("*")
+        .select(`
+          *,
+          lead_intakes!lead_actions_lead_intake_id_fkey (
+            person_name,
+            company_name,
+            source_type,
+            linked_opportunity_id
+          )
+        `)
         .eq("actor_user_id", user.id)
         .in("status", statusFilter)
         .order("updated_at", { ascending: false })
         .limit(50);
 
       if (!cancelled) {
-        setActions((data ?? []) as LeadAction[]);
+        const mapped = (data ?? []).map((row: Record<string, unknown>) => {
+          const intake = row.lead_intakes as Record<string, unknown> | null;
+          return {
+            ...row,
+            person_name: intake?.person_name ?? null,
+            company_name: intake?.company_name ?? null,
+            source_type: intake?.source_type ?? null,
+            linked_opportunity_id: intake?.linked_opportunity_id ?? null,
+          } as LeadAction;
+        });
+        setActions(mapped);
         setLoading(false);
       }
     };
@@ -75,24 +104,32 @@ export function useLeadActions(statusFilter: ActionStatus[] = ["open", "in_progr
     return () => { cancelled = true; };
   }, [user, tick, statusFilter.join(",")]);
 
-  // PROOF:EXECUTION_V1:action_status_mutations
-  const markDone = useCallback(async (actionId: string) => {
+  // PROOF:INTEGRITY_V1:canonical_action_mutation
+  // PROOF:INTEGRITY_V1:action_rpc_usage
+  // All status mutations go through canonical RPC — no direct .update() calls
+  const callCanonicalRpc = useCallback(async (actionId: string, newStatus: string, note?: string) => {
     if (!user) return;
-    await db.from("lead_actions")
-      .update({ status: "done", completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-      .eq("id", actionId)
-      .eq("actor_user_id", user.id);
-    setActions(prev => prev.map(a => a.id === actionId ? { ...a, status: "done" as ActionStatus } : a));
+    const { data } = await supabase.rpc("update_lead_action_status", {
+      p_action_id: actionId,
+      p_new_status: newStatus,
+      p_actor_id: user.id,
+      p_note: note ?? null,
+    });
+    if (data) {
+      setActions(prev => prev.map(a =>
+        a.id === actionId ? { ...a, status: newStatus as ActionStatus } : a
+      ));
+    }
   }, [user]);
 
-  const markInProgress = useCallback(async (actionId: string) => {
-    if (!user) return;
-    await db.from("lead_actions")
-      .update({ status: "in_progress", updated_at: new Date().toISOString() })
-      .eq("id", actionId)
-      .eq("actor_user_id", user.id);
-    setActions(prev => prev.map(a => a.id === actionId ? { ...a, status: "in_progress" as ActionStatus } : a));
-  }, [user]);
+  const markDone = useCallback((actionId: string, note?: string) =>
+    callCanonicalRpc(actionId, "done", note), [callCanonicalRpc]);
+
+  const markInProgress = useCallback((actionId: string) =>
+    callCanonicalRpc(actionId, "in_progress"), [callCanonicalRpc]);
+
+  const markCancelled = useCallback((actionId: string, note?: string) =>
+    callCanonicalRpc(actionId, "cancelled", note), [callCanonicalRpc]);
 
   const openCount = actions.filter(a => a.status === "open").length;
   const urgentCount = actions.filter(a => a.priority === "urgent" || a.priority === "high").length;
@@ -105,5 +142,6 @@ export function useLeadActions(statusFilter: ActionStatus[] = ["open", "in_progr
     reload: () => setTick(t => t + 1),
     markDone,
     markInProgress,
+    markCancelled,
   };
 }

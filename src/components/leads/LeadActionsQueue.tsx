@@ -1,10 +1,13 @@
 /**
- * LeadActionsQueue — Renders real lead_actions from the DB.
+ * LeadActionsQueue — Renders real lead_actions from the DB with business context.
  * PROOF:EXECUTION_V1:action_queue_ui_real → this file
  * PROOF:EXECUTION_V1:enterprise_dashboard_actions → used in DashboardEntreprise
  * PROOF:EXECUTION_V1:facilitateur_dashboard_actions → used in DashboardFacilitateur
+ * PROOF:INTEGRITY_V1:action_context_ui → shows lead/company name, source, opportunity link
+ * PROOF:INTEGRITY_V1:action_rpc_usage → mutations via canonical RPC (from useLeadActions)
  */
-import { Zap, CheckCircle2, PlayCircle, Loader2, RefreshCw, AlertCircle, Mail, Phone, Star, ArrowUpCircle } from "lucide-react";
+import { Building2, User, Zap, CheckCircle2, PlayCircle, Loader2, RefreshCw, AlertCircle, Mail, Phone, Star, ArrowUpCircle, XCircle, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useLeadActions, type ActionType, type ActionStatus } from "@/hooks/useLeadActions";
 
 // PROOF:EXECUTION_V1:action_queue_ui_real
@@ -13,7 +16,7 @@ const ACTION_LABELS: Record<ActionType, string> = {
   enrich_lead: "Compléter les données",
   contact_email_draft: "Rédiger un email",
   contact_manual_call: "Appeler manuellement",
-  request_facilitator_precision: "Demander précision",
+  request_facilitator_precision: "Demander précision au facilitateur",
   promote_to_opportunity: "Promouvoir en opportunité",
 };
 
@@ -24,6 +27,14 @@ const ACTION_ICONS: Record<ActionType, React.ReactNode> = {
   contact_manual_call: <Phone size={11} />,
   request_facilitator_precision: <Star size={11} />,
   promote_to_opportunity: <ArrowUpCircle size={11} />,
+};
+
+const SOURCE_LABELS: Record<string, string> = {
+  introduction: "Introduction",
+  import: "Import CSV",
+  passive_click: "Signal passif",
+  manual: "Manuel",
+  radar: "Radar",
 };
 
 const PRIORITY_COLORS: Record<string, { color: string; bg: string }> = {
@@ -58,6 +69,7 @@ export default function LeadActionsQueue({
   title = "File d'actions",
 }: LeadActionsQueueProps) {
   // PROOF:EXECUTION_V1:action_queue_ui_real — reads real lead_actions table
+  // PROOF:INTEGRITY_V1:action_rpc_usage — mutations go via canonical RPC
   const { actions, openCount, urgentCount, loading, markDone, markInProgress } = useLeadActions(statusFilter);
 
   const visible = actions.slice(0, limit);
@@ -102,25 +114,59 @@ export default function LeadActionsQueue({
           const label = ACTION_LABELS[action.action_type] ?? action.action_type;
           const isDone = action.status === "done";
 
+          // PROOF:INTEGRITY_V1:action_context_ui — business context display
+          const entityLabel = action.company_name || action.person_name;
+          const sourceLabel = action.source_type ? (SOURCE_LABELS[action.source_type] ?? action.source_type) : null;
+          const hasOpp = !!action.linked_opportunity_id;
+
           return (
             <div
               key={action.id}
-              className={`flex items-center gap-3 p-3 rounded-xl border transition-opacity ${isDone ? "opacity-50" : ""}`}
+              className={`flex items-start gap-3 p-3 rounded-xl border transition-opacity ${isDone ? "opacity-50" : ""}`}
               style={{ borderColor: "hsl(var(--border))", background: priorityCfg.bg }}
             >
               <span
-                className="inline-flex items-center justify-center w-7 h-7 rounded-lg shrink-0"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-lg shrink-0 mt-0.5"
                 style={{ background: "hsl(var(--background))", color: priorityCfg.color }}
               >
                 {icon}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-foreground truncate">{label}</p>
+                <p className="text-xs font-semibold text-foreground">{label}</p>
+                {/* PROOF:INTEGRITY_V1:action_context_ui — entity + source context */}
                 {!compact && (
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {STATUS_LABELS[action.status]}
-                    {action.reason && ` · ${action.reason}`}
-                  </p>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    {entityLabel && (
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        {action.company_name ? <Building2 size={9} /> : <User size={9} />}
+                        <span className="truncate max-w-[120px]">{entityLabel}</span>
+                      </span>
+                    )}
+                    {sourceLabel && (
+                      <span className="text-xs text-muted-foreground">
+                        · {sourceLabel}
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      · {STATUS_LABELS[action.status]}
+                    </span>
+                    {action.reason && (
+                      <span className="text-xs text-muted-foreground italic truncate max-w-[100px]">
+                        {action.reason}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {/* Opportunity link badge */}
+                {hasOpp && !compact && (
+                  <Link
+                    to="/opportunites"
+                    className="inline-flex items-center gap-1 text-xs font-medium mt-1"
+                    style={{ color: "hsl(var(--primary))" }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <ExternalLink size={9} /> Opportunité liée
+                  </Link>
                 )}
               </div>
               {!isDone && (
