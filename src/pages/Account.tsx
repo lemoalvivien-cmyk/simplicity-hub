@@ -293,10 +293,13 @@ export default function Account() {
             <Shield size={17} className="text-primary" />
             <h2 className="font-semibold text-foreground">Sécurité</h2>
           </div>
-          <button className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
+          <a
+            href="/forgot-password"
+            className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
             Modifier le mot de passe
             <ChevronRight size={15} className="text-muted-foreground" />
-          </button>
+          </a>
         </div>
 
         {/* Autonomie & IA */}
