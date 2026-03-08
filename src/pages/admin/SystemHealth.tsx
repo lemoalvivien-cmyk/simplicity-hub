@@ -560,6 +560,80 @@ export default function AdminSystemHealth() {
           ))}
         </div>
       </div>
+
+      {/* ── REPO SYNC GATE ── */}
+      {/* PROOF:SYNC_GATE_V1:system_health_sync_stamp */}
+      <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: "hsl(142 70% 45% / 0.5)" }}>
+        <div className="flex items-center gap-2 mb-1">
+          <GitCommit size={15} style={{ color: "hsl(142 70% 35%)" }} />
+          <h3 className="font-semibold text-foreground text-sm">Repo Sync Gate</h3>
+          <span className="ml-auto text-xs font-mono px-2 py-0.5 rounded font-bold"
+            style={{ background: "hsl(142 70% 92%)", color: "hsl(142 70% 28%)" }}>
+            {BUILD_STAMP}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Estampillage unique. Grep-able. Preuve de synchronisation entre le code, le zip exporté et le repo Git.
+          Passe : <strong>{SYNC_GATE_META.pass}</strong> · {SYNC_GATE_META.date}
+        </p>
+
+        {/* Critical files */}
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-foreground mb-2">Fichiers critiques attendus ({CRITICAL_FILES_EXPECTED.length})</p>
+          <div className="grid sm:grid-cols-2 gap-1">
+            {CRITICAL_FILES_EXPECTED.map(f => (
+              <div key={f} className="flex items-center gap-2 text-xs rounded bg-muted px-2 py-1">
+                <CheckCircle2 size={10} style={{ color: "hsl(142 70% 35%)" }} className="shrink-0" />
+                <code className="font-mono text-foreground truncate">{f}</code>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Migrations */}
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-foreground mb-2">Migrations pipeline attendues ({MIGRATIONS_EXPECTED.length})</p>
+          <div className="space-y-1">
+            {MIGRATIONS_EXPECTED.map(m => (
+              <div key={m.file} className="flex items-start gap-2 text-xs rounded bg-muted px-2 py-1.5">
+                <Database size={10} style={{ color: "hsl(218 72% 55%)" }} className="shrink-0 mt-0.5" />
+                <div>
+                  <code className="font-mono text-foreground">{m.file.slice(0, 16)}…</code>
+                  <p className="text-muted-foreground">{m.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Proof marker index */}
+        <div>
+          <p className="text-xs font-semibold text-foreground mb-2">
+            Marqueurs SYNC_GATE_V1 ({9})
+            <code className="ml-2 text-muted-foreground bg-muted px-1 rounded font-mono">grep -r "PROOF:SYNC_GATE_V1" src/ docs/</code>
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {[
+              "build_stamp_visible",
+              "repo_sync_manifest",
+              "system_health_sync_stamp",
+              "lead_actions_file_present",
+              "pipeline_metrics_file_present",
+              "opportunities_page_present",
+              "passive_page_present",
+              "feature_registry_present",
+              "build_health_present",
+            ].map(slug => (
+              <code key={slug} className="text-xs px-2 py-0.5 rounded font-mono font-semibold"
+                style={{ background: "hsl(142 70% 92%)", color: "hsl(142 70% 28%)" }}>
+                {slug}
+              </code>
+            ))}
+          </div>
+        </div>
+      </div>
+
     </AdminLayout>
   );
 }
+
