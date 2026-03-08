@@ -6,8 +6,8 @@ export default function PublicNav() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
 
-  const links = [
-    { to: "/#comment-ca-marche", label: "Comment ça marche", hash: true },
+  const links: { to: string; label: string; isHash?: boolean }[] = [
+    { to: "/#comment-ca-marche", label: "Comment ça marche", isHash: true },
     { to: "/pricing", label: "Tarifs" },
   ];
 
@@ -29,12 +29,12 @@ export default function PublicNav() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-7" aria-label="Navigation principale">
-          {links.map(({ to, label }) => (
+          {links.map(({ to, label, isHash }) => (
             <a
               key={to}
               href={to}
               className={`text-sm font-medium transition-colors ${
-                pathname === to
+                !isHash && pathname === to
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}

@@ -27,8 +27,8 @@ const proofs = [
   },
   {
     icon: BarChart3,
-    title: "Données issues du runtime réel",
-    desc: "Pas d'estimations. Pas de mock. Ce que vous voyez dans votre cockpit reflète exactement ce qui se passe.",
+    title: "Pipeline visible en temps réel",
+    desc: "Chaque mission, chaque intro, chaque opportunité — actualisé instantanément. Votre cockpit reflète toujours l'état exact de votre pipeline.",
     color: "hsl(262 72% 58%)",
   },
   {

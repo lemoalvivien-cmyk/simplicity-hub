@@ -93,14 +93,21 @@ export default function LandingPage() {
           paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        <div className="px-4 py-3">
+        <div className="px-4 py-3 flex gap-2">
           <Link
-            to="/pricing"
-            className="btn-cta w-full flex items-center justify-center gap-2 py-3.5 text-sm"
+            to="/signup"
+            className="btn-cta flex-1 flex items-center justify-center gap-2 py-3.5 text-sm"
             onClick={() => track("cta_sticky_mobile")}
           >
-            Lancer ma première mission
+            Créer mon accès
             <ArrowRight size={15} />
+          </Link>
+          <Link
+            to="/login"
+            className="px-4 py-3.5 rounded-xl text-sm font-medium border border-white/15 text-white/55 hover:text-white/75 transition-colors flex items-center"
+            onClick={() => track("cta_sticky_mobile", { label: "login" })}
+          >
+            Connexion
           </Link>
         </div>
       </div>

@@ -1,10 +1,11 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Users } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 
-export default function FinalCTASection() {
+const FinalCTASection = forwardRef<HTMLElement>((_, ref) => {
   return (
-    <section className="hero-bg py-24 md:py-32 relative overflow-hidden">
+    <section ref={ref} className="hero-bg py-24 md:py-32 relative overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -65,4 +66,8 @@ export default function FinalCTASection() {
       </div>
     </section>
   );
-}
+});
+
+FinalCTASection.displayName = "FinalCTASection";
+
+export default FinalCTASection;

@@ -107,7 +107,7 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Dashboard preview mockup */}
+          {/* Dashboard preview mockup */}
         <div
           className="rounded-2xl overflow-hidden"
           style={{
@@ -138,7 +138,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* KPI grid */}
+          {/* KPI grid — illustrative */}
           <div className="p-4 md:p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               { label: "Missions actives", value: "3", color: "hsl(218 72% 58%)", live: true },
@@ -170,6 +170,10 @@ export default function HeroSection() {
               </div>
             ))}
           </div>
+          {/* Legal — illustrative disclaimer */}
+          <p className="text-center text-white/18 text-[9px] px-4 pb-3 pt-1">
+            Interface illustrative — données de démonstration
+          </p>
         </div>
       </div>
     </section>
