@@ -802,7 +802,7 @@ export default function Operations() {
                             <span className="text-xs" style={{ color: "hsl(218 40% 45%)" }}>{cron.schedule_label}</span>
                             {cron.last_cron_run_at && (
                               <span className="text-xs" style={{ color: "hsl(218 40% 40%)" }}>
-                                · {formatRelative(cron.last_cron_run_at)}
+                                · {formatDateRelative(cron.last_cron_run_at, lang)}
                               </span>
                             )}
                           </div>
