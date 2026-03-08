@@ -380,6 +380,47 @@ export default function AdminSystemHealth() {
         </div>
       )}
 
+      {/* ── SECTION 6: CORE DOMAIN UNIFICATION ── */}
+      <div className="mb-6 p-4 rounded-xl border-2 bg-card"
+        style={{ borderColor: "hsl(218 72% 65% / 0.4)" }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Layers size={15} style={{ color: "hsl(218 72% 55%)" }} />
+          <h2 className="font-semibold text-foreground text-sm">Core Domain Unification</h2>
+          <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-semibold"
+            style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+            ACTIF
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">
+          Noyau métier unifié : toute entrée commerciale passe par une chaîne unique.
+          Sources: <code>src/lib/leadPipeline.ts</code>, <code>src/lib/policyEngine.ts</code>
+        </p>
+        <div className="space-y-1.5">
+          {[
+            { label: "lead_source_events", desc: "Log immutable de chaque événement source", status: "ok" as BuildCheckStatus },
+            { label: "lead_intakes", desc: "Objet lead unifié avec qualification_status + next_best_action", status: "ok" as BuildCheckStatus },
+            { label: "lead_entity_links", desc: "Audit trail des liens entre leads et entités", status: "ok" as BuildCheckStatus },
+            { label: "apply_lead_policy()", desc: "Policy engine DB — détermine qualification + NBA automatiquement", status: "ok" as BuildCheckStatus },
+            { label: "DB trigger: trg_introduction_pipeline", desc: "Auto-crée lead_source_event + lead_intake à chaque intro insérée", status: "ok" as BuildCheckStatus },
+            { label: "DB trigger: trg_intro_validated_pipeline", desc: "Promouvoit lead_intake → ready_for_opportunity à la validation", status: "ok" as BuildCheckStatus },
+            { label: "create_lead_from_import()", desc: "Chaque ligne d'import CSV crée un lead_intake avec dédup", status: "ok" as BuildCheckStatus },
+            { label: "Passive click → lead_intake", desc: "createLeadFromPassive() dans leadPipeline.ts", status: "warn" as BuildCheckStatus },
+            { label: "Radar signal → lead_intake", desc: "createLeadFromRadar() — non branché aux pages Radar encore", status: "warn" as BuildCheckStatus },
+          ].map(item => (
+            <div key={item.label} className="flex items-start gap-2.5">
+              <div className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${BUILD_STATUS_DOT[item.status]}`} />
+              <div>
+                <code className="text-xs font-mono text-foreground">{item.label}</code>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground mt-3 italic">
+          Pages recâblées : ContactImport (feed intake), IntroductionsEntreprise (affiche statut), DashboardEntreprise (bloc pipeline unifié).
+        </p>
+      </div>
+
       {/* ── RÉSUMÉ STATUTS ── */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         {STATUS_ORDER.map(s => {
