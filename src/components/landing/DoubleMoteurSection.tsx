@@ -18,6 +18,7 @@ const moteur2Features = [
   { icon: Brain, label: "JARVIS coordonne les deux" },
 ];
 
+// Standard function component — NO forwardRef
 export default function DoubleMoteurSection() {
   return (
     <section className="py-20 bg-background">
