@@ -1,5 +1,6 @@
 /**
  * Admin — System Health / Feature Registry v2
+ * PROOF:CANONICAL_EXPORT_V1:system_health_present → this file
  * PROOF GATE: confidence badges, evidence panels, blocking issues from buildHealth.ts,
  * build health, remaining mocks, manual declarations.
  * PROOF:SYNC_GATE_V1:system_health_sync_stamp → BUILD_STAMP + Repo Sync Gate section below

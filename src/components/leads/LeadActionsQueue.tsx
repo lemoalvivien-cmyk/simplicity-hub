@@ -1,5 +1,6 @@
 /**
  * LeadActionsQueue — Renders real lead_actions from the DB with business context.
+ * PROOF:CANONICAL_EXPORT_V1:lead_actions_queue_present → this file
  * PROOF:EXECUTION_V1:action_queue_ui_real → this file
  * PROOF:EXECUTION_V1:enterprise_dashboard_actions → used in DashboardEntreprise
  * PROOF:EXECUTION_V1:facilitateur_dashboard_actions → used in DashboardFacilitateur

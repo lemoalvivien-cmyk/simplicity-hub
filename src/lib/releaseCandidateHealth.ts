@@ -1,5 +1,6 @@
 /**
  * RELEASE CANDIDATE HEALTH — Source de vérité des blockers RC.
+ * PROOF:CANONICAL_EXPORT_V1:release_candidate_health_present → this file
  * PROOF:RC_V1:final_blockers_real → this file
  * PROOF:REALITY_GATE_V1:npm_ci_truth → this file
  * PROOF:REALITY_GATE_V1:public_trace_truth → this file

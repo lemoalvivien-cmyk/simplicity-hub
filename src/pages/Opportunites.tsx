@@ -1,5 +1,6 @@
 /**
  * Opportunites — Pipeline V2 cockpit: reads real opportunities from DB.
+ * PROOF:CANONICAL_EXPORT_V1:opportunities_page_present → this file
  * PROOF:INTEGRITY_V1:opportunities_pipeline_cockpit → this file
  * PROOF:INTEGRITY_V1:opportunities_pipeline_linkage → shows source_type_v2, lead_intake_id, source_intro_id
  * PROOF:INTEGRITY_V1:opportunity_metrics_real → uses usePipelineMetrics
