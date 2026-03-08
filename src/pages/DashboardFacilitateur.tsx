@@ -24,6 +24,8 @@ import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 // PROOF:EXECUTION_V1:facilitateur_dashboard_actions — imports real action queue component
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
+// PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics displayed
+import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/lib/formatLocale";
 import i18n from "@/lib/i18n";

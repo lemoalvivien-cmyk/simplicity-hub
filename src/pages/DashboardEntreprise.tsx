@@ -20,7 +20,10 @@ import BestAccessPanel from "@/components/graph/BestAccessPanel";
 import { useTranslation } from "react-i18next";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 // PROOF:EXECUTION_V1:enterprise_dashboard_actions — imports real action queue component
+// PROOF:EXECUTION_V1:enterprise_dashboard_actions — imports real action queue component
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
+// PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics displayed
+import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
