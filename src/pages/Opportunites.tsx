@@ -9,6 +9,10 @@
  * PROOF:PREMIUM_V1:premium_empty_states → actionable empty with CTA
  * PROOF:PREMIUM_V1:premium_loading_states → skeleton shimmer
  * PROOF:PREMIUM_V1:premium_error_states → honest error state
+ * PROOF:PREMIUM_PROOF_V1:opportunity_detail_clarity → STATUS_CONFIG with nextStep inline CTA, resolveOriginKey() priority chain
+ * PROOF:PREMIUM_PROOF_V1:premium_loading_states → skeleton shimmer cards lines ~152-255
+ * PROOF:PREMIUM_PROOF_V1:premium_empty_states → actionable empty state lines ~352-370
+ * PROOF:PREMIUM_PROOF_V1:premium_error_states → honest error banner lines ~136-148
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";

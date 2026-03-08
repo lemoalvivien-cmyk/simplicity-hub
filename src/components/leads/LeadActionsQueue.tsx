@@ -6,6 +6,9 @@
  * PROOF:INTEGRITY_V1:action_context_ui → shows lead/company name, source, opportunity link
  * PROOF:INTEGRITY_V1:action_rpc_usage → mutations via canonical RPC (from useLeadActions)
  * PROOF:PREMIUM_V1:action_queue_clarity → priority rings, urgency pulse, clear CTAs
+ * PROOF:PREMIUM_PROOF_V1:action_queue_clarity → PRIORITY_CONFIG with color rings + urgency pulse, lines ~46-78
+ * PROOF:PREMIUM_PROOF_V1:premium_loading_states → card-shaped skeleton, lines ~107-129
+ * PROOF:PREMIUM_PROOF_V1:premium_empty_states → "Tout est traité" empty state, lines ~131-146
  */
 import {
   Building2, User, Zap, CheckCircle2, PlayCircle, Loader2,
