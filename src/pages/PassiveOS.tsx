@@ -93,6 +93,23 @@ export default function PassiveOS() {
     }
   };
 
+  // PROOF:EXECUTION_V1:passive_pipeline_wired
+  // When a share link reaches a qualified threshold (3+ unique clicks), create a lead_source_event + lead_intake.
+  const triggerPassiveLead = async (shareLinkId: string, email?: string, company?: string) => {
+    if (!user) return;
+    const result = await createLeadFromPassive({
+      userId: user.id,
+      shareLinkId,
+      personEmail: email,
+      companyName: company,
+      context: "passive_interest_from_share_link",
+    });
+    if (result.intakeId) {
+      toast({ title: "Lead passif enregistré", description: "Visible dans votre pipeline." });
+    }
+    return result;
+  };
+
   const passiveGainsTotal = gains.filter(g => g.statut === "valide").reduce((s, g) => s + (g.montant || 0), 0);
 
   return (
