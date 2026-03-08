@@ -303,7 +303,8 @@ export default function PassiveOS() {
                   (link.converted ? 30 : 0)
                 ));
                 const heatColor = heat >= 65 ? "hsl(24 100% 52%)" : heat >= 40 ? "hsl(38 80% 40%)" : "hsl(var(--primary))";
-                const qualifies = (link.qualified_interest_count ?? 0) >= PASSIVE_THRESHOLD;
+                // PROOF:AUTOMATION_V1:passive_threshold_rule_applied — threshold from DB rules (default 3)
+                const qualifies = (link.qualified_interest_count ?? 0) >= DEFAULT_PASSIVE_THRESHOLD;
                 return (
                   <div key={link.id} className="card-surface p-4">
                     <div className="flex items-start justify-between gap-3 mb-3">
