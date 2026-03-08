@@ -113,7 +113,8 @@ export default function AdminPayoutOps() {
     if (!user) return;
     setActionLoading(payoutId);
     try {
-      const { error } = await supabase.rpc("update_payout_status" as never, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.rpc as any)("update_payout_status", {
         p_payout_id: payoutId,
         p_new_status: newStatus,
         p_actor_id: user.id,
