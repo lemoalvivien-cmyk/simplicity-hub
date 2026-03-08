@@ -1,21 +1,23 @@
 /**
  * ContactImport — Import CSV réel.
- * Foundation Lock v2:
+ * Core Domain Unification v3:
  * - Déduplication par email (ignore doublons dans le même batch)
  * - Rapport d'import détaillé : lues / valides / ignorées / insérées / échouées
  * - Validation renforcée des lignes (nom vide, ligne absurde)
  * - Erreurs Supabase remontées honnêtement
+ * - Chaque contact inséré crée un lead_intake via create_lead_from_import()
  */
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  ArrowLeft, Upload, FileSpreadsheet, CheckCircle2, AlertCircle,
+  ArrowLeft, Upload, FileSpreadsheet, CheckCircle2,
   ChevronRight, RefreshCw, Loader2, XCircle, Info
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { createLeadFromImport } from "@/lib/leadPipeline";
 
 type Step = "upload" | "mapping" | "preview" | "success";
 
