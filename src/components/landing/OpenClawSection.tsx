@@ -90,8 +90,8 @@ const OpenClawSection = forwardRef<HTMLElement>((_, ref) => {
             </div>
           </div>
         </div>
-        </div>
-      </section>
+      </div>
+    </section>
   );
 });
 

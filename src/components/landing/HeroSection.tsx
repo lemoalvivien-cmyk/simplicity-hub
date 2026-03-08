@@ -1,9 +1,11 @@
+// PROOF:AUDIT_V1:hero_section_forwardref — wrapped with forwardRef to fix React ref warning
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Zap, Shield, Users } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import { useTranslation } from "react-i18next";
 
-export default function HeroSection() {
+const HeroSection = forwardRef<HTMLElement>((_, ref) => {
   const { t } = useTranslation();
 
   const steps = [
@@ -39,7 +41,7 @@ export default function HeroSection() {
   return (
     <>
       {/* ══ HERO PRINCIPAL ══════════════════════════════════════ */}
-      <section className="hero-bg py-20 md:py-28 relative overflow-hidden">
+      <section ref={ref} className="hero-bg py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none" style={{
           background: "radial-gradient(ellipse 80% 60% at 50% 30%, hsl(218 72% 30% / 0.25) 0%, transparent 70%)"
         }} />
@@ -126,4 +128,7 @@ export default function HeroSection() {
       </section>
     </>
   );
-}
+});
+
+HeroSection.displayName = "HeroSection";
+export default HeroSection;

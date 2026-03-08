@@ -1,54 +1,51 @@
+// PROOF:AUDIT_V1:dashboard_real_data — replaced hardcoded mock with real auth profile
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   MessageCircle, HelpCircle, ArrowRight,
   CheckCircle2, Circle, User, Zap, BookOpen
 } from "lucide-react";
-
-// Simulated state — replace with real auth/data later
-const userName = "Marie";
-const subscriptionLabel = "Accès Premium actif";
-const subscriptionExpiry = "5 mars 2025";
-const viaCode = false; // true = activated via invitation code
-
-const steps = [
-  { id: 1, label: "Compte créé", done: true },
-  { id: 2, label: "Onboarding terminé", done: true },
-  { id: 3, label: "Première question posée à l'assistant", done: false },
-  { id: 4, label: "Base d'aide consultée", done: false },
-];
-
-const doneCount = steps.filter((s) => s.done).length;
-const progressPercent = Math.round((doneCount / steps.length) * 100);
-
-const shortcuts = [
-  {
-    icon: MessageCircle,
-    label: "Poser une question",
-    description: "L'assistant répond en quelques secondes",
-    to: "/assistant",
-    color: "bg-accent-light text-accent",
-  },
-  {
-    icon: BookOpen,
-    label: "Centre d'aide",
-    description: "Guides et réponses aux questions fréquentes",
-    to: "/help",
-    color: "bg-success-light text-success",
-  },
-  {
-    icon: User,
-    label: "Mon compte",
-    description: "Abonnement, informations personnelles",
-    to: "/account",
-    color: "bg-secondary text-secondary-foreground",
-  },
-];
-
-// The first incomplete step = next action
-const nextStep = steps.find((s) => !s.done);
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Dashboard() {
+  const { profile } = useAuth();
+  const userName = profile?.prenom || "vous";
+
+  const steps = [
+    { id: 1, label: "Compte créé", done: true },
+    { id: 2, label: "Onboarding terminé", done: !!(profile?.onboarding_done) },
+    { id: 3, label: "Première question posée à l'assistant", done: false },
+    { id: 4, label: "Base d'aide consultée", done: false },
+  ];
+
+  const doneCount = steps.filter((s) => s.done).length;
+  const progressPercent = Math.round((doneCount / steps.length) * 100);
+  const nextStep = steps.find((s) => !s.done);
+
+  const shortcuts = [
+    {
+      icon: MessageCircle,
+      label: "Poser une question",
+      description: "L'assistant répond en quelques secondes",
+      to: "/assistant",
+      color: "bg-accent-light text-accent",
+    },
+    {
+      icon: BookOpen,
+      label: "Centre d'aide",
+      description: "Guides et réponses aux questions fréquentes",
+      to: "/help",
+      color: "bg-success-light text-success",
+    },
+    {
+      icon: User,
+      label: "Mon compte",
+      description: "Abonnement, informations personnelles",
+      to: "/account",
+      color: "bg-secondary text-secondary-foreground",
+    },
+  ];
+
   return (
     <UserLayout>
       <div className="max-w-2xl mx-auto space-y-6">
@@ -61,19 +58,14 @@ export default function Dashboard() {
                 Bonjour {userName} 👋
               </h1>
               <p className="text-muted-foreground text-sm">
-                {viaCode
-                  ? "Votre accès gratuit de 12 mois est bien actif. Vous pouvez utiliser toutes les fonctionnalités librement."
-                  : "Votre espace est prêt. Vous pouvez commencer à l'utiliser dès maintenant."}
+                Votre espace est prêt. Vous pouvez commencer à l'utiliser dès maintenant.
               </p>
             </div>
             <div className="shrink-0">
               <span className="badge-success">
                 <CheckCircle2 size={12} />
-                {subscriptionLabel}
+                Accès actif
               </span>
-              <p className="text-xs text-muted-foreground mt-1 text-right">
-                jusqu'au {subscriptionExpiry}
-              </p>
             </div>
           </div>
         </div>
@@ -99,13 +91,15 @@ export default function Dashboard() {
             <p className="text-sm text-muted-foreground mb-4">
               {nextStep.id === 3
                 ? "Posez votre première question à l'assistant IA. Il connaît la plateforme sur le bout des doigts et répond en quelques secondes."
+                : nextStep.id === 2
+                ? "Complétez votre onboarding pour déverrouiller toutes les fonctionnalités."
                 : "Consultez la base d'aide pour trouver des guides et des réponses aux questions fréquentes."}
             </p>
             <Link
-              to={nextStep.id === 3 ? "/assistant" : "/help"}
+              to={nextStep.id === 3 ? "/assistant" : nextStep.id === 2 ? "/onboarding" : "/help"}
               className="btn-cta text-sm py-2.5 px-5 w-full sm:w-auto justify-center"
             >
-              {nextStep.id === 3 ? "Ouvrir l'assistant" : "Consulter l'aide"}
+              {nextStep.id === 3 ? "Ouvrir l'assistant" : nextStep.id === 2 ? "Continuer l'onboarding" : "Consulter l'aide"}
               <ArrowRight size={16} />
             </Link>
           </div>
