@@ -1,6 +1,7 @@
 /**
  * Messages — Message templates backed by real DB (message_templates table).
  * PROOF:GOLIVE_V1:message_templates_ui_real → useMessageTemplates hook + real DB read/write
+ * PROOF:RELEASE_SYNC_V1:messages_page_present → this file
  */
 import { useState } from "react";
 import UserLayout from "@/components/layout/UserLayout";

@@ -1,6 +1,7 @@
 /**
  * Regles — Automation rules backed by real DB (automation_rules table).
  * PROOF:GOLIVE_V1:automation_rules_ui_real → useAutomationRules hook + real DB read/write
+ * PROOF:RELEASE_SYNC_V1:regles_page_present → this file
  */
 import UserLayout from "@/components/layout/UserLayout";
 import {

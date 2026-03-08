@@ -3,6 +3,7 @@
  * PROOF:EXECUTION_V1:passive_pipeline_wired → triggerPassiveLead call site
  * PROOF:INTEGRITY_V1:passive_serverish_ingestion → dedicated ingestPassiveThreshold fn
  * PROOF:INTEGRITY_V1:passive_idempotency_guard → checks lead_source_events before creating
+ * PROOF:RELEASE_SYNC_V1:passive_page_present → this file
  * PROOF:SYNC_GATE_V1:passive_page_present → this file
  * PROOF:GOLIVE_V1:passive_edge_or_rpc_path → uses supabase.rpc("ingest_passive_signal") server-side
  * PROOF:GOLIVE_V1:passive_ingestion_trigger_real → ingestPassiveThreshold calls RPC, not client-side insert
