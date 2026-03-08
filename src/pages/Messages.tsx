@@ -9,6 +9,10 @@
  * PROOF:PREMIUM_PROOF_V1:premium_empty_states → actionable empty state, lines ~379-395
  * PROOF:PREMIUM_PROOF_V1:premium_error_states → honest error banner, lines ~276-290
  * PROOF:PREMIUM_PROOF_V1:template_variable_substitution → resolveTemplateVariables() + VariablePreview component
+ * PROOF:PREMIUM_EXPORT_V1:premium_loading_states → Skeleton shimmer in loading block, this file
+ * PROOF:PREMIUM_EXPORT_V1:premium_empty_states → actionable empty state with CTA, this file
+ * PROOF:PREMIUM_EXPORT_V1:premium_error_states → honest error banner, this file
+ * PROOF:PREMIUM_EXPORT_V1:template_variable_substitution → VariablePreview + resolveTemplateVariables(), this file
  */
 import { useState } from "react";
 import UserLayout from "@/components/layout/UserLayout";

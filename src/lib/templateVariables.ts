@@ -2,6 +2,7 @@
  * templateVariables — Real template variable resolution with fallback.
  * PROOF:PREMIUM_V1:template_variable_substitution → this file
  * PROOF:PREMIUM_PROOF_V1:template_variable_substitution → this file (exportable, grep-able)
+ * PROOF:PREMIUM_EXPORT_V1:template_variable_substitution → this file (export reality gate)
  *
  * Supported variables:
  *   {{first_name}}        → contact / lead first name
