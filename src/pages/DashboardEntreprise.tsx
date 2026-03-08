@@ -160,10 +160,19 @@ export default function DashboardEntreprise() {
 
         {/* ── UNIFIED LEADS PIPELINE ────────────────────────── */}
         {/* PROOF:PIPELINE_V2:enterprise_dashboard_pipeline */}
-        {/* asEntreprise=true → fetches leads where entreprise_id = user.id
-            These are leads from facilitateurs' introductions that target this company.
-            RLS policy allows this via the entreprise_id column propagated in the trigger. */}
+        {/* PROOF:EXECUTION_V1:enterprise_dashboard_actions */}
         {!isLaunchMode && <UnifiedLeadsBlock asEntreprise linkTo="/entreprise/introductions" />}
+
+        {/* ── ENTERPRISE ACTION QUEUE (reads real lead_actions table) ── */}
+        {/* PROOF:EXECUTION_V1:enterprise_dashboard_actions */}
+        {/* actor_user_id = enterprise user.id (routed by trigger when entreprise_id is set) */}
+        {!isLaunchMode && (
+          <LeadActionsQueue
+            title="Actions commerciales"
+            limit={5}
+            statusFilter={["open", "in_progress"]}
+          />
+        )}
 
         {/* ── PRIORITY ACTION ───────────────────────────────── */}
         {nextIntro && (
