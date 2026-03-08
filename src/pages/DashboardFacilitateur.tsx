@@ -319,8 +319,19 @@ export default function DashboardFacilitateur() {
 
         {/* ── LEADS PIPELINE (facilitateur view) ───────────── */}
         {/* PROOF:PIPELINE_V2:facilitateur_dashboard_pipeline */}
-        {/* asEntreprise=false → fetches leads where user_id = me (I created these leads via intros) */}
+        {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
         {!isLaunchMode && <UnifiedLeadsBlock asEntreprise={false} linkTo="/introductions" />}
+
+        {/* ── FACILITATEUR ACTION QUEUE (real lead_actions) ─── */}
+        {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
+        {/* actor_user_id = facilitator user.id (routed by trigger for needs_enrichment) */}
+        {!isLaunchMode && (
+          <LeadActionsQueue
+            title="Mes actions à faire"
+            limit={5}
+            statusFilter={["open", "in_progress"]}
+          />
+        )}
 
         {/* ── GAINS ────────────────────────────────────────── */}
         {(totalValide > 0 || totalAttendu > 0) && (
