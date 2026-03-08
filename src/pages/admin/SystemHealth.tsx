@@ -181,6 +181,40 @@ export default function AdminSystemHealth() {
   const [filterConfidence, setFilterConfidence] = useState<FeatureConfidence | "all">("all");
   const [showMocks, setShowMocks] = useState(false);
   const [showTypeDebt, setShowTypeDebt] = useState(false);
+  const [showForensics, setShowForensics] = useState(false);
+
+  // PROOF:GOLIVE_V1:action_events_admin_visibility — live count from DB
+  // PROOF:GOLIVE_V1:passive_admin_visibility — live passive events count from DB
+  const [forensics, setForensics] = useState<{
+    actionEventsCount: number;
+    automationRulesCount: number;
+    messageTemplatesCount: number;
+    passiveEventsCount: number;
+    recentEvents: Array<{ id: string; new_status: string; event_type: string; created_at: string }>;
+    loaded: boolean;
+  }>({ actionEventsCount: 0, automationRulesCount: 0, messageTemplatesCount: 0, passiveEventsCount: 0, recentEvents: [], loaded: false });
+
+  useEffect(() => {
+    if (!showForensics) return;
+    const load = async () => {
+      const [evtRes, rulesRes, tplRes, passiveRes, recentRes] = await Promise.all([
+        db.from("lead_action_events").select("id", { count: "exact", head: true }),
+        db.from("automation_rules").select("id", { count: "exact", head: true }),
+        db.from("message_templates").select("id", { count: "exact", head: true }),
+        db.from("lead_source_events").select("id", { count: "exact", head: true }).eq("source_type", "passive_click"),
+        db.from("lead_action_events").select("id, new_status, event_type, created_at").order("created_at", { ascending: false }).limit(5),
+      ]);
+      setForensics({
+        actionEventsCount:    evtRes.count ?? 0,
+        automationRulesCount: rulesRes.count ?? 0,
+        messageTemplatesCount: tplRes.count ?? 0,
+        passiveEventsCount:   passiveRes.count ?? 0,
+        recentEvents:         recentRes.data ?? [],
+        loaded: true,
+      });
+    };
+    load();
+  }, [showForensics]);
 
   const counts = STATUS_ORDER.reduce((acc, s) => {
     acc[s] = FEATURE_REGISTRY.filter(f => f.status === s).length;
