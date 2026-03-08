@@ -691,7 +691,7 @@ export default function Operations() {
                       )}
                       {ch.last_probe_at && (
                         <span className="text-xs text-muted-foreground">
-                          Dernière sonde {formatRelative(ch.last_probe_at)}
+                          Dernière sonde {formatDateRelative(ch.last_probe_at, lang)}
                         </span>
                       )}
                     </div>
