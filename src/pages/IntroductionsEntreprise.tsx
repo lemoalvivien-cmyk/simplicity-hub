@@ -121,12 +121,30 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
 
       {/* ── Lead Pipeline Status ─────────────────────────── */}
       {intro.lead_qualification_status && (
-        <div className="mb-4">
+        <div className="mb-3 space-y-2">
           <LeadIntakeStatus
             qualificationStatus={intro.lead_qualification_status}
             nextBestAction={intro.lead_next_best_action}
             dedupStatus={intro.lead_dedup_status ?? undefined}
           />
+          {/* Show linked opportunity if already created */}
+          {intro.lead_opportunity_id && (
+            <Link
+              to="/opportunites"
+              className="flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl w-full"
+              style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}
+            >
+              <Target size={12} />
+              Opportunité créée — voir dans le pipeline
+            </Link>
+          )}
+          {/* Active lead action badge */}
+          {intro.lead_next_best_action && !intro.lead_opportunity_id && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">Action :</span>
+              <LeadActionBadge action={intro.lead_next_best_action} />
+            </div>
+          )}
         </div>
       )}
 
