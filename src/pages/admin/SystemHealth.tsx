@@ -53,6 +53,18 @@ import {
   RELEASE_SCORE,
   PACKAGE_MANAGER_TRUTH,
 } from "@/lib/releaseHealth";
+import {
+  RC_STAMP,
+  RC_BLOCKERS,
+  RC_HARD_BLOCKERS,
+  RC_PLATFORM_CONSTRAINTS,
+  RC_SOFT_BLOCKERS,
+  RC_WARNINGS_OPEN,
+  RC_RESOLVED,
+  RC_SCORE,
+  PACKAGE_MANAGER_REAL,
+  LOVABLE_TRACE_STATUS,
+} from "@/lib/releaseCandidateHealth";
 import { supabase } from "@/integrations/supabase/client";
 
 const AREA_LABELS: Record<OwnerArea, string> = {
