@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Type safety ──────────────────────────────────────────────────────────
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+        # Catches type errors without emitting files
+
+      # ── Code quality ─────────────────────────────────────────────────────────
+      - name: ESLint
+        run: npm run lint
+        # Fails on any ESLint error (exit code 1)
+
+      # ── Unit tests ───────────────────────────────────────────────────────────
+      - name: Unit tests (Vitest)
+        run: npm run test
+        # Runs src/test/**. Fails if any test fails.
+
+      # ── Build ────────────────────────────────────────────────────────────────
+      - name: Production build
+        run: npm run build
+        # Proves the bundle compiles clean.
+
+      # ── Quota DB-level proof (requires secrets) ───────────────────────────────
+      # This step is OPTIONAL in CI — skipped if secrets are not configured.
+      # To enable: add VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY as
+      # GitHub Actions secrets in repo Settings > Secrets.
+      - name: Quota flow verification (DB-level)
+        if: ${{ env.VITE_SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # Install Deno if not available
+          curl -fsSL https://deno.land/install.sh | sh
+          export DENO_INSTALL="$HOME/.deno"
+          export PATH="$DENO_INSTALL/bin:$PATH"
+          npm run verify:quota
+        continue-on-error: false
+
+      # ── Race test (requires secrets, runs after quota) ─────────────────────
+      - name: Quota race test (Gap 4 — concurrent delivery)
+        if: ${{ env.VITE_SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          export DENO_INSTALL="$HOME/.deno"
+          export PATH="$DENO_INSTALL/bin:$PATH"
+          deno run --allow-env --allow-net scripts/verify-quota-race.ts
+        continue-on-error: false
+
+  # ── Security audit ─────────────────────────────────────────────────────────
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - name: npm audit (high + critical only)
+        run: npm audit --audit-level=high
+        # Fails if any high/critical CVE found in dependencies
+
+# ── MANUAL GATES (not in CI, must be run by operator before go-live) ─────────
+#
+# The following are NOT automated in this pipeline and MUST be run manually:
+#
+#   1. Gap 1 (RPC error rollback fault injection):
+#        deno run --allow-env --allow-net scripts/verify-quota-gaps.ts
+#        Requires SUPABASE_SERVICE_ROLE_KEY + execute_ddl RPC or direct psql.
+#
+#   2. Gap 3 (Stripe HTTP path + signature verification):
+#        Use Stripe CLI: stripe listen --forward-to <function-url>
+#        Then trigger: stripe trigger checkout.session.completed
+#        Verify: logs show "Event verified" + correct quota result.
+#
+#   3. Full E2E smoke test (Stripe test mode):
+#        Create a test checkout, complete with card 4242424242424242,
+#        verify subscription row created + launch_quota incremented.
+#
+# These are documented in docs/PRODUCTION_READYNESS.md §Manual Gates.
