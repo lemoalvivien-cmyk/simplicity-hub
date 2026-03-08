@@ -114,7 +114,7 @@ export default function CampagneNouvelle() {
   const handleLancer = async () => {
     if (!user) return;
     setSaving(true);
-    const { data, error } = await db.from("campagnes").insert({
+    const { data, error } = await supabase.from("campagnes").insert({
       owner_user_id: user.id,
       nom: nom.trim(),
       objectif: objectif.trim() || null,
