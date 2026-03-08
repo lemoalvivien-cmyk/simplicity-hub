@@ -1,14 +1,15 @@
 /**
  * Admin — System Health / Feature Registry v2
- * Foundation Lock: confidence tiers, evidence pointers, blocking issues, build health.
- * Accessible uniquement aux admins via /admin/system-health.
+ * PROOF GATE: confidence badges, evidence panels, blocking issues from buildHealth.ts,
+ * build health, remaining mocks, manual declarations.
+ * Toutes les données sont importées de sources traçables dans le code.
  */
 import { useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import {
   CheckCircle2, AlertTriangle, XCircle, Clock,
   Settings, Search, Filter, Shield, Code2,
-  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode
+  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock
 } from "lucide-react";
 import {
   FEATURE_REGISTRY,
@@ -22,6 +23,14 @@ import {
   getEnvBlockedFeatures,
   getDeclaredOnlyFeatures,
 } from "@/lib/featureRegistry";
+import {
+  BUILD_CHECKS,
+  ENV_BLOCKERS,
+  REMAINING_MOCKS,
+  LOCKFILE_STATUS,
+  TYPESCRIPT_DEBT,
+  type BuildCheckStatus,
+} from "@/lib/buildHealth";
 
 const AREA_LABELS: Record<OwnerArea, string> = {
   acquisition:    "Acquisition",
@@ -48,21 +57,18 @@ const STATUS_ICON: Record<FeatureStatus, React.ReactNode> = {
 
 const STATUS_ORDER: FeatureStatus[] = ["mock", "partial", "env-dep", "dead", "real"];
 
-// Blocking conditions for production
-const BLOCKING_ISSUES = [
-  { id: "stripe_webhook_secret", label: "STRIPE_WEBHOOK_SECRET non vérifié", severity: "critical", desc: "Les webhooks Stripe ne sont pas sécurisés en production sans cette variable." },
-  { id: "regles_mock", label: "Règles d'automatisation = Mock", severity: "high", desc: "Les règles affichées ne font rien. L'utilisateur pense contrôler l'automatisation." },
-  { id: "campaign_sequences_dead", label: "Séquences campagne absentes", severity: "medium", desc: "Le concept de campagne manque sa pièce centrale. Actuellement signalé honnêtement." },
-  { id: "declared_only_features", label: `${getDeclaredOnlyFeatures().length} feature(s) déclarée(s) sans preuve code`, severity: "low", desc: "Leur état réel n'est pas vérifié par inspection du code." },
-];
+const SEVERITY_COLOR: Record<string, { color: string; bg: string }> = {
+  critical: { color: "hsl(0 65% 40%)",   bg: "hsl(0 65% 95%)" },
+  high:     { color: "hsl(0 65% 40%)",   bg: "hsl(0 65% 95%)" },
+  medium:   { color: "hsl(38 80% 30%)",  bg: "hsl(var(--accent-light))" },
+  low:      { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
+};
 
-const BUILD_HEALTH = [
-  { label: "Build dev", status: "ok",      note: "vite build --mode development → OK" },
-  { label: "PWA precache", status: "ok",   note: "maximumFileSizeToCacheInBytes = 4MiB — au-dessus du bundle actuel 2.1MiB" },
-  { label: "TypeScript",  status: "warn",  note: "strictNullChecks=false dans tsconfig — pas d'erreur bloquante mais fragilité latente" },
-  { label: "any paresseux critique", status: "ok", note: "ContactImport et CampagneDetail migrent de db (any) vers supabase typé" },
-  { label: "import dynamique aiService", status: "warn", note: "supabase/client importé dynamiquement dans aiService + statiquement ailleurs — avertissement rollup non bloquant" },
-];
+const BUILD_STATUS_DOT: Record<BuildCheckStatus, string> = {
+  ok:   "bg-green-500",
+  warn: "bg-yellow-400",
+  fail: "bg-red-500",
+};
 
 function ConfidenceBadge({ c }: { c: FeatureConfidence }) {
   const meta = CONFIDENCE_META[c];
@@ -159,6 +165,8 @@ export default function AdminSystemHealth() {
   const [filterStatus, setFilterStatus] = useState<FeatureStatus | "all">("all");
   const [filterArea, setFilterArea] = useState<OwnerArea | "all">("all");
   const [filterConfidence, setFilterConfidence] = useState<FeatureConfidence | "all">("all");
+  const [showMocks, setShowMocks] = useState(false);
+  const [showTypeDebt, setShowTypeDebt] = useState(false);
 
   const counts = STATUS_ORDER.reduce((acc, s) => {
     acc[s] = FEATURE_REGISTRY.filter(f => f.status === s).length;
@@ -173,76 +181,200 @@ export default function AdminSystemHealth() {
     const matchConf   = filterConfidence === "all" || f.confidence === filterConfidence;
     return matchSearch && matchStatus && matchArea && matchConf;
   }).sort((a, b) => {
-    // Sort: by risk first (high > medium > low > none), then by status order
     const riskOrder = { high: 0, medium: 1, low: 2, none: 3 };
     const riskDiff = riskOrder[a.risk] - riskOrder[b.risk];
     if (riskDiff !== 0) return riskDiff;
     return STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
   });
 
-  const blockingCount = BLOCKING_ISSUES.filter(i => i.severity === "critical" || i.severity === "high").length;
+  const criticalEnvBlockers = ENV_BLOCKERS.filter(b => b.severity === "critical" || b.severity === "high");
+  const highRiskMocks = REMAINING_MOCKS.filter(m => m.risk === "high");
+  const blockingCount = criticalEnvBlockers.length + highRiskMocks.length;
+  const declaredFeatures = getDeclaredOnlyFeatures();
+  const envFeatures = getEnvBlockedFeatures();
 
   return (
     <AdminLayout
       title="System Health — Feature Registry v2"
-      subtitle="État réel, preuves techniques, bloquants prod. Aucune donnée inventée."
+      subtitle="État réel, preuves techniques, bloquants prod. Source: src/lib/featureRegistry.ts + src/lib/buildHealth.ts"
     >
-      {/* ── BLOCKING ISSUES ── */}
-      <div className="mb-6 p-4 rounded-xl border-2 border-border bg-card">
+
+      {/* ── SECTION 1: BLOCKING ISSUES FOR PRODUCTION ── */}
+      <div className="mb-6 p-4 rounded-xl border-2 rounded-xl bg-card"
+        style={{ borderColor: blockingCount > 0 ? "hsl(0 65% 70%)" : "hsl(var(--border))" }}>
         <div className="flex items-center gap-2 mb-3">
           <Shield size={16} style={{ color: blockingCount > 0 ? "hsl(0 65% 40%)" : "hsl(var(--success))" }} />
           <h2 className="font-semibold text-foreground text-sm">
-            Bloquants production ({blockingCount} critique{blockingCount > 1 ? "s" : ""}/high)
+            Bloquants production ({blockingCount} critique{blockingCount !== 1 ? "s" : ""}/high)
           </h2>
         </div>
+
+        <p className="text-xs text-muted-foreground mb-3">Source : <code>src/lib/buildHealth.ts → ENV_BLOCKERS + REMAINING_MOCKS</code></p>
+
         <div className="space-y-2">
-          {BLOCKING_ISSUES.map(issue => (
-            <div key={issue.id} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted">
-              <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5"
-                style={{
-                  background: issue.severity === "critical" ? "hsl(0 65% 95%)" : issue.severity === "high" ? "hsl(0 65% 95%)" : issue.severity === "medium" ? "hsl(var(--accent-light))" : "hsl(var(--muted))",
-                  color: issue.severity === "critical" || issue.severity === "high" ? "hsl(0 65% 40%)" : issue.severity === "medium" ? "hsl(38 80% 30%)" : "hsl(var(--muted-foreground))",
-                }}>
-                {issue.severity.toUpperCase()}
-              </span>
-              <div>
-                <p className="text-xs font-semibold text-foreground">{issue.label}</p>
-                <p className="text-xs text-muted-foreground">{issue.desc}</p>
+          {ENV_BLOCKERS.map(blocker => {
+            const col = SEVERITY_COLOR[blocker.severity];
+            return (
+              <div key={blocker.id} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted">
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5"
+                  style={{ background: col.bg, color: col.color }}>
+                  {blocker.severity.toUpperCase()}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground">{blocker.label}</p>
+                  <p className="text-xs text-muted-foreground">{blocker.note}</p>
+                  {blocker.secret && (
+                    <p className="text-xs mt-0.5 font-mono" style={{ color: "hsl(218 72% 55%)" }}>
+                      secret: {blocker.secret}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── SECTION 2: BUILD HEALTH ── */}
+      <div className="mb-6 p-4 rounded-xl border border-border bg-card">
+        <div className="flex items-center gap-2 mb-3">
+          <Cpu size={15} className="text-primary" />
+          <h2 className="font-semibold text-foreground text-sm">Build Health</h2>
+          <span className="text-xs text-muted-foreground ml-auto">Source : <code>buildHealth.ts → BUILD_CHECKS</code></span>
+        </div>
+
+        {/* Lockfile */}
+        <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted mb-2">
+          <div className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${BUILD_STATUS_DOT[LOCKFILE_STATUS.status]}`} />
+          <div className="flex-1">
+            <span className="text-xs font-medium text-foreground">{LOCKFILE_STATUS.label}</span>
+            <p className="text-xs text-muted-foreground">{LOCKFILE_STATUS.note}</p>
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          {BUILD_CHECKS.map(item => (
+            <div key={item.id} className="flex items-start gap-2.5">
+              <div className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${BUILD_STATUS_DOT[item.status]}`} />
+              <div className="flex-1">
+                <span className="text-xs font-medium text-foreground">{item.label}</span>
+                {item.ref && <code className="text-xs text-muted-foreground ml-2 bg-muted px-1 rounded">{item.ref}</code>}
+                <p className="text-xs text-muted-foreground">{item.note}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── BUILD HEALTH ── */}
+      {/* ── SECTION 3: REMAINING MOCK FEATURES ── */}
       <div className="mb-6 p-4 rounded-xl border border-border bg-card">
-        <div className="flex items-center gap-2 mb-3">
-          <Cpu size={15} className="text-primary" />
-          <h2 className="font-semibold text-foreground text-sm">Build Health</h2>
-        </div>
-        <div className="space-y-1.5">
-          {BUILD_HEALTH.map(item => (
-            <div key={item.label} className="flex items-center gap-2.5">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${item.status === "ok" ? "bg-green-500" : "bg-yellow-400"}`} />
-              <span className="text-xs font-medium text-foreground w-36 shrink-0">{item.label}</span>
-              <span className="text-xs text-muted-foreground">{item.note}</span>
-            </div>
-          ))}
-        </div>
+        <button
+          className="flex items-center justify-between w-full"
+          onClick={() => setShowMocks(!showMocks)}
+        >
+          <div className="flex items-center gap-2">
+            <XCircle size={14} style={{ color: "hsl(0 65% 40%)" }} />
+            <h2 className="font-semibold text-foreground text-sm">
+              {REMAINING_MOCKS.length} feature(s) encore mock/incomplète(s)
+            </h2>
+          </div>
+          {showMocks ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
+        </button>
+
+        {showMocks && (
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-muted-foreground mb-2">Source : <code>buildHealth.ts → REMAINING_MOCKS</code></p>
+            {REMAINING_MOCKS.map(m => {
+              const col = SEVERITY_COLOR[m.risk];
+              return (
+                <div key={m.id} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted">
+                  <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0"
+                    style={{ background: col.bg, color: col.color }}>
+                    {m.risk.toUpperCase()}
+                  </span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-semibold text-foreground">{m.label}</p>
+                      <code className="text-xs bg-background px-1 rounded text-muted-foreground">{m.page}</code>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{m.note}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* ── DÉCLARATIONS MANUELLES RESTANTES ── */}
-      {getDeclaredOnlyFeatures().length > 0 && (
+      {/* ── SECTION 4: TYPESCRIPT DEBT ── */}
+      <div className="mb-6 p-4 rounded-xl border border-border bg-card">
+        <button
+          className="flex items-center justify-between w-full"
+          onClick={() => setShowTypeDebt(!showTypeDebt)}
+        >
+          <div className="flex items-center gap-2">
+            <Lock size={14} className="text-muted-foreground" />
+            <h2 className="font-semibold text-foreground text-sm">
+              Dette TypeScript ({TYPESCRIPT_DEBT.length} point{TYPESCRIPT_DEBT.length > 1 ? "s" : ""})
+            </h2>
+          </div>
+          {showTypeDebt ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
+        </button>
+        {showTypeDebt && (
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-muted-foreground mb-2">Source : <code>buildHealth.ts → TYPESCRIPT_DEBT</code></p>
+            {TYPESCRIPT_DEBT.map(item => (
+              <div key={item.id} className="flex items-start gap-2.5">
+                <div className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${BUILD_STATUS_DOT[item.status]}`} />
+                <div>
+                  <span className="text-xs font-medium text-foreground">{item.label}</span>
+                  {item.ref && <code className="text-xs text-muted-foreground ml-2 bg-muted px-1 rounded">{item.ref}</code>}
+                  <p className="text-xs text-muted-foreground">{item.note}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── SECTION 5: REMAINING MANUAL DECLARATIONS ── */}
+      {declaredFeatures.length > 0 && (
         <div className="mb-6 p-4 rounded-xl border border-border bg-muted/30">
           <div className="flex items-center gap-2 mb-2">
             <Code2 size={14} className="text-muted-foreground" />
             <h2 className="text-sm font-semibold text-foreground">
-              {getDeclaredOnlyFeatures().length} déclaration(s) sans preuve code
+              {declaredFeatures.length} déclaration(s) sans preuve code (confidence = D)
             </h2>
           </div>
+          <p className="text-xs text-muted-foreground mb-2">
+            Ces features sont déclarées manuellement. Leur état réel n'a pas été vérifié par inspection du code.
+          </p>
           <div className="flex flex-wrap gap-1">
-            {getDeclaredOnlyFeatures().map(f => (
+            {declaredFeatures.map(f => (
               <code key={f.id} className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">{f.label}</code>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── ENV-DEP FEATURES ── */}
+      {envFeatures.length > 0 && (
+        <div className="mb-6 p-4 rounded-xl border border-border bg-muted/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Settings size={14} style={{ color: "hsl(218 72% 55%)" }} />
+            <h2 className="text-sm font-semibold text-foreground">
+              {envFeatures.length} feature(s) dépendante(s) d'env/config
+            </h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-2">
+            Fonctionnelles en code mais nécessitent une configuration externe (secret, activation tiers).
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {envFeatures.map(f => (
+              <code key={f.id} className="text-xs px-2 py-0.5 rounded text-xs font-medium"
+                style={{ background: "hsl(218 72% 95%)", color: "hsl(218 72% 45%)" }}>
+                {f.label}
+              </code>
             ))}
           </div>
         </div>
@@ -338,9 +470,11 @@ export default function AdminSystemHealth() {
       {/* ── NOTE DE BAS DE PAGE ── */}
       <div className="mt-8 p-4 rounded-xl border border-border bg-muted/30">
         <p className="text-xs text-muted-foreground leading-relaxed">
-          <strong className="text-foreground">Source :</strong> <code>src/lib/featureRegistry.ts</code> — mise à jour manuelle à chaque itération produit.
-          Badges : <strong>D</strong> = déclaré sans inspection, <strong>CV</strong> = code inspecté et confirmé, <strong>RV</strong> = testé en runtime réel.
-          Cette page ne remplace pas le monitoring runtime (Operations, War Room).
+          <strong className="text-foreground">Sources :</strong>{" "}
+          <code>src/lib/featureRegistry.ts</code> (features, confidence, evidence) +{" "}
+          <code>src/lib/buildHealth.ts</code> (build, env blockers, mocks, TS debt).
+          Badges confidence : <strong>D</strong> = déclaré sans inspection, <strong>CV</strong> = code inspecté, <strong>RV</strong> = testé en runtime.
+          Mise à jour manuelle à chaque itération.
         </p>
       </div>
     </AdminLayout>

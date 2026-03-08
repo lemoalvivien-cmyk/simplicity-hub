@@ -126,12 +126,12 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "customer_portal",
     label: "Portail client Stripe",
     status: "env-dep",
-    confidence: "declared",
+    confidence: "code-verified",
     area: "billing",
     pages: ["/account"],
-    note: "Nécessite activation du Customer Portal dans le dashboard Stripe.",
+    note: "Edge function customer-portal déployée et inspectée. Nécessite activation du Customer Portal dans le dashboard Stripe. Sans activation, la redirection échoue côté Stripe.",
     risk: "low",
-    evidence: { edgeFunctions: ["customer-portal"] },
+    evidence: { edgeFunctions: ["customer-portal"], codeFiles: ["supabase/functions/customer-portal/index.ts"], note: "Activation Customer Portal requise dans Stripe dashboard" },
   },
 
   // ── CONTACTS ───────────────────────────────────────────────────

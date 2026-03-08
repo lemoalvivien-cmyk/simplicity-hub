@@ -77,18 +77,25 @@ export default function CampagneNouvelle() {
 
   const [listes, setListes] = useState<Liste[]>([]);
   const [loadingListes, setLoadingListes] = useState(true);
+  const [listesError, setListesError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       setLoadingListes(true);
-      const { data } = await supabase
+      setListesError(null);
+      const { data, error } = await supabase
         .from("listes")
         .select("id, nom")
         .eq("owner_user_id", user.id)
         .order("created_at", { ascending: false });
-      setListes((data as Liste[] | null) || []);
+      if (error) {
+        console.error("CampagneNouvelle listes error:", error.message);
+        setListesError("Impossible de charger les listes. Réessayez.");
+      } else {
+        setListes((data as Liste[] | null) || []);
+      }
       setLoadingListes(false);
     };
     load();
@@ -187,6 +194,14 @@ export default function CampagneNouvelle() {
             {loadingListes ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 size={20} className="animate-spin text-muted-foreground" />
+              </div>
+            ) : listesError ? (
+              <div className="p-4 rounded-xl bg-muted flex items-start gap-2">
+                <AlertCircle size={16} className="shrink-0 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Erreur de chargement</p>
+                  <p className="text-xs text-muted-foreground">{listesError}</p>
+                </div>
               </div>
             ) : listes.length === 0 ? (
               <div className="p-5 rounded-xl bg-muted text-center">

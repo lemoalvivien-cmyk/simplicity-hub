@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Upload, UserPlus, Play, Send, Phone, MoreHorizontal,
-  ChevronRight, CheckCircle2, Clock, ArrowRight, Sparkles, Loader2
+  ChevronRight, CheckCircle2, Clock, ArrowRight, Sparkles, Loader2, AlertCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,15 +29,24 @@ export default function Sources() {
   const { user } = useAuth();
   const [stats, setStats] = useState<SourceStats>(EMPTY);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const { data } = await supabase
+      setLoadError(null);
+      const { data, error } = await supabase
         .from("contacts")
         .select("origine")
         .eq("owner_user_id", user.id);
+
+      if (error) {
+        console.error("Sources load error:", error.message);
+        setLoadError("Impossible de charger les statistiques. Réessayez.");
+        setLoading(false);
+        return;
+      }
 
       const s = { ...EMPTY };
       (data || []).forEach((c: { origine: string | null }) => {
@@ -137,6 +146,14 @@ export default function Sources() {
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 size={20} className="animate-spin text-muted-foreground" />
+          </div>
+        ) : loadError ? (
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-muted">
+            <AlertCircle size={16} className="shrink-0 mt-0.5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Erreur de chargement</p>
+              <p className="text-xs text-muted-foreground">{loadError}</p>
+            </div>
           </div>
         ) : (
           <>
