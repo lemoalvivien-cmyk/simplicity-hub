@@ -24,17 +24,16 @@ export default function Pricing() {
     });
   }, []);
 
+  const moteur1Keys = ["pricing_m1_1","pricing_m1_2","pricing_m1_3","pricing_m1_4","pricing_m1_5","pricing_m1_6"] as const;
+  const moteur2Keys = ["pricing_m2_1","pricing_m2_2","pricing_m2_3","pricing_m2_4","pricing_m2_5","pricing_m2_6"] as const;
+  const freeKeys    = ["pricing_free_1","pricing_free_2","pricing_free_3","pricing_free_4","pricing_free_5","pricing_free_6"] as const;
+
   const faqItems = [
-    {
-      q: "C'est quoi l'offre de lancement ?",
-      a: launchAvailable
-        ? `Les ${slotsRemaining} premières entreprises bénéficient d'un accès à 99 € TTC pour la première année. Après les 100 premières places, le tarif standard est de 490 € TTC / an.`
-        : "L'offre de lancement à 99 € est épuisée. Le tarif standard est de 490 € TTC par an.",
-    },
-    { q: "Puis-je annuler à tout moment ?", a: "Oui, sans condition ni préavis. Votre accès reste actif jusqu'à la fin de la période payée." },
-    { q: "Qu'est-ce qu'un code d'invitation ?", a: "C'est un code unique qui vous donne 12 mois d'accès gratuit. Si vous en avez un, entrez-le au moment de l'activation." },
-    { q: "L'apporteur d'affaires est vraiment gratuit ?", a: "Oui, entièrement et pour toujours. Aucune commission n'est prélevée par la plateforme sur vos gains." },
-    { q: "Est-ce vraiment simple à utiliser ?", a: "C'est notre engagement numéro un. Si vous trouvez quelque chose de compliqué, contactez-nous et on l'améliore." },
+    { q: t("pricing_faq_q1"), a: launchAvailable ? t("pricing_faq_a1_available", { slots: slotsRemaining }) : t("pricing_faq_a1_sold") },
+    { q: t("pricing_faq_q2"), a: t("pricing_faq_a2") },
+    { q: t("pricing_faq_q3"), a: t("pricing_faq_a3") },
+    { q: t("pricing_faq_q4"), a: t("pricing_faq_a4") },
+    { q: t("pricing_faq_q5"), a: t("pricing_faq_a5") },
   ];
 
   return (
@@ -43,7 +42,7 @@ export default function Pricing() {
 
       {/* Header */}
       <section className="py-14 text-center container max-w-2xl">
-        <p className="pill-tag mb-4 mx-auto w-fit">Tarifs</p>
+        <p className="pill-tag mb-4 mx-auto w-fit">{t("pricing_tag", { defaultValue: "Tarifs" })}</p>
         <h1 className="font-display text-4xl font-bold text-foreground mb-3">
           {t("pricing_title")}
         </h1>
@@ -87,7 +86,7 @@ export default function Pricing() {
                     </span>
                     <div className="pb-1">
                       <span className="text-white/60 text-sm">{t("pricing_per_year")}</span>
-                      <p className="text-white/40 text-xs line-through">{formatAmount(490, lang)} / an</p>
+                      <p className="text-white/40 text-xs line-through">{formatAmount(490, lang)}</p>
                     </div>
                   </div>
                   <p className="text-white/50 text-xs mt-2">{t("pricing_launch_note")}</p>
@@ -110,10 +109,10 @@ export default function Pricing() {
                 {t("pricing_moteur1")}
               </p>
               <ul className="space-y-2 mb-4">
-                {moteur1Items.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
+                {moteur1Keys.map((key) => (
+                  <li key={key} className="flex items-start gap-3">
                     <CheckCircle2 size={14} style={{ color: "hsl(var(--primary))" }} className="shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">{item}</span>
+                    <span className="text-sm text-foreground">{t(key)}</span>
                   </li>
                 ))}
               </ul>
@@ -122,10 +121,10 @@ export default function Pricing() {
                 {t("pricing_moteur2")}
               </p>
               <ul className="space-y-2 mb-7">
-                {moteur2Items.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
+                {moteur2Keys.map((key) => (
+                  <li key={key} className="flex items-start gap-3">
                     <CheckCircle2 size={14} style={{ color: "hsl(var(--accent))" }} className="shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">{item}</span>
+                    <span className="text-sm text-foreground">{t(key)}</span>
                   </li>
                 ))}
               </ul>
@@ -159,10 +158,10 @@ export default function Pricing() {
             </div>
             <div className="p-7">
               <ul className="space-y-3 mb-7">
-                {apporteurIncludes.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
+                {freeKeys.map((key) => (
+                  <li key={key} className="flex items-start gap-3">
                     <CheckCircle2 size={16} style={{ color: "hsl(var(--accent))" }} className="shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">{item}</span>
+                    <span className="text-sm text-foreground">{t(key)}</span>
                   </li>
                 ))}
               </ul>
@@ -179,7 +178,7 @@ export default function Pricing() {
         </p>
       </div>
 
-      {/* FAQ rapide */}
+      {/* FAQ */}
       <section className="border-t border-border py-16 bg-muted">
         <div className="container max-w-2xl">
           <h2 className="font-display text-2xl font-bold text-foreground mb-8 text-center">
