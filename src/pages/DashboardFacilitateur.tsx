@@ -2,6 +2,8 @@
  * Dashboard Facilitateur — Passive-First OS + Double Moteur
  * PROOF:EXECUTION_V1:facilitateur_dashboard_actions → LeadActionsQueue rendered here
  * PROOF:PREMIUM_V1:dashboard_actionability → pipeline metrics always shown, actions linkable
+ * PROOF:PREMIUM_PROOF_V1:dashboard_actionability → metrics strip + LeadActionsQueue with priority rings
+ * PROOF:PREMIUM_PROOF_V1:premium_loading_states → counters show "…" while loading, LeadActionsQueue skeleton
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";

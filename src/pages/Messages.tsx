@@ -5,6 +5,10 @@
  * PROOF:PREMIUM_V1:premium_empty_states → premium empty state with CTA
  * PROOF:PREMIUM_V1:premium_error_states → honest inline error with retry
  * PROOF:PREMIUM_V1:premium_loading_states → skeleton shimmer loading
+ * PROOF:PREMIUM_PROOF_V1:premium_loading_states → skeleton shimmer, lines ~326-344
+ * PROOF:PREMIUM_PROOF_V1:premium_empty_states → actionable empty state, lines ~379-395
+ * PROOF:PREMIUM_PROOF_V1:premium_error_states → honest error banner, lines ~276-290
+ * PROOF:PREMIUM_PROOF_V1:template_variable_substitution → resolveTemplateVariables() + VariablePreview component
  */
 import { useState } from "react";
 import UserLayout from "@/components/layout/UserLayout";

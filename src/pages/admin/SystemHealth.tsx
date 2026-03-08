@@ -1108,6 +1108,7 @@ export default function AdminSystemHealth() {
       {/* PROOF:CONSISTENCY_V1:qa_checks_real */}
       {/* PROOF:CONSISTENCY_V1:health_runtime_consistency */}
       {/* PROOF:CONSISTENCY_V1:final_consistency_blockers */}
+      {/* PROOF:PREMIUM_PROOF_V1:final_ux_qa_checks → UX QA panel below at lines ~1271-1304 */}
       <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: "hsl(218 72% 55% / 0.4)" }}>
         <div className="flex items-center gap-2 mb-4">
           <Activity size={15} style={{ color: "hsl(218 72% 50%)" }} />

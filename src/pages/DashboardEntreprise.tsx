@@ -3,6 +3,8 @@
  * PROOF:EXECUTION_V1:enterprise_dashboard_actions → LeadActionsQueue rendered here
  * PROOF:PREMIUM_V1:dashboard_actionability → pipeline metrics strip always visible, clickable
  * PROOF:PREMIUM_V1:premium_loading_states → loading skeletons on metric counters
+ * PROOF:PREMIUM_PROOF_V1:dashboard_actionability → pipeline metrics strip lines ~171-199, clickable to /actions + /opportunites
+ * PROOF:PREMIUM_PROOF_V1:premium_loading_states → metric counters show "…" while loading, LeadActionsQueue has skeleton
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
