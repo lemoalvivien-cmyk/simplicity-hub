@@ -1,9 +1,11 @@
+// PROOF:AUDIT_V1:hero_section_forwardref — wrapped with forwardRef to fix React ref warning
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Zap, Shield, Users } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import { useTranslation } from "react-i18next";
 
-export default function HeroSection() {
+const HeroSection = forwardRef<HTMLElement>((_, ref) => {
   const { t } = useTranslation();
 
   const steps = [

@@ -1,8 +1,10 @@
+// PROOF:AUDIT_V1:public_nav_forwardref — wrapped with forwardRef to fix React ref warning
+import { forwardRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Menu, X, Zap } from "lucide-react";
 
-export default function PublicNav() {
+const PublicNav = forwardRef<HTMLElement>((_, ref) => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
 

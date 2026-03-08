@@ -1,3 +1,5 @@
+// PROOF:AUDIT_V1:double_moteur_forwardref — wrapped with forwardRef to fix React ref warning
+import { forwardRef } from "react";
 import { Brain, Users, Zap, Radar, MessageSquare, Link2, Send, TrendingUp, Shield } from "lucide-react";
 
 const moteur1Features = [
