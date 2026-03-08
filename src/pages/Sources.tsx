@@ -10,7 +10,7 @@ import {
   Upload, UserPlus, Play, Send, Phone, MoreHorizontal,
   ChevronRight, CheckCircle2, Clock, ArrowRight, Sparkles, Loader2
 } from "lucide-react";
-import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface SourceStats {
@@ -34,7 +34,7 @@ export default function Sources() {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const { data } = await db
+      const { data } = await supabase
         .from("contacts")
         .select("origine")
         .eq("owner_user_id", user.id);

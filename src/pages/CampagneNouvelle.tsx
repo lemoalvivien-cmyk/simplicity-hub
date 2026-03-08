@@ -10,7 +10,7 @@ import {
   ChevronRight, ChevronLeft, Check, Sparkles, Users, Mail,
   Phone, Play, Shield, Zap, Target, X, Loader2, AlertCircle
 } from "lucide-react";
-import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -83,12 +83,12 @@ export default function CampagneNouvelle() {
     if (!user) return;
     const load = async () => {
       setLoadingListes(true);
-      const { data } = await db
+      const { data } = await supabase
         .from("listes")
         .select("id, nom")
         .eq("owner_user_id", user.id)
         .order("created_at", { ascending: false });
-      setListes(data || []);
+      setListes((data as Liste[] | null) || []);
       setLoadingListes(false);
     };
     load();
@@ -114,7 +114,7 @@ export default function CampagneNouvelle() {
   const handleLancer = async () => {
     if (!user) return;
     setSaving(true);
-    const { data, error } = await db.from("campagnes").insert({
+    const { data, error } = await supabase.from("campagnes").insert({
       owner_user_id: user.id,
       nom: nom.trim(),
       objectif: objectif.trim() || null,
