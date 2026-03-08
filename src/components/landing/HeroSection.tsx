@@ -10,30 +10,30 @@ const trustItems = [
 
 export default function HeroSection() {
   return (
-    <section className="hero-bg pt-20 pb-16 md:pt-28 md:pb-24 relative overflow-hidden">
-      {/* Background glow */}
+    <section className="hero-bg pt-20 pb-16 md:pt-32 md:pb-28 relative overflow-hidden">
+      {/* Atmospheric glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 20%, hsl(218 72% 30% / 0.3) 0%, transparent 70%)",
+            "radial-gradient(ellipse 90% 70% at 50% 10%, hsl(218 72% 32% / 0.35) 0%, transparent 65%)",
         }}
         aria-hidden="true"
       />
 
-      <div className="container max-w-4xl relative z-10">
+      <div className="container max-w-3xl relative z-10">
         {/* Urgency banner */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-7">
           <LaunchQuotaBanner variant="hero" />
         </div>
 
-        {/* Main headline */}
-        <div className="text-center mb-8">
-          <h1 className="font-display font-bold text-white leading-tight tracking-tight mb-5">
+        {/* Main headline — dominant */}
+        <div className="text-center mb-10">
+          <h1 className="font-display font-bold text-white leading-[1.08] tracking-tight mb-6">
             <span
-              className="block text-4xl md:text-5xl lg:text-6xl"
+              className="block text-[clamp(2.4rem,7vw,4rem)]"
               style={{
-                background: "linear-gradient(135deg, hsl(24 100% 65%), hsl(38 100% 72%))",
+                background: "linear-gradient(135deg, hsl(24 100% 68%), hsl(38 100% 74%))",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
@@ -41,98 +41,108 @@ export default function HeroSection() {
             >
               Trouvez vos prochains clients.
             </span>
-            <span className="block text-3xl md:text-4xl lg:text-5xl text-white mt-2">
-              Via votre réseau. Via l'IA. Dans un seul cockpit.
+            <span className="block text-[clamp(1.7rem,5vw,2.9rem)] text-white/90 mt-3 font-semibold">
+              Via votre réseau. Via l'IA.
+              <br className="hidden sm:block" /> Dans un seul cockpit.
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-white/60 mb-8 max-w-2xl mx-auto leading-relaxed font-light">
-            Wiinup Max combine <strong className="text-white/85 font-semibold">prospection pilotée par IA</strong> et{" "}
-            <strong className="text-white/85 font-semibold">apport d'affaires structuré</strong> dans un système unique.
+          <p className="text-[clamp(1rem,2.5vw,1.18rem)] text-white/55 mb-9 max-w-xl mx-auto leading-[1.7] font-light px-2">
+            Wiinup Max combine{" "}
+            <span className="text-white/80 font-medium">prospection pilotée par IA</span> et{" "}
+            <span className="text-white/80 font-medium">apport d'affaires structuré</span>.
             Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
 
-          {/* Dual CTA */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-8">
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-9 px-2">
             <Link
               to="/pricing"
-              className="btn-cta text-base px-10 py-4 gap-2 w-full sm:w-auto flex items-center justify-center"
+              className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
+              style={{ fontSize: "clamp(0.9rem, 2vw, 1rem)" }}
             >
               Je veux plus de clients
-              <ArrowRight size={18} />
+              <ArrowRight size={17} />
             </Link>
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white/70 border border-white/20 font-medium text-sm hover:bg-white/8 transition-colors w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl font-medium text-sm text-white/60 border border-white/15 hover:border-white/30 hover:text-white/80 transition-all duration-200 w-full sm:w-auto"
             >
-              <Users size={14} />
-              Je veux monétiser mon réseau — Gratuit
+              <Users size={14} className="shrink-0" />
+              Monétiser mon réseau — Gratuit
             </Link>
           </div>
 
           {/* Trust bar */}
-          <div className="flex flex-wrap items-center justify-center gap-5 text-white/35 text-xs">
+          <div className="flex flex-wrap items-center justify-center gap-5 text-white/30 text-xs">
             {trustItems.map(({ icon: Icon, label }) => (
               <span key={label} className="flex items-center gap-1.5">
-                <Icon size={11} className="text-white/40" aria-hidden="true" /> {label}
+                <Icon size={10} aria-hidden="true" /> {label}
               </span>
             ))}
           </div>
         </div>
 
-        {/* Visual mockup — the cockpit */}
+        {/* Dashboard preview mockup */}
         <div
-          className="rounded-2xl overflow-hidden border border-white/10 mt-10"
+          className="rounded-2xl overflow-hidden"
           style={{
-            boxShadow: "0 32px 80px hsl(218 72% 8% / 0.7), 0 0 0 1px hsl(218 72% 40% / 0.08)",
-            background: "hsl(218 65% 12% / 0.95)",
+            boxShadow:
+              "0 40px 100px hsl(218 72% 5% / 0.75), 0 0 0 1px hsl(218 72% 45% / 0.1), inset 0 1px 0 hsl(218 72% 55% / 0.08)",
+            background: "hsl(218 65% 11% / 0.98)",
           }}
         >
           {/* Browser chrome */}
           <div
-            className="flex items-center gap-2 px-5 py-3 border-b border-white/8"
-            style={{ background: "hsl(218 72% 10% / 0.9)" }}
+            className="flex items-center gap-2 px-5 py-3.5 border-b"
+            style={{
+              background: "hsl(218 72% 9% / 0.95)",
+              borderColor: "hsl(218 55% 20% / 0.5)",
+            }}
           >
             <div className="flex gap-1.5" aria-hidden="true">
-              <div className="w-3 h-3 rounded-full" style={{ background: "hsl(0 70% 55%)" }} />
-              <div className="w-3 h-3 rounded-full" style={{ background: "hsl(38 90% 55%)" }} />
-              <div className="w-3 h-3 rounded-full" style={{ background: "hsl(120 55% 45%)" }} />
+              {["hsl(0 68% 52%)", "hsl(38 88% 52%)", "hsl(120 52% 42%)"].map((c, i) => (
+                <div key={i} className="w-2.5 h-2.5 rounded-full" style={{ background: c }} />
+              ))}
             </div>
             <div
-              className="flex-1 mx-4 h-5 rounded flex items-center px-3"
-              style={{ background: "hsl(218 50% 20% / 0.5)" }}
+              className="flex-1 mx-4 h-5 rounded-md flex items-center px-2.5 gap-1.5"
+              style={{ background: "hsl(218 50% 18% / 0.6)" }}
             >
-              <span className="text-white/30 text-xs">wiinupmax.app / cockpit</span>
+              <div className="w-2 h-2 rounded-full" style={{ background: "hsl(152 55% 40%)" }} aria-hidden="true" />
+              <span className="text-white/25 text-[10px] font-mono">wiinupmax.app</span>
             </div>
           </div>
 
-          {/* Dashboard preview */}
-          <div className="p-5 md:p-6 grid md:grid-cols-4 gap-3">
+          {/* KPI grid */}
+          <div className="p-4 md:p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Missions actives", value: "3", color: "hsl(218 72% 55%)", dot: true },
-              { label: "Intros reçues", value: "12", color: "hsl(152 62% 45%)", dot: true },
-              { label: "En validation", value: "4", color: "hsl(38 95% 50%)", dot: false },
-              { label: "Gains traçés", value: "2 800 €", color: "hsl(24 100% 60%)", dot: false },
-            ].map(({ label, value, color, dot }) => (
+              { label: "Missions actives", value: "3", color: "hsl(218 72% 58%)", live: true },
+              { label: "Intros reçues", value: "12", color: "hsl(152 62% 48%)", live: true },
+              { label: "En validation", value: "4", color: "hsl(38 95% 52%)", live: false },
+              { label: "Gains traçés", value: "2 800 €", color: "hsl(24 100% 62%)", live: false },
+            ].map(({ label, value, color, live }) => (
               <div
                 key={label}
-                className="rounded-xl p-4"
+                className="rounded-xl p-3.5 md:p-4"
                 style={{
-                  background: "hsl(218 50% 16% / 0.7)",
-                  border: `1px solid ${color}20`,
+                  background: "hsl(218 55% 15% / 0.65)",
+                  border: `1px solid ${color}22`,
                 }}
               >
-                <div className="flex items-center gap-2 mb-2">
-                  {dot && (
-                    <div
-                      className="w-1.5 h-1.5 rounded-full animate-pulse"
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  {live && (
+                    <span
+                      className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0"
                       style={{ background: color }}
                       aria-hidden="true"
                     />
                   )}
-                  <span className="text-xs font-medium text-white/45">{label}</span>
+                  <span className="text-[10px] font-medium text-white/38 leading-tight">{label}</span>
                 </div>
-                <p className="font-display font-bold text-xl" style={{ color }}>{value}</p>
+                <p className="font-display font-bold text-lg md:text-xl leading-none" style={{ color }}>
+                  {value}
+                </p>
               </div>
             ))}
           </div>
