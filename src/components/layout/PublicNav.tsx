@@ -1,9 +1,8 @@
-// PROOF:AUDIT_V1:public_nav_forwardref — wrapped with forwardRef to fix React ref warning
-import { forwardRef, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Zap } from "lucide-react";
 
-const PublicNav = forwardRef<HTMLElement>((_, ref) => {
+export default function PublicNav() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
 
@@ -13,7 +12,7 @@ const PublicNav = forwardRef<HTMLElement>((_, ref) => {
   ];
 
   return (
-    <header ref={ref} className="sticky top-0 z-50 nav-glass">
+    <header className="sticky top-0 z-50 nav-glass">
       <div className="container flex items-center justify-between h-16">
         {/* Logo WIINUP MAX */}
         <Link to="/" className="flex items-center gap-2.5">
@@ -23,13 +22,16 @@ const PublicNav = forwardRef<HTMLElement>((_, ref) => {
           >
             <Zap size={14} className="text-white" strokeWidth={2.5} />
           </div>
-          <span className="font-display font-bold text-base tracking-tight" style={{ color: "hsl(var(--foreground))" }}>
+          <span
+            className="font-display font-bold text-base tracking-tight"
+            style={{ color: "hsl(var(--foreground))" }}
+          >
             WIINUP <span style={{ color: "hsl(var(--accent))" }}>MAX</span>
           </span>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-8" aria-label="Navigation principale">
           {links.map(({ to, label }) => (
             <Link
               key={to}
@@ -61,6 +63,8 @@ const PublicNav = forwardRef<HTMLElement>((_, ref) => {
         {/* Mobile toggle */}
         <button
           onClick={() => setOpen(!open)}
+          aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
+          aria-expanded={open}
           className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         >
           {open ? <X size={20} /> : <Menu size={20} />}
@@ -102,10 +106,7 @@ const PublicNav = forwardRef<HTMLElement>((_, ref) => {
       )}
     </header>
   );
-});
-
-PublicNav.displayName = "PublicNav";
-export default PublicNav;
+}
 
 /** Compact legal footer — import and place at the bottom of public pages */
 export function LegalFooter() {
@@ -113,10 +114,10 @@ export function LegalFooter() {
     <footer className="border-t border-border bg-background/50 py-6">
       <div className="container flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         <span>© {new Date().getFullYear()} VLM Consulting — SIRET 83512508900028</span>
-        <nav className="flex items-center gap-4">
-          <a href="/cgu" className="hover:text-foreground transition-colors">CGU</a>
-          <a href="/confidentialite" className="hover:text-foreground transition-colors">Confidentialité</a>
-          <a href="/mentions-legales" className="hover:text-foreground transition-colors">Mentions légales</a>
+        <nav className="flex items-center gap-4" aria-label="Liens légaux">
+          <Link to="/cgu" className="hover:text-foreground transition-colors">CGU</Link>
+          <Link to="/confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
+          <Link to="/mentions-legales" className="hover:text-foreground transition-colors">Mentions légales</Link>
         </nav>
       </div>
     </footer>
