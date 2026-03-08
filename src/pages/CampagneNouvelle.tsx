@@ -83,12 +83,12 @@ export default function CampagneNouvelle() {
     if (!user) return;
     const load = async () => {
       setLoadingListes(true);
-      const { data } = await db
+      const { data } = await supabase
         .from("listes")
         .select("id, nom")
         .eq("owner_user_id", user.id)
         .order("created_at", { ascending: false });
-      setListes(data || []);
+      setListes((data as Liste[] | null) || []);
       setLoadingListes(false);
     };
     load();
