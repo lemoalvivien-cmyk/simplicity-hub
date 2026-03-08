@@ -108,6 +108,9 @@ import AdminAnalytics from "./pages/admin/Analytics";
 import AdminRevenue from "./pages/admin/Revenue";
 import AdminGoLive from "./pages/admin/GoLive";
 import AdminSystemHealth from "./pages/admin/SystemHealth";
+import AdminPayoutOps from "./pages/admin/PayoutOps";
+import AdminReactivation from "./pages/admin/Reactivation";
+import ROIDashboard from "./pages/ROIDashboard";
 
 const queryClient = new QueryClient();
 

@@ -1,73 +1,90 @@
-# Welcome to your Lovable project
+# WIINUP MAX
 
-## Project info
+Plateforme B2B de développement commercial par apport d'affaires et introductions qualifiées.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Stack technique
 
-## How can I edit this code?
+- **Frontend** : React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui
+- **Backend** : Lovable Cloud (Supabase PostgreSQL + Auth + Edge Functions)
+- **Paiements** : Stripe (checkout annuel)
+- **IA vocale** : ElevenLabs (optionnel)
+- **PWA** : VitePWA (installable mobile)
 
-There are several ways of editing your application.
+## Architecture
 
-**Use Lovable**
+```
+src/
+  pages/         — Pages React (user / admin / public)
+  components/    — Composants UI réutilisables
+  contexts/      — AuthContext, SubscriptionContext
+  hooks/         — Hooks métier
+  lib/           — analytics.ts, landingTracking.ts, pricingConfig.ts…
+  integrations/  — Client Supabase (auto-généré, ne pas modifier)
+supabase/
+  functions/     — Edge Functions Deno
+  migrations/    — Migrations SQL versionnées
+```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Rôles utilisateurs
 
-Changes made via Lovable will be committed automatically to this repo.
+| Rôle | Description |
+|---|---|
+| `facilitateur` | Apporteur d'affaires — gratuit, recommande des contacts |
+| `entreprise` | Acheteur d'introductions — abonnement annuel |
+| `admin` | Back-office — accès via `/admin` |
 
-**Use your preferred IDE**
+## Monétisation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Offre Launch** : 99 € / an (100 premiers slots)
+- **Offre Standard** : 490 € / an
+- **Accès promo** : codes VIP 12 mois (gratuit, via admin)
+- Facilitateurs : toujours gratuits
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Développement local
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+git clone <repo>
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Tests
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+npm run test          # Vitest unit tests
+npm run typecheck     # TypeScript strict check
+npm run lint          # ESLint
+npm run build         # Production build
+```
 
-**Use GitHub Codespaces**
+## Quality Gate (CI)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Le pipeline `.github/workflows/ci.yml` exécute :
+1. `tsc --noEmit` — vérification types
+2. `eslint` — lint
+3. `vitest` — tests unitaires
+4. `vite build` — build de production
+5. `npm audit --audit-level=high` — audit sécurité dépendances
 
-## What technologies are used for this project?
+## État de production
 
-This project is built with:
+**Verdict actuel : BETA PRIVÉE**
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- ✅ Sécurité multi-tenant : gardes JWT sur Edge Functions, RLS strict, user_roles
+- ✅ Analytics runtime : `analytics_events` écrit/lu réellement
+- ✅ Payout ops : tables + RPC + audit_log fonctionnels
+- ✅ Moteur réactivation : `reactivation_jobs` + `scan_reactivation_candidates()`
+- ✅ ROI Dashboard entreprise : métriques réelles depuis DB
+- ⚠️ Envoi email réactivation : nécessite provider externe (Resend, Brevo…)
+- ⚠️ Webhook Stripe : nécessite `STRIPE_WEBHOOK_SECRET` configuré
 
-## How can I deploy this project?
+## Variables d'environnement
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Gérées automatiquement par Lovable Cloud. Ne pas modifier `.env`.
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+| Variable | Usage |
+|---|---|
+| `VITE_SUPABASE_URL` | URL projet Supabase |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clé anon publique |
+| `STRIPE_SECRET_KEY` | Secret Stripe (Edge Functions uniquement) |
+| `STRIPE_WEBHOOK_SECRET` | Validation webhooks Stripe |
