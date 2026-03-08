@@ -75,6 +75,30 @@ export default function PassiveOS() {
       setTotalInterests(links.reduce((s, l) => s + (l.qualified_interest_count || 0), 0));
       setTotalConverted(links.filter(l => l.converted).length);
       setLoading(false);
+
+      // PROOF:EXECUTION_V1:passive_pipeline_wired
+      // For each link with qualified_interest_count >= 3 (threshold), ensure a lead_intake exists.
+      // We fire-and-forget: no blocking, no UI side effects beyond the pipeline.
+      for (const link of links) {
+        if ((link.qualified_interest_count || 0) >= 3 && !link.converted) {
+          // Check if we already have a lead for this share link before creating
+          const { data: existing } = await db
+            .from("lead_source_events")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("source_type", "passive_click")
+            .eq("source_ref_id", link.id)
+            .limit(1)
+            .single();
+          if (!existing) {
+            await createLeadFromPassive({
+              userId: user.id,
+              shareLinkId: link.id,
+              context: `passive_threshold_reached_${link.qualified_interest_count}_interests`,
+            });
+          }
+        }
+      }
     };
     load();
   }, [user]);
