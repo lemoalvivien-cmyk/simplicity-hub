@@ -3110,14 +3110,18 @@ export type Database = {
           created_at: string
           dossier_match_label: string | null
           dossier_match_reason: string | null
+          facilitator_ref_id: string | null
           id: string
           intent_label: string
           intent_score: number
+          lead_intake_id: string | null
           openclaw_recommendation_id: string | null
           origin: string
           recommended_next_action: string | null
           recommended_sector: string | null
           signal_id: string | null
+          source_intro_id: string | null
+          source_type_v2: string | null
           status: string
           suggested_facilitators: Json | null
           summary: string
@@ -3130,14 +3134,18 @@ export type Database = {
           created_at?: string
           dossier_match_label?: string | null
           dossier_match_reason?: string | null
+          facilitator_ref_id?: string | null
           id?: string
           intent_label?: string
           intent_score?: number
+          lead_intake_id?: string | null
           openclaw_recommendation_id?: string | null
           origin?: string
           recommended_next_action?: string | null
           recommended_sector?: string | null
           signal_id?: string | null
+          source_intro_id?: string | null
+          source_type_v2?: string | null
           status?: string
           suggested_facilitators?: Json | null
           summary: string
@@ -3150,14 +3158,18 @@ export type Database = {
           created_at?: string
           dossier_match_label?: string | null
           dossier_match_reason?: string | null
+          facilitator_ref_id?: string | null
           id?: string
           intent_label?: string
           intent_score?: number
+          lead_intake_id?: string | null
           openclaw_recommendation_id?: string | null
           origin?: string
           recommended_next_action?: string | null
           recommended_sector?: string | null
           signal_id?: string | null
+          source_intro_id?: string | null
+          source_type_v2?: string | null
           status?: string
           suggested_facilitators?: Json | null
           summary?: string
@@ -3848,6 +3860,10 @@ export type Database = {
         Returns: undefined
       }
       seed_openclaw_jobs: { Args: { p_user_id: string }; Returns: undefined }
+      update_lead_action_status: {
+        Args: { p_action_id: string; p_actor_id: string; p_new_status: string }
+        Returns: boolean
+      }
       upsert_graph_edge: {
         Args: {
           p_confidence?: number

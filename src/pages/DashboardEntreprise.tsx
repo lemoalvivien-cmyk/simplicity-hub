@@ -1,12 +1,13 @@
 /**
  * Dashboard Entreprise — Launch Mode + Double Moteur
+ * PROOF:EXECUTION_V1:enterprise_dashboard_actions → LeadActionsQueue rendered here
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert, Bot,
-  Flame, Bell, Plus, Briefcase, HelpCircle, Star, Users, Radar, Layers
+  Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
+  Flame, Bell, Plus, Briefcase, Star, Users
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +19,8 @@ import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
 import { useTranslation } from "react-i18next";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
+// PROOF:EXECUTION_V1:enterprise_dashboard_actions — imports real action queue component
+import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
@@ -157,10 +160,19 @@ export default function DashboardEntreprise() {
 
         {/* ── UNIFIED LEADS PIPELINE ────────────────────────── */}
         {/* PROOF:PIPELINE_V2:enterprise_dashboard_pipeline */}
-        {/* asEntreprise=true → fetches leads where entreprise_id = user.id
-            These are leads from facilitateurs' introductions that target this company.
-            RLS policy allows this via the entreprise_id column propagated in the trigger. */}
+        {/* PROOF:EXECUTION_V1:enterprise_dashboard_actions */}
         {!isLaunchMode && <UnifiedLeadsBlock asEntreprise linkTo="/entreprise/introductions" />}
+
+        {/* ── ENTERPRISE ACTION QUEUE (reads real lead_actions table) ── */}
+        {/* PROOF:EXECUTION_V1:enterprise_dashboard_actions */}
+        {/* actor_user_id = enterprise user.id (routed by trigger when entreprise_id is set) */}
+        {!isLaunchMode && (
+          <LeadActionsQueue
+            title="Actions commerciales"
+            limit={5}
+            statusFilter={["open", "in_progress"]}
+          />
+        )}
 
         {/* ── PRIORITY ACTION ───────────────────────────────── */}
         {nextIntro && (

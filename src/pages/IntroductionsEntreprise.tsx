@@ -1,25 +1,24 @@
 /**
  * IntroductionsEntreprise — Liste des introductions reçues côté entreprise.
  * FULLY WIRED: lit et écrit dans Supabase.
- * Validation → met à jour intro statut + confirme le gain du facilitateur.
- * Refus → met à jour intro statut + annule le gain.
  * PROOF:PIPELINE_V2:introduction_pipeline_ui → this file
- * PROOF:PIPELINE_V2:lead_rls_shared_visibility → reads lead_intakes via .in("introduction_id", introIds)
- *   which succeeds because RLS policy "lead_intakes_select" allows:
- *   auth.uid() = entreprise_id OR intro.entreprise_id = auth.uid()
+ * PROOF:EXECUTION_V1:action_queue_ui_real → reads real lead_actions per intro
+ * PROOF:EXECUTION_V1:intro_to_enterprise_opportunity → validate triggers opportunity promotion
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   CheckCircle2, Clock, XCircle, ChevronRight, AlertCircle,
-  Send, Info, Briefcase, Loader2, Phone, Mail, Target
+  Send, Info, Briefcase, Loader2, Phone, Mail, Target,
+  PlayCircle, Zap
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import LeadIntakeStatus from "@/components/leads/LeadIntakeStatus";
 import LeadActionBadge from "@/components/leads/LeadActionBadge";
+import { promoteLeadToOpportunity } from "@/lib/leadPipeline";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";
@@ -44,6 +43,13 @@ interface IntroReçue {
   lead_dedup_status?: string | null;
   lead_intake_id?: string | null;
   lead_opportunity_id?: string | null;
+  // PROOF:EXECUTION_V1:action_queue_ui_real — real lead_action from lead_actions table
+  active_lead_action?: {
+    id: string;
+    action_type: NextBestAction;
+    status: string;
+    priority: string;
+  } | null;
 }
 
 const statusConfig: Record<Status, { icon: JSX.Element; color: string; bg: string; label: string }> = {
@@ -129,7 +135,7 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
             nextBestAction={intro.lead_next_best_action}
             dedupStatus={intro.lead_dedup_status ?? undefined}
           />
-          {/* Show linked opportunity if already created */}
+          {/* Linked opportunity badge */}
           {intro.lead_opportunity_id && (
             <Link
               to="/opportunites"
@@ -140,10 +146,24 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
               Opportunité créée — voir dans le pipeline
             </Link>
           )}
-          {/* Active lead action badge */}
-          {intro.lead_next_best_action && !intro.lead_opportunity_id && (
+          {/* PROOF:EXECUTION_V1:action_queue_ui_real — real action from lead_actions table */}
+          {intro.active_lead_action && !intro.lead_opportunity_id && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
+              style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}>
+              <Zap size={11} className="text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <LeadActionBadge action={intro.active_lead_action.action_type} />
+              </div>
+              <span className="text-xs text-muted-foreground shrink-0">
+                {intro.active_lead_action.priority === "high" || intro.active_lead_action.priority === "urgent"
+                  ? "⚡ prioritaire" : ""}
+              </span>
+            </div>
+          )}
+          {/* Fallback to next_best_action string if no real action yet */}
+          {intro.lead_next_best_action && !intro.active_lead_action && !intro.lead_opportunity_id && (
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Action :</span>
+              <span className="text-xs text-muted-foreground">Action suggérée :</span>
               <LeadActionBadge action={intro.lead_next_best_action} />
             </div>
           )}
@@ -247,15 +267,19 @@ export default function IntroductionsEntreprise() {
       const facilitateurIds = [...new Set(introData.map((i: IntroReçue) => i.facilitateur_id))];
       const introIds = introData.map((i: IntroReçue) => i.id);
 
-      const [missionsRes, profilesRes, gainsRes, leadsRes] = await Promise.all([
+      const [missionsRes, profilesRes, gainsRes, leadsRes, actionsRes] = await Promise.all([
         missionIds.length > 0 ? db.from("missions").select("id, titre").in("id", missionIds) : { data: [] },
         db.from("profiles").select("id, prenom").in("id", facilitateurIds),
         db.from("gains").select("id, introduction_id").in("introduction_id", introIds),
-        // Load lead intake data linked to these introductions
-        // RLS allows: entreprise_id = auth.uid() (propagated by trigger)
+        // PROOF:EXECUTION_V1:action_queue_ui_real — fetches real lead_intakes with pipeline data
         db.from("lead_intakes")
           .select("id, introduction_id, qualification_status, next_best_action, dedup_status, linked_opportunity_id")
           .in("introduction_id", introIds),
+        // PROOF:EXECUTION_V1:action_queue_ui_real — fetches real lead_actions for each intro's lead
+        db.from("lead_actions")
+          .select("id, lead_intake_id, action_type, status, priority")
+          .in("status", ["open", "in_progress"])
+          .order("updated_at", { ascending: false }),
       ]);
 
       const missionsMap: Record<string, string> = {};
@@ -285,17 +309,29 @@ export default function IntroductionsEntreprise() {
         if (l.introduction_id) leadsMap[l.introduction_id] = l;
       });
 
-      const enriched: IntroReçue[] = introData.map((i: IntroReçue) => ({
-        ...i,
-        mission_titre: i.mission_id ? missionsMap[i.mission_id] : null,
-        facilitateur_prenom: profilesMap[i.facilitateur_id] || null,
-        gain_id: gainsMap[i.id] || null,
-        lead_qualification_status: leadsMap[i.id]?.qualification_status ?? null,
-        lead_next_best_action: leadsMap[i.id]?.next_best_action ?? null,
-        lead_dedup_status: leadsMap[i.id]?.dedup_status ?? null,
-        lead_intake_id: leadsMap[i.id]?.id ?? null,
-        lead_opportunity_id: leadsMap[i.id]?.linked_opportunity_id ?? null,
-      }));
+      // Build map: lead_intake_id → first open action
+      // PROOF:EXECUTION_V1:action_queue_ui_real
+      const actionsMap: Record<string, { id: string; action_type: NextBestAction; status: string; priority: string }> = {};
+      (actionsRes.data || []).forEach((a: { id: string; lead_intake_id: string; action_type: NextBestAction; status: string; priority: string }) => {
+        if (!actionsMap[a.lead_intake_id]) actionsMap[a.lead_intake_id] = a;
+      });
+
+      const enriched: IntroReçue[] = introData.map((i: IntroReçue) => {
+        const lead = leadsMap[i.id];
+        const activeAction = lead ? actionsMap[lead.id] ?? null : null;
+        return {
+          ...i,
+          mission_titre: i.mission_id ? missionsMap[i.mission_id] : null,
+          facilitateur_prenom: profilesMap[i.facilitateur_id] || null,
+          gain_id: gainsMap[i.id] || null,
+          lead_qualification_status: lead?.qualification_status ?? null,
+          lead_next_best_action: lead?.next_best_action ?? null,
+          lead_dedup_status: lead?.dedup_status ?? null,
+          lead_intake_id: lead?.id ?? null,
+          lead_opportunity_id: lead?.linked_opportunity_id ?? null,
+          active_lead_action: activeAction,
+        };
+      });
 
       setIntros(enriched);
       setLoading(false);
@@ -316,6 +352,13 @@ export default function IntroductionsEntreprise() {
 
     // 4. Update introduction_proof
     await db.from("introduction_proofs").update({ validation_status: "validee", proof_status: "certifie", finalized_at: new Date().toISOString() }).eq("introduction_id", id);
+
+    // 5. PROOF:EXECUTION_V1:intro_to_enterprise_opportunity
+    // Promote lead intake to opportunity (enterprise-owned) if lead_intake_id exists
+    const intro = intros.find(i => i.id === id);
+    if (intro?.lead_intake_id) {
+      await promoteLeadToOpportunity(intro.lead_intake_id);
+    }
 
     setIntros(prev => prev.map(i => i.id === id ? { ...i, statut: "validee" as Status } : i));
     toast.success("Introduction validée ! Le gain de l'apporteur est confirmé.");

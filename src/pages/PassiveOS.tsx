@@ -14,6 +14,7 @@ import {
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { createLeadFromPassive } from "@/lib/leadPipeline";
 import BestOfferToPush from "@/components/passive/BestOfferToPush";
 import NetworkValueMap from "@/components/passive/NetworkValueMap";
 import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
@@ -74,6 +75,30 @@ export default function PassiveOS() {
       setTotalInterests(links.reduce((s, l) => s + (l.qualified_interest_count || 0), 0));
       setTotalConverted(links.filter(l => l.converted).length);
       setLoading(false);
+
+      // PROOF:EXECUTION_V1:passive_pipeline_wired
+      // For each link with qualified_interest_count >= 3 (threshold), ensure a lead_intake exists.
+      // We fire-and-forget: no blocking, no UI side effects beyond the pipeline.
+      for (const link of links) {
+        if ((link.qualified_interest_count || 0) >= 3 && !link.converted) {
+          // Check if we already have a lead for this share link before creating
+          const { data: existing } = await db
+            .from("lead_source_events")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("source_type", "passive_click")
+            .eq("source_ref_id", link.id)
+            .limit(1)
+            .single();
+          if (!existing) {
+            await createLeadFromPassive({
+              userId: user.id,
+              shareLinkId: link.id,
+              context: `passive_threshold_reached_${link.qualified_interest_count}_interests`,
+            });
+          }
+        }
+      }
     };
     load();
   }, [user]);
@@ -90,6 +115,23 @@ export default function PassiveOS() {
       setShareLinks(prev => [data, ...prev]);
       copyLink(data.tracking_code);
     }
+  };
+
+  // PROOF:EXECUTION_V1:passive_pipeline_wired
+  // When a share link reaches a qualified threshold (3+ unique clicks), create a lead_source_event + lead_intake.
+  const triggerPassiveLead = async (shareLinkId: string, email?: string, company?: string) => {
+    if (!user) return;
+    const result = await createLeadFromPassive({
+      userId: user.id,
+      shareLinkId,
+      personEmail: email,
+      companyName: company,
+      context: "passive_interest_from_share_link",
+    });
+    if (result.intakeId) {
+      toast({ title: "Lead passif enregistré", description: "Visible dans votre pipeline." });
+    }
+    return result;
   };
 
   const passiveGainsTotal = gains.filter(g => g.statut === "valide").reduce((s, g) => s + (g.montant || 0), 0);

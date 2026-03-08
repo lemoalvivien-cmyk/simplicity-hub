@@ -1,5 +1,6 @@
 /**
  * Dashboard Facilitateur — Passive-First OS + Double Moteur
+ * PROOF:EXECUTION_V1:facilitateur_dashboard_actions → LeadActionsQueue rendered here
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -7,7 +8,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Moon, Share2, CheckCircle2, ArrowRight, Zap, Sparkles,
   Loader2, Brain, Bell, Link2, Star, Trophy, Briefcase,
-  Send, HelpCircle, Flame
+  Send, Flame
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +22,8 @@ import BestOfferToPush from "@/components/passive/BestOfferToPush";
 import NetworkValueMap from "@/components/passive/NetworkValueMap";
 import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
+// PROOF:EXECUTION_V1:facilitateur_dashboard_actions — imports real action queue component
+import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/lib/formatLocale";
 import i18n from "@/lib/i18n";
@@ -316,8 +319,19 @@ export default function DashboardFacilitateur() {
 
         {/* ── LEADS PIPELINE (facilitateur view) ───────────── */}
         {/* PROOF:PIPELINE_V2:facilitateur_dashboard_pipeline */}
-        {/* asEntreprise=false → fetches leads where user_id = me (I created these leads via intros) */}
+        {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
         {!isLaunchMode && <UnifiedLeadsBlock asEntreprise={false} linkTo="/introductions" />}
+
+        {/* ── FACILITATEUR ACTION QUEUE (real lead_actions) ─── */}
+        {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
+        {/* actor_user_id = facilitator user.id (routed by trigger for needs_enrichment) */}
+        {!isLaunchMode && (
+          <LeadActionsQueue
+            title="Mes actions à faire"
+            limit={5}
+            statusFilter={["open", "in_progress"]}
+          />
+        )}
 
         {/* ── GAINS ────────────────────────────────────────── */}
         {(totalValide > 0 || totalAttendu > 0) && (
