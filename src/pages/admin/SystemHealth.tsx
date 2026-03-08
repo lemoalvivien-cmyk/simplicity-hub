@@ -53,6 +53,18 @@ import {
   RELEASE_SCORE,
   PACKAGE_MANAGER_TRUTH,
 } from "@/lib/releaseHealth";
+import {
+  RC_STAMP,
+  RC_BLOCKERS,
+  RC_HARD_BLOCKERS,
+  RC_PLATFORM_CONSTRAINTS,
+  RC_SOFT_BLOCKERS,
+  RC_WARNINGS_OPEN,
+  RC_RESOLVED,
+  RC_SCORE,
+  PACKAGE_MANAGER_REAL,
+  LOVABLE_TRACE_STATUS,
+} from "@/lib/releaseCandidateHealth";
 import { supabase } from "@/integrations/supabase/client";
 
 const AREA_LABELS: Record<OwnerArea, string> = {
@@ -852,6 +864,72 @@ export default function AdminSystemHealth() {
                 background: b.status === "resolved" ? "hsl(var(--success-light))" : b.severity === "blocker" ? "hsl(0 65% 95%)" : b.severity === "warning" ? "hsl(var(--accent-light))" : "hsl(var(--muted))",
               }}>
                 {b.status === "resolved" ? "✓" : b.severity.toUpperCase()}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground">{b.label}</p>
+                <p className="text-xs text-muted-foreground">{b.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── RELEASE CANDIDATE LOCK — RC-2026-03-08-1345-V1 ── */}
+      {/* PROOF:RC_V1:release_candidate_stamp */}
+      {/* PROOF:RC_V1:final_blockers_real */}
+      {/* PROOF:RC_V1:public_shell_clean */}
+      <div className="mt-6 p-5 rounded-xl border-2 bg-card"
+        style={{ borderColor: RC_HARD_BLOCKERS.length > 0 ? "hsl(0 65% 70%)" : "hsl(142 70% 45% / 0.5)" }}>
+        <div className="flex items-center gap-2 mb-2">
+          <Package size={15} style={{ color: "hsl(218 72% 55%)" }} />
+          <h3 className="font-semibold text-foreground text-sm">Release Candidate Lock</h3>
+          <code className="ml-auto text-xs font-mono px-2 py-0.5 rounded font-bold"
+            style={{ background: "hsl(218 72% 92%)", color: "hsl(218 72% 35%)" }}>
+            {RC_STAMP}
+          </code>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">
+          Source : <code>src/lib/releaseCandidateHealth.ts</code> ·{" "}
+          {RC_HARD_BLOCKERS.length} hard-blocker(s) · {RC_PLATFORM_CONSTRAINTS.length} contrainte(s) plateforme · {RC_RESOLVED.length} résolu(s) · score {RC_SCORE}%
+        </p>
+
+        {/* Platform constraints — honest box */}
+        <div className="mb-3 p-3 rounded-xl border bg-muted/30" style={{ borderColor: "hsl(38 80% 65% / 0.4)" }}>
+          <p className="text-xs font-semibold mb-2" style={{ color: "hsl(38 80% 30%)" }}>
+            ⚠ Contraintes plateforme (non-résolvables par code)
+          </p>
+          <div className="space-y-1.5">
+            <div className="text-xs text-muted-foreground">
+              <strong className="text-foreground">package-lock.json :</strong>{" "}
+              {PACKAGE_MANAGER_REAL.note}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              <strong className="text-foreground">Badge Lovable :</strong>{" "}
+              Code propre ({LOVABLE_TRACE_STATUS.code_clean ? "✓" : "✗"}). Badge = overlay plateforme.{" "}
+              Suppression : {LOVABLE_TRACE_STATUS.removal_method}
+            </div>
+          </div>
+        </div>
+
+        {/* RC blockers list */}
+        <div className="space-y-1.5">
+          {RC_BLOCKERS.map(b => (
+            <div key={b.id} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/50">
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5" style={{
+                color: b.status === "resolved" ? "hsl(var(--success))" :
+                       b.severity === "hard-blocker" ? "hsl(0 65% 40%)" :
+                       b.severity === "platform-constraint" ? "hsl(38 80% 30%)" :
+                       b.severity === "soft-blocker" ? "hsl(24 100% 40%)" :
+                       "hsl(var(--muted-foreground))",
+                background: b.status === "resolved" ? "hsl(var(--success-light))" :
+                            b.severity === "hard-blocker" ? "hsl(0 65% 95%)" :
+                            b.severity === "platform-constraint" ? "hsl(var(--accent-light))" :
+                            b.severity === "soft-blocker" ? "hsl(24 100% 95%)" :
+                            "hsl(var(--muted))",
+              }}>
+                {b.status === "resolved" ? "✓" :
+                 b.severity === "platform-constraint" ? "PLATFORM" :
+                 b.severity.toUpperCase()}
               </span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-foreground">{b.label}</p>

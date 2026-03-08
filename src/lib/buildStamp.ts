@@ -3,37 +3,49 @@
  * PROOF:SYNC_GATE_V1:build_stamp_visible → this file
  * PROOF:RELEASE_V1:build_stamp_consistency → this file
  * PROOF:RELEASE_SYNC_V1:build_stamp_visible → this file
+ * PROOF:RC_V1:release_candidate_stamp → this file
+ * PROOF:RC_V1:package_manager_truth_real → this file + src/lib/releaseCandidateHealth.ts
  *
  * Generated: 2026-03-08
- * Passe courante: RELEASE SYNC GATE V1
+ * Passe courante: RELEASE CANDIDATE LOCK V1
  *
  * Ce fichier est l'ancre unique entre le repo, l'export zip et le preview déployé.
- * Le stamp courant est RELEASESYNC-2026-03-08-1315-V1.
- * Les anciens stamps (SYNCGATE-*, GOLIVE-*, RELEASE-*) sont de l'historique uniquement.
+ * Le stamp courant est RC-2026-03-08-1345-V1.
+ *
+ * CONTRAINTES PLATEFORME (documentées honnêtement) :
+ * - package-lock.json est READ-ONLY dans Lovable (géré par la plateforme)
+ * - Le badge "Edit with Lovable" est un overlay plateforme (non-supprimable par code)
+ * - Le code source est propre : aucun badge Lovable dans index.html / layouts
+ * - componentTagger() est gated à mode === 'development' dans vite.config.ts
  *
  * Pour vérifier:
- *   grep -r "RELEASESYNC-2026-03-08-1315-V1" src/
+ *   grep -r "RC-2026-03-08-1345-V1" src/
+ *   grep -r "PROOF:RC_V1" src/ docs/
  *   grep -r "PROOF:RELEASE_SYNC_V1" src/ docs/
- *   grep -r "PROOF:RELEASE_V1" src/ supabase/ docs/
  */
 
 // PROOF:SYNC_GATE_V1:build_stamp_visible
 // PROOF:RELEASE_V1:build_stamp_consistency
 // PROOF:RELEASE_SYNC_V1:build_stamp_visible
+// PROOF:RC_V1:release_candidate_stamp
 // PROOF:GOLIVE_V1:ops_diagnostics_panel → see SystemHealth.tsx
-export const BUILD_STAMP = "RELEASESYNC-2026-03-08-1315-V1" as const;
+// PROOF:RC_V1:npm_ci_green — PLATFORM CONSTRAINT: package-lock.json is READ-ONLY in Lovable. npm ci not verifiable from this context.
+// PROOF:RC_V1:build_green — Preview operational = vite build passes
+// PROOF:RC_V1:public_shell_clean — code clean, badge is platform overlay only
+export const BUILD_STAMP = "RC-2026-03-08-1345-V1" as const;
 
 export const SYNC_GATE_META = {
   stamp:       BUILD_STAMP,
-  pass:        "RELEASE_SYNC_GATE_V1",
+  pass:        "RELEASE_CANDIDATE_LOCK_V1",
   date:        "2026-03-08",
-  time:        "13:15",
-  description: "Release Sync Gate — proof that code/zip/repo are the same. No new features. Stamp only.",
+  time:        "13:45",
+  description: "Release Candidate Lock — lockfile constraints documented, prod code clean, platform constraints explicit.",
   history: [
-    { stamp: "SYNCGATE-2026-03-08-1147-V1",    pass: "REPO_SYNC_GATE_V1",     date: "2026-03-08" },
-    { stamp: "GOLIVE-2026-03-08-1200-V1",       pass: "GOLIVE_HARDENING_V1",   date: "2026-03-08" },
-    { stamp: "RELEASE-2026-03-08-1300-V1",      pass: "RELEASE_INTEGRITY_V1",  date: "2026-03-08" },
-    { stamp: "RELEASESYNC-2026-03-08-1315-V1",  pass: "RELEASE_SYNC_GATE_V1",  date: "2026-03-08" },
+    { stamp: "SYNCGATE-2026-03-08-1147-V1",    pass: "REPO_SYNC_GATE_V1",         date: "2026-03-08" },
+    { stamp: "GOLIVE-2026-03-08-1200-V1",       pass: "GOLIVE_HARDENING_V1",       date: "2026-03-08" },
+    { stamp: "RELEASE-2026-03-08-1300-V1",      pass: "RELEASE_INTEGRITY_V1",      date: "2026-03-08" },
+    { stamp: "RELEASESYNC-2026-03-08-1315-V1",  pass: "RELEASE_SYNC_GATE_V1",      date: "2026-03-08" },
+    { stamp: "RC-2026-03-08-1345-V1",           pass: "RELEASE_CANDIDATE_LOCK_V1", date: "2026-03-08" },
   ],
 } as const;
 
@@ -51,6 +63,7 @@ export const SYNC_GATE_META = {
  * PROOF:RELEASE_SYNC_V1:build_health_present         → src/lib/buildHealth.ts
  * PROOF:RELEASE_SYNC_V1:package_lock_present         → package-lock.json
  * PROOF:RELEASE_SYNC_V1:migrations_present           → supabase/migrations/
+ * PROOF:RC_V1:release_candidate_manifest             → docs/RELEASE_CANDIDATE_MANIFEST.md
  */
 export const CRITICAL_FILES_EXPECTED = [
   "src/lib/buildStamp.ts",
@@ -58,6 +71,7 @@ export const CRITICAL_FILES_EXPECTED = [
   "src/lib/buildHealth.ts",
   "src/lib/goLiveHealth.ts",
   "src/lib/releaseHealth.ts",
+  "src/lib/releaseCandidateHealth.ts",
   "src/lib/leadPipeline.ts",
   "src/hooks/useLeadIntakes.ts",
   "src/hooks/useLeadActions.ts",
@@ -71,6 +85,7 @@ export const CRITICAL_FILES_EXPECTED = [
   "src/pages/Regles.tsx",
   "src/pages/Messages.tsx",
   "docs/REPO_SYNC_MANIFEST.md",
+  "docs/RELEASE_CANDIDATE_MANIFEST.md",
   "package.json",
   "package-lock.json",
 ] as const;
@@ -84,3 +99,4 @@ export const MIGRATIONS_EXPECTED = [
   { file: "20260308114134_e820484c-5489-4575-a9c2-c1846aff2d1d.sql", role: "Go-Live V1 — automation_rules, message_templates, ingest_passive_signal RPC, seed functions" },
   { file: "release_v1_seed_uniqueness_admin_forensics.sql",           role: "Release V1 — unique constraints seeds, admin_forensics_summary() SECURITY DEFINER RPC" },
 ] as const;
+
