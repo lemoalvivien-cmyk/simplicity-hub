@@ -1311,7 +1311,7 @@ export default function Operations() {
                     </div>
                     {s.next_scheduled_at && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        Prochain cycle {formatFuture(s.next_scheduled_at)}
+                        Prochain cycle {formatFuture(s.next_scheduled_at, lang)}
                       </p>
                     )}
                   </div>
