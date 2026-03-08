@@ -17,6 +17,16 @@
  *   dedup gate. A concurrent or re-delivered webhook will hit a
  *   unique-violation and return 'skipped_insert_conflict' without
  *   ever calling the RPC.
+ *
+ * at_capacity ROLLBACK:
+ *   If the RPC returns 'at_capacity', the consumed row is deleted before
+ *   returning. This ensures: a row present in launch_quota_consumed always
+ *   and only means a slot was actually incremented. No ambiguous state.
+ *
+ * no_quota_row:
+ *   The launch_quota table must have exactly one row (seeded by the squash
+ *   migration). If it is empty, the RPC returns 'no_quota_row'. This is a
+ *   misconfiguration — the webhook logs it and returns without consuming.
  */
 
 import { SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -26,11 +36,11 @@ export const PRICE_LAUNCH = "price_1T8GOWEG497aCUFxjNjFjk4t";
 
 export type ConsumeResult =
   | "skipped_not_launch"       // offer_type !== 'launch' OR price_id !== PRICE_LAUNCH
-  | "skipped_already_consumed" // row already in launch_quota_consumed
+  | "skipped_already_consumed" // row already in launch_quota_consumed (idempotent check)
   | "skipped_insert_conflict"  // concurrent redelivery: unique constraint hit
   | "rpc_error"                // RPC call failed; consumed row rolled back
   | "incremented"              // slot successfully consumed
-  | "at_capacity"              // quota full; no slot consumed
+  | "at_capacity"              // quota full; consumed row rolled back; no slot consumed
   | "no_quota_row";            // launch_quota table is empty (misconfiguration)
 
 /**
@@ -41,7 +51,12 @@ export type ConsumeResult =
  *  2. Check launch_quota_consumed for existing record (fast dedup).
  *  3. Insert into launch_quota_consumed (unique constraint = dedup gate).
  *  4. Call increment_launch_quota_used_slots() RPC atomically.
- *  5. On RPC error: roll back the consumed record for consistency.
+ *  5. On 'at_capacity': DELETE the consumed row (no slot was taken; no trace left).
+ *  6. On RPC error: DELETE the consumed row (caller can retry on redelivery).
+ *
+ * INVARIANT after this function returns:
+ *   - A row in launch_quota_consumed <=> used_slots was incremented for that sub.
+ *   - No row in launch_quota_consumed for this sub <=> no slot was consumed.
  */
 export async function consumeLaunchSlotIfEligible(
   db: SupabaseClient,
@@ -99,6 +114,17 @@ export async function consumeLaunchSlotIfEligible(
   }
 
   const result = rpcResult as ConsumeResult;
+
+  // at_capacity: RPC confirmed no slot was taken — delete the consumed row.
+  // INVARIANT: a row in launch_quota_consumed MUST mean a slot was incremented.
+  if (result === "at_capacity" || result === "no_quota_row") {
+    log(`RPC returned '${result}' — rolling back consumed record`, { subscriptionId });
+    await db
+      .from("launch_quota_consumed")
+      .delete()
+      .eq("stripe_subscription_id", subscriptionId);
+  }
+
   log("consumeLaunchSlotIfEligible result", { subscriptionId, result });
   return result;
 }
