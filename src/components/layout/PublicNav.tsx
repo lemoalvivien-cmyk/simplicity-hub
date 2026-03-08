@@ -7,35 +7,32 @@ export default function PublicNav() {
   const { pathname } = useLocation();
 
   const links = [
-    { to: "/", label: "Accueil" },
+    { to: "/#comment-ca-marche", label: "Comment ça marche", hash: true },
     { to: "/pricing", label: "Tarifs" },
   ];
 
   return (
     <header className="sticky top-0 z-50 nav-glass">
       <div className="container flex items-center justify-between h-16">
-        {/* Logo WIINUP MAX */}
-        <Link to="/" className="flex items-center gap-2.5">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2.5 shrink-0">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
             style={{ background: "var(--gradient-electric)" }}
           >
             <Zap size={14} className="text-white" strokeWidth={2.5} />
           </div>
-          <span
-            className="font-display font-bold text-base tracking-tight"
-            style={{ color: "hsl(var(--foreground))" }}
-          >
+          <span className="font-display font-bold text-base tracking-tight text-foreground">
             WIINUP <span style={{ color: "hsl(var(--accent))" }}>MAX</span>
           </span>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8" aria-label="Navigation principale">
+        <nav className="hidden md:flex items-center gap-7" aria-label="Navigation principale">
           {links.map(({ to, label }) => (
-            <Link
+            <a
               key={to}
-              to={to}
+              href={to}
               className={`text-sm font-medium transition-colors ${
                 pathname === to
                   ? "text-primary"
@@ -43,7 +40,7 @@ export default function PublicNav() {
               }`}
             >
               {label}
-            </Link>
+            </a>
           ))}
         </nav>
 
@@ -74,22 +71,22 @@ export default function PublicNav() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t border-border bg-card animate-fade-in">
-          <div className="container py-4 flex flex-col gap-2">
+          <div className="container py-4 flex flex-col gap-1">
             {links.map(({ to, label }) => (
-              <Link
+              <a
                 key={to}
-                to={to}
+                href={to}
                 onClick={() => setOpen(false)}
-                className="py-2 text-sm font-medium text-foreground"
+                className="py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors"
               >
                 {label}
-              </Link>
+              </a>
             ))}
-            <div className="pt-2 border-t border-border flex flex-col gap-2">
+            <div className="pt-3 mt-1 border-t border-border flex flex-col gap-2">
               <Link
                 to="/login"
                 onClick={() => setOpen(false)}
-                className="py-2 text-sm font-medium text-muted-foreground"
+                className="py-2.5 text-sm font-medium text-muted-foreground"
               >
                 Connexion
               </Link>
@@ -108,7 +105,7 @@ export default function PublicNav() {
   );
 }
 
-/** Compact legal footer — import and place at the bottom of public pages */
+/** Compact legal footer */
 export function LegalFooter() {
   return (
     <footer className="border-t border-border bg-background/50 py-6">
