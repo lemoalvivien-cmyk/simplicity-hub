@@ -1,21 +1,11 @@
 /**
  * openclaw-event-bus
  * ──────────────────
- * Receives business events and enqueues the right jobs with the right
- * priority, context, and dedup logic.
- *
- * Called by:
- *   - Frontend on explicit business events (mission saved, offer published…)
- *   - DB triggers (via HTTP webhook if configured)
- *   - Scheduler itself for secondary cascades
- *
- * Event catalogue:
- *   mission_created | mission_updated
- *   offer_created | offer_updated
- *   introduction_created | introduction_stuck | introduction_validee
- *   gain_confirme | litige_ouvert
- *   opportunity_hot | passive_signal
- *   validation_overdue | facilitator_missing
+ * SECURITY HARDENED v2:
+ *   - user JWT can ONLY enqueue jobs for its own user_id
+ *   - service_role can pass body.user_id to target any user
+ *   - body.user_id from a non-service-role call is SILENTLY IGNORED
+ *   - daily_sweep / weekly_sweep broadcast only allowed for service_role
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
@@ -29,11 +19,10 @@ interface BusEvent {
   event_type: string;
   entity_id?: string;
   entity_type?: string;
-  user_id?: string;          // explicit override (service-role calls)
+  user_id?: string;
   context?: Record<string, unknown>;
 }
 
-// Job routing table: event_type → array of jobs to enqueue
 const EVENT_JOB_MAP: Record<string, Array<{
   job_type: string;
   priority: "critique" | "haute" | "normale" | "basse";
@@ -57,7 +46,7 @@ const EVENT_JOB_MAP: Record<string, Array<{
     { job_type: "passive_offer_refresh",   priority: "normale", delay_minutes: 10, dedup_minutes: 60 },
   ],
   introduction_created: [
-    { job_type: "next_best_action_generate", priority: "normale", delay_minutes: 2,  dedup_minutes: 30 },
+    { job_type: "next_best_action_generate", priority: "normale", delay_minutes: 2, dedup_minutes: 30 },
   ],
   introduction_stuck: [
     { job_type: "stuck_pipeline_recheck",  priority: "haute",   delay_minutes: 0,  dedup_minutes: 120 },
@@ -89,7 +78,7 @@ const EVENT_JOB_MAP: Record<string, Array<{
   facilitator_missing: [
     { job_type: "facilitator_match_refresh", priority: "haute", delay_minutes: 0,  dedup_minutes: 60 },
   ],
-  // Scheduled daily sweep (called by cron)
+  // Broadcast events — service_role ONLY
   daily_sweep: [
     { job_type: "radar_scan",              priority: "normale", delay_minutes: 0,  dedup_minutes: 60 },
     { job_type: "daily_brief_generate",    priority: "normale", delay_minutes: 5,  dedup_minutes: 180 },
@@ -98,11 +87,14 @@ const EVENT_JOB_MAP: Record<string, Array<{
     { job_type: "stuck_pipeline_recheck",  priority: "basse",   delay_minutes: 20, dedup_minutes: 180 },
   ],
   weekly_sweep: [
-    { job_type: "trust_recompute",         priority: "normale", delay_minutes: 0,   dedup_minutes: 10080 }, // 7d
+    { job_type: "trust_recompute",         priority: "normale", delay_minutes: 0,   dedup_minutes: 10080 },
     { job_type: "facilitator_match_refresh", priority: "basse", delay_minutes: 30,  dedup_minutes: 10080 },
     { job_type: "hot_opportunity_rescore", priority: "normale", delay_minutes: 60,  dedup_minutes: 10080 },
   ],
 };
+
+// Broadcast events require service_role — user JWTs cannot trigger them
+const BROADCAST_EVENTS = new Set(["daily_sweep", "weekly_sweep"]);
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -114,28 +106,39 @@ Deno.serve(async (req) => {
 
     const svc = createClient(supabaseUrl, serviceKey);
 
-    // Resolve caller identity
+    // ── Resolve caller identity ───────────────────────────────────────────────
     const authHeader = req.headers.get("Authorization") || "";
-    let userId: string | null = null;
+    const isServiceRole = authHeader === `Bearer ${serviceKey}`;
+    let jwtUserId: string | null = null;
 
-    if (authHeader && authHeader !== `Bearer ${anonKey}` && authHeader !== `Bearer ${serviceKey}`) {
+    if (!isServiceRole && authHeader && authHeader !== `Bearer ${anonKey}`) {
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
       const { data: { user } } = await userClient.auth.getUser();
-      userId = user?.id || null;
+      jwtUserId = user?.id || null;
     }
 
     const body: BusEvent = await req.json();
     const { event_type, entity_id, entity_type, context } = body;
 
-    // Allow service-role to specify user_id directly
-    const targetUserId = body.user_id || userId;
+    // ── SECURITY GUARD: user_id spoofing prevention ───────────────────────────
+    // Service_role: can pass body.user_id to target any user (pg_cron use case)
+    // User JWT: body.user_id is IGNORED — only their own jwtUserId is used
+    const targetUserId = isServiceRole ? (body.user_id || null) : jwtUserId;
 
     if (!event_type) {
       return new Response(
         JSON.stringify({ error: "Missing event_type" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Block broadcast events from user JWTs
+    if (BROADCAST_EVENTS.has(event_type) && !isServiceRole) {
+      return new Response(
+        JSON.stringify({ error: "Broadcast events require service_role authorization" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -147,12 +150,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // For sweep events with no specific user, broadcast to all active users
+    // ── Resolve target users ──────────────────────────────────────────────────
     let userIds: string[] = [];
     if (targetUserId) {
       userIds = [targetUserId];
-    } else if (event_type === "daily_sweep" || event_type === "weekly_sweep") {
-      // Broadcast: get users who have openclaw_config
+    } else if (BROADCAST_EVENTS.has(event_type)) {
+      // Only reachable by service_role (checked above)
       const { data: configs } = await svc
         .from("openclaw_config")
         .select("user_id")
@@ -172,7 +175,6 @@ Deno.serve(async (req) => {
     const enqueuedJobs: unknown[] = [];
 
     for (const uid of userIds) {
-      // Skip users with kill switch active
       const { data: config } = await svc
         .from("openclaw_config")
         .select("kill_switch_global")
@@ -211,7 +213,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Log to openclaw_logs for audit
     if (totalEnqueued > 0 && targetUserId) {
       await svc.from("openclaw_logs").insert({
         user_id: targetUserId,
