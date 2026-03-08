@@ -288,9 +288,8 @@ export default function Opportunites() {
           </div>
           <p className="text-xs text-muted-foreground mb-3">
             {metrics.openActions > 0
-              ? `${metrics.openActions} action${metrics.openActions > 1 ? "s" : ""} ouverte${metrics.openActions > 1 ? "s" : ""} vous attend${metrics.openActions > 1 ? "ent" : "}.`
-              : "JARVIS peut vous dire quelle opportunité traiter en priorité."
-            }
+              ? `${metrics.openActions} action${metrics.openActions > 1 ? "s" : ""} ouverte${metrics.openActions > 1 ? "s" : ""} en attente.`
+              : "JARVIS peut vous dire quelle opportunité traiter en priorité."}
           </p>
           <Link to="/actions" className="text-xs font-semibold flex items-center gap-1" style={{ color: "hsl(var(--primary))" }}>
             Voir mes actions <ChevronRight size={11} />
