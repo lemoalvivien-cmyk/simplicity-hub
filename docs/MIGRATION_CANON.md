@@ -50,8 +50,11 @@ legacy data. On a dirty intermediate DB this will fail if rows with disallowed
 2. `4ea7ab1c` (squash) re-runs the same cleanup unconditionally — any clone that
    skipped `d5ca7889` or ran `d8c2baed` in isolation still reaches clean state.
 
-**The false comment** that was in `d8c2baed` line 2 has been replaced with an
-honest warning block. The SQL statements in that file are unchanged.
+**The false comment** in `d8c2baed` is **still present and has NOT been corrected**.
+Migration files are immutable once applied. The comment is factually wrong — it claims
+`launch_quota_consumed` was already created in a prior migration, which is false (it is
+created in `ff43d5d4`). This document explicitly contradicts that comment. The SQL
+statements in `d8c2baed` are unrelated to quota and are otherwise correct.
 
 ---
 

@@ -242,6 +242,7 @@ if (failed > 0) {
   console.error("\n❌ QUOTA FLOW HAS FAILURES — do not ship.");
   Deno.exit(1);
 } else {
-  console.log("\n✅ All 6 scenarios passed. DB-level idempotency confirmed.");
+  console.log("\n✅ All 5 executed scenarios passed. DB-level idempotency confirmed.");
   console.log("   Invariant holds: consumed row ↔ slot incremented.");
+  console.log("   GAPS: RPC error rollback, no_quota_row, real Stripe HTTP path — NOT exercised here.");
 }
