@@ -223,6 +223,7 @@ export default function AdminSystemHealth() {
         setForensics(prev => ({ ...prev, loaded: true }));
       }
     };
+    load();
   }, [showForensics]);
 
   const counts = STATUS_ORDER.reduce((acc, s) => {
