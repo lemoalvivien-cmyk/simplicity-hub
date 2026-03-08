@@ -1,48 +1,55 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const faqs = [
   {
-    q: "Est-ce que je dois être téchnique pour utiliser Planify ?",
-    a: "Non. Planify est conçu pour des personnes qui n'ont aucune compétence technique. Si vous savez utiliser un téléphone ou un e-mail, vous pouvez utiliser Planify.",
+    q: "C'est quoi exactement Wiinup Max ?",
+    a: "Wiinup Max est un cockpit d'acquisition qui combine deux moteurs : la prospection automatisée par IA (OpenClaw) et le réseau d'apport d'affaires structuré (facilitateurs). Tout remonte dans un seul tableau de bord.",
   },
   {
-    q: "Combien de temps faut-il pour démarrer ?",
-    a: "Moins de 5 minutes. Vous créez votre compte, vous répondez à 3 questions simples, et votre espace est prêt. Pas de configuration, pas de formation.",
+    q: "À qui s'adresse Wiinup Max ?",
+    a: "Aux entreprises qui veulent trouver plus de clients via leur réseau ET via l'IA — sans jongler avec 5 outils différents. Et aux apporteurs d'affaires qui veulent monétiser leurs mises en relation proprement.",
+  },
+  {
+    q: "Quelle est la différence avec un CRM ?",
+    a: "Un CRM stocke des contacts. Wiinup Max génère des opportunités. Il prospecte, structure les introductions, les valide et mesure les résultats. Ce n'est pas le même niveau.",
+  },
+  {
+    q: "Combien ça coûte pour une entreprise ?",
+    a: "L'offre de lancement est à 99 € TTC pour la première année (au lieu de 490 €). Réservée aux 100 premières entreprises. Après la période de lancement, le tarif standard est de 490 € / an.",
+  },
+  {
+    q: "L'accès facilitateur est vraiment gratuit ?",
+    a: "Oui. Pour toujours. Sans carte bancaire. Sans frais cachés. Les facilitateurs ne paient rien. Ils gagnent des commissions sur les introductions validées.",
   },
   {
     q: "Est-ce que je peux annuler à tout moment ?",
-    a: "Oui. Vous pouvez arrêter votre abonnement quand vous voulez, depuis votre espace compte, en un seul clic. Aucune condition, aucune pénalité.",
+    a: "Oui. Sans condition et sans justification. Votre accès reste actif jusqu'à la fin de la période payée. Il n'y a pas de pénalité d'annulation.",
   },
   {
-    q: "Qu'est-ce qu'un code d'invitation ?",
-    a: "Un code d'invitation est un code que certaines personnes reçoivent pour accéder à 12 mois gratuits. Ce n'est pas un mot de passe. Vous l'entrez une seule fois à l'inscription. Il n'est valable qu'une seule fois.",
+    q: "Faut-il être technique pour utiliser la plateforme ?",
+    a: "Aucune compétence technique requise. JARVIS vous guide à chaque étape. Si vous savez envoyer un email, vous pouvez utiliser Wiinup Max.",
   },
   {
-    q: "Est-ce que mes données sont en sécurité ?",
-    a: "Oui. Vos données sont hébergées sur des serveurs sécurisés. La connexion est chiffrée. Elles ne sont jamais revendues ni partagées.",
-  },
-  {
-    q: "Y a-t-il de l'aide si je suis bloqué ?",
-    a: "Oui. Un assistant est disponible directement dans votre espace. Vous pouvez aussi nous contacter par e-mail. Vous obtiendrez une réponse claire et rapide.",
+    q: "Combien de temps pour être opérationnel ?",
+    a: "Votre première mission peut être publiée en moins de 5 minutes après votre inscription. Pas de formation, pas d'onboarding long.",
   },
 ];
 
 export default function FAQSection() {
   return (
-    <section className="py-20 bg-background">
+    <section className="py-20 bg-muted border-t border-border">
       <div className="container max-w-2xl">
         <div className="text-center mb-10">
-          <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">
-            Questions fréquentes
-          </p>
-          <h2 className="font-display text-3xl font-bold text-foreground">
-            Vous avez des questions ?
+          <p className="pill-tag mb-4 mx-auto w-fit">FAQ</p>
+          <h2 className="font-display text-3xl font-bold text-foreground mb-3">
+            Tout ce qu'il faut savoir.
           </h2>
+          <p className="text-muted-foreground text-sm">
+            Si votre question n'est pas là, contactez-nous à{" "}
+            <a href="mailto:contact@vlmconsulting.fr" className="text-primary hover:underline">
+              contact@vlmconsulting.fr
+            </a>
+          </p>
         </div>
 
         <Accordion type="single" collapsible className="space-y-2">
@@ -50,7 +57,7 @@ export default function FAQSection() {
             <AccordionItem
               key={i}
               value={`faq-${i}`}
-              className="bg-card border border-border rounded-xl px-5 data-[state=open]:border-primary/40"
+              className="bg-card border border-border rounded-2xl px-5 data-[state=open]:border-primary/40"
             >
               <AccordionTrigger className="text-left text-sm font-semibold text-foreground hover:no-underline py-4">
                 {q}
