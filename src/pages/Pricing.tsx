@@ -7,33 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { formatAmount } from "@/lib/formatLocale";
 
-const moteur1Items = [
-  "OpenClaw — cerveau central de la prospection",
-  "Agent OS & Deal Radar",
-  "Campagnes & messages préparés par l'IA",
-  "Diffusion passive & liens traqués",
-  "Ce qui chauffe · signaux d'intention",
-  "Cockpit de pilotage & rapports",
-];
-
-const moteur2Items = [
-  "Accès au réseau de facilitateurs",
-  "Missions, introductions & validations",
-  "Introductions protégées & tracées",
-  "Gains et confiance — tableau de bord",
-  "Assistant JARVIS IA illimité",
-  "App mobile / PWA incluse",
-];
-
-const apporteurIncludes = [
-  "Accès à toutes les missions publiées",
-  "Envoi d'introductions illimité",
-  "Suivi des validations en temps réel",
-  "Tableau de bord des gains",
-  "Assistant JARVIS inclus",
-  "Aucune commission prélevée par la plateforme",
-];
-
 export default function Pricing() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
