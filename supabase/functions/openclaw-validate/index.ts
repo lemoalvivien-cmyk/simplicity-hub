@@ -1,18 +1,9 @@
 /**
- * openclaw-validate
- * ──────────────────
- * Approuve ou refuse une validation en attente.
- * - Met à jour openclaw_validations
- * - Si validation approuvée + gateway_callback_url → exécute l'action sur OpenClaw
- * - Journalise la décision humaine
- *
- * POST /openclaw-validate
- * Authorization: Bearer <user_jwt>
- * Body: {
- *   validation_id: string,
- *   decision: "approve" | "reject",
- *   note?: string
- * }
+ * openclaw-validate — SECURITY HARDENED v2
+ * SSRF fix: gateway_callback_url est ignoré.
+ * L'exécution gateway passe uniquement par le gateway_url de openclaw_config
+ * qui est configuré par l'utilisateur et validé côté serveur.
+ * Aucun fetch arbitraire sur des URL fournies par les données DB.
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -23,10 +14,33 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// SECURITY: allowlist de schémas autorisés pour les gateway URLs
+function isAllowedGatewayUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    // Uniquement HTTPS autorisé. HTTP bloqué (MITM risk).
+    // Pas de localhost/loopback (SSRF interne).
+    if (parsed.protocol !== "https:") return false;
+    const host = parsed.hostname.toLowerCase();
+    if (host === "localhost" || host === "127.0.0.1" || host === "::1") return false;
+    if (host.endsWith(".local") || host.endsWith(".internal")) return false;
+    // Bloquer les IPs privées RFC1918
+    const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (ipv4) {
+      const [, a, b] = ipv4.map(Number);
+      if (a === 10) return false;
+      if (a === 172 && b >= 16 && b <= 31) return false;
+      if (a === 192 && b === 168) return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // ── Auth ──────────────────────────────────────────────────────────────────
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -49,7 +63,6 @@ Deno.serve(async (req) => {
   }
   const userId = claimsData.claims.sub;
 
-  // ── Parse body ─────────────────────────────────────────────────────────────
   let body: { validation_id: string; decision: "approve" | "reject"; note?: string };
   try {
     body = await req.json();
@@ -70,13 +83,12 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  // ── Récupérer la validation ────────────────────────────────────────────────
   const { data: validation, error: fetchError } = await serviceClient
     .from("openclaw_validations")
-    .select("*")
+    .select("id, titre, agent_id, risque, payload, statut")
     .eq("id", body.validation_id)
-    .eq("user_id", userId)          // sécurité : seul le propriétaire peut valider
-    .eq("statut", "en_attente")     // ne traiter que les validations en attente
+    .eq("user_id", userId)
+    .eq("statut", "en_attente")
     .maybeSingle();
 
   if (fetchError || !validation) {
@@ -89,14 +101,12 @@ Deno.serve(async (req) => {
   const newStatut = body.decision === "approve" ? "validee" : "refusee";
   const eventType = body.decision === "approve" ? "validation_approved" : "validation_rejected";
 
-  // ── Mettre à jour la validation ───────────────────────────────────────────
   await serviceClient.from("openclaw_validations").update({
     statut: newStatut,
     validated_at: new Date().toISOString(),
     validated_by: userId,
   }).eq("id", body.validation_id);
 
-  // ── Log de la décision humaine ─────────────────────────────────────────────
   await serviceClient.from("openclaw_logs").insert({
     user_id: userId,
     agent_id: validation.agent_id,
@@ -113,7 +123,9 @@ Deno.serve(async (req) => {
     risque: validation.risque,
   });
 
-  // ── Si approuvée et gateway disponible → exécuter sur OpenClaw ─────────────
+  // SECURITY: SSRF fix — gateway_callback_url sur la validation est IGNORÉ.
+  // Seul le gateway_url configuré par l'utilisateur dans openclaw_config est utilisé.
+  // Ce gateway_url est validé contre l'allowlist HTTPS avant tout fetch.
   let gatewayExecuted = false;
   let gatewayResponse: unknown = null;
 
@@ -125,63 +137,44 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (config?.gateway_url && !config.kill_switch_global) {
-      const payload = validation.payload as Record<string, unknown>;
-      const tool = (payload?.tool as string) ?? null;
-      const args = (payload?.args as Record<string, unknown>) ?? {};
+      // SECURITY: validate gateway_url against allowlist before fetching
+      if (!isAllowedGatewayUrl(config.gateway_url)) {
+        console.warn(`[openclaw-validate] Blocked gateway_url: ${config.gateway_url}`);
+        gatewayResponse = { error: "gateway_url_blocked", reason: "URL non autorisée (doit être HTTPS publique)" };
+      } else {
+        const payload = validation.payload as Record<string, unknown>;
+        const tool = (payload?.tool as string) ?? null;
+        const args = (payload?.args as Record<string, unknown>) ?? {};
 
-      if (tool) {
-        try {
-          const url = config.gateway_url.replace(/\/$/, "");
-          const headers: Record<string, string> = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          };
-          if (config.gateway_secret) headers["X-Gateway-Secret"] = config.gateway_secret;
+        if (tool) {
+          try {
+            const url = config.gateway_url.replace(/\/$/, "");
+            const headers: Record<string, string> = {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            };
+            if (config.gateway_secret) headers["X-Gateway-Secret"] = config.gateway_secret;
 
-          const res = await fetch(`${url}/tools/invoke`, {
-            method: "POST",
-            headers,
-            signal: AbortSignal.timeout(30000),
-            body: JSON.stringify({
-              tool,
-              action: "json",
-              args,
-              sessionKey: "main",
-              dryRun: false,
-            }),
-          });
+            const res = await fetch(`${url}/tools/invoke`, {
+              method: "POST",
+              headers,
+              signal: AbortSignal.timeout(30000),
+              body: JSON.stringify({ tool, action: "json", args, sessionKey: "main", dryRun: false }),
+            });
 
-          if (res.ok) {
-            gatewayExecuted = true;
-            gatewayResponse = await res.json().catch(() => ({}));
-          } else {
-            const txt = await res.text().catch(() => "");
-            console.error(`[openclaw-validate] Gateway execution failed ${res.status}: ${txt}`);
-            gatewayResponse = { error: res.status, detail: txt };
+            if (res.ok) {
+              gatewayExecuted = true;
+              gatewayResponse = await res.json().catch(() => ({}));
+            } else {
+              const txt = await res.text().catch(() => "");
+              console.error(`[openclaw-validate] Gateway error ${res.status}: ${txt}`);
+              gatewayResponse = { error: res.status, detail: txt };
+            }
+          } catch (err) {
+            const errMsg = err instanceof Error ? err.message : String(err);
+            console.warn("[openclaw-validate] Gateway unreachable:", errMsg);
+            gatewayResponse = { error: "unreachable", detail: errMsg };
           }
-        } catch (err) {
-          const errMsg = err instanceof Error ? err.message : String(err);
-          console.warn("[openclaw-validate] Could not execute on gateway:", errMsg);
-          gatewayResponse = { error: "unreachable", detail: errMsg };
-        }
-      }
-
-      // Callback personnalisé si défini
-      if (validation.gateway_callback_url && !gatewayExecuted) {
-        try {
-          await fetch(validation.gateway_callback_url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            signal: AbortSignal.timeout(10000),
-            body: JSON.stringify({
-              validation_id: body.validation_id,
-              decision: body.decision,
-              approved: true,
-            }),
-          });
-          gatewayExecuted = true;
-        } catch (err) {
-          console.warn("[openclaw-validate] Callback failed:", err);
         }
       }
     }
