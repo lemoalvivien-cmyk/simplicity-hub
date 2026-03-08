@@ -1,0 +1,80 @@
+/**
+ * automationEngine.ts — Client-side bridge to the DB automation rule evaluator.
+ * PROOF:AUTOMATION_V1:automation_rule_evaluator
+ * PROOF:AUTOMATION_V1:template_resolution_engine
+ * PROOF:AUTOMATION_V1:action_payload_from_template
+ * PROOF:AUTOMATION_V1:automation_engine_health
+ */
+import { db } from "@/lib/supabase";
+
+// PROOF:AUTOMATION_V1:automation_rule_evaluator
+export async function applyAutomationRulesToLead(intakeId: string, ownerId: string) {
+  const { data, error } = await db.rpc("apply_automation_rules_to_lead", {
+    p_intake_id: intakeId,
+    p_owner_id:  ownerId,
+  });
+  if (error) console.error("[AutomationEngine] apply_automation_rules_to_lead:", error.message);
+  return data as {
+    status: string;
+    intake_id: string;
+    applied_count: number;
+    decisions: Array<{ rule: string; decision: string; action?: string }>;
+  } | null;
+}
+
+// PROOF:AUTOMATION_V1:template_resolution_engine
+// PROOF:AUTOMATION_V1:action_payload_from_template
+export async function resolveMessageTemplate(
+  ownerId:    string,
+  actionType: string,
+  channel:    "email" | "telephone" | "autre" = "email"
+): Promise<{
+  template_id:   string | null;
+  template_type: string;
+  channel:       string;
+  title:         string;
+  body:          string;
+  fallback:      boolean;
+} | null> {
+  const { data, error } = await db.rpc("resolve_message_template", {
+    p_owner_id:    ownerId,
+    p_action_type: actionType,
+    p_channel:     channel,
+  });
+  if (error) {
+    console.error("[AutomationEngine] resolve_message_template:", error.message);
+    return null;
+  }
+  return data as ReturnType<typeof resolveMessageTemplate> extends Promise<infer T> ? T : never;
+}
+
+// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
+export async function getPassiveThreshold(ownerId: string): Promise<number> {
+  const { data, error } = await db.rpc("get_automation_rule_threshold", {
+    p_owner_id:  ownerId,
+    p_rule_type: "passive_ingest_threshold",
+    p_default:   3,
+  });
+  if (error) return 3;
+  return (data as number) ?? 3;
+}
+
+// PROOF:AUTOMATION_V1:automation_engine_health
+export async function getAutomationEngineHealth(): Promise<{
+  active_rules:       number;
+  total_decisions:    number;
+  apply_decisions:    number;
+  skip_decisions:     number;
+  templates_resolved: number;
+  template_fallbacks: number;
+  engine_mode:        "active" | "idle";
+  rule_types_active:  Array<{ rule_type: string; count: number }>;
+  recent_decisions:   Array<{ rule_type: string; decision: string; context: Record<string, unknown>; created_at: string }>;
+} | null> {
+  const { data, error } = await db.rpc("get_automation_engine_health");
+  if (error) {
+    console.error("[AutomationEngine] get_automation_engine_health:", error.message);
+    return null;
+  }
+  return data as ReturnType<typeof getAutomationEngineHealth> extends Promise<infer T> ? T : never;
+}
