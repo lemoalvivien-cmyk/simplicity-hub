@@ -233,11 +233,11 @@ await setUsedSlots(initialSlots); // restore to initial state
 // ─── Summary ─────────────────────────────────────────────────────────────────
 console.log(`\n${"─".repeat(60)}`);
 console.log(`Results: ${passed} passed, ${failed} failed`);
-console.log(`\nGAPS NOT COVERED BY THIS SCRIPT (3 gaps remain):`);
-console.log(`  - RPC error rollback (gap 6) — requires DB fault injection`);
-console.log(`  - no_quota_row      (gap 7) — requires deleting singleton row, unsafe on prod`);
-console.log(`  - Stripe HTTP path  (gap 8) — real webhook endpoint not exercised`);
-console.log(`  - concurrent delivery race  — requires parallel execution harness`);
+console.log(`\nGAPS NOT COVERED BY THIS SCRIPT (4 gaps remain):`);
+console.log(`  - RPC error rollback     (gap 6) — requires DB fault injection`);
+console.log(`  - no_quota_row           (gap 7) — requires deleting singleton row, unsafe on prod`);
+console.log(`  - Stripe HTTP path       (gap 8) — real webhook endpoint not exercised`);
+console.log(`  - concurrent delivery race (gap 9) — requires parallel execution harness`);
 
 if (failed > 0) {
   console.error("\n❌ QUOTA FLOW HAS FAILURES — do not ship.");
@@ -245,5 +245,5 @@ if (failed > 0) {
 } else {
   console.log("\n✅ All 5 executed scenarios passed. DB-level idempotency confirmed.");
   console.log("   Invariant holds: consumed row ↔ slot incremented.");
-  console.log("   GAPS (not exercised here): RPC error rollback, no_quota_row, real Stripe HTTP path.");
+  console.log("   GAPS (not exercised here): RPC error rollback, no_quota_row, Stripe HTTP path, concurrent race.");
 }
