@@ -211,6 +211,7 @@ const App = () => (
               <Route path="/admin/analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
               <Route path="/admin/revenue" element={<ProtectedRoute adminOnly><AdminRevenue /></ProtectedRoute>} />
               <Route path="/admin/go-live" element={<ProtectedRoute adminOnly><AdminGoLive /></ProtectedRoute>} />
+              <Route path="/admin/system-health" element={<ProtectedRoute adminOnly><AdminSystemHealth /></ProtectedRoute>} />
 
               {/* ── 404 ──────────────────────────────────── */}
               <Route path="*" element={<NotFound />} />
