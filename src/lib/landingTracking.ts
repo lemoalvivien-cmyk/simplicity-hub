@@ -96,7 +96,7 @@ function persistEvent(event: string, payload?: TrackPayload) {
       hero_cta_variant: variants.heroCTA,
       pricing_frame_variant: variants.pricingFrame,
       event_label: payload?.label ?? null,
-      event_payload: (payload as Record<string, unknown>) ?? {},
+      event_payload: (payload ?? {}) as import("@/integrations/supabase/types").Json,
       path: typeof window !== "undefined" ? window.location.pathname : "/",
     }])
     .then(() => {
