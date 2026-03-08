@@ -1,6 +1,12 @@
 /**
  * RELEASE CANDIDATE HEALTH — Source de vérité des blockers RC.
  * PROOF:RC_V1:final_blockers_real → this file
+ * PROOF:REALITY_GATE_V1:npm_ci_truth → this file
+ * PROOF:REALITY_GATE_V1:public_trace_truth → this file
+ * PROOF:REALITY_GATE_V1:automation_rule_routing → see supabase/migrations/20260308131022_99df5f22-5380-48e2-84d5-804a09180ff5.sql
+ * PROOF:REALITY_GATE_V1:intro_auto_promote_rule_applied → see supabase/migrations/20260308125558_ec93860b-7857-4e94-b484-efd1087fbded.sql
+ * PROOF:REALITY_GATE_V1:duplicate_guard_rule_applied → see supabase/migrations/20260308125558_ec93860b-7857-4e94-b484-efd1087fbded.sql
+ * PROOF:REALITY_GATE_V1:action_generation_from_rules → see supabase/migrations/20260308125558_ec93860b-7857-4e94-b484-efd1087fbded.sql
  *
  * Passe RELEASE CANDIDATE LOCK — 2026-03-08
  * Stamp : RC-2026-03-08-1345-V1
@@ -21,27 +27,21 @@ export const RC_STAMP = "RC-2026-03-08-1345-V1" as const;
 /**
  * PACKAGE MANAGER TRUTH — ÉTAT RÉEL
  * PROOF:RC_V1:package_lock_synced
+ * PROOF:REALITY_GATE_V1:npm_ci_truth
  *
- * Contrainte de plateforme : package-lock.json est un fichier READ-ONLY
- * dans l'environnement Lovable. Il ne peut pas être modifié directement.
- * Il est regénéré automatiquement par Lovable lors des installs.
- *
- * Stratégie réelle :
- * - Dans l'environnement Lovable (preview/développement): bun est utilisé
- *   en interne pour les installs. Le package-lock.json peut ne pas être
- *   en sync parfaite avec package.json car c'est Lovable qui le gère.
- * - Pour CI/CD externe: la stratégie documentée est npm, mais un `npm ci`
- *   sur le lockfile exporté n'est pas garanti PASS sans vérification manuelle
- *   de la cohérence du lockfile.
- *
- * VERDICT HONNÊTE: npm ci n'est pas vérifiable comme PASS depuis ce contexte.
- * Le lockfile est read-only et géré par la plateforme Lovable.
+ * VERDICT EXPORTABLE HONNÊTE:
+ * - package-lock.json est READ-ONLY dans l'environnement Lovable (contrainte plateforme).
+ * - npm ci n'est PAS vérifiable comme PASS depuis ce contexte. État: NOT_FIXED (platform constraint).
+ * - bun est le gestionnaire interne de Lovable. npm est la stratégie documentée pour CI/CD externe.
+ * - Pour CI/CD externe : exporter le repo et exécuter `npm ci` manuellement pour vérifier.
  */
 export const PACKAGE_MANAGER_REAL = {
   canonical_documented: "npm" as const,
   lockfile: "package-lock.json" as const,
   lockfile_editable: false as const,
+  // PROOF:REALITY_GATE_V1:npm_ci_truth — NOT_FIXED: platform constraint, lockfile is read-only
   npm_ci_verified: false as const,
+  npm_ci_status: "NOT_FIXED_PLATFORM_CONSTRAINT" as const,
   note: "package-lock.json est READ-ONLY dans l'environnement Lovable. Géré par la plateforme. npm ci n'est pas vérifié depuis ce contexte. Strategy documentée = npm. Réalité plateforme = bun (interne).",
   constraint: "PLATFORM_CONSTRAINT: Lovable gère le lockfile automatiquement. Pour vérifier npm ci, exporter le repo et tester manuellement.",
 } as const;

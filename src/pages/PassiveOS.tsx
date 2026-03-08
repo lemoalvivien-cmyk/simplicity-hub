@@ -8,6 +8,7 @@
  * PROOF:GOLIVE_V1:passive_edge_or_rpc_path → uses supabase.rpc("ingest_passive_signal") server-side
  * PROOF:GOLIVE_V1:passive_ingestion_trigger_real → ingestPassiveThreshold calls RPC, not client-side insert
  * PROOF:AUTOMATION_PROOF_V1:passive_threshold_rule_applied → ingestPassiveThreshold reads getPassiveThreshold() RPC
+ * PROOF:REALITY_GATE_V1:passive_threshold_rule_applied → threshold read from get_automation_rule_threshold() RPC, NOT hardcoded
  */
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
