@@ -7,7 +7,7 @@ import MecanismeSection from "@/components/landing/MecanismeSection";
 import FeaturesValueSection from "@/components/landing/FeaturesValueSection";
 import HowItWorksEntrepriseSection from "@/components/landing/HowItWorksEntrepriseSection";
 import FacilitateurSection from "@/components/landing/FacilitateurSection";
-import PreuveSérieuxSection from "@/components/landing/PreuveSérieuxSection";
+import ProofSection from "@/components/landing/ProofSection";
 import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FAQSection from "@/components/landing/FAQSection";
