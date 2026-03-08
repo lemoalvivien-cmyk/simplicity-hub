@@ -607,6 +607,89 @@ export default function AdminSystemHealth() {
         </div>
       </div>
 
+      {/* ── GO-LIVE HEALTH ── */}
+      {/* PROOF:GOLIVE_V1:go_live_blockers_real */}
+      <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: BLOCKERS_ONLY.length > 0 ? "hsl(0 65% 70%)" : "hsl(var(--border))" }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Telescope size={15} style={{ color: BLOCKERS_ONLY.length > 0 ? "hsl(0 65% 40%)" : "hsl(var(--success))" }} />
+          <h3 className="font-semibold text-foreground text-sm">Go-Live Health</h3>
+          <span className="ml-auto text-xs font-mono px-2 py-0.5 rounded font-bold"
+            style={{ background: GO_LIVE_SCORE >= 60 ? "hsl(var(--success-light))" : "hsl(0 65% 95%)", color: GO_LIVE_SCORE >= 60 ? "hsl(var(--success))" : "hsl(0 65% 40%)" }}>
+            {GO_LIVE_SCORE}% résolu
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">Source : <code>src/lib/goLiveHealth.ts</code> · {BLOCKERS_ONLY.length} bloquant(s) · {WARNINGS_OPEN.length} warning(s) · {RESOLVED.length} résolu(s)</p>
+        <div className="space-y-1.5">
+          {GO_LIVE_BLOCKERS.map(b => (
+            <div key={b.id} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/50">
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5" style={{
+                color: b.status === "resolved" ? "hsl(var(--success))" : b.severity === "blocker" ? "hsl(0 65% 40%)" : b.severity === "warning" ? "hsl(38 80% 30%)" : "hsl(var(--muted-foreground))",
+                background: b.status === "resolved" ? "hsl(var(--success-light))" : b.severity === "blocker" ? "hsl(0 65% 95%)" : b.severity === "warning" ? "hsl(var(--accent-light))" : "hsl(var(--muted))",
+              }}>
+                {b.status === "resolved" ? "✓" : b.severity.toUpperCase()}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground">{b.label}</p>
+                <p className="text-xs text-muted-foreground">{b.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── OPS FORENSICS ── */}
+      {/* PROOF:GOLIVE_V1:ops_diagnostics_panel */}
+      {/* PROOF:GOLIVE_V1:action_events_admin_visibility */}
+      {/* PROOF:GOLIVE_V1:passive_admin_visibility */}
+      <div className="mt-6 p-5 rounded-xl border border-border bg-card">
+        <button className="flex items-center justify-between w-full" onClick={() => setShowForensics(!showForensics)}>
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-primary" />
+            <h3 className="font-semibold text-foreground text-sm">Ops Forensics — données live</h3>
+          </div>
+          {showForensics ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
+        </button>
+        {showForensics && (
+          <div className="mt-4 space-y-4">
+            {!forensics.loaded ? (
+              <p className="text-xs text-muted-foreground animate-pulse">Chargement…</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: "Audit events (actions)", value: forensics.actionEventsCount, icon: Activity },
+                    { label: "Règles actives (DB)", value: forensics.automationRulesCount, icon: Settings },
+                    { label: "Templates messages (DB)", value: forensics.messageTemplatesCount, icon: BarChart3 },
+                    { label: "Signaux passifs ingérés", value: forensics.passiveEventsCount, icon: Zap },
+                  ].map(({ label, value, icon: Icon }) => (
+                    <div key={label} className="p-3 rounded-xl bg-muted text-center">
+                      <Icon size={12} className="mx-auto mb-1 text-muted-foreground" />
+                      <p className="font-bold text-foreground text-lg">{value}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
+                {forensics.recentEvents.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-foreground mb-2">Derniers événements d'audit (lead_action_events)</p>
+                    <div className="space-y-1">
+                      {forensics.recentEvents.map(e => (
+                        <div key={e.id} className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
+                          <span className="font-mono text-muted-foreground">{new Date(e.created_at).toLocaleTimeString("fr")}</span>
+                          <span className="font-semibold text-foreground">{e.event_type}</span>
+                          <span className="text-muted-foreground">→</span>
+                          <code className="text-primary">{e.new_status}</code>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* ── REPO SYNC GATE ── */}
       {/* PROOF:SYNC_GATE_V1:system_health_sync_stamp */}
       <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: "hsl(142 70% 45% / 0.5)" }}>
