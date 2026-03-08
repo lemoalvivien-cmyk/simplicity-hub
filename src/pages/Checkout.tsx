@@ -381,7 +381,7 @@ export default function Checkout() {
                 <button
                   onClick={handleStripeCheckout}
                   disabled={checkoutLoading}
-                  className="flex-1 btn-cta text-sm flex items-center justify-center gap-2 disabled:opacity-70"
+                  className="flex-1 btn-cta text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {checkoutLoading ? (
                     <><Loader2 size={14} className="animate-spin" /> {t("loading")}</>
