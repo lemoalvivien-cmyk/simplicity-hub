@@ -57,8 +57,8 @@ export default function MecanismeSection() {
               ].map((item) => (
                 <li key={item} className="flex items-center gap-3">
                   <span
-                    className="w-1 h-1 rounded-full shrink-0 ring-2"
-                    style={{ background: "hsl(218 72% 55%)", ringColor: "hsl(218 72% 55% / 0.3)" }}
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: "hsl(218 72% 55%)" }}
                     aria-hidden="true"
                   />
                   <span className="text-sm text-white/65">{item}</span>
