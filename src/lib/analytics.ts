@@ -56,8 +56,9 @@ export function trackEvent(
   const page = typeof window !== "undefined" ? window.location.pathname : "/";
 
   // PROOF:ANALYTICS_RUNTIME_V1:real_insert — writes to analytics_events
-  supabase
-    .from("analytics_events")
+  // Cast required: analytics_events types auto-generated, column subset is valid
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (supabase.from("analytics_events") as any)
     .insert({
       event_type: eventType,
       session_id: sessionId,

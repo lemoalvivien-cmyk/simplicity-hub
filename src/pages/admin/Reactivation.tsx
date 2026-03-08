@@ -111,7 +111,7 @@ export default function AdminReactivation() {
   const pendingCount = jobs.filter(j => j.status === "pending").length;
 
   // Group by trigger type for summary
-  const byType = (OBJECT.keys(TRIGGER_LABELS) as TriggerType[]).map(t => ({
+  const byType = (Object.keys(TRIGGER_LABELS) as TriggerType[]).map(t => ({
     type: t,
     label: TRIGGER_LABELS[t],
     count: jobs.filter(j => j.trigger_type === t && j.status === "pending").length,

@@ -31,11 +31,11 @@ const STATUS_CHIP: Record<string, { label: string; cls: string }> = {
 };
 
 async function countEvent(eventType: string): Promise<number> {
-  const { count } = await supabase
-    .from("analytics_events")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { count } = await (supabase.from("analytics_events") as any)
     .select("*", { count: "exact", head: true })
     .eq("event_type", eventType);
-  return count ?? 0;
+  return (count as number | null) ?? 0;
 }
 
 export default function AdminAnalytics() {

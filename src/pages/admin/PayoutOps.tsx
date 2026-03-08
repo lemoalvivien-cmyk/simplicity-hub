@@ -134,7 +134,8 @@ export default function AdminPayoutOps() {
     if (!user || selected.size === 0) return;
     setActionLoading("batch");
     try {
-      const { error } = await supabase.rpc("create_payout_batch" as never, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.rpc as any)("create_payout_batch", {
         p_actor_id: user.id,
         p_label: batchLabel || `Batch ${new Date().toLocaleDateString("fr")}`,
         p_payout_ids: Array.from(selected),
