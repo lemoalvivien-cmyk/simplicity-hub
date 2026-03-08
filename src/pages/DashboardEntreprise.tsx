@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
-  Flame, Bell, Plus, Briefcase, Star, Users
+  Flame, Bell, Plus, Briefcase, Star, Users, Sparkles
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,10 +25,7 @@ import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
 import { useTranslation } from "react-i18next";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
-// PROOF:EXECUTION_V1:enterprise_dashboard_actions — imports real action queue component
-// PROOF:EXECUTION_V1:enterprise_dashboard_actions — imports real action queue component
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
-// PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics displayed
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 
 interface Mission { id: string; titre: string; statut: string; }
@@ -47,8 +44,10 @@ export default function DashboardEntreprise() {
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
   const isLaunchMode = missions.length === 0;
-  // PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics
   const metrics = usePipelineMetrics();
+
+  // AI recommendations badge
+  const [aiRecoCount, setAiRecoCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -57,24 +56,28 @@ export default function DashboardEntreprise() {
       try {
         const missionIds = (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
 
-        const [missionsRes, introsRes, hotOppsRes] = await Promise.all([
+        const [missionsRes, introsRes, hotOppsRes, aiRecoRes] = await Promise.all([
           db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(3),
           missionIds.length > 0
             ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).order("created_at", { ascending: false }).limit(3)
             : Promise.resolve({ data: [] }),
-          // Use lead_actions table (real schema) to count pending actions
           db.from("lead_actions").select("id", { count: "exact", head: true }).eq("actor_user_id", user.id).eq("status", "open"),
+          db.from("openclaw_recommendations")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("status", "nouvelle")
+            .eq("ai_generated", true),
         ]);
 
         setMissions(missionsRes.data || []);
         setIntroductions(introsRes.data || []);
-        // Count introductions awaiting validation as "validations count"
         const pendingIntros = (introsRes.data || []).filter((i: { statut: string }) => i.statut === "en_attente");
         setValidationsCount(pendingIntros.length);
         setHotOpps(hotOppsRes.count || 0);
+        setAiRecoCount(aiRecoRes.count || 0);
         setPassiveAlerts([]);
       } catch {
-        // silent fail — don't crash the dashboard
+        // silent fail
       } finally {
         setLoading(false);
       }
@@ -108,6 +111,21 @@ export default function DashboardEntreprise() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {aiRecoCount > 0 && (
+                <Link
+                  to="/agents"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold animate-pulse"
+                  style={{
+                    background: "hsl(270 80% 55% / 0.2)",
+                    border: "1px solid hsl(270 80% 55% / 0.4)",
+                    color: "hsl(270 80% 75%)",
+                    animationDuration: "2.5s",
+                  }}
+                >
+                  <Sparkles size={11} />
+                  {aiRecoCount} IA
+                </Link>
+              )}
               {validationsCount > 0 && (
                 <Link to="/validations" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{
                   background: "hsl(38 90% 55% / 0.2)",

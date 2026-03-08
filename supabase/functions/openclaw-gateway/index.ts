@@ -198,14 +198,70 @@ Deno.serve(async (req) => {
     );
   }
 
-  // ── Vérifier gateway configuré ────────────────────────────────────────────
+  // ── Vérifier gateway configuré (avec fallback internal brain) ───────────────
   const gatewayUrl = config?.gateway_url;
+  const lovableApiKey = Deno.env.get("LOVABLE_API_KEY") ?? "";
+
+  // If no external gateway and tool is an AI-analysis tool → route to internal brain
+  const INTERNAL_BRAIN_TOOLS = ["next_best_action_generate", "daily_brief_generate", "radar_scan"];
+  if (!gatewayUrl && INTERNAL_BRAIN_TOOLS.includes(body.tool)) {
+    await serviceClient.from("openclaw_logs").insert({
+      user_id: userId,
+      agent_id: body.agent_id ?? null,
+      event_type: "brain_internal_fallback",
+      summary: `Pas de gateway externe — cerveau interne utilisé pour "${body.tool}"`,
+      details: { tool: body.tool, mode: "internal_brain", model: "google/gemini-3-flash-preview" },
+      risque: "faible",
+    });
+
+    // Delegate to job-executor internal brain mode
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    try {
+      const execRes = await fetch(`${supabaseUrl}/functions/v1/openclaw-job-executor`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${serviceRoleKey}`,
+          "x-scheduler-user-id": userId,
+        },
+        signal: AbortSignal.timeout(30000),
+        body: JSON.stringify({
+          job_type: body.tool,
+          trigger_source: "gateway_internal",
+          lead_intake_id: (body.args as Record<string, unknown>)?.lead_intake_id,
+          ...(body.agent_id ? { agent_id: body.agent_id } : {}),
+        }),
+      });
+      const execData = execRes.ok ? await execRes.json() : { error: "executor_error" };
+      return new Response(
+        JSON.stringify({
+          success: execRes.ok,
+          tool: body.tool,
+          response: execData,
+          mode: "internal_brain",
+          model: "google/gemini-3-flash-preview",
+          ai_powered: execData?.ai_powered ?? false,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } catch (err) {
+      console.error("[openclaw-gateway] Internal brain call failed:", err);
+      return new Response(
+        JSON.stringify({ success: false, tool: body.tool, mode: "internal_brain", error: "Internal brain unavailable" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+  }
+
   if (!gatewayUrl) {
     return new Response(
       JSON.stringify({
         connected: false,
         message: "Aucun gateway OpenClaw configuré. Installez OpenClaw sur votre serveur et configurez l'URL.",
         setup_required: true,
+        internal_brain_available: lovableApiKey.length > 0,
+        internal_brain_tools: INTERNAL_BRAIN_TOOLS,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
