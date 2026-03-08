@@ -879,7 +879,7 @@ export default function Operations() {
 
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="text-center py-1.5 rounded-lg bg-muted">
-                      <p className="text-xs font-bold text-foreground">{formatFuture(job.next_run_at)}</p>
+                      <p className="text-xs font-bold text-foreground">{formatFuture(job.next_run_at, lang)}</p>
                       <p className="text-xs text-muted-foreground">Prochain</p>
                     </div>
                     <div className="text-center py-1.5 rounded-lg bg-muted">
