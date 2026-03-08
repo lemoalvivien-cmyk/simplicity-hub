@@ -89,7 +89,7 @@ function persistEvent(event: string, payload?: TrackPayload) {
 
   supabase
     .from("landing_ab_events")
-    .insert({
+    .insert([{
       session_id: sid,
       event_type: event,
       hero_headline_variant: variants.heroHeadline,
@@ -98,7 +98,7 @@ function persistEvent(event: string, payload?: TrackPayload) {
       event_label: payload?.label ?? null,
       event_payload: (payload as Record<string, unknown>) ?? {},
       path: typeof window !== "undefined" ? window.location.pathname : "/",
-    })
+    }])
     .then(() => {
       // silent — never throw
     });
