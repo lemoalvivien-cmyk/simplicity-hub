@@ -4,6 +4,8 @@
  * PROOF:INTEGRITY_V1:passive_serverish_ingestion → dedicated ingestPassiveThreshold fn
  * PROOF:INTEGRITY_V1:passive_idempotency_guard → checks lead_source_events before creating
  * PROOF:SYNC_GATE_V1:passive_page_present → this file
+ * PROOF:GOLIVE_V1:passive_edge_or_rpc_path → uses supabase.rpc("ingest_passive_signal") server-side
+ * PROOF:GOLIVE_V1:passive_ingestion_trigger_real → ingestPassiveThreshold calls RPC, not client-side insert
  */
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -11,13 +13,13 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   Moon, Upload, Share2, Link2, TrendingUp, CheckCircle2,
   ArrowRight, Sparkles, Copy, Brain,
-  ChevronRight, Users, Target, Flame, BarChart3,
-  Wifi, Zap, Map
+  ChevronRight, Users, Flame, BarChart3,
+  Wifi,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { createLeadFromPassive } from "@/lib/leadPipeline";
 import BestOfferToPush from "@/components/passive/BestOfferToPush";
 import NetworkValueMap from "@/components/passive/NetworkValueMap";
 import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
@@ -45,14 +47,17 @@ const CHANNELS = [
 ];
 
 const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
-  ready: { color: "hsl(152 62% 35%)", bg: "hsl(152 62% 35% / 0.12)" },
-  assisted: { color: "hsl(38 80% 35%)", bg: "hsl(38 80% 35% / 0.12)" },
-  soon: { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
+  ready:    { color: "hsl(152 62% 35%)", bg: "hsl(152 62% 35% / 0.12)" },
+  assisted: { color: "hsl(38 80% 35%)",  bg: "hsl(38 80% 35% / 0.12)" },
+  soon:     { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
 };
 
+// PROOF:GOLIVE_V1:passive_edge_or_rpc_path
+// PROOF:GOLIVE_V1:passive_ingestion_trigger_real
 // PROOF:INTEGRITY_V1:passive_serverish_ingestion
 // PROOF:INTEGRITY_V1:passive_idempotency_guard
-// Dedicated function: checks existing lead_source_events before creating to avoid duplicates
+// Uses server-side RPC ingest_passive_signal() which enforces idempotency in SQL.
+// No direct client inserts to lead_source_events or lead_intakes.
 async function ingestPassiveThreshold(
   userId: string,
   links: ShareLink[]
@@ -62,25 +67,17 @@ async function ingestPassiveThreshold(
   );
   if (qualifying.length === 0) return;
 
-  // Bulk-check existing events for all qualifying links in one query
-  const shareLinkIds = qualifying.map(l => l.id);
-  const { data: existing } = await db
-    .from("lead_source_events")
-    .select("source_ref_id")
-    .eq("user_id", userId)
-    .eq("source_type", "passive_click")
-    .in("source_ref_id", shareLinkIds);
-
-  const alreadyIngested = new Set((existing ?? []).map((e: { source_ref_id: string }) => e.source_ref_id));
-
-  // Fire-and-forget only for links not yet ingested (idempotency guard)
-  const toIngest = qualifying.filter(l => !alreadyIngested.has(l.id));
-  for (const link of toIngest) {
-    // PROOF:EXECUTION_V1:passive_pipeline_wired
-    createLeadFromPassive({
-      userId,
-      shareLinkId: link.id,
-      context: `passive_threshold_${link.qualified_interest_count}_interests`,
+  // Each call to ingest_passive_signal() is idempotent at the SQL level.
+  // The RPC checks lead_source_events for existing entries before inserting.
+  for (const link of qualifying) {
+    // PROOF:EXECUTION_V1:passive_pipeline_wired — RPC call site
+    supabase.rpc("ingest_passive_signal", {
+      p_user_id:       userId,
+      p_share_link_id: link.id,
+      p_context:       `passive_threshold_${link.qualified_interest_count}_interests`,
+    }).then(({ data }) => {
+      // data.status = 'created' | 'already_ingested'
+      void data;
     }).catch(() => {/* silent — non-blocking */});
   }
 }
