@@ -145,6 +145,54 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_engine_log: {
+        Row: {
+          context: Json
+          created_at: string
+          decision: string
+          id: string
+          intake_id: string | null
+          owner_user_id: string
+          rule_id: string | null
+          rule_type: string
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          decision: string
+          id?: string
+          intake_id?: string | null
+          owner_user_id: string
+          rule_id?: string | null
+          rule_type: string
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          decision?: string
+          id?: string
+          intake_id?: string | null
+          owner_user_id?: string
+          rule_id?: string | null
+          rule_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_engine_log_intake_id_fkey"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intakes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_engine_log_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_rules: {
         Row: {
           config: Json
@@ -3858,6 +3906,10 @@ export type Database = {
     }
     Functions: {
       admin_forensics_summary: { Args: never; Returns: Json }
+      apply_automation_rules_to_lead: {
+        Args: { p_intake_id: string; p_owner_id: string }
+        Returns: Json
+      }
       apply_lead_policy: { Args: { p_intake_id: string }; Returns: undefined }
       claim_next_job: {
         Args: {
@@ -3966,6 +4018,11 @@ export type Database = {
           zone_score: number
         }[]
       }
+      get_automation_engine_health: { Args: never; Returns: Json }
+      get_automation_rule_threshold: {
+        Args: { p_default?: number; p_owner_id: string; p_rule_type?: string }
+        Returns: number
+      }
       ingest_passive_signal: {
         Args: {
           p_company_name?: string
@@ -3984,6 +4041,10 @@ export type Database = {
       refresh_trust_score: {
         Args: { p_facilitator_id: string }
         Returns: undefined
+      }
+      resolve_message_template: {
+        Args: { p_action_type: string; p_channel?: string; p_owner_id: string }
+        Returns: Json
       }
       seed_default_automation_rules: {
         Args: { p_user_id: string }

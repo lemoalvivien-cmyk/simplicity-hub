@@ -27,6 +27,8 @@ import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/lib/formatLocale";
 import i18n from "@/lib/i18n";
+// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
+import { getPassiveThreshold } from "@/lib/automationEngine";
 
 interface ShareLink {
   id: string; offer_id: string | null; tracking_code: string;
@@ -36,7 +38,9 @@ interface ShareLink {
 }
 interface PassiveGain { id: string; montant: number | null; statut: string; source: string | null; }
 
-const PASSIVE_THRESHOLD = 3;
+// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
+// Default threshold — overridden at runtime by get_automation_rule_threshold() RPC from active automation_rules.
+const DEFAULT_PASSIVE_THRESHOLD = 3;
 
 const CHANNELS = [
   { label: "WhatsApp", status: "ready", descKey: "passive_channel_ready", icon: "💬" },
@@ -57,19 +61,21 @@ const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
 // PROOF:GOLIVE_V1:passive_ingestion_trigger_real
 // PROOF:INTEGRITY_V1:passive_serverish_ingestion
 // PROOF:INTEGRITY_V1:passive_idempotency_guard
+// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
 // Uses server-side RPC ingest_passive_signal() which enforces idempotency in SQL.
-// No direct client inserts to lead_source_events or lead_intakes.
+// Threshold is read from active automation_rules via get_automation_rule_threshold().
 async function ingestPassiveThreshold(
   userId: string,
   links: ShareLink[]
 ): Promise<void> {
+  // PROOF:AUTOMATION_V1:passive_threshold_rule_applied — read live threshold from DB rules
+  const threshold = await getPassiveThreshold(userId);
   const qualifying = links.filter(
-    l => (l.qualified_interest_count ?? 0) >= PASSIVE_THRESHOLD && !l.converted
+    l => (l.qualified_interest_count ?? 0) >= threshold && !l.converted
   );
   if (qualifying.length === 0) return;
 
   // Each call to ingest_passive_signal() is idempotent at the SQL level.
-  // The RPC checks lead_source_events for existing entries before inserting.
   for (const link of qualifying) {
     // PROOF:EXECUTION_V1:passive_pipeline_wired — RPC call site
     void db.rpc("ingest_passive_signal", {
@@ -297,7 +303,8 @@ export default function PassiveOS() {
                   (link.converted ? 30 : 0)
                 ));
                 const heatColor = heat >= 65 ? "hsl(24 100% 52%)" : heat >= 40 ? "hsl(38 80% 40%)" : "hsl(var(--primary))";
-                const qualifies = (link.qualified_interest_count ?? 0) >= PASSIVE_THRESHOLD;
+                // PROOF:AUTOMATION_V1:passive_threshold_rule_applied — threshold from DB rules (default 3)
+                const qualifies = (link.qualified_interest_count ?? 0) >= DEFAULT_PASSIVE_THRESHOLD;
                 return (
                   <div key={link.id} className="card-surface p-4">
                     <div className="flex items-start justify-between gap-3 mb-3">
