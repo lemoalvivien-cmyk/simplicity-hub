@@ -194,6 +194,7 @@ export default function Pricing() {
           </div>
         </div>
       </section>
+      <LegalFooter />
     </div>
   );
 }
