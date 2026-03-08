@@ -101,6 +101,7 @@ import AdminHelpContent from "./pages/admin/HelpContent";
 import AdminAnalytics from "./pages/admin/Analytics";
 import AdminRevenue from "./pages/admin/Revenue";
 import AdminGoLive from "./pages/admin/GoLive";
+import AdminSystemHealth from "./pages/admin/SystemHealth";
 
 const queryClient = new QueryClient();
 
