@@ -48,6 +48,7 @@ export interface OpsCheck {
 // PROOF:GOLIVE_OPS_V1:npm_ci_status
 // PROOF:GOLIVE_EXPORT_V1:npm_ci_status
 // PROOF:GOLIVE_EXPORT_V2:npm_ci_status
+// PROOF:GOLIVE_FIX_V1:npm_ci_status
 export const NPM_CI_STATUS: OpsStatusValue = "NOT_VERIFIABLE";
 // Reason: npm ci cannot be executed inside Lovable's sandboxed build env.
 // The package-lock.json exists and is committed. A human must run
