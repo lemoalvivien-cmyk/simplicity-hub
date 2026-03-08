@@ -145,13 +145,13 @@ export default function PassiveOS() {
   // PROOF:EXECUTION_V1:passive_pipeline_wired — manual trigger via RPC
   const triggerPassiveLead = async (shareLinkId: string, email?: string, company?: string) => {
     if (!user) return;
-    const { data } = await supabase.rpc("ingest_passive_signal" as string, {
+    const { data } = await db.rpc("ingest_passive_signal", {
       p_user_id:       user.id,
       p_share_link_id: shareLinkId,
       p_person_email:  email ?? null,
       p_company_name:  company ?? null,
       p_context:       "passive_interest_from_share_link",
-    } as Record<string, unknown>);
+    });
     if (data) {
       toast({ title: "Lead passif enregistré", description: "Visible dans votre pipeline." });
     }
