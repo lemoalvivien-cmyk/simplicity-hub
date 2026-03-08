@@ -90,7 +90,7 @@ prevents that case from arising.
 | Fresh deploy (all 5 migrations in order) | ✅ Yes | `4ea7ab1c` seeds quota row; `1c3240fc` enforces singleton; constraints idempotent |
 | Replay with dirty `event_type` data | ✅ Yes | `d5ca7889` + `4ea7ab1c` both UPDATE before CHECK |
 | `d8c2baed` applied alone on dirty data | ❌ No | CHECK without prior UPDATE will fail if bad rows exist |
-| `launch_quota` attempted duplicate INSERT | ✅ No | `idx_launch_quota_singleton` blocks it at DB level |
+| `launch_quota` multiple rows on dirty DB + migration `1c3240fc` | ❌ No | `CREATE UNIQUE INDEX` will fail if >1 row already exists — no cleanup is run before the index |
 
 **Verdict**: Fresh deploy with all 5 migrations is safe. Historical dirty replay
 is safe if the squash `4ea7ab1c` was included. `d8c2baed` alone on dirty data is
