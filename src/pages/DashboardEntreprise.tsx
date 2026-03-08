@@ -111,6 +111,21 @@ export default function DashboardEntreprise() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {aiRecoCount > 0 && (
+                <Link
+                  to="/agents"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold animate-pulse"
+                  style={{
+                    background: "hsl(270 80% 55% / 0.2)",
+                    border: "1px solid hsl(270 80% 55% / 0.4)",
+                    color: "hsl(270 80% 75%)",
+                    animationDuration: "2.5s",
+                  }}
+                >
+                  <Sparkles size={11} />
+                  {aiRecoCount} IA
+                </Link>
+              )}
               {validationsCount > 0 && (
                 <Link to="/validations" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{
                   background: "hsl(38 90% 55% / 0.2)",
