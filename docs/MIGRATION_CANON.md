@@ -65,21 +65,25 @@ statements in `d8c2baed` are unrelated to quota and are otherwise correct.
 partially migrated before this squash was applied may not have the row.
 
 **AT MOST one row**: Enforced by migration `1c3240fc` via
-`CREATE UNIQUE INDEX idx_launch_quota_singleton ON public.launch_quota ((TRUE))`.
-**Caveat**: this index is created without a prior dedup cleanup. If the database
-already contains more than one row in `launch_quota` at migration time (e.g. from
-a corrupted earlier deploy), the `CREATE UNIQUE INDEX` will fail. The guarantee
-holds **only on a clean or fresh-deployed database**.
+`CREATE UNIQUE INDEX IF NOT EXISTS idx_launch_quota_singleton ON public.launch_quota ((TRUE))`.
 
-**Honest combined guarantee**: On a fresh deploy with all 5 migrations applied in
-order, `launch_quota` contains exactly one row. This is DB-enforced.
-On a database that was previously in a corrupt state (multiple rows), the singleton
-is **not automatically recovered** by these migrations — manual cleanup is required.
+**⚠️ Known misleading comment in migration `1c3240fc`**: the source file contains
+the comment `"Guarantee exactly one row in launch_quota at all times."` — this is
+**too strong**. The real guarantee is:
+- ✅ Exactly one row on a **fresh deploy** or a database that already had exactly one row before this migration ran.
+- ❌ If the database already contained **more than one row** at migration time, `CREATE UNIQUE INDEX` fails — it does not auto-clean duplicates first.
+- The migration file is immutable (read-only directory). The comment has **not been corrected at source**. This section is the authoritative override.
+
+**Honest combined guarantee**: On a fresh deploy with all 5 migrations in order,
+`launch_quota` contains exactly one row. This is DB-enforced.
+On a database in a corrupt state (multiple rows), the singleton
+is **not automatically recovered** — manual cleanup is required before migration `1c3240fc`
+can succeed. See `docs/REPAIR_LAUNCH_QUOTA.md` for the procedure.
 
 **Script behaviour**: `verify-quota-flow.ts` uses `.maybeSingle()` (not `.single()`)
 plus `.limit(1)` to read quota state. It will throw if the row is missing, but
-will not throw on the JS side if there were multiple rows — the DB unique index
-prevents that case from arising.
+will not throw on the JS side if there are multiple rows — the DB unique index
+prevents that case from arising on a correctly deployed database.
 
 ---
 
@@ -88,13 +92,17 @@ prevents that case from arising.
 | Scenario | Safe? | Notes |
 |----------|-------|-------|
 | Fresh deploy (all 5 migrations in order) | ✅ Yes | `4ea7ab1c` seeds quota row; `1c3240fc` enforces singleton; constraints idempotent |
-| Replay with dirty `event_type` data | ✅ Yes | `d5ca7889` + `4ea7ab1c` both UPDATE before CHECK |
+| Replay with dirty `event_type` data in `landing_ab_events` | ✅ Yes | `d5ca7889` + `4ea7ab1c` both UPDATE before CHECK |
 | `d8c2baed` applied alone on dirty data | ❌ No | CHECK without prior UPDATE will fail if bad rows exist |
 | `launch_quota` multiple rows on dirty DB + migration `1c3240fc` | ❌ No | `CREATE UNIQUE INDEX` will fail if >1 row already exists — no cleanup is run before the index |
 
-**Verdict**: Fresh deploy with all 5 migrations is safe. Historical dirty replay
-is safe if the squash `4ea7ab1c` was included. `d8c2baed` alone on dirty data is
-still unsafe — the fix is to always run the full migration chain.
+**Verdict**: Fresh deploy with all 5 migrations in order is safe.
+
+Historical dirty replay is **partially safe**:
+- ✅ Safe for `landing_ab_events` constraint replay, provided the full chain (including squash `4ea7ab1c`) is applied.
+- ❌ **Not safe** if `launch_quota` already contains more than one row — migration `1c3240fc` will fail with a unique index error. Manual dedup is required before the index can be created. See `docs/REPAIR_LAUNCH_QUOTA.md` for the procedure.
+
+`d8c2baed` alone on dirty data is still unsafe — always run the full migration chain.
 
 ---
 
