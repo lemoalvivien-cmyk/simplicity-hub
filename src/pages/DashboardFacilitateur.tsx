@@ -55,6 +55,8 @@ export default function DashboardFacilitateur() {
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("facilitateur");
   const isLaunchMode = introsCount === 0 && shareLinks.length === 0;
+  // PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics
+  const metrics = usePipelineMetrics();
 
   useEffect(() => {
     if (!user) return;
