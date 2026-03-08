@@ -25,15 +25,18 @@
  *   - SUPABASE_SERVICE_ROLE_KEY in env (NEVER committed to repo)
  *   - launch_quota table has exactly one row (created by squash migration)
  *
- * SCENARIOS TESTED (6):
+ * SCENARIOS EXECUTED (5):
  *   1. First launch event           → used_slots +1  (returns 'incremented')
  *   2. Re-delivery same sub ID      → used_slots +0  (returns 'skipped_already_consumed')
  *   3. Standard offer               → used_slots +0  (returns 'skipped_not_launch')
  *   4. offer_type=launch wrong price → used_slots +0 (returns 'skipped_not_launch')
  *   5. Capacity exhausted           → used_slots +0  (returns 'at_capacity')
  *                                   → consumed row is ROLLED BACK (invariant check)
- *   6. RPC error simulation         → NOT directly testable here (requires DB fault injection)
- *                                   → documented as gap
+ *
+ * GAPS NOT EXECUTED (not in this script):
+ *   6. RPC error rollback           → requires DB fault injection — not covered here
+ *   7. no_quota_row                 → requires temporarily deleting the singleton row — unsafe on prod
+ *   8. Stripe HTTP endpoint         → not exercised; no webhook call is made
  */
 
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
