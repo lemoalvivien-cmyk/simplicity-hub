@@ -195,6 +195,14 @@ export default function CampagneNouvelle() {
               <div className="flex items-center justify-center py-8">
                 <Loader2 size={20} className="animate-spin text-muted-foreground" />
               </div>
+            ) : listesError ? (
+              <div className="p-4 rounded-xl bg-muted flex items-start gap-2">
+                <AlertCircle size={16} className="shrink-0 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Erreur de chargement</p>
+                  <p className="text-xs text-muted-foreground">{listesError}</p>
+                </div>
+              </div>
             ) : listes.length === 0 ? (
               <div className="p-5 rounded-xl bg-muted text-center">
                 <AlertCircle size={20} className="mx-auto text-muted-foreground mb-2" />
