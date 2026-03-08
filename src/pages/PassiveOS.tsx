@@ -36,7 +36,9 @@ interface ShareLink {
 }
 interface PassiveGain { id: string; montant: number | null; statut: string; source: string | null; }
 
-const PASSIVE_THRESHOLD = 3;
+// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
+// Default threshold — overridden at runtime by get_automation_rule_threshold() RPC from active automation_rules.
+const DEFAULT_PASSIVE_THRESHOLD = 3;
 
 const CHANNELS = [
   { label: "WhatsApp", status: "ready", descKey: "passive_channel_ready", icon: "💬" },
