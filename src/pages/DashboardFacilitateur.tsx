@@ -321,6 +321,23 @@ export default function DashboardFacilitateur() {
           </div>
         )}
 
+        {/* ── PIPELINE METRICS STRIP ───────────────────────── */}
+        {/* PROOF:INTEGRITY_V1:dashboard_action_context */}
+        {!isLaunchMode && !metrics.loading && metrics.openActions > 0 && (
+          <div className="rounded-xl p-3 flex items-center gap-4 flex-wrap" style={{ background: "hsl(var(--secondary))" }}>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--primary))" }} />
+              <span className="text-xs font-semibold text-foreground">{metrics.openActions} action{metrics.openActions > 1 ? "s" : ""} en attente</span>
+            </div>
+            {metrics.doneLast7d > 0 && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--success))" }} />
+                <span className="text-xs text-muted-foreground">{metrics.doneLast7d} terminée{metrics.doneLast7d > 1 ? "s" : ""} (7j)</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── LEADS PIPELINE (facilitateur view) ───────────── */}
         {/* PROOF:PIPELINE_V2:facilitateur_dashboard_pipeline */}
         {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
@@ -328,7 +345,7 @@ export default function DashboardFacilitateur() {
 
         {/* ── FACILITATEUR ACTION QUEUE (real lead_actions) ─── */}
         {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
-        {/* actor_user_id = facilitator user.id (routed by trigger for needs_enrichment) */}
+        {/* PROOF:INTEGRITY_V1:dashboard_action_context — with context UI from LeadActionsQueue */}
         {!isLaunchMode && (
           <LeadActionsQueue
             title="Mes actions à faire"
