@@ -9,6 +9,9 @@
  * PROOF:PREMIUM_PROOF_V1:action_queue_clarity → PRIORITY_CONFIG with color rings + urgency pulse, lines ~46-78
  * PROOF:PREMIUM_PROOF_V1:premium_loading_states → card-shaped skeleton, lines ~107-129
  * PROOF:PREMIUM_PROOF_V1:premium_empty_states → "Tout est traité" empty state, lines ~131-146
+ * PROOF:PREMIUM_EXPORT_V1:action_queue_clarity → PRIORITY_CONFIG rings + urgency pulse + clear CTAs, this file
+ * PROOF:PREMIUM_EXPORT_V1:premium_loading_states → card-shaped skeleton (3 rows), this file
+ * PROOF:PREMIUM_EXPORT_V1:premium_empty_states → "Tout est traité" empty state with CheckCircle2, this file
  */
 import {
   Building2, User, Zap, CheckCircle2, PlayCircle, Loader2,

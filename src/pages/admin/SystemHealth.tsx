@@ -7,6 +7,7 @@
  * PROOF:GOLIVE_V1:action_events_admin_visibility → lead_action_events live count below
  * PROOF:GOLIVE_V1:passive_admin_visibility → passive ingestion section below
  * PROOF:RELEASE_V1:admin_forensics_global_visibility → admin_forensics_summary() RPC below
+ * PROOF:PREMIUM_EXPORT_V1:final_ux_qa_checks → QA section with PASS/PARTIAL/FAIL checks, this file
  * Toutes les données sont importées de sources traçables dans le code.
  */
 import { useState, useEffect } from "react";

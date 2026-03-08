@@ -1,6 +1,7 @@
 # PREMIUM_FINISH_MANIFEST — Final UX QA Pass
 # PROOF:PREMIUM_V1:premium_finish_manifest
 # PROOF:PREMIUM_PROOF_V1:premium_finish_manifest → this file (exportable, grep-able)
+# PROOF:PREMIUM_EXPORT_V1:premium_finish_manifest → this file (export reality gate)
 
 Stamp: PREMIUM-V1-2026-03-08
 

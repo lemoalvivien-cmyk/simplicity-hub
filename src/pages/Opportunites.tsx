@@ -13,6 +13,10 @@
  * PROOF:PREMIUM_PROOF_V1:premium_loading_states → skeleton shimmer cards lines ~152-255
  * PROOF:PREMIUM_PROOF_V1:premium_empty_states → actionable empty state lines ~352-370
  * PROOF:PREMIUM_PROOF_V1:premium_error_states → honest error banner lines ~136-148
+ * PROOF:PREMIUM_EXPORT_V1:opportunity_detail_clarity → STATUS_CONFIG nextStep CTA + ORIGIN_CONFIG badges + resolveOriginKey(), this file
+ * PROOF:PREMIUM_EXPORT_V1:premium_loading_states → skeleton shimmer grid + card list, this file
+ * PROOF:PREMIUM_EXPORT_V1:premium_empty_states → actionable empty with CTA button, this file
+ * PROOF:PREMIUM_EXPORT_V1:premium_error_states → honest AlertTriangle error banner, this file
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
