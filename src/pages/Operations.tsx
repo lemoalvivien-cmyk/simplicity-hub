@@ -3,10 +3,12 @@
  * Health, channels, sessions, jobs, scheduler queue, heartbeats, boundary
  * Autonomous execution layer: real queue, real cron, real events
  * Real Channel Delivery + Receipts + Outcome Loop
+ * Internationalized via useTranslation — formatLocale for dates/numbers
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Brain, Zap, Shield, Clock, CheckCircle2, AlertTriangle,
@@ -24,25 +26,26 @@ import { useOpenClawChannelActions, CHANNEL_META, STATUS_META, TRIGGER_MODE_META
 import { useOpenClawScheduledRuns, SCHEDULE_PLAN, CRON_JOBS_PROOF } from "@/hooks/useOpenClawScheduledRuns";
 import { useOpenClawCronDiagnostic } from "@/hooks/useOpenClawCronDiagnostic";
 import { useOpenClawDeliveries, DELIVERY_STATUS_META, CHANNEL_CAPABILITY_MATRIX, getChannelCapability, getDispatchLabel } from "@/hooks/useOpenClawDeliveries";
+import { formatDateRelative } from "@/lib/formatLocale";
 
 type TabId = "runtime" | "channels" | "queue" | "jobs" | "executions" | "canal" | "sessions" | "tools" | "boundary";
 
-function formatRelative(iso: string | null) {
-  if (!iso) return null;
-  const diff = Date.now() - new Date(iso).getTime();
-  if (diff < 60000) return "à l'instant";
-  if (diff < 3600000) return `il y a ${Math.floor(diff / 60000)}min`;
-  if (diff < 86400000) return `il y a ${Math.floor(diff / 3600000)}h`;
-  return new Date(iso).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
-}
-
-function formatFuture(iso: string | null) {
+function formatFuture(iso: string | null, lang: string) {
   if (!iso) return "—";
   const diff = new Date(iso).getTime() - Date.now();
-  if (diff < 0) return "bientôt";
-  if (diff < 3600000) return `dans ${Math.floor(diff / 60000)}min`;
-  if (diff < 86400000) return `dans ${Math.floor(diff / 3600000)}h`;
-  return `dans ${Math.floor(diff / 86400000)}j`;
+  if (diff < 0) {
+    return lang === "fr" ? "bientôt" : lang === "es" ? "pronto" : "soon";
+  }
+  if (diff < 3600000) {
+    const m = Math.floor(diff / 60000);
+    return lang === "fr" ? `dans ${m}min` : lang === "es" ? `en ${m}min` : `in ${m}min`;
+  }
+  if (diff < 86400000) {
+    const h = Math.floor(diff / 3600000);
+    return lang === "fr" ? `dans ${h}h` : lang === "es" ? `en ${h}h` : `in ${h}h`;
+  }
+  const d = Math.floor(diff / 86400000);
+  return lang === "fr" ? `dans ${d}j` : lang === "es" ? `en ${d}d` : `in ${d}d`;
 }
 
 function HealthRing({ score }: { score: number }) {
@@ -75,6 +78,8 @@ function StatusDot({ ok, pulse }: { ok: boolean; pulse?: boolean }) {
 }
 
 export default function Operations() {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
   const [activeTab, setActiveTab] = useState<TabId>("runtime");
   const [probingChannel, setProbingChannel] = useState<string | null>(null);
   const [triggeringJob, setTriggeringJob] = useState<string | null>(null);
@@ -332,7 +337,7 @@ export default function Operations() {
                 {
                   label: "Prochain réveil",
                   ok: !!nextJob,
-                  desc: nextJob ? `${JOB_TYPE_META[nextJob.job_type]?.label ?? nextJob.job_name} ${formatFuture(nextJob.next_run_at)}` : "Aucun job planifié",
+                  desc: nextJob ? `${JOB_TYPE_META[nextJob.job_type]?.label ?? nextJob.job_name} ${formatFuture(nextJob.next_run_at, lang)}` : t("ops_no_job"),
                   pulse: false,
                 },
                 {
@@ -399,7 +404,7 @@ export default function Operations() {
                           {run.summary ?? meta?.label ?? run.run_type}
                         </p>
                         <span className="text-xs text-muted-foreground shrink-0">
-                          {formatRelative(run.created_at)}
+                          {formatDateRelative(run.created_at, lang)}
                         </span>
                       </div>
                     );
@@ -686,7 +691,7 @@ export default function Operations() {
                       )}
                       {ch.last_probe_at && (
                         <span className="text-xs text-muted-foreground">
-                          Dernière sonde {formatRelative(ch.last_probe_at)}
+                          Dernière sonde {formatDateRelative(ch.last_probe_at, lang)}
                         </span>
                       )}
                     </div>
