@@ -199,11 +199,12 @@ export default function LeadActionsQueue({
             >
               {/* Icon with priority ring */}
               <span
-                className="inline-flex items-center justify-center w-7 h-7 rounded-lg shrink-0 mt-0.5 ring-2"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-lg shrink-0 mt-0.5"
                 style={{
                   background: "hsl(var(--background))",
                   color: pCfg.color,
-                  ringColor: pCfg.ring,
+                  outline: `2px solid ${pCfg.ring}`,
+                  outlineOffset: "-2px",
                 }}
               >
                 {icon}
