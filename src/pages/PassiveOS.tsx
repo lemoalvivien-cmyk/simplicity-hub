@@ -71,14 +71,11 @@ async function ingestPassiveThreshold(
   // The RPC checks lead_source_events for existing entries before inserting.
   for (const link of qualifying) {
     // PROOF:EXECUTION_V1:passive_pipeline_wired — RPC call site
-    supabase.rpc("ingest_passive_signal", {
+    void supabase.rpc("ingest_passive_signal" as string, {
       p_user_id:       userId,
       p_share_link_id: link.id,
       p_context:       `passive_threshold_${link.qualified_interest_count}_interests`,
-    }).then(({ data }) => {
-      // data.status = 'created' | 'already_ingested'
-      void data;
-    }).catch(() => {/* silent — non-blocking */});
+    } as Record<string, unknown>);
   }
 }
 
