@@ -136,22 +136,9 @@ export const ENV_BLOCKERS: EnvBlocker[] = [
 ];
 
 // ── REMAINING MOCK FEATURES ─────────────────────────────────────────────────
+// Updated: GOLIVE_V1 — regles + messages_templates are now REAL (removed from mocks)
 
 export const REMAINING_MOCKS: MockFeature[] = [
-  {
-    id: "regles",
-    label: "Règles d'automatisation",
-    page: "/regles",
-    note: "UI toggle locale uniquement (useState). Aucune persistance DB. Les règles ne déclenchent rien côté backend. L'utilisateur croit contrôler l'automatisation.",
-    risk: "high",
-  },
-  {
-    id: "messages_templates",
-    label: "Modèles de messages",
-    page: "/messages",
-    note: "Templates hardcodés côté client. Pas de table DB. Aucune personnalisation persistée.",
-    risk: "medium",
-  },
   {
     id: "campaign_sequences",
     label: "Séquences d'étapes campagne",
@@ -172,6 +159,13 @@ export const REMAINING_MOCKS: MockFeature[] = [
     page: "/studio",
     note: "Les étapes 'etapesLancement' sont hardcodées, non calculées depuis DB.",
     risk: "low",
+  },
+  {
+    id: "automation_rules_backend",
+    label: "Règles d'automatisation — moteur backend non branché",
+    page: "/regles",
+    note: "GOLIVE_V1: table automation_rules réelle + UI persistée. MAIS les règles ne déclenchent pas encore d'actions backend. Ex: auto_promote_intro non branché au trigger DB.",
+    risk: "medium",
   },
 ];
 

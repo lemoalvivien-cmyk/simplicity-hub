@@ -3,14 +3,18 @@
  * PROOF GATE: confidence badges, evidence panels, blocking issues from buildHealth.ts,
  * build health, remaining mocks, manual declarations.
  * PROOF:SYNC_GATE_V1:system_health_sync_stamp → BUILD_STAMP + Repo Sync Gate section below
+ * PROOF:GOLIVE_V1:ops_diagnostics_panel → OPS / Forensics section below
+ * PROOF:GOLIVE_V1:action_events_admin_visibility → lead_action_events live count below
+ * PROOF:GOLIVE_V1:passive_admin_visibility → passive ingestion section below
  * Toutes les données sont importées de sources traçables dans le code.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import {
   CheckCircle2, AlertTriangle, XCircle, Clock,
   Settings, Search, Filter, Shield, Code2,
-  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers, GitCommit
+  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers, GitCommit,
+  Activity, BarChart3, Telescope
 } from "lucide-react";
 import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECTED } from "@/lib/buildStamp";
 import {
@@ -33,6 +37,14 @@ import {
   TYPESCRIPT_DEBT,
   type BuildCheckStatus,
 } from "@/lib/buildHealth";
+import {
+  GO_LIVE_BLOCKERS,
+  BLOCKERS_ONLY,
+  WARNINGS_OPEN,
+  RESOLVED,
+  GO_LIVE_SCORE,
+} from "@/lib/goLiveHealth";
+import { db } from "@/lib/supabase";
 
 const AREA_LABELS: Record<OwnerArea, string> = {
   acquisition:    "Acquisition",

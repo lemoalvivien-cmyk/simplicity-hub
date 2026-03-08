@@ -13,14 +13,15 @@
  */
 
 // PROOF:SYNC_GATE_V1:build_stamp_visible
-export const BUILD_STAMP = "SYNCGATE-2026-03-08-1147-V1" as const;
+// PROOF:GOLIVE_V1:ops_diagnostics_panel → see SystemHealth.tsx
+export const BUILD_STAMP = "GOLIVE-2026-03-08-1200-V1" as const;
 
 export const SYNC_GATE_META = {
   stamp:       BUILD_STAMP,
-  pass:        "REPO_SYNC_GATE_V1",
+  pass:        "GOLIVE_HARDENING_V1",
   date:        "2026-03-08",
-  time:        "11:47",
-  description: "Synchronisation forcée — estampillage unique pour vérification zip/repo/preview",
+  time:        "12:00",
+  description: "Go-Live Hardening — automation_rules + message_templates DB réels, ingest_passive_signal RPC, admin forensics",
 } as const;
 
 /**
