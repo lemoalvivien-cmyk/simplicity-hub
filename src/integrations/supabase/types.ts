@@ -1151,6 +1151,47 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_action_events: {
+        Row: {
+          action_id: string
+          actor_user_id: string
+          created_at: string
+          event_type: string
+          id: string
+          new_status: string
+          note: string | null
+          previous_status: string | null
+        }
+        Insert: {
+          action_id: string
+          actor_user_id: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          new_status: string
+          note?: string | null
+          previous_status?: string | null
+        }
+        Update: {
+          action_id?: string
+          actor_user_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          new_status?: string
+          note?: string | null
+          previous_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_action_events_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "lead_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_actions: {
         Row: {
           action_type: string
@@ -3860,10 +3901,24 @@ export type Database = {
         Returns: undefined
       }
       seed_openclaw_jobs: { Args: { p_user_id: string }; Returns: undefined }
-      update_lead_action_status: {
-        Args: { p_action_id: string; p_actor_id: string; p_new_status: string }
-        Returns: boolean
-      }
+      update_lead_action_status:
+        | {
+            Args: {
+              p_action_id: string
+              p_actor_id: string
+              p_new_status: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              p_action_id: string
+              p_actor_id: string
+              p_new_status: string
+              p_note?: string
+            }
+            Returns: boolean
+          }
       upsert_graph_edge: {
         Args: {
           p_confidence?: number

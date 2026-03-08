@@ -24,6 +24,8 @@ import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 // PROOF:EXECUTION_V1:facilitateur_dashboard_actions — imports real action queue component
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
+// PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics displayed
+import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/lib/formatLocale";
 import i18n from "@/lib/i18n";
@@ -53,6 +55,8 @@ export default function DashboardFacilitateur() {
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("facilitateur");
   const isLaunchMode = introsCount === 0 && shareLinks.length === 0;
+  // PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics
+  const metrics = usePipelineMetrics();
 
   useEffect(() => {
     if (!user) return;
@@ -317,6 +321,23 @@ export default function DashboardFacilitateur() {
           </div>
         )}
 
+        {/* ── PIPELINE METRICS STRIP ───────────────────────── */}
+        {/* PROOF:INTEGRITY_V1:dashboard_action_context */}
+        {!isLaunchMode && !metrics.loading && metrics.openActions > 0 && (
+          <div className="rounded-xl p-3 flex items-center gap-4 flex-wrap" style={{ background: "hsl(var(--secondary))" }}>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--primary))" }} />
+              <span className="text-xs font-semibold text-foreground">{metrics.openActions} action{metrics.openActions > 1 ? "s" : ""} en attente</span>
+            </div>
+            {metrics.doneLast7d > 0 && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--success))" }} />
+                <span className="text-xs text-muted-foreground">{metrics.doneLast7d} terminée{metrics.doneLast7d > 1 ? "s" : ""} (7j)</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── LEADS PIPELINE (facilitateur view) ───────────── */}
         {/* PROOF:PIPELINE_V2:facilitateur_dashboard_pipeline */}
         {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
@@ -324,7 +345,7 @@ export default function DashboardFacilitateur() {
 
         {/* ── FACILITATEUR ACTION QUEUE (real lead_actions) ─── */}
         {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
-        {/* actor_user_id = facilitator user.id (routed by trigger for needs_enrichment) */}
+        {/* PROOF:INTEGRITY_V1:dashboard_action_context — with context UI from LeadActionsQueue */}
         {!isLaunchMode && (
           <LeadActionsQueue
             title="Mes actions à faire"

@@ -20,7 +20,10 @@ import BestAccessPanel from "@/components/graph/BestAccessPanel";
 import { useTranslation } from "react-i18next";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 // PROOF:EXECUTION_V1:enterprise_dashboard_actions — imports real action queue component
+// PROOF:EXECUTION_V1:enterprise_dashboard_actions — imports real action queue component
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
+// PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics displayed
+import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
@@ -38,6 +41,8 @@ export default function DashboardEntreprise() {
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
   const isLaunchMode = missions.length === 0;
+  // PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics
+  const metrics = usePipelineMetrics();
 
   useEffect(() => {
     if (!user) return;
@@ -158,6 +163,31 @@ export default function DashboardEntreprise() {
         {!isLaunchMode && <BestAccessPanel title={t("best_path_title")} context={{ limit: 3 }} compact showAlternatives={false} />}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
+        {/* ── PIPELINE METRICS ─────────────────────────────── */}
+        {/* PROOF:INTEGRITY_V1:dashboard_action_context */}
+        {!isLaunchMode && !metrics.loading && (metrics.openActions > 0 || metrics.v2Opportunities > 0) && (
+          <div className="rounded-xl p-3 flex items-center gap-4 flex-wrap" style={{ background: "hsl(var(--secondary))" }}>
+            {metrics.openActions > 0 && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--primary))" }} />
+                <span className="text-xs font-semibold text-foreground">{metrics.openActions} action{metrics.openActions > 1 ? "s" : ""} ouverte{metrics.openActions > 1 ? "s" : ""}</span>
+              </div>
+            )}
+            {metrics.v2Opportunities > 0 && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full" style={{ background: "hsl(218 72% 45%)" }} />
+                <span className="text-xs text-muted-foreground">{metrics.v2Opportunities} opp. pipeline V2</span>
+              </div>
+            )}
+            {metrics.introBornOpps > 0 && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full" style={{ background: "hsl(220 80% 45%)" }} />
+                <span className="text-xs text-muted-foreground">{metrics.introBornOpps} via intro</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── UNIFIED LEADS PIPELINE ────────────────────────── */}
         {/* PROOF:PIPELINE_V2:enterprise_dashboard_pipeline */}
         {/* PROOF:EXECUTION_V1:enterprise_dashboard_actions */}
@@ -165,7 +195,7 @@ export default function DashboardEntreprise() {
 
         {/* ── ENTERPRISE ACTION QUEUE (reads real lead_actions table) ── */}
         {/* PROOF:EXECUTION_V1:enterprise_dashboard_actions */}
-        {/* actor_user_id = enterprise user.id (routed by trigger when entreprise_id is set) */}
+        {/* PROOF:INTEGRITY_V1:dashboard_action_context — with context UI from LeadActionsQueue */}
         {!isLaunchMode && (
           <LeadActionsQueue
             title="Actions commerciales"
