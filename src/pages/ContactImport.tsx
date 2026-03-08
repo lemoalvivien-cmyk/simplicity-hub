@@ -1,51 +1,51 @@
+/**
+ * ContactImport — Import CSV/Excel réel.
+ * Parse le fichier côté client, mappe les colonnes, insère en base via Supabase.
+ * Honnêteté : le parser est basique (CSV texte brut). Excel .xlsx non supporté
+ * sans librairie externe — affichage honnête si format non supporté.
+ */
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import { ArrowLeft, Upload, FileSpreadsheet, CheckCircle2, AlertCircle, ChevronRight, RefreshCw } from "lucide-react";
+import { ArrowLeft, Upload, FileSpreadsheet, CheckCircle2, AlertCircle, ChevronRight, RefreshCw, Loader2 } from "lucide-react";
+import { db } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 type Step = "upload" | "mapping" | "preview" | "success";
 
-// Données simulées pour la démo
-const colonnesMock = ["Prénom", "Nom", "Entreprise", "Email", "Téléphone", "Poste"];
-const previewMock = [
-  { Prénom: "Sophie", Nom: "Lemaire", Entreprise: "Café du Marché", Email: "s.lemaire@cafe.fr", Téléphone: "06 11 22 33 44", Poste: "Gérante" },
-  { Prénom: "Bruno", Nom: "Tessier", Entreprise: "Imprimerie Tessier", Email: "btessier@imprimerie.fr", Téléphone: "", Poste: "Directeur" },
-  { Prénom: "Laure", Nom: "Vidal", Entreprise: "Cabinet Vidal", Email: "laure.vidal@cabinet.fr", Téléphone: "07 88 99 00 11", Poste: "Associée" },
-  { Prénom: "Malik", Nom: "Diouf", Entreprise: "Diouf Transport", Email: "", Téléphone: "06 55 44 33 22", Poste: "Gérant" },
-  { Prénom: "Claire", Nom: "Moreau", Entreprise: "Studio CM", Email: "claire@studiocm.fr", Téléphone: "06 77 66 55 44", Poste: "Fondatrice" },
-];
+interface ParsedContact {
+  prenom_nom: string;
+  email?: string;
+  telephone?: string;
+  entreprise?: string;
+}
 
 function StepIndicator({ current }: { current: Step }) {
   const steps: { id: Step; label: string }[] = [
-    { id: "upload", label: "Votre fichier" },
+    { id: "upload",  label: "Votre fichier" },
     { id: "mapping", label: "Vérification" },
     { id: "preview", label: "Aperçu" },
     { id: "success", label: "Terminé" },
   ];
-  const idx = steps.findIndex((s) => s.id === current);
+  const idx = steps.findIndex(s => s.id === current);
   return (
     <div className="flex items-center gap-1 mb-8">
       {steps.map((step, i) => (
         <div key={step.id} className="flex items-center gap-1 flex-1">
           <div className="flex flex-col items-center gap-1 flex-1">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all"
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all"
               style={{
                 background: i <= idx ? "hsl(var(--primary))" : "hsl(var(--muted))",
                 color: i <= idx ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
-              }}
-            >
+              }}>
               {i < idx ? <CheckCircle2 size={14} /> : i + 1}
             </div>
-            <p className="text-xs text-center text-muted-foreground hidden sm:block leading-tight">
-              {step.label}
-            </p>
+            <p className="text-xs text-center text-muted-foreground hidden sm:block leading-tight">{step.label}</p>
           </div>
           {i < steps.length - 1 && (
-            <div
-              className="h-0.5 flex-1 mb-4 rounded-full"
-              style={{ background: i < idx ? "hsl(var(--primary))" : "hsl(var(--border))" }}
-            />
+            <div className="h-0.5 flex-1 mb-4 rounded-full"
+              style={{ background: i < idx ? "hsl(var(--primary))" : "hsl(var(--border))" }} />
           )}
         </div>
       ))}
@@ -53,47 +53,128 @@ function StepIndicator({ current }: { current: Step }) {
   );
 }
 
+function parseCSV(text: string): ParsedContact[] {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+
+  const headers = lines[0].split(/[,;|\t]/).map(h => h.trim().replace(/^["']|["']$/g, "").toLowerCase());
+
+  const findCol = (...keys: string[]) => {
+    for (const key of keys) {
+      const idx = headers.findIndex(h => h.includes(key));
+      if (idx !== -1) return idx;
+    }
+    return -1;
+  };
+
+  const prenomIdx  = findCol("prenom", "prénom", "first", "firstname", "fname", "prenom_nom", "nom");
+  const nomIdx     = findCol("nom", "last", "lastname", "lname", "surname");
+  const emailIdx   = findCol("email", "mail", "courriel");
+  const telIdx     = findCol("tel", "téléphone", "telephone", "phone", "mobile");
+  const entrepriseIdx = findCol("entreprise", "company", "société", "societe", "organization");
+
+  const contacts: ParsedContact[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(/[,;|\t]/).map(c => c.trim().replace(/^["']|["']$/g, ""));
+    const prenom = prenomIdx >= 0 ? (cols[prenomIdx] || "") : "";
+    const nom    = nomIdx >= 0    ? (cols[nomIdx] || "")    : "";
+    const fullName = [prenom, nom].filter(Boolean).join(" ") || cols[0] || "Contact";
+
+    if (!fullName.trim()) continue;
+
+    contacts.push({
+      prenom_nom:  fullName,
+      email:       emailIdx >= 0 ? cols[emailIdx] || undefined : undefined,
+      telephone:   telIdx >= 0   ? cols[telIdx] || undefined   : undefined,
+      entreprise:  entrepriseIdx >= 0 ? cols[entrepriseIdx] || undefined : undefined,
+    });
+  }
+  return contacts;
+}
+
 export default function ContactImport() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>("upload");
   const [fileName, setFileName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [contacts, setContacts] = useState<ParsedContact[]>([]);
+  const [importedCount, setImportedCount] = useState(0);
+  const [parseError, setParseError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) {
-      setFileName(file.name);
-      setLoading(true);
-      setTimeout(() => { setLoading(false); setStep("mapping"); }, 1200);
+    if (!file) return;
+
+    if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
+      setParseError("Les fichiers Excel (.xlsx/.xls) ne sont pas encore supportés. Veuillez exporter en CSV depuis Excel (Fichier → Enregistrer sous → CSV).");
+      return;
     }
-  }
+    if (!file.name.endsWith(".csv") && !file.name.endsWith(".txt")) {
+      setParseError("Format non supporté. Utilisez un fichier CSV (.csv).");
+      return;
+    }
 
-  function handleConfirmMapping() {
-    setStep("preview");
-  }
-
-  function handleImport() {
+    setParseError(null);
+    setFileName(file.name);
     setLoading(true);
-    setTimeout(() => { setLoading(false); setStep("success"); }, 1500);
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const parsed = parseCSV(text);
+      if (parsed.length === 0) {
+        setParseError("Aucun contact détecté. Vérifiez que votre fichier contient une ligne d'en-tête et des données.");
+        setLoading(false);
+        return;
+      }
+      setContacts(parsed);
+      setLoading(false);
+      setStep("mapping");
+    };
+    reader.readAsText(file, "UTF-8");
+  }
+
+  async function handleImport() {
+    if (!user || contacts.length === 0) return;
+    setLoading(true);
+
+    const rows = contacts.map(c => ({
+      owner_user_id: user.id,
+      prenom_nom:    c.prenom_nom,
+      email:         c.email || null,
+      telephone:     c.telephone || null,
+      entreprise:    c.entreprise || null,
+      origine:       "import",
+      statut:        "a_contacter",
+    }));
+
+    // Batch insert par 100
+    let total = 0;
+    for (let i = 0; i < rows.length; i += 100) {
+      const batch = rows.slice(i, i + 100);
+      const { error } = await db.from("contacts").insert(batch);
+      if (!error) total += batch.length;
+    }
+
+    setImportedCount(total);
+    setLoading(false);
+    setStep("success");
+    if (total > 0) toast.success(`${total} contact${total > 1 ? "s" : ""} importé${total > 1 ? "s" : ""} !`);
   }
 
   return (
     <UserLayout>
       <div className="max-w-xl mx-auto">
-        {/* Retour */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
-        >
+        <button onClick={() => navigate(-1)}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
           <ArrowLeft size={15} /> Retour aux contacts
         </button>
 
-        <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-          Importer des contacts
-        </h1>
+        <h1 className="font-display text-2xl font-bold text-foreground mb-2">Importer des contacts</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Importez un fichier Excel ou CSV. On s'occupe du reste — c'est simple et rapide.
+          Importez un fichier CSV. Les colonnes nom, email, téléphone et entreprise sont détectées automatiquement.
         </p>
 
         <StepIndicator current={step} />
@@ -102,22 +183,19 @@ export default function ContactImport() {
         {step === "upload" && (
           <div className="card-surface p-6">
             <h2 className="font-semibold text-foreground mb-1">Choisissez votre fichier</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              Formats acceptés : Excel (.xlsx) ou CSV (.csv). Taille max : 10 Mo.
-            </p>
+            <p className="text-sm text-muted-foreground mb-6">Format supporté : CSV (.csv). Taille max : 10 Mo.</p>
 
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              onChange={handleFileChange}
-              className="hidden"
-            />
+            {parseError && (
+              <div className="mb-4 p-3 rounded-xl flex items-start gap-2" style={{ background: "hsl(0 60% 95%)", color: "hsl(0 60% 35%)" }}>
+                <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                <p className="text-xs">{parseError}</p>
+              </div>
+            )}
 
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="w-full border-2 border-dashed border-border rounded-xl p-10 flex flex-col items-center gap-3 hover:border-primary/40 transition-colors"
-            >
+            <input ref={fileRef} type="file" accept=".csv,.txt" onChange={handleFileChange} className="hidden" />
+
+            <button onClick={() => { setParseError(null); fileRef.current?.click(); }}
+              className="w-full border-2 border-dashed border-border rounded-xl p-10 flex flex-col items-center gap-3 hover:border-primary/40 transition-colors">
               {loading ? (
                 <>
                   <RefreshCw size={32} className="text-primary animate-spin" />
@@ -125,19 +203,12 @@ export default function ContactImport() {
                 </>
               ) : (
                 <>
-                  <div
-                    className="w-14 h-14 rounded-xl flex items-center justify-center"
-                    style={{ background: "hsl(var(--secondary))" }}
-                  >
+                  <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: "hsl(var(--secondary))" }}>
                     <FileSpreadsheet size={28} style={{ color: "hsl(var(--primary))" }} />
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-foreground">
-                      Cliquez pour choisir un fichier
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      ou glissez-déposez ici
-                    </p>
+                    <p className="text-sm font-semibold text-foreground">Cliquez pour choisir un fichier CSV</p>
+                    <p className="text-xs text-muted-foreground mt-1">ou glissez-déposez ici</p>
                   </div>
                 </>
               )}
@@ -145,18 +216,11 @@ export default function ContactImport() {
 
             <div className="mt-5 p-4 rounded-xl bg-muted">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                <strong className="text-foreground">Conseil :</strong> Votre fichier doit avoir au moins une colonne "Nom" ou "Email".
-                Si vos colonnes ont des noms différents, vous pourrez les ajuster à l'étape suivante.
+                <strong className="text-foreground">Format attendu :</strong> Un fichier CSV avec une ligne d'en-tête.
+                Colonnes reconnues : <code>nom</code>, <code>prénom</code>, <code>email</code>, <code>téléphone</code>, <code>entreprise</code>.
+                Pour Excel : Fichier → Enregistrer sous → CSV UTF-8.
               </p>
             </div>
-
-            {/* Démo rapide */}
-            <button
-              onClick={() => { setFileName("contacts_demo.xlsx"); setStep("mapping"); }}
-              className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
-            >
-              Utiliser un fichier de démonstration
-            </button>
           </div>
         )}
 
@@ -166,53 +230,47 @@ export default function ContactImport() {
             <div className="flex items-center gap-3 mb-4 p-3 rounded-xl" style={{ background: "hsl(var(--success-light))" }}>
               <CheckCircle2 size={16} style={{ color: "hsl(var(--success))" }} />
               <div>
-                <p className="text-sm font-semibold text-foreground">{fileName || "contacts_demo.xlsx"}</p>
-                <p className="text-xs text-muted-foreground">{colonnesMock.length} colonnes détectées · {previewMock.length} contacts trouvés</p>
+                <p className="text-sm font-semibold text-foreground">{fileName}</p>
+                <p className="text-xs text-muted-foreground">{contacts.length} contact{contacts.length > 1 ? "s" : ""} détecté{contacts.length > 1 ? "s" : ""}</p>
               </div>
             </div>
 
-            <h2 className="font-semibold text-foreground mb-1">Vérifiez les colonnes</h2>
-            <p className="text-sm text-muted-foreground mb-5">
-              On a détecté ces colonnes dans votre fichier. Vérifiez que tout est correct.
-            </p>
+            <h2 className="font-semibold text-foreground mb-1">Colonnes détectées</h2>
+            <p className="text-sm text-muted-foreground mb-5">Voici ce que nous avons trouvé dans votre fichier.</p>
 
             <div className="space-y-2 mb-6">
-              {[
-                { col: "Prénom", champ: "Prénom du contact" },
-                { col: "Nom", champ: "Nom de famille" },
-                { col: "Entreprise", champ: "Nom de l'entreprise" },
-                { col: "Email", champ: "Adresse email" },
-                { col: "Téléphone", champ: "Numéro de téléphone" },
-                { col: "Poste", champ: "Poste / Fonction" },
-              ].map(({ col, champ }) => (
-                <div key={col} className="flex items-center gap-3 p-3 rounded-xl bg-muted">
-                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: "hsl(var(--success))" }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground">Colonne dans votre fichier</p>
-                    <p className="text-sm font-medium text-foreground">{col}</p>
+              {["prenom_nom", "email", "telephone", "entreprise"].map(field => {
+                const sample = contacts[0]?.[field as keyof ParsedContact];
+                const hasData = contacts.some(c => c[field as keyof ParsedContact]);
+                return (
+                  <div key={field} className="flex items-center gap-3 p-3 rounded-xl bg-muted">
+                    <div className="w-2 h-2 rounded-full shrink-0"
+                      style={{ background: hasData ? "hsl(var(--success))" : "hsl(var(--border))" }} />
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground capitalize">{field.replace("_", " ")}</p>
+                      <p className="text-sm font-medium text-foreground">
+                        {hasData ? (sample || "Détecté") : <span className="text-muted-foreground italic">Non trouvé</span>}
+                      </p>
+                    </div>
+                    <span className="text-xs font-medium" style={{ color: hasData ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }}>
+                      {hasData ? "✓" : "—"}
+                    </span>
                   </div>
-                  <ChevronRight size={13} className="text-muted-foreground shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground">Correspond à</p>
-                    <p className="text-sm font-medium text-foreground">{champ}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="p-3 rounded-xl bg-muted text-xs text-muted-foreground leading-relaxed mb-5">
               <AlertCircle size={12} className="inline mr-1" />
-              4 contacts sur 5 ont un email valide. 1 contact n'a pas d'email — il sera quand même importé.
+              {contacts.filter(c => c.email).length} sur {contacts.length} contacts ont un email.
             </div>
 
             <div className="flex gap-3">
-              <button onClick={handleConfirmMapping} className="btn-cta text-sm py-3 flex-1">
-                C'est correct, continuer <ChevronRight size={14} />
+              <button onClick={() => setStep("preview")} className="btn-cta text-sm py-3 flex-1">
+                Continuer <ChevronRight size={14} />
               </button>
-              <button
-                onClick={() => setStep("upload")}
-                className="px-4 py-3 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
-              >
+              <button onClick={() => { setContacts([]); setStep("upload"); }}
+                className="px-4 py-3 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
                 Changer de fichier
               </button>
             </div>
@@ -222,60 +280,46 @@ export default function ContactImport() {
         {/* ÉTAPE 3 — PREVIEW */}
         {step === "preview" && (
           <div className="card-surface p-6">
-            <h2 className="font-semibold text-foreground mb-1">
-              Aperçu avant import
-            </h2>
+            <h2 className="font-semibold text-foreground mb-1">Aperçu avant import</h2>
             <p className="text-sm text-muted-foreground mb-5">
-              Voici les {previewMock.length} premiers contacts que vous allez importer. Tout semble bon ?
+              Voici les {Math.min(5, contacts.length)} premiers contacts sur {contacts.length}.
             </p>
 
             <div className="space-y-2 mb-5">
-              {previewMock.map((c, i) => (
+              {contacts.slice(0, 5).map((c, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-muted">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                    style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}
-                  >
-                    {c.Prénom.charAt(0)}{c.Nom.charAt(0)}
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                    style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
+                    {c.prenom_nom.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">
-                      {c.Prénom} {c.Nom}
-                    </p>
+                    <p className="text-sm font-medium text-foreground">{c.prenom_nom}</p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {c.Entreprise}
-                      {c.Poste && ` · ${c.Poste}`}
+                      {[c.entreprise, c.email].filter(Boolean).join(" · ")}
                     </p>
-                  </div>
-                  <div className="hidden sm:flex items-center gap-2">
-                    {c.Email && <span className="text-xs text-muted-foreground truncate max-w-[120px]">{c.Email}</span>}
                   </div>
                 </div>
               ))}
+              {contacts.length > 5 && (
+                <p className="text-xs text-muted-foreground text-center pt-1">
+                  + {contacts.length - 5} autres contacts
+                </p>
+              )}
             </div>
 
-            <div
-              className="p-3 rounded-xl mb-5 text-xs leading-relaxed"
-              style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}
-            >
+            <div className="p-3 rounded-xl mb-5 text-xs leading-relaxed"
+              style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
               <CheckCircle2 size={12} className="inline mr-1" />
-              {previewMock.length} contacts prêts à importer · 0 doublon détecté
+              {contacts.length} contacts prêts à importer
             </div>
 
-            <button
-              onClick={handleImport}
-              disabled={loading}
-              className="btn-cta text-sm py-3 w-full justify-center"
-            >
+            <button onClick={handleImport} disabled={loading} className="btn-cta text-sm py-3 w-full justify-center">
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full animate-spin" />
-                  Import en cours…
+                  <Loader2 size={14} className="animate-spin" /> Import en cours…
                 </span>
               ) : (
-                <>
-                  <Upload size={14} /> Importer {previewMock.length} contacts
-                </>
+                <><Upload size={14} /> Importer {contacts.length} contact{contacts.length > 1 ? "s" : ""}</>
               )}
             </button>
           </div>
@@ -284,26 +328,22 @@ export default function ContactImport() {
         {/* ÉTAPE 4 — SUCCÈS */}
         {step === "success" && (
           <div className="card-surface p-8 text-center">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ background: "hsl(var(--success-light))" }}
-            >
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: "hsl(var(--success-light))" }}>
               <CheckCircle2 size={32} style={{ color: "hsl(var(--success))" }} />
             </div>
             <h2 className="font-display text-xl font-bold text-foreground mb-2">
-              {previewMock.length} contacts importés !
+              {importedCount} contact{importedCount > 1 ? "s" : ""} importé{importedCount > 1 ? "s" : ""} !
             </h2>
             <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto leading-relaxed">
-              Vos contacts sont maintenant disponibles dans votre base. Vous pouvez les consulter, les organiser en listes ou démarrer une campagne.
+              Vos contacts sont maintenant dans votre base. Vous pouvez les consulter, les organiser en listes ou démarrer une campagne.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/contacts" className="btn-primary text-sm py-3 px-6">
+              <Link to="/contacts" className="btn-cta text-sm py-3 px-6">
                 Voir mes contacts
               </Link>
-              <Link
-                to="/listes"
-                className="px-6 py-3 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
-              >
+              <Link to="/listes"
+                className="px-6 py-3 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
                 Organiser en listes
               </Link>
             </div>

@@ -101,6 +101,7 @@ import AdminHelpContent from "./pages/admin/HelpContent";
 import AdminAnalytics from "./pages/admin/Analytics";
 import AdminRevenue from "./pages/admin/Revenue";
 import AdminGoLive from "./pages/admin/GoLive";
+import AdminSystemHealth from "./pages/admin/SystemHealth";
 
 const queryClient = new QueryClient();
 
@@ -210,6 +211,7 @@ const App = () => (
               <Route path="/admin/analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
               <Route path="/admin/revenue" element={<ProtectedRoute adminOnly><AdminRevenue /></ProtectedRoute>} />
               <Route path="/admin/go-live" element={<ProtectedRoute adminOnly><AdminGoLive /></ProtectedRoute>} />
+              <Route path="/admin/system-health" element={<ProtectedRoute adminOnly><AdminSystemHealth /></ProtectedRoute>} />
 
               {/* ── 404 ──────────────────────────────────── */}
               <Route path="*" element={<NotFound />} />
