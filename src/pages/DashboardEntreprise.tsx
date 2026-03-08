@@ -317,33 +317,8 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
-        {/* ── ALERTS ───────────────────────────────────────── */}
-        {!loading && passiveAlerts.length > 0 && (
-          <div className="card-surface p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-                <Bell size={14} className="text-primary" /> {t("dash_ent_alerts")}
-                <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "hsl(24 100% 52%)" }}>
-                  {passiveAlerts.length}
-                </span>
-              </h2>
-              <Link to="/chaud" className="text-xs text-primary font-medium hover:underline">{t("dash_ent_see_all")}</Link>
-            </div>
-            <div className="space-y-2">
-              {passiveAlerts.map(alert => (
-                <div key={alert.id} className="p-3 rounded-xl flex items-start gap-2.5" style={{
-                  background: "hsl(24 100% 52% / 0.06)", border: "1px solid hsl(24 100% 52% / 0.2)"
-                }}>
-                  <Flame size={13} className="shrink-0 mt-0.5" style={{ color: "hsl(24 100% 52%)" }} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-snug">{alert.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{alert.message}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* ── ALERTS — removed (passive_alerts table not in schema) ── */}
+
 
         {/* ── DOUBLE ENGINE ────────────────────────────────── */}
         {!isLaunchMode && (
