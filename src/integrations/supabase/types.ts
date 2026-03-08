@@ -97,6 +97,36 @@ export type Database = {
           },
         ]
       }
+      analytics_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          page: string | null
+          properties: Json | null
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          page?: string | null
+          properties?: Json | null
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          page?: string | null
+          properties?: Json | null
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       anti_circumvention_flags: {
         Row: {
           created_at: string
@@ -3521,6 +3551,172 @@ export type Database = {
           title?: string
           type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      payout_audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          new_status: string | null
+          note: string | null
+          payout_id: string
+          previous_status: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          note?: string | null
+          payout_id: string
+          previous_status?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          new_status?: string | null
+          note?: string | null
+          payout_id?: string
+          previous_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_audit_log_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "payouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payout_batches: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          payout_count: number
+          processed_by: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          payout_count?: number
+          processed_by?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          payout_count?: number
+          processed_by?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payout_failures: {
+        Row: {
+          error_code: string | null
+          error_message: string | null
+          id: string
+          occurred_at: string
+          payout_id: string
+          retry_count: number
+        }
+        Insert: {
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          occurred_at?: string
+          payout_id: string
+          retry_count?: number
+        }
+        Update: {
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          occurred_at?: string
+          payout_id?: string
+          retry_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_failures_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "payouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payouts: {
+        Row: {
+          amount: number
+          batch_id: string | null
+          created_at: string
+          currency: string
+          facilitator_id: string
+          failure_reason: string | null
+          gain_ids: string[] | null
+          id: string
+          method: string
+          notes: string | null
+          paid_at: string | null
+          processed_at: string | null
+          reference: string | null
+          requested_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          batch_id?: string | null
+          created_at?: string
+          currency?: string
+          facilitator_id: string
+          failure_reason?: string | null
+          gain_ids?: string[] | null
+          id?: string
+          method?: string
+          notes?: string | null
+          paid_at?: string | null
+          processed_at?: string | null
+          reference?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          batch_id?: string | null
+          created_at?: string
+          currency?: string
+          facilitator_id?: string
+          failure_reason?: string | null
+          gain_ids?: string[] | null
+          id?: string
+          method?: string
+          notes?: string | null
+          paid_at?: string | null
+          processed_at?: string | null
+          reference?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
