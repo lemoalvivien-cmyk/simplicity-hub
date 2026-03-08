@@ -1,12 +1,20 @@
 /**
  * UnifiedLeadsBlock — Dashboard block showing the lead pipeline summary.
- * Used in DashboardEntreprise and Dashboard (facilitateur).
+ * Used in DashboardEntreprise (asEntreprise=true) and DashboardFacilitateur.
  */
 import { Link } from "react-router-dom";
 import { Layers, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { useLeadIntakes } from "@/hooks/useLeadIntakes";
 import { QUALIFICATION_LABELS, QUALIFICATION_COLORS } from "@/lib/leadPipeline";
 import type { QualificationStatus } from "@/lib/leadPipeline";
+
+interface UnifiedLeadsBlockProps {
+  /** When true, fetches leads visible to the entreprise (entreprise_id match).
+   *  When false (default), fetches leads owned by the facilitateur (user_id match). */
+  asEntreprise?: boolean;
+  /** Link target for "see all" CTA */
+  linkTo?: string;
+}
 
 const PRIORITY_STATUSES: QualificationStatus[] = [
   "ready_for_opportunity",
@@ -15,8 +23,11 @@ const PRIORITY_STATUSES: QualificationStatus[] = [
   "needs_enrichment",
 ];
 
-export default function UnifiedLeadsBlock() {
-  const { summary, loading, error } = useLeadIntakes();
+export default function UnifiedLeadsBlock({
+  asEntreprise = false,
+  linkTo = "/opportunites",
+}: UnifiedLeadsBlockProps) {
+  const { summary, loading, error } = useLeadIntakes(asEntreprise);
 
   if (loading) {
     return (
@@ -91,7 +102,7 @@ export default function UnifiedLeadsBlock() {
       )}
 
       <Link
-        to="/opportunites"
+        to={linkTo}
         className="flex items-center justify-between text-xs font-medium text-primary hover:underline"
       >
         Voir toutes les opportunités <ArrowRight size={12} />

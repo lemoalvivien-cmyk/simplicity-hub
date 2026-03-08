@@ -8,6 +8,7 @@
  *   - lead_source_events  (immutable event log)
  *   - lead_intakes        (unified lead object)
  *   - lead_entity_links   (audit links between lead and entities)
+ *   - lead_actions        (persistent action queue)
  *
  * DB triggers handle creation from introductions automatically.
  * This file provides the client-side helpers for sources that don't
@@ -45,6 +46,9 @@ export type NextBestAction =
   | "request_facilitator_precision"
   | "promote_to_opportunity";
 
+export type LeadActionStatus = "open" | "in_progress" | "done" | "superseded" | "cancelled";
+export type LeadActionPriority = "low" | "normal" | "high" | "urgent";
+
 export interface LeadIntake {
   id: string;
   user_id: string;
@@ -70,6 +74,21 @@ export interface LeadIntake {
   nba_context: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface LeadAction {
+  id: string;
+  lead_intake_id: string;
+  opportunity_id: string | null;
+  actor_user_id: string;
+  action_type: NextBestAction;
+  status: LeadActionStatus;
+  priority: LeadActionPriority;
+  reason: string | null;
+  payload: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
 }
 
 export interface CreateLeadFromImportParams {
@@ -129,13 +148,24 @@ export const QUALIFICATION_LABELS: Record<QualificationStatus, string> = {
 };
 
 export const QUALIFICATION_COLORS: Record<QualificationStatus, { color: string; bg: string }> = {
-  pending_review: { color: "hsl(38 80% 30%)", bg: "hsl(var(--accent-light))" },
-  needs_enrichment: { color: "hsl(0 72% 45%)", bg: "hsl(0 72% 95%)" },
-  ready_for_opportunity: { color: "hsl(var(--success))", bg: "hsl(var(--success-light))" },
-  ready_for_action: { color: "hsl(var(--primary))", bg: "hsl(var(--secondary))" },
-  blocked: { color: "hsl(var(--destructive))", bg: "hsl(0 72% 95%)" },
-  duplicate: { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
+  pending_review:        { color: "hsl(38 80% 30%)",              bg: "hsl(var(--accent-light))" },
+  needs_enrichment:      { color: "hsl(0 72% 45%)",               bg: "hsl(0 72% 95%)" },
+  ready_for_opportunity: { color: "hsl(var(--success))",          bg: "hsl(var(--success-light))" },
+  ready_for_action:      { color: "hsl(var(--primary))",          bg: "hsl(var(--secondary))" },
+  blocked:               { color: "hsl(var(--destructive))",      bg: "hsl(0 72% 95%)" },
+  duplicate:             { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
 };
+
+// ─── Typed Supabase helpers ───────────────────────────────────
+// Use `as unknown as` only at the boundary where the generated types
+// don't yet include the new tables (lead_actions, etc.).
+
+type SupabaseAny = typeof supabase & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  from: (t: string) => any;
+};
+
+const db = supabase as unknown as SupabaseAny;
 
 // ─── Client-side dedup check ─────────────────────────────────
 
@@ -145,32 +175,31 @@ async function checkDuplicateEmail(
 ): Promise<{ isDuplicate: boolean; matchId: string | null }> {
   if (!email) return { isDuplicate: false, matchId: null };
 
-  const { data } = await supabase
-    .from("lead_intakes" as never)
+  const { data } = await db
+    .from("lead_intakes")
     .select("id")
     .eq("user_id", userId)
     .ilike("person_email", email.trim())
     .limit(1)
-    .single() as { data: { id: string } | null };
+    .single();
 
   return data
-    ? { isDuplicate: true, matchId: data.id }
+    ? { isDuplicate: true, matchId: (data as { id: string }).id }
     : { isDuplicate: false, matchId: null };
 }
 
-// ─── Create from import (called after each successful DB insert) ──
+// ─── Create from import ───────────────────────────────────────
 
 export async function createLeadFromImport(
   params: CreateLeadFromImportParams
 ): Promise<{ intakeId: string | null; isDuplicate: boolean }> {
-  // DB function handles the heavy lifting (dedup + pipeline)
   const { data, error } = await supabase.rpc("create_lead_from_import" as never, {
-    p_user_id: params.userId,
+    p_user_id:     params.userId,
     p_person_name: params.personName,
     p_person_email: params.personEmail ?? null,
     p_company_name: params.companyName ?? null,
-    p_phone: params.phone ?? null,
-    p_contact_id: params.contactId ?? null,
+    p_phone:       params.phone ?? null,
+    p_contact_id:  params.contactId ?? null,
   } as never);
 
   if (error) {
@@ -186,24 +215,17 @@ export async function createLeadFromImport(
 export async function createLeadFromPassive(
   params: CreateLeadFromPassiveParams
 ): Promise<{ intakeId: string | null }> {
-  const db = supabase as never as {
-    from: (t: string) => {
-      insert: (d: unknown) => { select: (f: string) => { single: () => Promise<{ data: { id: string } | null; error: Error | null }> } };
-    };
-  };
-
   const dedup = params.personEmail
     ? await checkDuplicateEmail(params.userId, params.personEmail)
     : { isDuplicate: false, matchId: null };
 
-  // Create source event
-  const eventResult = await (db.from("lead_source_events")).insert({
-    user_id: params.userId,
-    source_type: "passive_click",
-    source_ref_id: params.shareLinkId,
-    source_ref_type: "offer_share_link",
+  const eventResult = await db.from("lead_source_events").insert({
+    user_id:          params.userId,
+    source_type:      "passive_click",
+    source_ref_id:    params.shareLinkId,
+    source_ref_type:  "offer_share_link",
     raw_payload: {
-      email: params.personEmail,
+      email:   params.personEmail,
       company: params.companyName,
       context: params.context,
     },
@@ -211,17 +233,17 @@ export async function createLeadFromPassive(
   }).select("id").single();
 
   if (eventResult.error || !eventResult.data) return { intakeId: null };
-  const eventId = eventResult.data.id;
+  const eventId = (eventResult.data as { id: string }).id;
 
-  const intakeResult = await (db.from("lead_intakes")).insert({
-    user_id: params.userId,
-    source_event_id: eventId,
-    source_type: "passive_click",
-    person_email: params.personEmail ?? null,
-    company_name: params.companyName ?? null,
+  const intakeResult = await db.from("lead_intakes").insert({
+    user_id:          params.userId,
+    source_event_id:  eventId,
+    source_type:      "passive_click",
+    person_email:     params.personEmail ?? null,
+    company_name:     params.companyName ?? null,
     free_text_context: params.context ?? null,
-    dedup_status: dedup.isDuplicate ? "confirmed_duplicate" : "unique",
-    dedup_match_id: dedup.matchId,
+    dedup_status:     dedup.isDuplicate ? "confirmed_duplicate" : "unique",
+    dedup_match_id:   dedup.matchId,
     qualification_status: dedup.isDuplicate
       ? "duplicate"
       : params.personEmail && params.companyName
@@ -235,14 +257,13 @@ export async function createLeadFromPassive(
   }).select("id").single();
 
   if (intakeResult.error || !intakeResult.data) return { intakeId: null };
+  const intakeId = (intakeResult.data as { id: string }).id;
 
-  // Mark event as processed
-  await (supabase as never as { from: (t: string) => { update: (d: unknown) => { eq: (c: string, v: string) => Promise<unknown> } } })
-    .from("lead_source_events")
-    .update({ intake_id: intakeResult.data.id, processed: true })
+  await db.from("lead_source_events")
+    .update({ intake_id: intakeId, processed: true })
     .eq("id", eventId);
 
-  return { intakeId: intakeResult.data.id };
+  return { intakeId };
 }
 
 // ─── Create from radar signal ─────────────────────────────────
@@ -250,54 +271,49 @@ export async function createLeadFromPassive(
 export async function createLeadFromRadar(
   params: CreateLeadFromRadarParams
 ): Promise<{ intakeId: string | null }> {
-  const db = supabase as never as {
-    from: (t: string) => {
-      insert: (d: unknown) => { select: (f: string) => { single: () => Promise<{ data: { id: string } | null; error: Error | null }> } };
-    };
-  };
-
   const dedup = params.targetEmail
     ? await checkDuplicateEmail(params.userId, params.targetEmail)
     : { isDuplicate: false, matchId: null };
 
-  const eventResult = await (db.from("lead_source_events")).insert({
-    user_id: params.userId,
-    source_type: "radar_signal",
-    source_ref_id: params.radarSignalId ?? null,
+  const eventResult = await db.from("lead_source_events").insert({
+    user_id:         params.userId,
+    source_type:     "radar_signal",
+    source_ref_id:   params.radarSignalId ?? null,
     source_ref_type: "radar_signal",
     raw_payload: {
-      name: params.targetName,
+      name:    params.targetName,
       company: params.targetCompany,
-      email: params.targetEmail,
+      email:   params.targetEmail,
       context: params.context,
     },
     processed: false,
   }).select("id").single();
 
   if (eventResult.error || !eventResult.data) return { intakeId: null };
+  const eventId = (eventResult.data as { id: string }).id;
 
-  const intakeResult = await (db.from("lead_intakes")).insert({
-    user_id: params.userId,
-    source_event_id: eventResult.data.id,
-    source_type: "radar_signal",
-    person_name: params.targetName,
-    person_email: params.targetEmail ?? null,
-    company_name: params.targetCompany ?? null,
+  const intakeResult = await db.from("lead_intakes").insert({
+    user_id:          params.userId,
+    source_event_id:  eventId,
+    source_type:      "radar_signal",
+    person_name:      params.targetName,
+    person_email:     params.targetEmail ?? null,
+    company_name:     params.targetCompany ?? null,
     free_text_context: params.context ?? null,
-    dedup_status: dedup.isDuplicate ? "confirmed_duplicate" : "unique",
-    dedup_match_id: dedup.matchId,
+    dedup_status:     dedup.isDuplicate ? "confirmed_duplicate" : "unique",
+    dedup_match_id:   dedup.matchId,
     qualification_status: dedup.isDuplicate ? "duplicate" : "pending_review",
     next_best_action: dedup.isDuplicate ? null : "review_lead",
   }).select("id").single();
 
   if (intakeResult.error || !intakeResult.data) return { intakeId: null };
+  const intakeId = (intakeResult.data as { id: string }).id;
 
-  await (supabase as never as { from: (t: string) => { update: (d: unknown) => { eq: (c: string, v: string) => Promise<unknown> } } })
-    .from("lead_source_events")
-    .update({ intake_id: intakeResult.data.id, processed: true })
-    .eq("id", eventResult.data.id);
+  await db.from("lead_source_events")
+    .update({ intake_id: intakeId, processed: true })
+    .eq("id", eventId);
 
-  return { intakeId: intakeResult.data.id };
+  return { intakeId };
 }
 
 // ─── Create manual lead ───────────────────────────────────────
@@ -305,44 +321,39 @@ export async function createLeadFromRadar(
 export async function createLeadManual(
   params: CreateLeadManualParams
 ): Promise<{ intakeId: string | null }> {
-  const db = supabase as never as {
-    from: (t: string) => {
-      insert: (d: unknown) => { select: (f: string) => { single: () => Promise<{ data: { id: string } | null; error: Error | null }> } };
-    };
-  };
-
   const dedup = params.personEmail
     ? await checkDuplicateEmail(params.userId, params.personEmail)
     : { isDuplicate: false, matchId: null };
 
-  const eventResult = await (db.from("lead_source_events")).insert({
-    user_id: params.userId,
-    source_type: "manual",
-    source_ref_id: params.contactId ?? null,
+  const eventResult = await db.from("lead_source_events").insert({
+    user_id:         params.userId,
+    source_type:     "manual",
+    source_ref_id:   params.contactId ?? null,
     source_ref_type: params.contactId ? "contact" : null,
     raw_payload: {
-      name: params.personName,
-      email: params.personEmail,
+      name:    params.personName,
+      email:   params.personEmail,
       company: params.companyName,
-      phone: params.phone,
+      phone:   params.phone,
     },
     processed: false,
   }).select("id").single();
 
   if (eventResult.error || !eventResult.data) return { intakeId: null };
+  const eventId = (eventResult.data as { id: string }).id;
 
-  const intakeResult = await (db.from("lead_intakes")).insert({
-    user_id: params.userId,
-    source_event_id: eventResult.data.id,
-    source_type: "manual",
-    person_name: params.personName,
-    person_email: params.personEmail ?? null,
-    company_name: params.companyName ?? null,
-    phone: params.phone ?? null,
+  const intakeResult = await db.from("lead_intakes").insert({
+    user_id:          params.userId,
+    source_event_id:  eventId,
+    source_type:      "manual",
+    person_name:      params.personName,
+    person_email:     params.personEmail ?? null,
+    company_name:     params.companyName ?? null,
+    phone:            params.phone ?? null,
     free_text_context: params.context ?? null,
     linked_contact_id: params.contactId ?? null,
-    dedup_status: dedup.isDuplicate ? "confirmed_duplicate" : "unique",
-    dedup_match_id: dedup.matchId,
+    dedup_status:     dedup.isDuplicate ? "confirmed_duplicate" : "unique",
+    dedup_match_id:   dedup.matchId,
     qualification_status: dedup.isDuplicate
       ? "duplicate"
       : params.personEmail && params.companyName
@@ -352,13 +363,41 @@ export async function createLeadManual(
   }).select("id").single();
 
   if (intakeResult.error || !intakeResult.data) return { intakeId: null };
+  const intakeId = (intakeResult.data as { id: string }).id;
 
-  await (supabase as never as { from: (t: string) => { update: (d: unknown) => { eq: (c: string, v: string) => Promise<unknown> } } })
-    .from("lead_source_events")
-    .update({ intake_id: intakeResult.data.id, processed: true })
-    .eq("id", eventResult.data.id);
+  await db.from("lead_source_events")
+    .update({ intake_id: intakeId, processed: true })
+    .eq("id", eventId);
 
-  return { intakeId: intakeResult.data.id };
+  return { intakeId };
+}
+
+// ─── Promote lead to opportunity (client-side call) ───────────
+
+export async function promoteLeadToOpportunity(
+  intakeId: string
+): Promise<{ opportunityId: string | null }> {
+  const { data, error } = await supabase.rpc(
+    "promote_lead_to_opportunity" as never,
+    { p_intake_id: intakeId } as never
+  );
+
+  if (error) {
+    console.error("[leadPipeline] promote_lead_to_opportunity error:", error.message);
+    return { opportunityId: null };
+  }
+
+  return { opportunityId: data as string };
+}
+
+// ─── Complete a lead action ────────────────────────────────────
+
+export async function completeLeadAction(actionId: string): Promise<boolean> {
+  const { error } = await db.from("lead_actions")
+    .update({ status: "done", completed_at: new Date().toISOString() })
+    .eq("id", actionId);
+
+  return !error;
 }
 
 // ─── Fetch lead intakes for a user ───────────────────────────
@@ -368,42 +407,58 @@ export async function fetchLeadIntakes(
   options?: {
     qualificationStatus?: QualificationStatus;
     limit?: number;
+    asEntreprise?: boolean;
   }
 ): Promise<LeadIntake[]> {
-  let query = (supabase as never as {
-    from: (t: string) => {
-      select: (f: string) => {
-        eq: (c: string, v: string) => {
-          order: (c: string, opts: { ascending: boolean }) => {
-            limit: (n: number) => Promise<{ data: LeadIntake[] | null; error: Error | null }>;
-          };
-        };
-      };
-    };
-  })
+  let query = db
     .from("lead_intakes")
     .select("*")
-    .eq("user_id", userId);
-
-  if (options?.qualificationStatus) {
-    (query as unknown as { eq: (c: string, v: string) => typeof query }).eq(
-      "qualification_status",
-      options.qualificationStatus
-    );
-  }
-
-  const result = await (query as unknown as {
-    order: (c: string, opts: { ascending: boolean }) => {
-      limit: (n: number) => Promise<{ data: LeadIntake[] | null; error: Error | null }>;
-    };
-  })
     .order("created_at", { ascending: false })
     .limit(options?.limit ?? 100);
 
-  return result.data ?? [];
+  if (options?.asEntreprise) {
+    // Entreprise: read via RLS (relational policy); no extra filter needed
+    query = query.eq("entreprise_id", userId);
+  } else {
+    query = query.eq("user_id", userId);
+  }
+
+  if (options?.qualificationStatus) {
+    query = query.eq("qualification_status", options.qualificationStatus);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    console.error("[leadPipeline] fetchLeadIntakes error:", error.message);
+    return [];
+  }
+
+  return (data ?? []) as LeadIntake[];
 }
 
-// ─── Fetch lead intakes summary for a user ───────────────────
+// ─── Fetch open lead actions for a user ──────────────────────
+
+export async function fetchOpenLeadActions(
+  actorUserId: string,
+  limit = 20
+): Promise<LeadAction[]> {
+  const { data, error } = await db
+    .from("lead_actions")
+    .select("*")
+    .eq("actor_user_id", actorUserId)
+    .eq("status", "open")
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[leadPipeline] fetchOpenLeadActions error:", error.message);
+    return [];
+  }
+
+  return (data ?? []) as LeadAction[];
+}
+
+// ─── Fetch lead pipeline summary ─────────────────────────────
 
 export interface LeadPipelineSummary {
   total: number;
@@ -415,33 +470,29 @@ export interface LeadPipelineSummary {
   duplicate: number;
 }
 
-export async function fetchLeadPipelineSummary(userId: string): Promise<LeadPipelineSummary> {
-  const { data, error } = await (supabase as never as {
-    from: (t: string) => {
-      select: (f: string) => {
-        eq: (c: string, v: string) => Promise<{ data: { qualification_status: string }[] | null; error: Error | null }>;
-      };
-    };
-  })
-    .from("lead_intakes")
-    .select("qualification_status")
-    .eq("user_id", userId);
+export async function fetchLeadPipelineSummary(
+  userId: string,
+  asEntreprise = false
+): Promise<LeadPipelineSummary> {
+  let query = db.from("lead_intakes").select("qualification_status");
 
-  if (error || !data) {
-    return { total: 0, pending_review: 0, needs_enrichment: 0, ready_for_opportunity: 0, ready_for_action: 0, blocked: 0, duplicate: 0 };
+  if (asEntreprise) {
+    query = query.eq("entreprise_id", userId);
+  } else {
+    query = query.eq("user_id", userId);
   }
 
-  const counts: LeadPipelineSummary = {
-    total: data.length,
-    pending_review: 0,
-    needs_enrichment: 0,
-    ready_for_opportunity: 0,
-    ready_for_action: 0,
-    blocked: 0,
-    duplicate: 0,
+  const { data, error } = await query;
+
+  const empty: LeadPipelineSummary = {
+    total: 0, pending_review: 0, needs_enrichment: 0,
+    ready_for_opportunity: 0, ready_for_action: 0, blocked: 0, duplicate: 0,
   };
 
-  for (const row of data) {
+  if (error || !data) return empty;
+
+  const counts = { ...empty, total: data.length };
+  for (const row of data as Array<{ qualification_status: string }>) {
     const s = row.qualification_status as QualificationStatus;
     if (s in counts) counts[s]++;
   }

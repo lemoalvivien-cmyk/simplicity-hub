@@ -3,19 +3,21 @@
  * FULLY WIRED: lit et écrit dans Supabase.
  * Validation → met à jour intro statut + confirme le gain du facilitateur.
  * Refus → met à jour intro statut + annule le gain.
- * Core Domain v4: affiche le statut lead_intake lié à chaque intro.
+ * Core Domain v5: affiche lead status, opportunity liée, et action active.
+ * Ownership fix: lead_intakes.entreprise_id est maintenant propagé par trigger.
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   CheckCircle2, Clock, XCircle, ChevronRight, AlertCircle,
-  Send, Info, Briefcase, Loader2, Phone, Mail
+  Send, Info, Briefcase, Loader2, Phone, Mail, Target
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import LeadIntakeStatus from "@/components/leads/LeadIntakeStatus";
+import LeadActionBadge from "@/components/leads/LeadActionBadge";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";
@@ -34,10 +36,12 @@ interface IntroReçue {
   mission_titre?: string | null;
   facilitateur_prenom?: string | null;
   gain_id?: string | null;
-  // Lead pipeline data (from lead_intakes joined)
+  // Lead pipeline data
   lead_qualification_status?: QualificationStatus | null;
   lead_next_best_action?: NextBestAction | null;
   lead_dedup_status?: string | null;
+  lead_intake_id?: string | null;
+  lead_opportunity_id?: string | null;
 }
 
 const statusConfig: Record<Status, { icon: JSX.Element; color: string; bg: string; label: string }> = {
@@ -117,12 +121,30 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
 
       {/* ── Lead Pipeline Status ─────────────────────────── */}
       {intro.lead_qualification_status && (
-        <div className="mb-4">
+        <div className="mb-3 space-y-2">
           <LeadIntakeStatus
             qualificationStatus={intro.lead_qualification_status}
             nextBestAction={intro.lead_next_best_action}
             dedupStatus={intro.lead_dedup_status ?? undefined}
           />
+          {/* Show linked opportunity if already created */}
+          {intro.lead_opportunity_id && (
+            <Link
+              to="/opportunites"
+              className="flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl w-full"
+              style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}
+            >
+              <Target size={12} />
+              Opportunité créée — voir dans le pipeline
+            </Link>
+          )}
+          {/* Active lead action badge */}
+          {intro.lead_next_best_action && !intro.lead_opportunity_id && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">Action :</span>
+              <LeadActionBadge action={intro.lead_next_best_action} />
+            </div>
+          )}
         </div>
       )}
 
@@ -228,8 +250,9 @@ export default function IntroductionsEntreprise() {
         db.from("profiles").select("id, prenom").in("id", facilitateurIds),
         db.from("gains").select("id, introduction_id").in("introduction_id", introIds),
         // Load lead intake data linked to these introductions
+        // RLS allows: entreprise_id = auth.uid() (propagated by trigger)
         db.from("lead_intakes")
-          .select("introduction_id, qualification_status, next_best_action, dedup_status")
+          .select("id, introduction_id, qualification_status, next_best_action, dedup_status, linked_opportunity_id")
           .in("introduction_id", introIds),
       ]);
 
@@ -242,8 +265,21 @@ export default function IntroductionsEntreprise() {
       const gainsMap: Record<string, string> = {};
       (gainsRes.data || []).forEach((g: { id: string; introduction_id: string }) => { gainsMap[g.introduction_id] = g.id; });
 
-      const leadsMap: Record<string, { qualification_status: QualificationStatus; next_best_action: NextBestAction | null; dedup_status: string }> = {};
-      (leadsRes.data || []).forEach((l: { introduction_id: string; qualification_status: QualificationStatus; next_best_action: NextBestAction | null; dedup_status: string }) => {
+      const leadsMap: Record<string, {
+        id: string;
+        qualification_status: QualificationStatus;
+        next_best_action: NextBestAction | null;
+        dedup_status: string;
+        linked_opportunity_id: string | null;
+      }> = {};
+      (leadsRes.data || []).forEach((l: {
+        id: string;
+        introduction_id: string;
+        qualification_status: QualificationStatus;
+        next_best_action: NextBestAction | null;
+        dedup_status: string;
+        linked_opportunity_id: string | null;
+      }) => {
         if (l.introduction_id) leadsMap[l.introduction_id] = l;
       });
 
@@ -255,6 +291,8 @@ export default function IntroductionsEntreprise() {
         lead_qualification_status: leadsMap[i.id]?.qualification_status ?? null,
         lead_next_best_action: leadsMap[i.id]?.next_best_action ?? null,
         lead_dedup_status: leadsMap[i.id]?.dedup_status ?? null,
+        lead_intake_id: leadsMap[i.id]?.id ?? null,
+        lead_opportunity_id: leadsMap[i.id]?.linked_opportunity_id ?? null,
       }));
 
       setIntros(enriched);

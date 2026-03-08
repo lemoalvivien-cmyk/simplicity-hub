@@ -1151,6 +1151,66 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_actions: {
+        Row: {
+          action_type: string
+          actor_user_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          lead_intake_id: string
+          opportunity_id: string | null
+          payload: Json | null
+          priority: string
+          reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          actor_user_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lead_intake_id: string
+          opportunity_id?: string | null
+          payload?: Json | null
+          priority?: string
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          actor_user_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lead_intake_id?: string
+          opportunity_id?: string | null
+          payload?: Json | null
+          priority?: string
+          reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_actions_lead_intake_id_fkey"
+            columns: ["lead_intake_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intakes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_actions_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_entity_links: {
         Row: {
           created_at: string
@@ -3774,6 +3834,10 @@ export type Database = {
           zone_score: number
         }[]
       }
+      promote_lead_to_opportunity: {
+        Args: { p_intake_id: string }
+        Returns: string
+      }
       recompute_edge_weight: { Args: { p_edge_id: string }; Returns: undefined }
       refresh_trust_score: {
         Args: { p_facilitator_id: string }
@@ -3798,6 +3862,17 @@ export type Database = {
           p_to_type: string
           p_trust?: number
           p_user_id: string
+        }
+        Returns: string
+      }
+      upsert_lead_action: {
+        Args: {
+          p_action_type: string
+          p_actor_id: string
+          p_intake_id: string
+          p_payload?: Json
+          p_priority?: string
+          p_reason?: string
         }
         Returns: string
       }

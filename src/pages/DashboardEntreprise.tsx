@@ -156,7 +156,10 @@ export default function DashboardEntreprise() {
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
         {/* ── UNIFIED LEADS PIPELINE ────────────────────────── */}
-        {!isLaunchMode && <UnifiedLeadsBlock />}
+        {/* asEntreprise=true → fetches leads where entreprise_id = user.id
+            These are leads from facilitateurs' introductions that target this company.
+            RLS policy allows this via the entreprise_id column propagated in the trigger. */}
+        {!isLaunchMode && <UnifiedLeadsBlock asEntreprise linkTo="/entreprise/introductions" />}
 
         {/* ── PRIORITY ACTION ───────────────────────────────── */}
         {nextIntro && (

@@ -10,6 +10,7 @@ import {
   ChevronRight, AlertCircle, Clock
 } from "lucide-react";
 import { toast } from "sonner";
+import { createLeadFromRadar } from "@/lib/leadPipeline";
 
 interface Signal {
   id: string;
@@ -122,12 +123,23 @@ export default function RadarPage() {
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      toast.success("Signal ajouté et opportunité créée");
+
+      // Wire signal into unified pipeline
+      const signalId = data.signal_id ?? data.id ?? undefined;
+      await createLeadFromRadar({
+        userId: user.id,
+        targetName: newSignal.company_name,
+        targetCompany: newSignal.company_name,
+        radarSignalId: signalId,
+        context: `${newSignal.signal_type}${newSignal.raw_summary ? " — " + newSignal.raw_summary : ""}`,
+      });
+
+      toast.success("Signal ajouté, opportunité créée et enregistré dans le pipeline");
       setShowAddSignal(false);
       setNewSignal({ company_name: "", signal_type: "recrutement", raw_summary: "" });
       await load();
-    } catch (e: any) {
-      toast.error(e.message || "Erreur");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Erreur");
     } finally {
       setSaving(false);
     }
