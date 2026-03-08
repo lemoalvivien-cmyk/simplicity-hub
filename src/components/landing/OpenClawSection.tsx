@@ -9,6 +9,7 @@ const features = [
   { icon: Activity, title: "Cockpit de pilotage", desc: "Missions, campagnes, gains — tout centralisé." },
 ];
 
+// Standard function component — NO forwardRef
 export default function OpenClawSection() {
   return (
     <section className="py-20 bg-muted">

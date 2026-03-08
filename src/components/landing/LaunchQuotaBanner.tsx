@@ -6,7 +6,8 @@ interface LaunchQuotaBannerProps {
   variant?: "hero" | "inline" | "pricing";
 }
 
-export default function LaunchQuotaBanner({ variant = "inline" }: LaunchQuotaBannerProps) {
+// Standard function component — NO forwardRef
+function LaunchQuotaBanner({ variant = "inline" }: LaunchQuotaBannerProps) {
   const [slots, setSlots] = useState<number | null>(null);
   const [total, setTotal] = useState(100);
 
