@@ -771,6 +771,48 @@ export default function AdminSystemHealth() {
         </div>
       </div>
 
+      {/* ── RELEASE HEALTH ── */}
+      {/* PROOF:RELEASE_V1:admin_forensics_global_visibility */}
+      {/* PROOF:RELEASE_V1:release_blockers_real */}
+      <div className="mt-6 p-5 rounded-xl border-2 bg-card"
+        style={{ borderColor: RELEASE_BLOCKERS_ONLY.length > 0 ? "hsl(0 65% 70%)" : "hsl(142 70% 45% / 0.5)" }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Package size={15} style={{ color: RELEASE_BLOCKERS_ONLY.length > 0 ? "hsl(0 65% 40%)" : "hsl(142 70% 35%)" }} />
+          <h3 className="font-semibold text-foreground text-sm">Release Health</h3>
+          <span className="ml-auto text-xs font-mono px-2 py-0.5 rounded font-bold"
+            style={{ background: RELEASE_SCORE >= 60 ? "hsl(var(--success-light))" : "hsl(0 65% 95%)", color: RELEASE_SCORE >= 60 ? "hsl(var(--success))" : "hsl(0 65% 40%)" }}>
+            {RELEASE_SCORE}% résolu
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-2">
+          Source : <code>src/lib/releaseHealth.ts</code> ·{" "}
+          {RELEASE_BLOCKERS_ONLY.length} bloquant(s) · {RELEASE_WARNINGS_OPEN.length} warning(s) · {RELEASE_RESOLVED.length} résolu(s)
+        </p>
+        {/* Package manager truth */}
+        <div className="mb-3 p-2.5 rounded-lg bg-muted/50 border border-border">
+          <p className="text-xs font-semibold text-foreground mb-0.5">
+            Package Manager — <code className="font-mono">{PACKAGE_MANAGER_TRUTH.canonical}</code> (release canonical)
+          </p>
+          <p className="text-xs text-muted-foreground">{PACKAGE_MANAGER_TRUTH.lockfile_strategy}</p>
+        </div>
+        <div className="space-y-1.5">
+          {RELEASE_BLOCKERS.map(b => (
+            <div key={b.id} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/50">
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5" style={{
+                color: b.status === "resolved" ? "hsl(var(--success))" : b.severity === "blocker" ? "hsl(0 65% 40%)" : b.severity === "warning" ? "hsl(38 80% 30%)" : "hsl(var(--muted-foreground))",
+                background: b.status === "resolved" ? "hsl(var(--success-light))" : b.severity === "blocker" ? "hsl(0 65% 95%)" : b.severity === "warning" ? "hsl(var(--accent-light))" : "hsl(var(--muted))",
+              }}>
+                {b.status === "resolved" ? "✓" : b.severity.toUpperCase()}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground">{b.label}</p>
+                <p className="text-xs text-muted-foreground">{b.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </AdminLayout>
   );
 }
