@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import PublicNav from "@/components/layout/PublicNav";
+import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import { CheckCircle2, Tag, Building2, Users, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -194,6 +194,7 @@ export default function Pricing() {
           </div>
         </div>
       </section>
+      <LegalFooter />
     </div>
   );
 }

@@ -27,6 +27,9 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import CGU from "./pages/CGU";
+import Confidentialite from "./pages/Confidentialite";
+import MentionsLegales from "./pages/MentionsLegales";
 import NotFound from "./pages/NotFound";
 
 // User pages
@@ -125,8 +128,9 @@ const App = () => (
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/cgu" element={<NotFound />} />
-              <Route path="/confidentialite" element={<NotFound />} />
+              <Route path="/cgu" element={<CGU />} />
+              <Route path="/confidentialite" element={<Confidentialite />} />
+              <Route path="/mentions-legales" element={<MentionsLegales />} />
 
               {/* ── Onboarding ───────────────────────────── */}
               <Route path="/onboarding" element={

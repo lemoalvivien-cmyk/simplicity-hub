@@ -388,11 +388,12 @@ export default function LandingPage() {
               WIINUP <span style={{ color: "hsl(var(--accent))" }}>MAX</span>
             </span>
           </div>
-          <span className="text-xs">© 2026 WIINUP MAX. Tous droits réservés.</span>
+          <span className="text-xs">© {new Date().getFullYear()} VLM Consulting. Tous droits réservés.</span>
           <div className="flex gap-5 text-xs">
-            <a href="#" className="hover:text-foreground transition-colors">CGU</a>
-            <a href="#" className="hover:text-foreground transition-colors">Confidentialité</a>
-            <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+            <Link to="/cgu" className="hover:text-foreground transition-colors">CGU</Link>
+            <Link to="/confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
+            <Link to="/mentions-legales" className="hover:text-foreground transition-colors">Mentions légales</Link>
+            <a href="mailto:contact@vlmconsulting.fr" className="hover:text-foreground transition-colors">Contact</a>
           </div>
         </div>
       </footer>
