@@ -2,9 +2,16 @@
  * WIINUP MAX — Landing Page Tracking & A/B Infrastructure
  * Events are persisted to `landing_ab_events` (Supabase) for real conversion analysis.
  * Also pushes to dataLayer for GTM integration.
+ *
+ * HARDENED v2:
+ * - TrackEvent union is now the exact set accepted by the DB CHECK constraint
+ * - persistEvent sends user_agent + referrer for real analytics (bot filtering etc.)
+ * - scroll_25 / scroll_75 / scroll_100 tracked locally only (not in DB — not in constraint)
+ * - variant_assign renamed to variant_assigned to match DB constraint
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 // ─── Session ID (anonymous, persistent per browser tab) ──────────────────────
 
@@ -34,8 +41,8 @@ function getVariant<K extends VariantKey>(key: K): VariantValue<K> {
   const options = AB_VARIANTS[key];
   const picked = options[Math.floor(Math.random() * options.length)];
   sessionStorage.setItem(`ab_${key}`, picked);
-  // Persist variant assignment to DB (fire and forget)
-  persistEvent("variant_assign", { label: key, variant: picked });
+  // Persist variant assignment — uses DB-accepted event_type "variant_assigned"
+  persistToDb("variant_assigned", { label: key, variant: picked });
   return picked;
 }
 
@@ -55,25 +62,31 @@ function getCurrentVariants() {
   };
 }
 
-// ─── Event Tracking ──────────────────────────────────────────────────────────
+// ─── DB-accepted event types (must match CHECK constraint) ───────────────────
 
-export type TrackEvent =
+type DbEvent =
+  | "pageview"
+  | "scroll_50"
+  | "scroll_80"
   | "cta_hero_enterprise"
   | "cta_hero_facilitator"
-  | "cta_sticky_mobile"
   | "cta_pricing_enterprise"
   | "cta_pricing_facilitator"
   | "cta_final_enterprise"
   | "cta_final_facilitator"
+  | "cta_sticky_mobile"
+  | "variant_assigned";
+
+// All trackable events (superset — some are local-only, not persisted to DB)
+export type TrackEvent =
+  | DbEvent
   | "cta_howitworks"
   | "cta_facilitateur_section"
   | "faq_open"
   | "objection_open"
   | "scroll_25"
-  | "scroll_50"
   | "scroll_75"
-  | "scroll_100"
-  | "variant_assign";
+  | "scroll_100";
 
 export interface TrackPayload {
   label?: string;
@@ -81,11 +94,28 @@ export interface TrackPayload {
   position?: string;
 }
 
+const DB_EVENTS = new Set<string>([
+  "pageview",
+  "scroll_50",
+  "scroll_80",
+  "cta_hero_enterprise",
+  "cta_hero_facilitator",
+  "cta_pricing_enterprise",
+  "cta_pricing_facilitator",
+  "cta_final_enterprise",
+  "cta_final_facilitator",
+  "cta_sticky_mobile",
+  "variant_assigned",
+]);
+
 // ─── Supabase Persistence (fire & forget, never blocks UI) ───────────────────
 
-function persistEvent(event: string, payload?: TrackPayload) {
+function persistToDb(event: string, payload?: TrackPayload) {
   const variants = getCurrentVariants();
   const sid = getSessionId();
+
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 256) : null;
+  const ref = typeof document !== "undefined" ? (document.referrer.slice(0, 512) || null) : null;
 
   supabase
     .from("landing_ab_events")
@@ -95,9 +125,11 @@ function persistEvent(event: string, payload?: TrackPayload) {
       hero_headline_variant: variants.heroHeadline,
       hero_cta_variant: variants.heroCTA,
       pricing_frame_variant: variants.pricingFrame,
-      event_label: payload?.label ?? null,
-      event_payload: (payload ?? {}) as import("@/integrations/supabase/types").Json,
+      event_label: payload?.label ? payload.label.slice(0, 128) : null,
+      event_payload: (payload ?? {}) as Json,
       path: typeof window !== "undefined" ? window.location.pathname : "/",
+      user_agent: ua,
+      referrer: ref,
     }])
     .then(() => {
       // silent — never throw
@@ -121,12 +153,14 @@ export function track(event: TrackEvent, payload?: TrackPayload) {
 
   // Push to dataLayer (GTM-ready)
   if (typeof window !== "undefined") {
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    (window as any).dataLayer.push({ event: `wiinup_${event}`, ...data });
+    (window as Record<string, unknown>).dataLayer = (window as Record<string, unknown>).dataLayer || [];
+    ((window as Record<string, unknown>).dataLayer as unknown[]).push({ event: `wiinup_${event}`, ...data });
   }
 
-  // Persist to DB
-  persistEvent(event, payload);
+  // Persist to DB only if event is in the accepted set
+  if (DB_EVENTS.has(event)) {
+    persistToDb(event, payload);
+  }
 
   // Console in dev
   if (import.meta.env.DEV) {
@@ -139,6 +173,7 @@ export function track(event: TrackEvent, payload?: TrackPayload) {
 export function initScrollTracking() {
   if (typeof window === "undefined") return;
 
+  // 50 → DB-persisted (in constraint). 25/75/100 → local only.
   const milestones = [25, 50, 75, 100];
 
   const handler = () => {
