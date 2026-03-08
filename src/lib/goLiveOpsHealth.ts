@@ -77,6 +77,7 @@ export const STRIPE_WEBHOOK_STATUS: OpsStatusValue = "CONFIG_MISSING";
 
 // PROOF:GOLIVE_OPS_V1:stripe_portal_status
 // PROOF:GOLIVE_EXPORT_V1:stripe_portal_status
+// PROOF:GOLIVE_EXPORT_V2:stripe_portal_status
 export const STRIPE_CUSTOMER_PORTAL_STATUS: OpsStatusValue = "CONFIG_MISSING";
 // The customer-portal edge function is deployed and functional.
 // But the Stripe Customer Portal must be activated in the Stripe Dashboard first.
