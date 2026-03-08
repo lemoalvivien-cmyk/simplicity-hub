@@ -216,7 +216,7 @@ export default function ContactImport() {
     let inserted = 0;
     let failed = 0;
 
-    // Batch insert par 100
+    // Batch insert contacts par 100
     for (let i = 0; i < rows.length; i += 100) {
       const batch = rows.slice(i, i + 100);
       const { error, data } = await supabase.from("contacts").insert(batch).select("id");
@@ -225,6 +225,25 @@ export default function ContactImport() {
         failed += batch.length;
       } else {
         inserted += (data?.length ?? batch.length);
+
+        // ── Core Domain: create lead_intake for each inserted contact ──
+        // Fire-and-forget; failures are non-blocking for the user flow.
+        const insertedContacts = data ?? [];
+        const batchContacts = contacts.slice(i, i + batch.length);
+        insertedContacts.forEach((row: { id: string }, idx: number) => {
+          const c = batchContacts[idx];
+          if (!c) return;
+          createLeadFromImport({
+            userId:       user.id,
+            personName:   c.prenom_nom,
+            personEmail:  c.email ?? null,
+            companyName:  c.entreprise ?? null,
+            phone:        c.telephone ?? null,
+            contactId:    row.id,
+          }).catch((err) => {
+            console.warn("[leadPipeline] createLeadFromImport non-blocking error:", err);
+          });
+        });
       }
     }
 
