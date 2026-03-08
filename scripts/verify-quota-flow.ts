@@ -2,8 +2,9 @@
  * WIINUP MAX — Launch Quota Flow Verification Script
  *
  * WHAT THIS PROVES (exactly, no more):
- *   The consumeLaunchSlotIfEligible() function — shared with the Stripe webhook —
- *   behaves correctly for all 6 accounting scenarios against a real DB.
+ *   Partial DB-level proof — 5 executed scenarios against a real DB.
+ *   consumeLaunchSlotIfEligible() is exercised directly (no HTTP).
+ *   The real Stripe webhook endpoint is NOT called.
  *
  * WHAT THIS DOES NOT PROVE:
  *   - The real Stripe webhook endpoint is NOT called here.
@@ -11,7 +12,7 @@
  *   - This is a unit/integration harness against the DB, not an E2E test.
  *   - For true E2E, a Stripe test-mode webhook relay is required.
  *
- * SCOPE: PARTIAL PROOF — DB-level idempotency, not webhook HTTP path.
+ * SCOPE: PARTIAL PROOF — DB-level idempotency only, not webhook HTTP path.
  *
  * RUN (shortest form, requires .env):
  *   npm run verify:quota
@@ -26,17 +27,17 @@
  *   - launch_quota table has exactly one row (created by squash migration)
  *
  * SCENARIOS EXECUTED (5):
- *   1. First launch event           → used_slots +1  (returns 'incremented')
- *   2. Re-delivery same sub ID      → used_slots +0  (returns 'skipped_already_consumed')
- *   3. Standard offer               → used_slots +0  (returns 'skipped_not_launch')
- *   4. offer_type=launch wrong price → used_slots +0 (returns 'skipped_not_launch')
- *   5. Capacity exhausted           → used_slots +0  (returns 'at_capacity')
- *                                   → consumed row is ROLLED BACK (invariant check)
+ *   1. First launch event            → used_slots +1  (returns 'incremented')
+ *   2. Re-delivery same sub ID       → used_slots +0  (returns 'skipped_already_consumed')
+ *   3. Standard offer                → used_slots +0  (returns 'skipped_not_launch')
+ *   4. offer_type=launch wrong price → used_slots +0  (returns 'skipped_not_launch')
+ *   5. Capacity exhausted            → used_slots +0  (returns 'at_capacity')
+ *                                    → consumed row is ROLLED BACK (invariant check)
  *
  * GAPS NOT EXECUTED (not in this script):
- *   6. RPC error rollback           → requires DB fault injection — not covered here
- *   7. no_quota_row                 → requires temporarily deleting the singleton row — unsafe on prod
- *   8. Stripe HTTP endpoint         → not exercised; no webhook call is made
+ *   6. RPC error rollback  → requires DB fault injection — not covered here
+ *   7. no_quota_row        → requires deleting the singleton row — unsafe on prod
+ *   8. Stripe HTTP path    → not exercised; no real webhook call is made
  */
 
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
