@@ -625,8 +625,6 @@ const resources = {
   },
 
   en: {
-
-  en: {
     translation: {
       home: "Home",
       pilotage: "Dashboard",
