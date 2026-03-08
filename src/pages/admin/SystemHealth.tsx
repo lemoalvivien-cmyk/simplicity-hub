@@ -45,7 +45,15 @@ import {
   RESOLVED,
   GO_LIVE_SCORE,
 } from "@/lib/goLiveHealth";
-import { db } from "@/lib/supabase";
+import {
+  RELEASE_BLOCKERS,
+  RELEASE_BLOCKERS_ONLY,
+  RELEASE_WARNINGS_OPEN,
+  RELEASE_RESOLVED,
+  RELEASE_SCORE,
+  PACKAGE_MANAGER_TRUTH,
+} from "@/lib/releaseHealth";
+import { supabase } from "@/integrations/supabase/client";
 
 const AREA_LABELS: Record<OwnerArea, string> = {
   acquisition:    "Acquisition",
