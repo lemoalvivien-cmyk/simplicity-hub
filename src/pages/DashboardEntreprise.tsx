@@ -54,24 +54,30 @@ export default function DashboardEntreprise() {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const missionIds = (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
+      try {
+        const missionIds = (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
 
-      const [missionsRes, introsRes, validRes, hotOppsRes, alertsRes] = await Promise.all([
-        db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(3),
-        missionIds.length > 0
-          ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).order("created_at", { ascending: false }).limit(3)
-          : Promise.resolve({ data: [] }),
-        db.from("openclaw_validations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("statut", "en_attente"),
-        db.from("opportunities").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("intent_label", "eleve").neq("status", "archivee"),
-        db.from("passive_alerts").select("id, title, message, type, read").eq("user_id", user.id).eq("read", false).order("created_at", { ascending: false }).limit(3),
-      ]);
+        const [missionsRes, introsRes, hotOppsRes] = await Promise.all([
+          db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(3),
+          missionIds.length > 0
+            ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).order("created_at", { ascending: false }).limit(3)
+            : Promise.resolve({ data: [] }),
+          // Use lead_actions table (real schema) to count pending actions
+          db.from("lead_actions").select("id", { count: "exact", head: true }).eq("actor_user_id", user.id).eq("status", "open"),
+        ]);
 
-      setMissions(missionsRes.data || []);
-      setIntroductions(introsRes.data || []);
-      setValidationsCount(validRes.count || 0);
-      setHotOpps(hotOppsRes.count || 0);
-      setPassiveAlerts(alertsRes.data || []);
-      setLoading(false);
+        setMissions(missionsRes.data || []);
+        setIntroductions(introsRes.data || []);
+        // Count introductions awaiting validation as "validations count"
+        const pendingIntros = (introsRes.data || []).filter((i: { statut: string }) => i.statut === "en_attente");
+        setValidationsCount(pendingIntros.length);
+        setHotOpps(hotOppsRes.count || 0);
+        setPassiveAlerts([]);
+      } catch {
+        // silent fail — don't crash the dashboard
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [user]);
@@ -311,33 +317,8 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
-        {/* ── ALERTS ───────────────────────────────────────── */}
-        {!loading && passiveAlerts.length > 0 && (
-          <div className="card-surface p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-                <Bell size={14} className="text-primary" /> {t("dash_ent_alerts")}
-                <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "hsl(24 100% 52%)" }}>
-                  {passiveAlerts.length}
-                </span>
-              </h2>
-              <Link to="/chaud" className="text-xs text-primary font-medium hover:underline">{t("dash_ent_see_all")}</Link>
-            </div>
-            <div className="space-y-2">
-              {passiveAlerts.map(alert => (
-                <div key={alert.id} className="p-3 rounded-xl flex items-start gap-2.5" style={{
-                  background: "hsl(24 100% 52% / 0.06)", border: "1px solid hsl(24 100% 52% / 0.2)"
-                }}>
-                  <Flame size={13} className="shrink-0 mt-0.5" style={{ color: "hsl(24 100% 52%)" }} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-snug">{alert.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{alert.message}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* ── ALERTS — removed (passive_alerts table not in schema) ── */}
+
 
         {/* ── DOUBLE ENGINE ────────────────────────────────── */}
         {!isLaunchMode && (

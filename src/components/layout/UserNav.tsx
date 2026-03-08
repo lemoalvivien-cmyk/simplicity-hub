@@ -1,14 +1,15 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Zap, Activity, Layers, Brain, AlertTriangle,
-  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network,
+  MessageSquare, Smartphone, Radar, Flag, Network,
   Moon, Share2, Upload, ChevronDown, Lock, Swords, Cpu
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/lib/supabase";
 
 type UserRole = "entreprise" | "facilitateur";
 
@@ -28,12 +29,25 @@ function useProgressLevel(introCount: number) {
   return introCount >= 1 ? 1 : 0;
 }
 
-export default function UserNav({ role = "facilitateur", introCount = 0 }: UserNavProps) {
+export default function UserNav({ role = "facilitateur", introCount: introCountProp }: UserNavProps) {
   const [open, setOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [realIntroCount, setRealIntroCount] = useState(introCountProp ?? 0);
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+
+  // Fetch real intro count to unlock progressive features
+  useEffect(() => {
+    if (introCountProp !== undefined || !user) return;
+    db.from("introductions")
+      .select("id", { count: "exact", head: true })
+      .then(({ count }) => {
+        if (count !== null && count !== undefined) setRealIntroCount(count);
+      });
+  }, [user, introCountProp]);
+
+  const introCount = introCountProp ?? realIntroCount;
   const level = useProgressLevel(introCount);
 
   const handleSignOut = async () => {

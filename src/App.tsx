@@ -25,6 +25,8 @@ import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 // User pages
@@ -121,6 +123,10 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/cgu" element={<NotFound />} />
+              <Route path="/confidentialite" element={<NotFound />} />
 
               {/* ── Onboarding ───────────────────────────── */}
               <Route path="/onboarding" element={
