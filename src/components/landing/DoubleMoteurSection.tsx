@@ -20,9 +20,9 @@ const moteur2Features = [
   { icon: Brain, label: "JARVIS coordonne les deux" },
 ];
 
-export default function DoubleMoteurSection() {
+const DoubleMoteurSection = forwardRef<HTMLElement>((_, ref) => {
   return (
-    <section className="py-20 bg-background">
+    <section ref={ref} className="py-20 bg-background">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">Double moteur</p>
@@ -145,4 +145,7 @@ export default function DoubleMoteurSection() {
       </div>
     </section>
   );
-}
+});
+
+DoubleMoteurSection.displayName = "DoubleMoteurSection";
+export default DoubleMoteurSection;

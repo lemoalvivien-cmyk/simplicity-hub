@@ -1,7 +1,6 @@
 // PROOF:AUDIT_V1:public_nav_forwardref — wrapped with forwardRef to fix React ref warning
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
 import { Menu, X, Zap } from "lucide-react";
 
 const PublicNav = forwardRef<HTMLElement>((_, ref) => {
@@ -14,7 +13,7 @@ const PublicNav = forwardRef<HTMLElement>((_, ref) => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 nav-glass">
+    <header ref={ref} className="sticky top-0 z-50 nav-glass">
       <div className="container flex items-center justify-between h-16">
         {/* Logo WIINUP MAX */}
         <Link to="/" className="flex items-center gap-2.5">
@@ -103,7 +102,10 @@ const PublicNav = forwardRef<HTMLElement>((_, ref) => {
       )}
     </header>
   );
-}
+});
+
+PublicNav.displayName = "PublicNav";
+export default PublicNav;
 
 /** Compact legal footer — import and place at the bottom of public pages */
 export function LegalFooter() {

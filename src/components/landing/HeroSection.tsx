@@ -41,7 +41,7 @@ const HeroSection = forwardRef<HTMLElement>((_, ref) => {
   return (
     <>
       {/* ══ HERO PRINCIPAL ══════════════════════════════════════ */}
-      <section className="hero-bg py-20 md:py-28 relative overflow-hidden">
+      <section ref={ref} className="hero-bg py-20 md:py-28 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none" style={{
           background: "radial-gradient(ellipse 80% 60% at 50% 30%, hsl(218 72% 30% / 0.25) 0%, transparent 70%)"
         }} />
@@ -128,4 +128,7 @@ const HeroSection = forwardRef<HTMLElement>((_, ref) => {
       </section>
     </>
   );
-}
+});
+
+HeroSection.displayName = "HeroSection";
+export default HeroSection;
