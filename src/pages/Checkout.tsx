@@ -87,13 +87,15 @@ export default function Checkout() {
       window.location.href = "/signup?redirect=/checkout";
       return;
     }
+    // PASSE E: mutex — prevents double-click spawning 2 Stripe sessions
+    if (checkoutLoading) return;
     setCheckoutLoading(true);
     setCheckoutError("");
     try {
       const result = await startCheckout();
       setSuccessType(result?.offer_type === "launch" ? "stripe_launch" : "stripe_standard");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t("error");
+      const msg = err instanceof Error ? err.message : "Impossible d'ouvrir le paiement. Réessayez.";
       setCheckoutError(msg);
     } finally {
       setCheckoutLoading(false);
