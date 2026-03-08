@@ -29,15 +29,24 @@ export default function Sources() {
   const { user } = useAuth();
   const [stats, setStats] = useState<SourceStats>(EMPTY);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const { data } = await supabase
+      setLoadError(null);
+      const { data, error } = await supabase
         .from("contacts")
         .select("origine")
         .eq("owner_user_id", user.id);
+
+      if (error) {
+        console.error("Sources load error:", error.message);
+        setLoadError("Impossible de charger les statistiques. Réessayez.");
+        setLoading(false);
+        return;
+      }
 
       const s = { ...EMPTY };
       (data || []).forEach((c: { origine: string | null }) => {
