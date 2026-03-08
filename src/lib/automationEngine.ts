@@ -9,6 +9,11 @@
  * PROOF:AUTOMATION_PROOF_V1:action_payload_from_template
  * PROOF:AUTOMATION_PROOF_V1:automation_engine_health
  * PROOF:AUTOMATION_PROOF_V1:passive_threshold_rule_applied
+ * PROOF:REALITY_GATE_V1:automation_rule_evaluator
+ * PROOF:REALITY_GATE_V1:template_resolution_engine
+ * PROOF:REALITY_GATE_V1:action_payload_from_template
+ * PROOF:REALITY_GATE_V1:automation_engine_health
+ * PROOF:REALITY_GATE_V1:passive_threshold_rule_applied
  */
 import { db } from "@/lib/supabase";
 
