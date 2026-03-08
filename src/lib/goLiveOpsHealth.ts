@@ -1,5 +1,6 @@
 // PROOF:GOLIVE_OPS_V1:golive_truth_source → this file
 // PROOF:GOLIVE_EXPORT_V1:golive_truth_source → this file
+// PROOF:GOLIVE_EXPORT_V2:golive_truth_source → this file
 /**
  * GO-LIVE OPS HEALTH — Single operational source of truth.
  * Centralises release/ops statuses, separating:
@@ -45,6 +46,7 @@ export interface OpsCheck {
 
 // PROOF:GOLIVE_OPS_V1:npm_ci_status
 // PROOF:GOLIVE_EXPORT_V1:npm_ci_status
+// PROOF:GOLIVE_EXPORT_V2:npm_ci_status
 export const NPM_CI_STATUS: OpsStatusValue = "NOT_VERIFIABLE";
 // Reason: npm ci cannot be executed inside Lovable's sandboxed build env.
 // The package-lock.json exists and is committed. A human must run
@@ -52,11 +54,13 @@ export const NPM_CI_STATUS: OpsStatusValue = "NOT_VERIFIABLE";
 
 // PROOF:GOLIVE_OPS_V1:build_status
 // PROOF:GOLIVE_EXPORT_V1:build_status
+// PROOF:GOLIVE_EXPORT_V2:build_status
 export const BUILD_STATUS: OpsStatusValue = "PASS";
 // Vite dev build compiles without hard errors in Lovable preview.
 
 // PROOF:GOLIVE_OPS_V1:public_builder_trace_status
 // PROOF:GOLIVE_EXPORT_V1:public_builder_trace_status
+// PROOF:GOLIVE_EXPORT_V2:public_builder_trace_status
 export const PUBLIC_BUILDER_TRACE_STATUS: OpsStatusValue = "PLATFORM_OVERLAY";
 // "Edit with Lovable" badge is injected by the Lovable platform at preview/publish time.
 // It is NOT in the source code. It must be removed via:
@@ -65,6 +69,7 @@ export const PUBLIC_BUILDER_TRACE_STATUS: OpsStatusValue = "PLATFORM_OVERLAY";
 
 // PROOF:GOLIVE_OPS_V1:stripe_webhook_status
 // PROOF:GOLIVE_EXPORT_V1:stripe_webhook_status
+// PROOF:GOLIVE_EXPORT_V2:stripe_webhook_status
 export const STRIPE_WEBHOOK_STATUS: OpsStatusValue = "CONFIG_MISSING";
 // STRIPE_WEBHOOK_SECRET is not set in project secrets.
 // Without it, webhook signatures are NOT verified → security risk in production.
@@ -72,6 +77,7 @@ export const STRIPE_WEBHOOK_STATUS: OpsStatusValue = "CONFIG_MISSING";
 
 // PROOF:GOLIVE_OPS_V1:stripe_portal_status
 // PROOF:GOLIVE_EXPORT_V1:stripe_portal_status
+// PROOF:GOLIVE_EXPORT_V2:stripe_portal_status
 export const STRIPE_CUSTOMER_PORTAL_STATUS: OpsStatusValue = "CONFIG_MISSING";
 // The customer-portal edge function is deployed and functional.
 // But the Stripe Customer Portal must be activated in the Stripe Dashboard first.
@@ -79,6 +85,7 @@ export const STRIPE_CUSTOMER_PORTAL_STATUS: OpsStatusValue = "CONFIG_MISSING";
 
 // PROOF:GOLIVE_OPS_V1:passive_ingestion_mode
 // PROOF:GOLIVE_EXPORT_V1:passive_ingestion_mode
+// PROOF:GOLIVE_EXPORT_V2:passive_ingestion_mode
 export const PASSIVE_INGESTION_MODE: OpsStatusValue = "PAGE_MOUNT";
 // ingest_passive_signal() RPC is deployed and idempotent.
 // Currently triggered client-side on PassiveOS page mount.
@@ -87,6 +94,7 @@ export const PASSIVE_INGESTION_MODE: OpsStatusValue = "PAGE_MOUNT";
 
 // PROOF:GOLIVE_OPS_V1:template_substitution_mode
 // PROOF:GOLIVE_EXPORT_V1:template_substitution_mode
+// PROOF:GOLIVE_EXPORT_V2:template_substitution_mode
 export const TEMPLATE_SUBSTITUTION_MODE: OpsStatusValue = "CLIENT_ONLY";
 // resolveTemplateVariables() in templateVariables.ts is implemented and works.
 // Substitution happens client-side in the Messages preview.
@@ -96,6 +104,7 @@ export const TEMPLATE_SUBSTITUTION_MODE: OpsStatusValue = "CLIENT_ONLY";
 
 // PROOF:GOLIVE_OPS_V1:top_blockers
 // PROOF:GOLIVE_EXPORT_V1:top_blockers
+// PROOF:GOLIVE_EXPORT_V2:top_blockers
 export const OPS_CHECKS: OpsCheck[] = [
   // ── HARD BLOCKERS ────────────────────────────────────────────────────────
   {

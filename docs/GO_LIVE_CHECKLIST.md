@@ -1,6 +1,7 @@
 # GO-LIVE CHECKLIST — WIINUP MAX
 # PROOF:GOLIVE_OPS_V1:golive_checklist → this file
 # PROOF:GOLIVE_EXPORT_V1:golive_checklist → this file
+# PROOF:GOLIVE_EXPORT_V2:golive_checklist → this file
 
 **Build Stamp:** GOLIVE-OPS-2026-03-08-V1  
 **Généré le :** 2026-03-08  
