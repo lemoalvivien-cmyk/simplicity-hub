@@ -77,18 +77,25 @@ export default function CampagneNouvelle() {
 
   const [listes, setListes] = useState<Liste[]>([]);
   const [loadingListes, setLoadingListes] = useState(true);
+  const [listesError, setListesError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       setLoadingListes(true);
-      const { data } = await supabase
+      setListesError(null);
+      const { data, error } = await supabase
         .from("listes")
         .select("id, nom")
         .eq("owner_user_id", user.id)
         .order("created_at", { ascending: false });
-      setListes((data as Liste[] | null) || []);
+      if (error) {
+        console.error("CampagneNouvelle listes error:", error.message);
+        setListesError("Impossible de charger les listes. Réessayez.");
+      } else {
+        setListes((data as Liste[] | null) || []);
+      }
       setLoadingListes(false);
     };
     load();
