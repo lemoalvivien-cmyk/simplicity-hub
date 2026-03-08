@@ -3857,6 +3857,7 @@ export type Database = {
       }
     }
     Functions: {
+      admin_forensics_summary: { Args: never; Returns: Json }
       apply_lead_policy: { Args: { p_intake_id: string }; Returns: undefined }
       claim_next_job: {
         Args: {
