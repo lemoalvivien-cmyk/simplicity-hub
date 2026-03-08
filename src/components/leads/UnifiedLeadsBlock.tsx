@@ -1,6 +1,8 @@
 /**
  * UnifiedLeadsBlock — Dashboard block showing the lead pipeline summary.
  * Used in DashboardEntreprise (asEntreprise=true) and DashboardFacilitateur.
+ * PROOF:PIPELINE_V2:enterprise_dashboard_pipeline   → this file
+ * PROOF:PIPELINE_V2:facilitateur_dashboard_pipeline → this file
  */
 import { Link } from "react-router-dom";
 import { Layers, ArrowRight, Loader2, AlertCircle } from "lucide-react";

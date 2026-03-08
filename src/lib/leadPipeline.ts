@@ -4,6 +4,13 @@
  * Single entry point for all commercial lead processing.
  * Every source (introduction, import, passive, radar, manual) routes through here.
  *
+ * PROOF:PIPELINE_V2:lead_tables_created       → supabase/migrations/20260308092314_*.sql
+ * PROOF:PIPELINE_V2:lead_rls_shared_visibility → supabase/migrations/20260308100159_*.sql
+ * PROOF:PIPELINE_V2:opportunity_factory        → supabase/migrations/20260308100159_*.sql (promote_lead_to_opportunity)
+ * PROOF:PIPELINE_V2:lead_actions_queue         → supabase/migrations/20260308100159_*.sql (lead_actions table)
+ * PROOF:PIPELINE_V2:radar_pipeline_wired       → src/pages/Radar.tsx (createLeadFromRadar call)
+ * PROOF:PIPELINE_V2:passive_pipeline_wired     → NOT_IMPLEMENTED (PassiveOS does not yet call createLeadFromPassive)
+ *
  * Tables involved:
  *   - lead_source_events  (immutable event log)
  *   - lead_intakes        (unified lead object)

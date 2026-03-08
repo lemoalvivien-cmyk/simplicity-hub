@@ -1,6 +1,8 @@
 /**
  * LeadIntakeStatus — Small reusable component to show unified lead pipeline status.
  * Used in IntroductionsEntreprise, ContactDetail, DashboardEntreprise.
+ * PROOF:PIPELINE_V2:introduction_pipeline_ui → this file + src/pages/IntroductionsEntreprise.tsx
+ * PROOF:PIPELINE_V2:lead_rls_shared_visibility → reads lead_intakes via entreprise_id RLS policy
  */
 import { CircleDot, CheckCircle2, AlertCircle, Copy, Ban, Zap, RefreshCw } from "lucide-react";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";

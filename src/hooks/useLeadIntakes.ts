@@ -1,6 +1,8 @@
 /**
  * useLeadIntakes — Fetches and summarizes the unified lead pipeline.
  * Supports both facilitateur (owner) and entreprise (relational) views.
+ * PROOF:PIPELINE_V2:facilitateur_dashboard_pipeline → src/pages/DashboardFacilitateur.tsx (UnifiedLeadsBlock)
+ * PROOF:PIPELINE_V2:enterprise_dashboard_pipeline   → src/pages/DashboardEntreprise.tsx (UnifiedLeadsBlock asEntreprise)
  */
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
