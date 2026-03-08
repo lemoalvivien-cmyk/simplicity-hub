@@ -947,6 +947,139 @@ export default function AdminSystemHealth() {
         </div>
       </div>
 
+      {/* ── AUTOMATION EXECUTION ENGINE PANEL ── */}
+      {/* PROOF:AUTOMATION_V1:automation_rule_admin_visibility */}
+      {/* PROOF:AUTOMATION_V1:automation_engine_health */}
+      <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: "hsl(271 70% 60% / 0.4)" }}>
+        <button
+          className="flex items-center justify-between w-full"
+          onClick={() => {
+            if (!engineLoaded && !engineLoading) loadEngine();
+            setShowEnginePanel(v => !v);
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Bot size={15} style={{ color: "hsl(271 70% 50%)" }} />
+            <h3 className="font-semibold text-foreground text-sm">Automation Execution Engine</h3>
+            <code className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">PROOF:AUTOMATION_V1</code>
+          </div>
+          {showEnginePanel
+            ? <ChevronDown size={14} className="text-muted-foreground" />
+            : <ChevronRight size={14} className="text-muted-foreground" />}
+        </button>
+
+        {showEnginePanel && (
+          <div className="mt-4 space-y-4">
+            {engineLoading && <p className="text-xs text-muted-foreground animate-pulse">Chargement du moteur…</p>}
+            {engineLoaded && !engineHealth && (
+              <p className="text-xs text-muted-foreground">Aucune donnée disponible.</p>
+            )}
+            {engineLoaded && engineHealth && (
+              <>
+                {/* Mode badge */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-xs font-bold px-2 py-1 rounded-full"
+                    style={{
+                      background: engineHealth.engine_mode === "active" ? "hsl(var(--success-light))" : "hsl(var(--muted))",
+                      color:      engineHealth.engine_mode === "active" ? "hsl(var(--success))"       : "hsl(var(--muted-foreground))",
+                    }}>
+                    MODE: {engineHealth.engine_mode.toUpperCase()}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Source: <code>apply_automation_rules_to_lead() + automation_engine_log</code>
+                  </span>
+                </div>
+
+                {/* KPI grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[
+                    { label: "Règles actives",         value: engineHealth.active_rules,       icon: Settings },
+                    { label: "Décisions appliquées",   value: engineHealth.apply_decisions,    icon: CheckCircle2 },
+                    { label: "Décisions ignorées",     value: engineHealth.skip_decisions,     icon: Clock },
+                    { label: "Templates résolus",      value: engineHealth.templates_resolved, icon: FileCode },
+                    { label: "Fallbacks templates",    value: engineHealth.template_fallbacks, icon: AlertTriangle },
+                    { label: "Décisions totales",      value: engineHealth.total_decisions,    icon: Activity },
+                  ].map(({ label, value, icon: Icon }) => (
+                    <div key={label} className="p-3 rounded-xl bg-muted text-center">
+                      <Icon size={12} className="mx-auto mb-1 text-muted-foreground" />
+                      <p className="font-bold text-foreground text-xl">{value}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Active rule types */}
+                {engineHealth.rule_types_active.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-foreground mb-2">Types de règles actives</p>
+                    <div className="flex flex-wrap gap-2">
+                      {engineHealth.rule_types_active.map(r => (
+                        <span key={r.rule_type} className="text-xs px-2 py-1 rounded-full font-mono"
+                          style={{ background: "hsl(271 70% 95%)", color: "hsl(271 70% 35%)" }}>
+                          {r.rule_type} ({r.count})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent decisions */}
+                {engineHealth.recent_decisions.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-foreground mb-2">10 dernières décisions du moteur</p>
+                    <div className="space-y-1">
+                      {engineHealth.recent_decisions.map((d, i) => (
+                        <div key={i} className="flex items-center gap-3 text-xs p-2 rounded bg-muted/50">
+                          <span className="text-muted-foreground font-mono shrink-0">
+                            {new Date(d.created_at).toLocaleTimeString("fr")}
+                          </span>
+                          <code className="text-primary shrink-0">{d.rule_type}</code>
+                          <span className="text-muted-foreground">→</span>
+                          <span className="font-semibold shrink-0"
+                            style={{ color: d.decision === "apply" ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }}>
+                            {d.decision}
+                          </span>
+                          {d.context?.reason && (
+                            <span className="text-muted-foreground truncate">{String(d.context.reason)}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Proof index */}
+                <div className="p-3 rounded-xl bg-muted/40 border border-border">
+                  <p className="text-xs font-semibold text-foreground mb-2">
+                    PROOF:AUTOMATION_V1 — index grep-able
+                    <code className="ml-2 text-muted-foreground font-mono text-xs">grep -r "PROOF:AUTOMATION_V1" src/ supabase/</code>
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {[
+                      "automation_rule_evaluator",
+                      "automation_rule_routing",
+                      "template_resolution_engine",
+                      "action_payload_from_template",
+                      "passive_threshold_rule_applied",
+                      "intro_auto_promote_rule_applied",
+                      "duplicate_guard_rule_applied",
+                      "automation_rule_admin_visibility",
+                      "action_generation_from_rules",
+                      "automation_engine_health",
+                    ].map(slug => (
+                      <code key={slug} className="text-xs px-2 py-0.5 rounded font-mono font-semibold"
+                        style={{ background: "hsl(271 70% 92%)", color: "hsl(271 70% 32%)" }}>
+                        {slug}
+                      </code>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
     </AdminLayout>
   );
 }
