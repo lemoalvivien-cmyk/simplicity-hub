@@ -229,11 +229,15 @@ const App = () => (
               <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
               <Route path="/admin/promo-codes" element={<ProtectedRoute adminOnly><AdminPromoCodes /></ProtectedRoute>} />
               <Route path="/admin/payments" element={<ProtectedRoute adminOnly><AdminPayments /></ProtectedRoute>} />
+              <Route path="/admin/payout-ops" element={<ProtectedRoute adminOnly><AdminPayoutOps /></ProtectedRoute>} />
+              <Route path="/admin/reactivation" element={<ProtectedRoute adminOnly><AdminReactivation /></ProtectedRoute>} />
               <Route path="/admin/help" element={<ProtectedRoute adminOnly><AdminHelpContent /></ProtectedRoute>} />
               <Route path="/admin/analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
               <Route path="/admin/revenue" element={<ProtectedRoute adminOnly><AdminRevenue /></ProtectedRoute>} />
               <Route path="/admin/go-live" element={<ProtectedRoute adminOnly><AdminGoLive /></ProtectedRoute>} />
               <Route path="/admin/system-health" element={<ProtectedRoute adminOnly><AdminSystemHealth /></ProtectedRoute>} />
+              {/* ── ROI Dashboard entreprise ──────────────── */}
+              <Route path="/roi" element={<ProtectedRoute><ROIDashboard /></ProtectedRoute>} />
 
               {/* ── 404 ──────────────────────────────────── */}
               <Route path="*" element={<NotFound />} />
