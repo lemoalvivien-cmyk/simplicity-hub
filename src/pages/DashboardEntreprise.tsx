@@ -165,22 +165,30 @@ export default function DashboardEntreprise() {
 
         {/* ── PIPELINE METRICS ─────────────────────────────── */}
         {/* PROOF:INTEGRITY_V1:dashboard_action_context */}
-        {!isLaunchMode && !metrics.loading && (metrics.openActions > 0 || metrics.v2Opportunities > 0) && (
-          <div className="rounded-xl p-3 flex items-center gap-4 flex-wrap" style={{ background: "hsl(var(--secondary))" }}>
-            {metrics.openActions > 0 && (
-              <div className="flex items-center gap-1.5">
+        {/* PROOF:PREMIUM_V1:dashboard_actionability — always visible metrics strip with urgency */}
+        {!isLaunchMode && !metrics.loading && (
+          <div className="rounded-xl p-3 flex items-center gap-3 flex-wrap" style={{ background: "hsl(var(--secondary))" }}>
+            {metrics.openActions > 0 ? (
+              <Link to="/actions" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                 <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--primary))" }} />
-                <span className="text-xs font-semibold text-foreground">{metrics.openActions} action{metrics.openActions > 1 ? "s" : ""} ouverte{metrics.openActions > 1 ? "s" : ""}</span>
+                <span className="text-xs font-semibold text-foreground">
+                  {metrics.openActions} action{metrics.openActions > 1 ? "s" : ""} à traiter
+                </span>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--success))" }} />
+                <span className="text-xs text-muted-foreground">Tout est traité</span>
               </div>
             )}
             {metrics.v2Opportunities > 0 && (
-              <div className="flex items-center gap-1.5">
+              <Link to="/opportunites" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                 <div className="w-2 h-2 rounded-full" style={{ background: "hsl(218 72% 45%)" }} />
-                <span className="text-xs text-muted-foreground">{metrics.v2Opportunities} opp. pipeline V2</span>
-              </div>
+                <span className="text-xs text-muted-foreground">{metrics.v2Opportunities} opportunités</span>
+              </Link>
             )}
             {metrics.introBornOpps > 0 && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 ml-auto">
                 <div className="w-2 h-2 rounded-full" style={{ background: "hsl(220 80% 45%)" }} />
                 <span className="text-xs text-muted-foreground">{metrics.introBornOpps} via intro</span>
               </div>
