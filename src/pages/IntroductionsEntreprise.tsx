@@ -3,19 +3,21 @@
  * FULLY WIRED: lit et écrit dans Supabase.
  * Validation → met à jour intro statut + confirme le gain du facilitateur.
  * Refus → met à jour intro statut + annule le gain.
- * Core Domain v4: affiche le statut lead_intake lié à chaque intro.
+ * Core Domain v5: affiche lead status, opportunity liée, et action active.
+ * Ownership fix: lead_intakes.entreprise_id est maintenant propagé par trigger.
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   CheckCircle2, Clock, XCircle, ChevronRight, AlertCircle,
-  Send, Info, Briefcase, Loader2, Phone, Mail
+  Send, Info, Briefcase, Loader2, Phone, Mail, Target
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import LeadIntakeStatus from "@/components/leads/LeadIntakeStatus";
+import LeadActionBadge from "@/components/leads/LeadActionBadge";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";
