@@ -1,8 +1,10 @@
 /**
  * PassiveOS — Passive Facilitator OS MAX
- * "Votre réseau travaille. La machine a préparé le reste."
+ * PROOF:EXECUTION_V1:passive_pipeline_wired → triggerPassiveLead call site
+ * PROOF:INTEGRITY_V1:passive_serverish_ingestion → dedicated ingestPassiveThreshold fn
+ * PROOF:INTEGRITY_V1:passive_idempotency_guard → checks lead_source_events before creating
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
@@ -30,6 +32,8 @@ interface ShareLink {
 }
 interface PassiveGain { id: string; montant: number | null; statut: string; source: string | null; }
 
+const PASSIVE_THRESHOLD = 3;
+
 const CHANNELS = [
   { label: "WhatsApp", status: "ready", descKey: "passive_channel_ready", icon: "💬" },
   { label: "Email", status: "ready", descKey: "passive_channel_ready", icon: "📧" },
@@ -45,6 +49,41 @@ const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
   soon: { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
 };
 
+// PROOF:INTEGRITY_V1:passive_serverish_ingestion
+// PROOF:INTEGRITY_V1:passive_idempotency_guard
+// Dedicated function: checks existing lead_source_events before creating to avoid duplicates
+async function ingestPassiveThreshold(
+  userId: string,
+  links: ShareLink[]
+): Promise<void> {
+  const qualifying = links.filter(
+    l => (l.qualified_interest_count ?? 0) >= PASSIVE_THRESHOLD && !l.converted
+  );
+  if (qualifying.length === 0) return;
+
+  // Bulk-check existing events for all qualifying links in one query
+  const shareLinkIds = qualifying.map(l => l.id);
+  const { data: existing } = await db
+    .from("lead_source_events")
+    .select("source_ref_id")
+    .eq("user_id", userId)
+    .eq("source_type", "passive_click")
+    .in("source_ref_id", shareLinkIds);
+
+  const alreadyIngested = new Set((existing ?? []).map((e: { source_ref_id: string }) => e.source_ref_id));
+
+  // Fire-and-forget only for links not yet ingested (idempotency guard)
+  const toIngest = qualifying.filter(l => !alreadyIngested.has(l.id));
+  for (const link of toIngest) {
+    // PROOF:EXECUTION_V1:passive_pipeline_wired
+    createLeadFromPassive({
+      userId,
+      shareLinkId: link.id,
+      context: `passive_threshold_${link.qualified_interest_count}_interests`,
+    }).catch(() => {/* silent — non-blocking */});
+  }
+}
+
 export default function PassiveOS() {
   const { t } = useTranslation();
   const lang = i18n.language || "fr";
@@ -58,9 +97,13 @@ export default function PassiveOS() {
   const [totalInterests, setTotalInterests] = useState(0);
   const [totalConverted, setTotalConverted] = useState(0);
   const [tab, setTab] = useState<"home" | "liens" | "canaux">("home");
+  // PROOF:INTEGRITY_V1:passive_idempotency_guard — ref prevents double-run on StrictMode double-effect
+  const ingestedRef = useRef(false);
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
+
     const load = async () => {
       const [linksRes, contactsRes, gainsRes] = await Promise.all([
         db.from("offer_share_links").select("*").eq("facilitator_id", user.id).order("clicks_count", { ascending: false }).limit(10),
@@ -68,39 +111,26 @@ export default function PassiveOS() {
         db.from("gains").select("id, montant, statut, source").eq("facilitateur_id", user.id).in("source", ["passive", "diffusion_passive", "lien_traque"]),
       ]);
       const links: ShareLink[] = linksRes.data || [];
-      setShareLinks(links);
-      setGains(gainsRes.data || []);
-      setContactsCount(contactsRes.count || 0);
-      setTotalClicks(links.reduce((s, l) => s + (l.clicks_count || 0), 0));
-      setTotalInterests(links.reduce((s, l) => s + (l.qualified_interest_count || 0), 0));
-      setTotalConverted(links.filter(l => l.converted).length);
-      setLoading(false);
 
-      // PROOF:EXECUTION_V1:passive_pipeline_wired
-      // For each link with qualified_interest_count >= 3 (threshold), ensure a lead_intake exists.
-      // We fire-and-forget: no blocking, no UI side effects beyond the pipeline.
-      for (const link of links) {
-        if ((link.qualified_interest_count || 0) >= 3 && !link.converted) {
-          // Check if we already have a lead for this share link before creating
-          const { data: existing } = await db
-            .from("lead_source_events")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("source_type", "passive_click")
-            .eq("source_ref_id", link.id)
-            .limit(1)
-            .single();
-          if (!existing) {
-            await createLeadFromPassive({
-              userId: user.id,
-              shareLinkId: link.id,
-              context: `passive_threshold_reached_${link.qualified_interest_count}_interests`,
-            });
-          }
+      if (!cancelled) {
+        setShareLinks(links);
+        setGains(gainsRes.data || []);
+        setContactsCount(contactsRes.count || 0);
+        setTotalClicks(links.reduce((s, l) => s + (l.clicks_count || 0), 0));
+        setTotalInterests(links.reduce((s, l) => s + (l.qualified_interest_count || 0), 0));
+        setTotalConverted(links.filter(l => l.converted).length);
+        setLoading(false);
+
+        // PROOF:INTEGRITY_V1:passive_idempotency_guard — run once per mount
+        if (!ingestedRef.current && links.length > 0) {
+          ingestedRef.current = true;
+          // PROOF:INTEGRITY_V1:passive_serverish_ingestion
+          ingestPassiveThreshold(user.id, links);
         }
       }
     };
     load();
+    return () => { cancelled = true; };
   }, [user]);
 
   const copyLink = (code: string) => {
@@ -117,8 +147,7 @@ export default function PassiveOS() {
     }
   };
 
-  // PROOF:EXECUTION_V1:passive_pipeline_wired
-  // When a share link reaches a qualified threshold (3+ unique clicks), create a lead_source_event + lead_intake.
+  // PROOF:EXECUTION_V1:passive_pipeline_wired — manual trigger call site
   const triggerPassiveLead = async (shareLinkId: string, email?: string, company?: string) => {
     if (!user) return;
     const result = await createLeadFromPassive({
@@ -140,7 +169,7 @@ export default function PassiveOS() {
     <UserLayout role="facilitateur" jarvisContext="passive-os">
       <div className="max-w-2xl mx-auto space-y-5">
 
-        {/* ── HERO ─────────────────────────────────────────────── */}
+        {/* ── HERO */}
         <div className="rounded-2xl p-6 border relative overflow-hidden" style={{
           background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))",
           borderColor: "hsl(218 40% 25% / 0.5)"
@@ -164,8 +193,6 @@ export default function PassiveOS() {
                 <p className="text-white/55 text-sm">{t("passive_openclaw_sub")}</p>
               </div>
             </div>
-
-            {/* KPIs */}
             <div className="grid grid-cols-4 gap-2">
               {[
                 { label: t("passive_kpi_contacts"), value: loading ? "…" : formatNumber(contactsCount, lang), icon: Users },
@@ -180,7 +207,6 @@ export default function PassiveOS() {
                 </div>
               ))}
             </div>
-
             {passiveGainsTotal > 0 && (
               <div className="mt-3 p-3 rounded-xl flex items-center gap-2" style={{ background: "hsl(152 62% 30% / 0.2)", border: "1px solid hsl(152 62% 35% / 0.3)" }}>
                 <TrendingUp size={14} style={{ color: "hsl(152 62% 60%)" }} className="shrink-0" />
@@ -192,7 +218,7 @@ export default function PassiveOS() {
           </div>
         </div>
 
-        {/* ── TABS ────────────────────────────────────────────── */}
+        {/* ── TABS */}
         <div className="flex gap-1 p-1 rounded-xl bg-muted">
           {([
             { key: "home", label: t("passive_tab_home") },
@@ -206,12 +232,11 @@ export default function PassiveOS() {
           ))}
         </div>
 
-        {/* ── HOME TAB ────────────────────────────────────────── */}
+        {/* ── HOME TAB */}
         {tab === "home" && (
           <>
             <PassiveCoachBanner />
             <BestOfferToPush compact />
-
             <Link to="/chaud" className="rounded-xl border-2 p-4 flex items-center justify-between gap-4 hover:opacity-90 transition-all" style={{
               borderColor: "hsl(24 100% 52% / 0.35)",
               background: "linear-gradient(135deg, hsl(24 80% 8%), hsl(38 70% 11%))"
@@ -234,14 +259,12 @@ export default function PassiveOS() {
               </div>
               <ArrowRight size={15} className="text-white/50 shrink-0" />
             </Link>
-
             <NetworkValueMap />
-
             <div className="card-surface p-4">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("passive_quick_nav")}</p>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { to: "/offres", label: t("fac_best_path") === "fac_best_path" ? "Offres à partager" : t("fac_best_path"), icon: Share2, color: "hsl(var(--primary))" },
+                  { to: "/offres", label: "Offres à partager", icon: Share2, color: "hsl(var(--primary))" },
                   { to: "/import-reseau", label: "Importer mon réseau", icon: Upload, color: "hsl(38 80% 40%)" },
                   { to: "/gains", label: t("gains"), icon: TrendingUp, color: "hsl(152 62% 40%)" },
                   { to: "/agents", label: t("openclaw"), icon: Brain, color: "hsl(218 72% 55%)" },
@@ -258,7 +281,7 @@ export default function PassiveOS() {
           </>
         )}
 
-        {/* ── LIENS TAB ───────────────────────────────────────── */}
+        {/* ── LIENS TAB */}
         {tab === "liens" && (
           <div className="space-y-3">
             {shareLinks.length === 0 ? (
@@ -278,6 +301,7 @@ export default function PassiveOS() {
                   (link.converted ? 30 : 0)
                 ));
                 const heatColor = heat >= 65 ? "hsl(24 100% 52%)" : heat >= 40 ? "hsl(38 80% 40%)" : "hsl(var(--primary))";
+                const qualifies = (link.qualified_interest_count ?? 0) >= PASSIVE_THRESHOLD;
                 return (
                   <div key={link.id} className="card-surface p-4">
                     <div className="flex items-start justify-between gap-3 mb-3">
@@ -289,6 +313,12 @@ export default function PassiveOS() {
                           {(link.qualified_interest_count || 0) > 0 && (
                             <span className="text-xs font-bold" style={{ color: "hsl(24 100% 52%)" }}>
                               🔥 {link.qualified_interest_count} {link.qualified_interest_count > 1 ? t("passive_heat_plural") : t("passive_heat_label")}
+                            </span>
+                          )}
+                          {qualifies && !link.converted && (
+                            <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
+                              style={{ background: "hsl(218 72% 93%)", color: "hsl(218 72% 40%)" }}>
+                              → pipeline
                             </span>
                           )}
                           {link.converted && (
@@ -316,7 +346,7 @@ export default function PassiveOS() {
           </div>
         )}
 
-        {/* ── CANAUX TAB ──────────────────────────────────────── */}
+        {/* ── CANAUX TAB */}
         {tab === "canaux" && (
           <div className="space-y-3">
             <div className="card-surface p-5">
@@ -324,7 +354,7 @@ export default function PassiveOS() {
                 <Zap size={14} className="text-primary" /> {t("passive_channels_title")}
               </h2>
               <div className="grid grid-cols-2 gap-2">
-                {CHANNELS.map(({ label, status, descKey, icon }) => {
+                {CHANNELS.map(({ label, status, icon }) => {
                   const style = STATUS_STYLES[status];
                   const statusLabel = status === "ready" ? t("passive_channel_ready") : status === "assisted" ? t("passive_channel_assisted") : t("passive_channel_soon");
                   return (
@@ -332,47 +362,19 @@ export default function PassiveOS() {
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className="text-base">{icon}</span>
                         <span className="font-semibold text-foreground text-xs">{label}</span>
-                        <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-medium"
-                          style={{ background: style.bg, color: style.color }}>
-                          {statusLabel}
-                        </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{statusLabel}</p>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                        style={{ color: style.color, background: style.bg }}>
+                        {statusLabel}
+                      </span>
                     </div>
                   );
                 })}
               </div>
             </div>
-
-            <div className="rounded-xl p-5 border" style={{
-              background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))",
-              borderColor: "hsl(218 40% 25% / 0.4)"
-            }}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
-                  <Brain size={16} className="text-white" />
-                </div>
-                <div>
-                  <p className="font-semibold text-white text-sm">{t("passive_openclaw_title")}</p>
-                  <p className="text-white/50 text-xs">{t("passive_openclaw_sub")}</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {([
-                  t("passive_openclaw_1"),
-                  t("passive_openclaw_2"),
-                  t("passive_openclaw_3"),
-                  t("passive_openclaw_4"),
-                ]).map((item) => (
-                  <div key={item} className="flex items-center gap-2">
-                    <CheckCircle2 size={11} style={{ color: "hsl(152 62% 50%)" }} className="shrink-0" />
-                    <p className="text-xs text-white/60">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
+
       </div>
     </UserLayout>
   );
