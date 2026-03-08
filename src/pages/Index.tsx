@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Zap } from "lucide-react";
+import { Zap, ArrowRight } from "lucide-react";
 import PublicNav from "@/components/layout/PublicNav";
 import HeroSection from "@/components/landing/HeroSection";
 import ProblemSection from "@/components/landing/ProblemSection";
@@ -74,6 +74,28 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* STICKY CTA — Mobile only */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+        style={{
+          background: "hsl(218 72% 10% / 0.97)",
+          borderTop: "1px solid hsl(218 55% 22% / 0.7)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
+      >
+        <div className="px-4 py-3">
+          <Link
+            to="/pricing"
+            className="btn-cta w-full flex items-center justify-center gap-2 py-3.5 text-sm"
+          >
+            Je veux plus de clients
+            <ArrowRight size={15} />
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
