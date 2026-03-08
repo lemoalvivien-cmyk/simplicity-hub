@@ -69,6 +69,7 @@ export const PUBLIC_BUILDER_TRACE_STATUS: OpsStatusValue = "PLATFORM_OVERLAY";
 
 // PROOF:GOLIVE_OPS_V1:stripe_webhook_status
 // PROOF:GOLIVE_EXPORT_V1:stripe_webhook_status
+// PROOF:GOLIVE_EXPORT_V2:stripe_webhook_status
 export const STRIPE_WEBHOOK_STATUS: OpsStatusValue = "CONFIG_MISSING";
 // STRIPE_WEBHOOK_SECRET is not set in project secrets.
 // Without it, webhook signatures are NOT verified → security risk in production.
