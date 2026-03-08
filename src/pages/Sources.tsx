@@ -147,6 +147,14 @@ export default function Sources() {
           <div className="flex items-center justify-center py-8">
             <Loader2 size={20} className="animate-spin text-muted-foreground" />
           </div>
+        ) : loadError ? (
+          <div className="flex items-start gap-3 p-4 rounded-xl bg-muted">
+            <AlertCircle size={16} className="shrink-0 mt-0.5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Erreur de chargement</p>
+              <p className="text-xs text-muted-foreground">{loadError}</p>
+            </div>
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-3 gap-3 mb-6">
