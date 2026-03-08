@@ -315,6 +315,7 @@ export default function DashboardFacilitateur() {
         )}
 
         {/* ── LEADS PIPELINE (facilitateur view) ───────────── */}
+        {/* PROOF:PIPELINE_V2:facilitateur_dashboard_pipeline */}
         {/* asEntreprise=false → fetches leads where user_id = me (I created these leads via intros) */}
         {!isLaunchMode && <UnifiedLeadsBlock asEntreprise={false} linkTo="/introductions" />}
 

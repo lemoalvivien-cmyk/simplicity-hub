@@ -156,6 +156,7 @@ export default function DashboardEntreprise() {
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
         {/* ── UNIFIED LEADS PIPELINE ────────────────────────── */}
+        {/* PROOF:PIPELINE_V2:enterprise_dashboard_pipeline */}
         {/* asEntreprise=true → fetches leads where entreprise_id = user.id
             These are leads from facilitateurs' introductions that target this company.
             RLS policy allows this via the entreprise_id column propagated in the trigger. */}
