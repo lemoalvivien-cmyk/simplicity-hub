@@ -3906,6 +3906,54 @@ export type Database = {
           },
         ]
       }
+      reactivation_jobs: {
+        Row: {
+          converted_at: string | null
+          created_at: string
+          dismissed_at: string | null
+          entity_id: string | null
+          id: string
+          metadata: Json | null
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          trigger_entity: string | null
+          trigger_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          converted_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          entity_id?: string | null
+          id?: string
+          metadata?: Json | null
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          trigger_entity?: string | null
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          converted_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          entity_id?: string | null
+          id?: string
+          metadata?: Json | null
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          trigger_entity?: string | null
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shared_offers: {
         Row: {
           company_user_id: string
@@ -4260,6 +4308,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_payout_batch: {
+        Args: { p_actor_id: string; p_label: string; p_payout_ids: string[] }
+        Returns: string
+      }
       enqueue_job: {
         Args: {
           p_dedup_minutes?: number
@@ -4329,6 +4381,18 @@ export type Database = {
         Returns: string
       }
       recompute_edge_weight: { Args: { p_edge_id: string }; Returns: undefined }
+      record_payout_audit: {
+        Args: {
+          p_action: string
+          p_actor_id: string
+          p_batch_id: string
+          p_new_status: string
+          p_note?: string
+          p_old_status: string
+          p_payout_id: string
+        }
+        Returns: undefined
+      }
       refresh_trust_score: {
         Args: { p_facilitator_id: string }
         Returns: undefined
@@ -4338,6 +4402,7 @@ export type Database = {
         Returns: Json
       }
       resolve_rule_owner: { Args: { p_intake_id: string }; Returns: string }
+      scan_reactivation_candidates: { Args: never; Returns: number }
       seed_default_automation_rules: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -4369,6 +4434,15 @@ export type Database = {
             }
             Returns: boolean
           }
+      update_payout_status: {
+        Args: {
+          p_actor_id: string
+          p_new_status: string
+          p_note?: string
+          p_payout_id: string
+        }
+        Returns: boolean
+      }
       upsert_graph_edge: {
         Args: {
           p_confidence?: number

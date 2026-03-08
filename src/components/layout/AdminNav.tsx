@@ -10,6 +10,8 @@ const links = [
   { to: "/admin/users", label: "Utilisateurs", icon: Users },
   { to: "/admin/promo-codes", label: "Codes promo", icon: Tag },
   { to: "/admin/payments", label: "Paiements", icon: CreditCard },
+  { to: "/admin/payout-ops", label: "Payout Ops", icon: TrendingUp },
+  { to: "/admin/reactivation", label: "Réactivation", icon: Rocket },
   { to: "/admin/revenue", label: "Revenu réel", icon: TrendingUp },
   { to: "/admin/go-live", label: "Go-Live", icon: Rocket },
   { to: "/admin/help", label: "Aide", icon: HelpCircle },
