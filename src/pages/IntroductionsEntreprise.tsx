@@ -34,6 +34,10 @@ interface IntroReçue {
   mission_titre?: string | null;
   facilitateur_prenom?: string | null;
   gain_id?: string | null;
+  // Lead pipeline data (from lead_intakes joined)
+  lead_qualification_status?: QualificationStatus | null;
+  lead_next_best_action?: NextBestAction | null;
+  lead_dedup_status?: string | null;
 }
 
 const statusConfig: Record<Status, { icon: JSX.Element; color: string; bg: string; label: string }> = {
