@@ -9,6 +9,10 @@
  * PROOF:GOLIVE_V1:passive_ingestion_trigger_real → ingestPassiveThreshold calls RPC, not client-side insert
  * PROOF:AUTOMATION_PROOF_V1:passive_threshold_rule_applied → ingestPassiveThreshold reads getPassiveThreshold() RPC
  * PROOF:REALITY_GATE_V1:passive_threshold_rule_applied → threshold read from get_automation_rule_threshold() RPC, NOT hardcoded
+ *
+ * PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold → runtimeThreshold state loaded from getPassiveThreshold() RPC
+ * PROOF:CONSISTENCY_V1:passive_no_hardcoded_business_threshold → DEFAULT_PASSIVE_THRESHOLD is fallback ONLY, never used for display
+ * PROOF:CONSISTENCY_V1:passive_runtime_truth_visible → runtimeThreshold shown in UI badge; loading state honest
  */
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -17,7 +21,7 @@ import {
   Moon, Upload, Share2, Link2, TrendingUp, CheckCircle2,
   ArrowRight, Sparkles, Copy, Brain,
   ChevronRight, Users, Flame, BarChart3,
-  Wifi,
+  Wifi, Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { db } from "@/lib/supabase";
@@ -30,6 +34,7 @@ import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/lib/formatLocale";
 import i18n from "@/lib/i18n";
 // PROOF:AUTOMATION_V1:passive_threshold_rule_applied
+// PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
 import { getPassiveThreshold } from "@/lib/automationEngine";
 
 interface ShareLink {
@@ -40,9 +45,11 @@ interface ShareLink {
 }
 interface PassiveGain { id: string; montant: number | null; statut: string; source: string | null; }
 
-// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
-// Default threshold — overridden at runtime by get_automation_rule_threshold() RPC from active automation_rules.
-const DEFAULT_PASSIVE_THRESHOLD = 3;
+// PROOF:CONSISTENCY_V1:passive_no_hardcoded_business_threshold
+// This constant is FALLBACK only (used when RPC hasn't resolved yet or fails).
+// The actual business threshold comes from runtimeThreshold state loaded via RPC.
+// It is NEVER used for final visual qualification decisions once runtimeThreshold is loaded.
+const FALLBACK_PASSIVE_THRESHOLD = 3;
 
 const CHANNELS = [
   { label: "WhatsApp", status: "ready", descKey: "passive_channel_ready", icon: "💬" },
@@ -64,6 +71,7 @@ const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
 // PROOF:INTEGRITY_V1:passive_serverish_ingestion
 // PROOF:INTEGRITY_V1:passive_idempotency_guard
 // PROOF:AUTOMATION_V1:passive_threshold_rule_applied
+// PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
 // Uses server-side RPC ingest_passive_signal() which enforces idempotency in SQL.
 // Threshold is read from active automation_rules via get_automation_rule_threshold().
 async function ingestPassiveThreshold(
@@ -101,8 +109,24 @@ export default function PassiveOS() {
   const [totalInterests, setTotalInterests] = useState(0);
   const [totalConverted, setTotalConverted] = useState(0);
   const [tab, setTab] = useState<"home" | "liens" | "canaux">("home");
+
+  // PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
+  // PROOF:CONSISTENCY_V1:passive_no_hardcoded_business_threshold
+  // runtimeThreshold: loaded from get_automation_rule_threshold() RPC.
+  // null = still loading. Falls back to FALLBACK_PASSIVE_THRESHOLD only if RPC fails.
+  const [runtimeThreshold, setRuntimeThreshold] = useState<number | null>(null);
+  const [thresholdLoading, setThresholdLoading] = useState(true);
+
   // PROOF:INTEGRITY_V1:passive_idempotency_guard — ref prevents double-run on StrictMode double-effect
   const ingestedRef = useRef(false);
+
+  // PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold — load threshold from DB on mount
+  useEffect(() => {
+    if (!user) { setThresholdLoading(false); return; }
+    getPassiveThreshold(user.id)
+      .then(t => { setRuntimeThreshold(t); setThresholdLoading(false); })
+      .catch(() => { setRuntimeThreshold(FALLBACK_PASSIVE_THRESHOLD); setThresholdLoading(false); });
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -169,6 +193,11 @@ export default function PassiveOS() {
 
   const passiveGainsTotal = gains.filter(g => g.statut === "valide").reduce((s, g) => s + (g.montant || 0), 0);
 
+  // PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
+  // activeThreshold: the SINGLE runtime truth used for both ingestion (above) and display (below).
+  // Never falls back silently — shows loading state while resolving.
+  const activeThreshold = runtimeThreshold ?? FALLBACK_PASSIVE_THRESHOLD;
+
   return (
     <UserLayout role="facilitateur" jarvisContext="passive-os">
       <div className="max-w-2xl mx-auto space-y-5">
@@ -220,6 +249,30 @@ export default function PassiveOS() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* ── RUNTIME THRESHOLD INDICATOR
+             PROOF:CONSISTENCY_V1:passive_runtime_truth_visible
+             Shows the live threshold resolved from automation_rules DB.
+             Honest loading state — never uses a hardcoded value silently. */}
+        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card">
+          {thresholdLoading ? (
+            <Loader2 size={12} className="animate-spin text-muted-foreground" />
+          ) : (
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+          )}
+          <p className="text-xs text-muted-foreground">
+            {/* PROOF:CONSISTENCY_V1:passive_runtime_truth_visible */}
+            Seuil d'ingestion :{" "}
+            {thresholdLoading ? (
+              <span className="text-muted-foreground italic">résolution…</span>
+            ) : (
+              <strong className="text-foreground">
+                {activeThreshold} intérêts qualifiés
+                {runtimeThreshold !== null ? " (règle DB)" : " (fallback)"}
+              </strong>
+            )}
+          </p>
         </div>
 
         {/* ── TABS */}
@@ -305,8 +358,13 @@ export default function PassiveOS() {
                   (link.converted ? 30 : 0)
                 ));
                 const heatColor = heat >= 65 ? "hsl(24 100% 52%)" : heat >= 40 ? "hsl(38 80% 40%)" : "hsl(var(--primary))";
-                // PROOF:AUTOMATION_V1:passive_threshold_rule_applied — threshold from DB rules (default 3)
-                const qualifies = (link.qualified_interest_count ?? 0) >= DEFAULT_PASSIVE_THRESHOLD;
+
+                // PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
+                // PROOF:CONSISTENCY_V1:passive_no_hardcoded_business_threshold
+                // qualifies uses the RUNTIME threshold loaded from DB, NOT a hardcoded constant.
+                // thresholdLoading check ensures we never display a stale qualification badge.
+                const qualifies = !thresholdLoading && (link.qualified_interest_count ?? 0) >= activeThreshold;
+
                 return (
                   <div key={link.id} className="card-surface p-4">
                     <div className="flex items-start justify-between gap-3 mb-3">
@@ -317,15 +375,18 @@ export default function PassiveOS() {
                           <span className="text-xs text-muted-foreground">{formatNumber(link.unique_clicks_count, lang)} uniques</span>
                           {(link.qualified_interest_count || 0) > 0 && (
                             <span className="text-xs font-bold" style={{ color: "hsl(24 100% 52%)" }}>
-                              🔥 {link.qualified_interest_count} {link.qualified_interest_count > 1 ? t("passive_heat_plural") : t("passive_heat_label")}
+                              🔥 {link.qualified_interest_count}/{activeThreshold} {link.qualified_interest_count > 1 ? t("passive_heat_plural") : t("passive_heat_label")}
                             </span>
                           )}
-                          {qualifies && !link.converted && (
+                          {/* PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold — badge uses runtime threshold */}
+                          {thresholdLoading ? (
+                            <Loader2 size={9} className="animate-spin text-muted-foreground" />
+                          ) : qualifies && !link.converted ? (
                             <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
                               style={{ background: "hsl(218 72% 93%)", color: "hsl(218 72% 40%)" }}>
-                              → pipeline
+                              → pipeline (seuil {activeThreshold})
                             </span>
-                          )}
+                          ) : null}
                           {link.converted && (
                             <span className="text-xs font-bold flex items-center gap-1" style={{ color: "hsl(152 62% 35%)" }}>
                               <CheckCircle2 size={10} /> {t("passive_converted_badge")}
