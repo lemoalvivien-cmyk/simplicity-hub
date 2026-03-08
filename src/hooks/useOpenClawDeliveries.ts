@@ -97,14 +97,16 @@ export const DELIVERY_STATUS_META: Record<DeliveryStatus, {
 };
 
 // ── Hardcoded capability matrix (mirrors DB, always available offline) ────────
+// NOTE: email.can_send_validated is TRUE here because Resend is now configured.
+// The edge function dynamically checks RESEND_API_KEY at runtime.
 export const CHANNEL_CAPABILITY_MATRIX: ChannelCapability[] = [
   {
     channel: "email", channel_name: "Email", emoji: "📧",
     can_prepare: true, can_auto_send: false, can_send_validated: true,
-    can_export_human: true, can_receive_receipt: false, can_track_reply: false,
-    requires_gateway: false, requires_external_api: false,
+    can_export_human: true, can_receive_receipt: true, can_track_reply: false,
+    requires_gateway: false, requires_external_api: true,
     availability: "sendable",
-    honest_note: "Actions préparées. Envoi avec validation humaine possible via le produit.",
+    honest_note: "Envoi réel via Resend. Adresse destinataire requise dans le payload.",
   },
   {
     channel: "introduction", channel_name: "Introduction", emoji: "🤝",

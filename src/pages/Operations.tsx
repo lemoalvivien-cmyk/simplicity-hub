@@ -1084,6 +1084,24 @@ export default function Operations() {
               </div>
             </div>
 
+            {/* Resend status banner */}
+            <div className="rounded-2xl p-3 flex items-center gap-2.5"
+              style={{ background: "hsl(142 65% 97%)", border: "1px solid hsl(142 65% 85%)" }}>
+              <span className="text-base shrink-0">📧</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold" style={{ color: "hsl(142 65% 35%)" }}>
+                  Email via Resend — Actif
+                </p>
+                <p className="text-xs" style={{ color: "hsl(142 55% 45%)" }}>
+                  Les actions email sont envoyées en réel via Resend. Adresse destinataire requise dans le payload.
+                </p>
+              </div>
+              <span className="text-xs font-bold px-2 py-1 rounded-lg shrink-0"
+                style={{ background: "hsl(142 65% 88%)", color: "hsl(142 65% 30%)" }}>
+                ✓ Configuré
+              </span>
+            </div>
+
             {/* Accord requis */}
             {chPendingApprovals.length > 0 && (
               <div>
@@ -1096,6 +1114,7 @@ export default function Operations() {
                     const chMeta = CHANNEL_META[a.channel] ?? { emoji: "📡", label: a.channel, color: "hsl(var(--muted-foreground))" };
                     const cap = getChannelCapability(a.channel);
                     const dispatch = getDispatchLabel(cap);
+                    const isEmail = a.channel === "email";
                     return (
                       <div key={a.id} className="card-surface p-4">
                         <div className="flex items-start gap-3">
@@ -1110,6 +1129,12 @@ export default function Operations() {
                                 style={{ background: `${dispatch.color}22`, color: dispatch.color }}>
                                 {dispatch.badge} {dispatch.label}
                               </span>
+                              {isEmail && (
+                                <span className="text-xs font-bold px-1.5 py-0.5 rounded"
+                                  style={{ background: "hsl(142 65% 88%)", color: "hsl(142 65% 30%)", fontSize: "9px" }}>
+                                  ✉️ Resend
+                                </span>
+                              )}
                             </div>
                             <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                               {a.payload_summary || `Action ${a.action_type} préparée`}
@@ -1126,14 +1151,19 @@ export default function Operations() {
                             <button
                               onClick={async () => {
                                 const r = await dispatchAction(a.id, "validated");
-                                if (r.ok) toast.success("Action envoyée après validation.");
-                                else { approveAction(a.id); toast.success("Action approuvée."); }
+                                if (r.ok) {
+                                  toast.success(isEmail ? "Email envoyé via Resend ✉️" : "Action envoyée après validation.", {
+                                    description: isEmail ? "Livraison trackée dans l'historique." : undefined,
+                                  });
+                                } else {
+                                  toast.error(r.error ?? "Erreur d'envoi", { description: isEmail ? "Vérifiez que le payload contient un email destinataire." : undefined });
+                                }
                               }}
                               disabled={dispatching === a.id}
                               className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl transition-all"
                               style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
                               {dispatching === a.id ? <RefreshCw size={11} className="animate-spin" /> : <Send size={11} />}
-                              {cap.availability === "export" ? "Marquer envoyé" : "Envoyer"}
+                              {isEmail ? "Envoyer via Resend" : cap.availability === "export" ? "Marquer envoyé" : "Envoyer"}
                             </button>
                           )}
                           {!cap.can_send_validated && (
@@ -1167,16 +1197,23 @@ export default function Operations() {
                     const chMeta = CHANNEL_META[a.channel] ?? { emoji: "📡", label: a.channel, color: "hsl(var(--muted-foreground))" };
                     const cap = getChannelCapability(a.channel);
                     const dispatch = getDispatchLabel(cap);
+                    const isEmail = a.channel === "email";
                     return (
                       <div key={a.id} className="card-surface p-3 flex items-start gap-3">
                         <span className="text-base shrink-0 mt-0.5">{chMeta.emoji}</span>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
+                          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                             <p className="text-xs font-semibold text-foreground">{chMeta.label}</p>
                             <span className="text-xs font-semibold px-1.5 py-0.5 rounded"
                               style={{ background: `${dispatch.color}18`, color: dispatch.color }}>
                               {dispatch.badge} {dispatch.label}
                             </span>
+                            {isEmail && (
+                              <span className="text-xs font-bold px-1.5 py-0.5 rounded"
+                                style={{ background: "hsl(142 65% 88%)", color: "hsl(142 65% 30%)", fontSize: "9px" }}>
+                                ✉️ Resend
+                              </span>
+                            )}
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-2">{a.payload_summary || `Action ${a.action_type}`}</p>
                         </div>
@@ -1185,14 +1222,19 @@ export default function Operations() {
                             <button
                               onClick={async () => {
                                 const r = await dispatchAction(a.id, "validated");
-                                if (r.ok) toast.success("Envoyé.");
-                                else toast.error(r.error ?? "Erreur");
+                                if (r.ok) {
+                                  toast.success(isEmail ? "Email envoyé via Resend ✉️" : "Envoyé.", {
+                                    description: isEmail ? `Provider ID: ${r.delivery_id?.slice(0, 8)}…` : undefined,
+                                  });
+                                } else {
+                                  toast.error(r.error ?? "Erreur d'envoi");
+                                }
                               }}
                               disabled={dispatching === a.id}
                               className="text-xs font-bold px-2 py-1 rounded-lg transition-all flex items-center gap-1"
                               style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
                               {dispatching === a.id ? <RefreshCw size={9} className="animate-spin" /> : <Send size={9} />}
-                              Envoyer
+                              {isEmail ? "Envoyer" : "Envoyer"}
                             </button>
                           ) : (
                             <button
@@ -1227,19 +1269,31 @@ export default function Operations() {
                   {deliveries.slice(0, 15).map((d) => {
                     const cap = getChannelCapability(d.channel);
                     const stMeta = DELIVERY_STATUS_META[d.dispatch_status as keyof typeof DELIVERY_STATUS_META] ?? DELIVERY_STATUS_META.prepared;
+                    const isEmail = d.channel === "email";
                     return (
                       <div key={d.id} className="flex items-center gap-2.5 p-2.5 rounded-xl"
                         style={{ background: "hsl(var(--muted))" }}>
                         <span className="text-sm shrink-0">{cap.emoji}</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-foreground truncate">{cap.channel_name}</p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             <span className="text-xs font-semibold" style={{ color: stMeta.color }}>
                               {stMeta.badge} {stMeta.label}
                             </span>
                             {d.dispatch_mode && (
                               <span className="text-xs text-muted-foreground">
                                 {d.dispatch_mode === "auto" ? "⚡ Auto" : d.dispatch_mode === "validated" ? "✅ Validé" : "📋 Export"}
+                              </span>
+                            )}
+                            {isEmail && d.dispatched_by === "resend" && (
+                              <span className="text-xs font-bold px-1 py-0.5 rounded"
+                                style={{ background: "hsl(142 65% 88%)", color: "hsl(142 65% 30%)", fontSize: "9px" }}>
+                                Resend ✓
+                              </span>
+                            )}
+                            {d.provider_message_id && (
+                              <span className="text-xs text-muted-foreground font-mono" style={{ fontSize: "9px" }}>
+                                id:{d.provider_message_id.slice(0, 12)}…
                               </span>
                             )}
                           </div>
