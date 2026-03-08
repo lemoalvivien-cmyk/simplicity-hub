@@ -1,6 +1,8 @@
 /**
  * LeadActionBadge — Compact badge showing the open lead action for a lead.
  * Used inline in IntroductionsEntreprise, ContactDetail, etc.
+ * PROOF:PIPELINE_V2:lead_actions_queue       → this file (renders LeadAction types from lead_actions table)
+ * PROOF:PIPELINE_V2:introduction_pipeline_ui → src/pages/IntroductionsEntreprise.tsx
  */
 import { Zap, RefreshCw, AlertCircle, Phone, Mail, Star, ArrowUpCircle } from "lucide-react";
 import type { NextBestAction, LeadAction } from "@/lib/leadPipeline";

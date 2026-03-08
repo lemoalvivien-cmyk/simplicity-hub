@@ -124,6 +124,7 @@ export default function RadarPage() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
+      // PROOF:PIPELINE_V2:radar_pipeline_wired — manual signal creation feeds lead_source_events + lead_intakes
       // Wire signal into unified pipeline
       const signalId = data.signal_id ?? data.id ?? undefined;
       await createLeadFromRadar({
