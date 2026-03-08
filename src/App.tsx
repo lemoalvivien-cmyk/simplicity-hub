@@ -128,8 +128,9 @@ const App = () => (
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/cgu" element={<NotFound />} />
-              <Route path="/confidentialite" element={<NotFound />} />
+              <Route path="/cgu" element={<CGU />} />
+              <Route path="/confidentialite" element={<Confidentialite />} />
+              <Route path="/mentions-legales" element={<MentionsLegales />} />
 
               {/* ── Onboarding ───────────────────────────── */}
               <Route path="/onboarding" element={
