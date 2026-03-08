@@ -86,4 +86,7 @@ const LaunchQuotaBanner = forwardRef<HTMLDivElement, LaunchQuotaBannerProps>(
       {slots} place{slots > 1 ? "s" : ""} restante{slots > 1 ? "s" : ""} à 99 €
     </div>
   );
-}
+});
+
+LaunchQuotaBanner.displayName = "LaunchQuotaBanner";
+export default LaunchQuotaBanner;
