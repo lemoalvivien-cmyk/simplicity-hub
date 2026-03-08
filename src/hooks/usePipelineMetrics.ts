@@ -1,6 +1,7 @@
 /**
  * usePipelineMetrics — Real pipeline counters from the DB.
  * PROOF:INTEGRITY_V1:opportunity_metrics_real → this hook
+ * PROOF:SYNC_GATE_V1:pipeline_metrics_file_present → this file
  * Returns real counts: open actions, done actions (last 7d), V2 opps,
  * intro-born opps, blocked/duplicate leads.
  */

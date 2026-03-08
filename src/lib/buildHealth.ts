@@ -1,5 +1,6 @@
 /**
  * BUILD HEALTH — Source de vérité statique sur l'état du socle technique.
+ * PROOF:SYNC_GATE_V1:build_health_present → this file
  *
  * Ce fichier est la seule source traçable pour :
  *   - l'état du lockfile
