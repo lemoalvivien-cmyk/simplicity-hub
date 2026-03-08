@@ -265,8 +265,21 @@ export default function IntroductionsEntreprise() {
       const gainsMap: Record<string, string> = {};
       (gainsRes.data || []).forEach((g: { id: string; introduction_id: string }) => { gainsMap[g.introduction_id] = g.id; });
 
-      const leadsMap: Record<string, { qualification_status: QualificationStatus; next_best_action: NextBestAction | null; dedup_status: string }> = {};
-      (leadsRes.data || []).forEach((l: { introduction_id: string; qualification_status: QualificationStatus; next_best_action: NextBestAction | null; dedup_status: string }) => {
+      const leadsMap: Record<string, {
+        id: string;
+        qualification_status: QualificationStatus;
+        next_best_action: NextBestAction | null;
+        dedup_status: string;
+        linked_opportunity_id: string | null;
+      }> = {};
+      (leadsRes.data || []).forEach((l: {
+        id: string;
+        introduction_id: string;
+        qualification_status: QualificationStatus;
+        next_best_action: NextBestAction | null;
+        dedup_status: string;
+        linked_opportunity_id: string | null;
+      }) => {
         if (l.introduction_id) leadsMap[l.introduction_id] = l;
       });
 
@@ -278,6 +291,8 @@ export default function IntroductionsEntreprise() {
         lead_qualification_status: leadsMap[i.id]?.qualification_status ?? null,
         lead_next_best_action: leadsMap[i.id]?.next_best_action ?? null,
         lead_dedup_status: leadsMap[i.id]?.dedup_status ?? null,
+        lead_intake_id: leadsMap[i.id]?.id ?? null,
+        lead_opportunity_id: leadsMap[i.id]?.linked_opportunity_id ?? null,
       }));
 
       setIntros(enriched);
