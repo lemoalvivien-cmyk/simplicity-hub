@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Upload, UserPlus, Play, Send, Phone, MoreHorizontal,
-  ChevronRight, CheckCircle2, Clock, ArrowRight, Sparkles, Loader2
+  ChevronRight, CheckCircle2, Clock, ArrowRight, Sparkles, Loader2, AlertCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
