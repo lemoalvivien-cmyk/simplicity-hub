@@ -54,24 +54,30 @@ export default function DashboardEntreprise() {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const missionIds = (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
+      try {
+        const missionIds = (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
 
-      const [missionsRes, introsRes, validRes, hotOppsRes, alertsRes] = await Promise.all([
-        db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(3),
-        missionIds.length > 0
-          ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).order("created_at", { ascending: false }).limit(3)
-          : Promise.resolve({ data: [] }),
-        db.from("openclaw_validations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("statut", "en_attente"),
-        db.from("opportunities").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("intent_label", "eleve").neq("status", "archivee"),
-        db.from("passive_alerts").select("id, title, message, type, read").eq("user_id", user.id).eq("read", false).order("created_at", { ascending: false }).limit(3),
-      ]);
+        const [missionsRes, introsRes, hotOppsRes] = await Promise.all([
+          db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(3),
+          missionIds.length > 0
+            ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).order("created_at", { ascending: false }).limit(3)
+            : Promise.resolve({ data: [] }),
+          // Use lead_actions table (real schema) to count pending actions
+          db.from("lead_actions").select("id", { count: "exact", head: true }).eq("actor_user_id", user.id).eq("status", "open"),
+        ]);
 
-      setMissions(missionsRes.data || []);
-      setIntroductions(introsRes.data || []);
-      setValidationsCount(validRes.count || 0);
-      setHotOpps(hotOppsRes.count || 0);
-      setPassiveAlerts(alertsRes.data || []);
-      setLoading(false);
+        setMissions(missionsRes.data || []);
+        setIntroductions(introsRes.data || []);
+        // Count introductions awaiting validation as "validations count"
+        const pendingIntros = (introsRes.data || []).filter((i: { statut: string }) => i.statut === "en_attente");
+        setValidationsCount(pendingIntros.length);
+        setHotOpps(hotOppsRes.count || 0);
+        setPassiveAlerts([]);
+      } catch {
+        // silent fail — don't crash the dashboard
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [user]);
