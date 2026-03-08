@@ -100,6 +100,15 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // ── Auth ─────────────────────────────────────────────────────────────────
+    // Strategy:
+    //   1. Bearer <SERVICE_ROLE_KEY> + x-scheduler-user-id header
+    //        → internal call from openclaw-scheduler (pg_cron)
+    //        → userId is taken from the x-scheduler-user-id header
+    //   2. Bearer <user JWT>
+    //        → direct call from authenticated user
+    //        → userId resolved from JWT
+    //   3. Missing / invalid token → 401
     const authHeader = req.headers.get("Authorization");
     const schedulerUserId = req.headers.get("x-scheduler-user-id");
 
@@ -115,12 +124,14 @@ Deno.serve(async (req) => {
 
     const svc = createClient(supabaseUrl, serviceKey);
 
-    // Auth: support both user JWT and scheduler service-role
+    const isServiceRole = authHeader === `Bearer ${serviceKey}`;
     let userId: string;
-    if (schedulerUserId) {
-      // Service-role invocation from scheduler
+
+    if (isServiceRole && schedulerUserId) {
+      // Trusted internal call from the scheduler (pg_cron / service-role)
       userId = schedulerUserId;
-    } else {
+    } else if (!isServiceRole) {
+      // Standard user JWT path
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } }
       });
@@ -131,6 +142,11 @@ Deno.serve(async (req) => {
         });
       }
       userId = user.id;
+    } else {
+      // Service-role without x-scheduler-user-id: reject (ambiguous request)
+      return new Response(JSON.stringify({ error: "Service-role call requires x-scheduler-user-id header" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     const body: JobRequest = await req.json();
