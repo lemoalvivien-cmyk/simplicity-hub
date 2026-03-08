@@ -6,6 +6,7 @@
  * PROOF:GOLIVE_V1:ops_diagnostics_panel → OPS / Forensics section below
  * PROOF:GOLIVE_V1:action_events_admin_visibility → lead_action_events live count below
  * PROOF:GOLIVE_V1:passive_admin_visibility → passive ingestion section below
+ * PROOF:RELEASE_V1:admin_forensics_global_visibility → admin_forensics_summary() RPC below
  * Toutes les données sont importées de sources traçables dans le code.
  */
 import { useState, useEffect } from "react";
@@ -14,7 +15,7 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Clock,
   Settings, Search, Filter, Shield, Code2,
   Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers, GitCommit,
-  Activity, BarChart3, Telescope
+  Activity, BarChart3, Telescope, Package
 } from "lucide-react";
 import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECTED } from "@/lib/buildStamp";
 import {
