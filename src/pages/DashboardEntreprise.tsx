@@ -155,6 +155,9 @@ export default function DashboardEntreprise() {
         {!isLaunchMode && <BestAccessPanel title={t("best_path_title")} context={{ limit: 3 }} compact showAlternatives={false} />}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
+        {/* ── UNIFIED LEADS PIPELINE ────────────────────────── */}
+        {!isLaunchMode && <UnifiedLeadsBlock />}
+
         {/* ── PRIORITY ACTION ───────────────────────────────── */}
         {nextIntro && (
           <div className="rounded-xl border-2 p-5" style={{ borderColor: "hsl(var(--accent))", background: "hsl(var(--accent-light))" }}>
