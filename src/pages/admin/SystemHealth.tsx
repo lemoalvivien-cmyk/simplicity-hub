@@ -28,6 +28,8 @@ import { useAutomationEngine } from "@/hooks/useAutomationEngine";
 import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECTED } from "@/lib/buildStamp";
 // PROOF:CANONICAL_EXPORT_V1:system_health_present — canonical stamp wired here
 import { CANONICAL_BUILD_STAMP, CANONICAL_EXPORT_META } from "@/lib/canonicalBuildStamp";
+// PROOF:EXPORT_RECOVERY_V1:system_health_present — recovery stamp wired here
+import { EXPORT_RECOVERY_STAMP, EXPORT_RECOVERY_META } from "@/lib/exportRecoveryStamp";
 import {
   FEATURE_REGISTRY,
   STATUS_META,
