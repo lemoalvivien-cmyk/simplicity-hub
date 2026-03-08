@@ -802,7 +802,7 @@ export default function Operations() {
                             <span className="text-xs" style={{ color: "hsl(218 40% 45%)" }}>{cron.schedule_label}</span>
                             {cron.last_cron_run_at && (
                               <span className="text-xs" style={{ color: "hsl(218 40% 40%)" }}>
-                                · {formatRelative(cron.last_cron_run_at)}
+                                · {formatDateRelative(cron.last_cron_run_at, lang)}
                               </span>
                             )}
                           </div>
@@ -879,7 +879,7 @@ export default function Operations() {
 
                   <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="text-center py-1.5 rounded-lg bg-muted">
-                      <p className="text-xs font-bold text-foreground">{formatFuture(job.next_run_at)}</p>
+                      <p className="text-xs font-bold text-foreground">{formatFuture(job.next_run_at, lang)}</p>
                       <p className="text-xs text-muted-foreground">Prochain</p>
                     </div>
                     <div className="text-center py-1.5 rounded-lg bg-muted">
@@ -1311,7 +1311,7 @@ export default function Operations() {
                     </div>
                     {s.next_scheduled_at && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        Prochain cycle {formatFuture(s.next_scheduled_at)}
+                        Prochain cycle {formatFuture(s.next_scheduled_at, lang)}
                       </p>
                     )}
                   </div>
