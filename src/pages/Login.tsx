@@ -1,45 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
-import { Eye, EyeOff, Zap, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Zap, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { signIn, profile } = useAuth();
+  const [redirecting, setRedirecting] = useState(false);
+  const { signIn, profile, loading, user } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect ONLY after profile is fully loaded (not on every render)
+  useEffect(() => {
+    if (loading || !user || !profile) return;
+    setRedirecting(true);
+    if (!profile.onboarding_done) {
+      navigate("/onboarding", { replace: true });
+    } else if (profile.role === "entreprise") {
+      navigate("/dashboard/entreprise", { replace: true });
+    } else if (profile.role === "admin") {
+      navigate("/admin", { replace: true });
+    } else {
+      navigate("/dashboard/facilitateur", { replace: true });
+    }
+  }, [loading, user, profile, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
+    setSubmitting(true);
 
     const { error: authError } = await signIn(email, password);
 
     if (authError) {
-      setError("Email ou mot de passe incorrect. Vérifiez vos informations.");
-      setLoading(false);
+      const msg = authError.message || "";
+      if (msg.includes("Email not confirmed")) {
+        setError("Confirmez d'abord votre e-mail. Vérifiez votre boîte mail.");
+      } else if (msg.includes("Invalid login credentials") || msg.includes("invalid_credentials")) {
+        setError("Email ou mot de passe incorrect. Vérifiez vos informations.");
+      } else {
+        setError("Impossible de se connecter. Réessayez dans quelques instants.");
+      }
+      setSubmitting(false);
       return;
     }
-
-    // Navigation handled by profile role
-    setLoading(false);
+    // Profile loading + redirect handled by useEffect above
   };
 
-  // Once profile is loaded after sign-in, redirect based on role
-  if (profile) {
-    if (!profile.onboarding_done) {
-      navigate("/onboarding", { replace: true });
-      return null;
-    }
-    if (profile.role === "entreprise") navigate("/dashboard/entreprise", { replace: true });
-    else if (profile.role === "admin") navigate("/admin", { replace: true });
-    else navigate("/dashboard/facilitateur", { replace: true });
-    return null;
+  // Show full-page spinner while redirect is happening
+  if (redirecting || (loading && user)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">Connexion en cours…</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -77,6 +98,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="input-premium"
               />
             </div>
@@ -95,6 +117,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  autoComplete="current-password"
                   className="input-premium pr-11"
                 />
                 <button
@@ -109,10 +132,17 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="btn-primary block text-center w-full py-3 text-sm disabled:opacity-60"
+              disabled={submitting}
+              className="btn-primary block text-center w-full py-3 text-sm disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {loading ? "Connexion…" : "Se connecter →"}
+              {submitting ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  Connexion…
+                </>
+              ) : (
+                "Se connecter →"
+              )}
             </button>
           </form>
 

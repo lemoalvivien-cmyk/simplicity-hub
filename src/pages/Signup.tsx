@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
-import { Eye, EyeOff, CheckCircle2, Zap, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, Zap, AlertCircle, Loader2, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Signup() {
@@ -13,7 +13,6 @@ export default function Signup() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { signUp } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,18 +28,66 @@ export default function Signup() {
     setLoading(false);
 
     if (authError) {
-      if (authError.message?.includes("already registered")) {
+      const msg = authError.message || "";
+      if (msg.includes("already registered") || msg.includes("user_already_exists")) {
         setError("Cette adresse e-mail est déjà utilisée. Connectez-vous.");
+      } else if (msg.includes("password")) {
+        setError("Mot de passe trop faible. Utilisez au moins 8 caractères.");
       } else {
         setError("Une erreur est survenue. Vérifiez vos informations.");
       }
       return;
     }
 
-    // Auto-confirmed or email confirmation required
+    // Show "check your email" — do NOT auto-redirect before email confirmation
     setSuccess(true);
-    setTimeout(() => navigate("/onboarding"), 1500);
   };
+
+  // ── Success state: check your inbox ──
+  if (success) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <PublicNav />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-sm text-center">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+              style={{ background: "var(--gradient-electric)" }}>
+              <Mail size={28} className="text-white" />
+            </div>
+            <h1 className="font-display text-2xl font-bold text-foreground mb-2">Vérifiez votre boîte mail</h1>
+            <p className="text-muted-foreground text-sm mb-1">
+              Nous avons envoyé un lien de confirmation à
+            </p>
+            <p className="font-semibold text-foreground text-sm mb-6">{email}</p>
+            <div className="card-surface p-5 text-left space-y-3 mb-6">
+              {[
+                "Ouvrez l'e-mail de WIINUP MAX",
+                "Cliquez sur « Confirmer mon compte »",
+                "Vous serez redirigé vers votre espace",
+              ].map((step, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-primary-foreground"
+                    style={{ background: "hsl(var(--primary))" }}>
+                    {i + 1}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{step}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Pas reçu ?{" "}
+              <button
+                onClick={() => setSuccess(false)}
+                className="text-primary underline hover:no-underline"
+              >
+                Renvoyer ou modifier l'e-mail
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -69,15 +116,6 @@ export default function Signup() {
               </div>
             )}
 
-            {success && (
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-success-light border border-success/20">
-                <CheckCircle2 size={15} style={{ color: "hsl(var(--success))" }} className="shrink-0 mt-0.5" />
-                <p className="text-sm" style={{ color: "hsl(var(--success))" }}>
-                  Compte créé ! Redirection…
-                </p>
-              </div>
-            )}
-
             <div>
               <label className="text-sm font-medium text-foreground block mb-1.5">
                 Votre prénom
@@ -88,6 +126,7 @@ export default function Signup() {
                 value={prenom}
                 onChange={(e) => setPrenom(e.target.value)}
                 required
+                autoComplete="given-name"
                 className="input-premium"
               />
             </div>
@@ -102,6 +141,7 @@ export default function Signup() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="input-premium"
               />
             </div>
@@ -118,6 +158,7 @@ export default function Signup() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
+                  autoComplete="new-password"
                   className="input-premium pr-11"
                 />
                 <button
@@ -128,20 +169,32 @@ export default function Signup() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {password.length > 0 && password.length < 8 && (
+                <p className="text-xs text-destructive mt-1">
+                  {8 - password.length} caractère{8 - password.length > 1 ? "s" : ""} manquant{8 - password.length > 1 ? "s" : ""}
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={loading || success}
-              className="btn-cta block text-center w-full py-3 text-sm disabled:opacity-60"
+              disabled={loading}
+              className="btn-cta block text-center w-full py-3 text-sm disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {loading ? "Création…" : "Créer mon compte →"}
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  Création…
+                </>
+              ) : (
+                "Créer mon compte →"
+              )}
             </button>
 
             <p className="text-xs text-muted-foreground text-center leading-relaxed">
               En créant un compte, vous acceptez nos{" "}
-              <a href="#" className="underline">CGU</a> et notre{" "}
-              <a href="#" className="underline">politique de confidentialité</a>.
+              <Link to="/cgu" className="underline hover:text-foreground">CGU</Link> et notre{" "}
+              <Link to="/confidentialite" className="underline hover:text-foreground">politique de confidentialité</Link>.
             </p>
           </form>
 
