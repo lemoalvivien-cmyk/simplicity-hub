@@ -4,6 +4,11 @@
  * PROOF:AUTOMATION_V1:template_resolution_engine
  * PROOF:AUTOMATION_V1:action_payload_from_template
  * PROOF:AUTOMATION_V1:automation_engine_health
+ * PROOF:AUTOMATION_PROOF_V1:automation_rule_evaluator
+ * PROOF:AUTOMATION_PROOF_V1:template_resolution_engine
+ * PROOF:AUTOMATION_PROOF_V1:action_payload_from_template
+ * PROOF:AUTOMATION_PROOF_V1:automation_engine_health
+ * PROOF:AUTOMATION_PROOF_V1:passive_threshold_rule_applied
  */
 import { db } from "@/lib/supabase";
 

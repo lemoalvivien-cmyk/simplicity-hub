@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 // PROOF:AUTOMATION_V1:automation_rule_admin_visibility
 // PROOF:AUTOMATION_V1:automation_engine_health
+// PROOF:AUTOMATION_PROOF_V1:automation_rule_admin_visibility
+// PROOF:AUTOMATION_PROOF_V1:automation_engine_health
 import { useAutomationEngine } from "@/hooks/useAutomationEngine";
 import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECTED } from "@/lib/buildStamp";
 import {

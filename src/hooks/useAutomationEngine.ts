@@ -2,6 +2,8 @@
  * useAutomationEngine — hook for admin visibility of the automation execution engine.
  * PROOF:AUTOMATION_V1:automation_engine_health
  * PROOF:AUTOMATION_V1:automation_rule_admin_visibility
+ * PROOF:AUTOMATION_PROOF_V1:automation_engine_health
+ * PROOF:AUTOMATION_PROOF_V1:automation_rule_admin_visibility
  */
 import { useState, useCallback } from "react";
 import { getAutomationEngineHealth } from "@/lib/automationEngine";
