@@ -17,6 +17,7 @@ import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
 import { useTranslation } from "react-i18next";
+import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
@@ -153,6 +154,9 @@ export default function DashboardEntreprise() {
         <OpenClawBrainWidget variant="entreprise" />
         {!isLaunchMode && <BestAccessPanel title={t("best_path_title")} context={{ limit: 3 }} compact showAlternatives={false} />}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
+
+        {/* ── UNIFIED LEADS PIPELINE ────────────────────────── */}
+        {!isLaunchMode && <UnifiedLeadsBlock />}
 
         {/* ── PRIORITY ACTION ───────────────────────────────── */}
         {nextIntro && (

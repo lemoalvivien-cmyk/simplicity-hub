@@ -1151,6 +1151,201 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_entity_links: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          lead_intake_id: string
+          link_reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          lead_intake_id: string
+          link_reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          lead_intake_id?: string
+          link_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_entity_links_lead_intake_id_fkey"
+            columns: ["lead_intake_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intakes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_intakes: {
+        Row: {
+          action_status: string
+          company_name: string | null
+          created_at: string
+          dedup_match_id: string | null
+          dedup_status: string
+          enrichment_status: string
+          entreprise_id: string | null
+          facilitator_id: string | null
+          free_text_context: string | null
+          id: string
+          introduction_id: string | null
+          linked_contact_id: string | null
+          linked_opportunity_id: string | null
+          linkedin_url: string | null
+          mission_id: string | null
+          nba_context: Json | null
+          next_best_action: string | null
+          person_email: string | null
+          person_name: string | null
+          phone: string | null
+          policy_status: string
+          qualification_status: string
+          source_event_id: string | null
+          source_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_status?: string
+          company_name?: string | null
+          created_at?: string
+          dedup_match_id?: string | null
+          dedup_status?: string
+          enrichment_status?: string
+          entreprise_id?: string | null
+          facilitator_id?: string | null
+          free_text_context?: string | null
+          id?: string
+          introduction_id?: string | null
+          linked_contact_id?: string | null
+          linked_opportunity_id?: string | null
+          linkedin_url?: string | null
+          mission_id?: string | null
+          nba_context?: Json | null
+          next_best_action?: string | null
+          person_email?: string | null
+          person_name?: string | null
+          phone?: string | null
+          policy_status?: string
+          qualification_status?: string
+          source_event_id?: string | null
+          source_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_status?: string
+          company_name?: string | null
+          created_at?: string
+          dedup_match_id?: string | null
+          dedup_status?: string
+          enrichment_status?: string
+          entreprise_id?: string | null
+          facilitator_id?: string | null
+          free_text_context?: string | null
+          id?: string
+          introduction_id?: string | null
+          linked_contact_id?: string | null
+          linked_opportunity_id?: string | null
+          linkedin_url?: string | null
+          mission_id?: string | null
+          nba_context?: Json | null
+          next_best_action?: string | null
+          person_email?: string | null
+          person_name?: string | null
+          phone?: string | null
+          policy_status?: string
+          qualification_status?: string
+          source_event_id?: string | null
+          source_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_intakes_introduction_id_fkey"
+            columns: ["introduction_id"]
+            isOneToOne: false
+            referencedRelation: "introductions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_intakes_linked_contact_id_fkey"
+            columns: ["linked_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_intakes_linked_opportunity_id_fkey"
+            columns: ["linked_opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_intakes_source_event_id_fkey"
+            columns: ["source_event_id"]
+            isOneToOne: false
+            referencedRelation: "lead_source_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_source_events: {
+        Row: {
+          created_at: string
+          id: string
+          intake_id: string | null
+          processed: boolean
+          raw_payload: Json | null
+          source_ref_id: string | null
+          source_ref_type: string | null
+          source_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intake_id?: string | null
+          processed?: boolean
+          raw_payload?: Json | null
+          source_ref_id?: string | null
+          source_ref_type?: string | null
+          source_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intake_id?: string | null
+          processed?: boolean
+          raw_payload?: Json | null
+          source_ref_id?: string | null
+          source_ref_type?: string | null
+          source_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_lse_intake"
+            columns: ["intake_id"]
+            isOneToOne: false
+            referencedRelation: "lead_intakes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       link_events: {
         Row: {
           channel: string | null
@@ -3471,6 +3666,7 @@ export type Database = {
       }
     }
     Functions: {
+      apply_lead_policy: { Args: { p_intake_id: string }; Returns: undefined }
       claim_next_job: {
         Args: {
           p_lock_owner?: string
@@ -3525,6 +3721,17 @@ export type Database = {
           p_user_id: string
         }
         Returns: Json
+      }
+      create_lead_from_import: {
+        Args: {
+          p_company_name: string
+          p_contact_id?: string
+          p_person_email: string
+          p_person_name: string
+          p_phone?: string
+          p_user_id: string
+        }
+        Returns: string
       }
       enqueue_job: {
         Args: {
