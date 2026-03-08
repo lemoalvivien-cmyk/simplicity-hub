@@ -1,25 +1,24 @@
 /**
  * IntroductionsEntreprise — Liste des introductions reçues côté entreprise.
  * FULLY WIRED: lit et écrit dans Supabase.
- * Validation → met à jour intro statut + confirme le gain du facilitateur.
- * Refus → met à jour intro statut + annule le gain.
  * PROOF:PIPELINE_V2:introduction_pipeline_ui → this file
- * PROOF:PIPELINE_V2:lead_rls_shared_visibility → reads lead_intakes via .in("introduction_id", introIds)
- *   which succeeds because RLS policy "lead_intakes_select" allows:
- *   auth.uid() = entreprise_id OR intro.entreprise_id = auth.uid()
+ * PROOF:EXECUTION_V1:action_queue_ui_real → reads real lead_actions per intro
+ * PROOF:EXECUTION_V1:intro_to_enterprise_opportunity → validate triggers opportunity promotion
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   CheckCircle2, Clock, XCircle, ChevronRight, AlertCircle,
-  Send, Info, Briefcase, Loader2, Phone, Mail, Target
+  Send, Info, Briefcase, Loader2, Phone, Mail, Target,
+  PlayCircle, Zap
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import LeadIntakeStatus from "@/components/leads/LeadIntakeStatus";
 import LeadActionBadge from "@/components/leads/LeadActionBadge";
+import { promoteLeadToOpportunity } from "@/lib/leadPipeline";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";
