@@ -115,6 +115,17 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
         <p className="text-xs text-muted-foreground italic leading-relaxed mb-3">"{intro.pertinence}"</p>
       )}
 
+      {/* ── Lead Pipeline Status ─────────────────────────── */}
+      {intro.lead_qualification_status && (
+        <div className="mb-4">
+          <LeadIntakeStatus
+            qualificationStatus={intro.lead_qualification_status}
+            nextBestAction={intro.lead_next_best_action}
+            dedupStatus={intro.lead_dedup_status ?? undefined}
+          />
+        </div>
+      )}
+
       {/* Actions validation — uniquement si en attente */}
       {intro.statut === "en_attente" && (
         <>
