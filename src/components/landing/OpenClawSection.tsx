@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Brain, Zap, Radar, MessageSquare, Activity, Link2, Flame, CheckCircle2 } from "lucide-react";
 
 const features = [
@@ -9,9 +10,9 @@ const features = [
   { icon: Activity, title: "Cockpit de pilotage", desc: "Missions, campagnes, gains — tout centralisé." },
 ];
 
-export default function OpenClawSection() {
+const OpenClawSection = forwardRef<HTMLElement>((_, ref) => {
   return (
-    <section className="py-20 bg-muted">
+    <section ref={ref} className="py-20 bg-muted">
       <div className="container max-w-4xl">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
