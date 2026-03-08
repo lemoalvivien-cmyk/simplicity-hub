@@ -111,6 +111,13 @@ import AdminSystemHealth from "./pages/admin/SystemHealth";
 
 const queryClient = new QueryClient();
 
+// PASSE C: Route /dashboard to the correct dashboard based on user role
+function DashboardRouter() {
+  const { role } = useAuth();
+  if (role === "entreprise") return <DashboardEntreprise />;
+  return <DashboardFacilitateur />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
