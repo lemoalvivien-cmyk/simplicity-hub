@@ -1,8 +1,9 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Users } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 
-export default function FinalCTASection() {
+const FinalCTASection = forwardRef<HTMLElement>((_, ref) => {
   return (
     <section className="hero-bg py-24 md:py-32 relative overflow-hidden">
       <div
