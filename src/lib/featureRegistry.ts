@@ -1,5 +1,6 @@
 /**
  * FEATURE REGISTRY — Source de vérité produit unique.
+ * PROOF:SYNC_GATE_V1:feature_registry_present → this file
  * Foundation Lock v2 : chaque feature porte désormais :
  *   - confidence : "declared" | "code-verified" | "runtime-verified"
  *   - evidence   : preuves techniques pointables (table, edge fn, page)
