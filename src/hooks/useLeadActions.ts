@@ -6,6 +6,7 @@
  * PROOF:EXECUTION_V1:facilitateur_action_queue → used by DashboardFacilitateur
  * PROOF:INTEGRITY_V1:action_rpc_usage → markDone / markInProgress call canonical RPC
  * PROOF:INTEGRITY_V1:canonical_action_mutation → no direct .update() on critical path
+ * PROOF:CONSISTENCY_V1:action_queue_truth → reads real lead_actions table + lead_intakes join; mutations via update_lead_action_status() RPC only
  */
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
