@@ -1228,7 +1228,9 @@ export type Database = {
           id: string
           path: string | null
           pricing_frame_variant: string | null
+          referrer: string | null
           session_id: string
+          user_agent: string | null
         }
         Insert: {
           created_at?: string
@@ -1240,7 +1242,9 @@ export type Database = {
           id?: string
           path?: string | null
           pricing_frame_variant?: string | null
+          referrer?: string | null
           session_id: string
+          user_agent?: string | null
         }
         Update: {
           created_at?: string
@@ -1252,7 +1256,9 @@ export type Database = {
           id?: string
           path?: string | null
           pricing_frame_variant?: string | null
+          referrer?: string | null
           session_id?: string
+          user_agent?: string | null
         }
         Relationships: []
       }
