@@ -346,7 +346,7 @@ export default function PassiveOS() {
           <div className="space-y-3">
             <div className="card-surface p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-sm">
-                <Zap size={14} className="text-primary" /> {t("passive_channels_title")}
+                ⚡ {t("passive_channels_title")}
               </h2>
               <div className="grid grid-cols-2 gap-2">
                 {CHANNELS.map(({ label, status, icon }) => {
