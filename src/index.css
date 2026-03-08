@@ -320,11 +320,29 @@
     transform: translateY(-2px);
   }
 
-  /* Input premium */
+  /* Input premium — font-size: 16px prevents iOS auto-zoom (PASSE G) */
   .input-premium {
-    @apply w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground text-sm;
+    @apply w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground;
+    font-size: 16px;
     @apply focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200;
     --tw-ring-color: hsl(218 72% 18% / 0.25);
+  }
+
+  /* All native inputs: 16px prevents iOS Safari zoom on focus (PASSE G) */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  /* Touch targets minimum 44px (PASSE G) */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
   }
 
   /* Section divider */
