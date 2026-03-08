@@ -153,8 +153,10 @@ export function track(event: TrackEvent, payload?: TrackPayload) {
 
   // Push to dataLayer (GTM-ready)
   if (typeof window !== "undefined") {
-    (window as Record<string, unknown>).dataLayer = (window as Record<string, unknown>).dataLayer || [];
-    ((window as Record<string, unknown>).dataLayer as unknown[]).push({ event: `wiinup_${event}`, ...data });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    w.dataLayer = w.dataLayer || [];
+    w.dataLayer.push({ event: `wiinup_${event}`, ...data });
   }
 
   // Persist to DB only if event is in the accepted set
