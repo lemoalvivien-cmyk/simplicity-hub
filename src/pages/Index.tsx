@@ -14,9 +14,12 @@ import PricingSection from "@/components/landing/PricingSection";
 import FAQSection from "@/components/landing/FAQSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import { initScrollTracking, track } from "@/lib/landingTracking";
+import { trackEvent } from "@/lib/analytics";
 
 export default function LandingPage() {
   useEffect(() => {
+    // PROOF:ANALYTICS_RUNTIME_V1:landing_view_tracked
+    trackEvent("landing_view", null, { source: "direct" });
     const cleanup = initScrollTracking();
     return cleanup;
   }, []);
