@@ -337,7 +337,7 @@ export default function Operations() {
                 {
                   label: "Prochain réveil",
                   ok: !!nextJob,
-                  desc: nextJob ? `${JOB_TYPE_META[nextJob.job_type]?.label ?? nextJob.job_name} ${formatFuture(nextJob.next_run_at)}` : "Aucun job planifié",
+                  desc: nextJob ? `${JOB_TYPE_META[nextJob.job_type]?.label ?? nextJob.job_name} ${formatFuture(nextJob.next_run_at, lang)}` : t("ops_no_job"),
                   pulse: false,
                 },
                 {
