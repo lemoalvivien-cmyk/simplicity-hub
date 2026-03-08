@@ -2020,6 +2020,7 @@ export type Database = {
       }
       openclaw_briefs: {
         Row: {
+          ai_generated: boolean
           created_at: string
           id: string
           priority_items: Json | null
@@ -2030,6 +2031,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_generated?: boolean
           created_at?: string
           id?: string
           priority_items?: Json | null
@@ -2040,6 +2042,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_generated?: boolean
           created_at?: string
           id?: string
           priority_items?: Json | null
@@ -2833,6 +2836,7 @@ export type Database = {
       openclaw_recommendations: {
         Row: {
           agent_name: string
+          ai_generated: boolean
           created_at: string
           execution_id: string | null
           id: string
@@ -2850,6 +2854,7 @@ export type Database = {
         }
         Insert: {
           agent_name?: string
+          ai_generated?: boolean
           created_at?: string
           execution_id?: string | null
           id?: string
@@ -2867,6 +2872,7 @@ export type Database = {
         }
         Update: {
           agent_name?: string
+          ai_generated?: boolean
           created_at?: string
           execution_id?: string | null
           id?: string
