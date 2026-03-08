@@ -135,7 +135,7 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
             nextBestAction={intro.lead_next_best_action}
             dedupStatus={intro.lead_dedup_status ?? undefined}
           />
-          {/* Show linked opportunity if already created */}
+          {/* Linked opportunity badge */}
           {intro.lead_opportunity_id && (
             <Link
               to="/opportunites"
@@ -146,10 +146,24 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
               Opportunité créée — voir dans le pipeline
             </Link>
           )}
-          {/* Active lead action badge */}
-          {intro.lead_next_best_action && !intro.lead_opportunity_id && (
+          {/* PROOF:EXECUTION_V1:action_queue_ui_real — real action from lead_actions table */}
+          {intro.active_lead_action && !intro.lead_opportunity_id && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
+              style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}>
+              <Zap size={11} className="text-primary shrink-0" />
+              <div className="flex-1 min-w-0">
+                <LeadActionBadge action={intro.active_lead_action.action_type} />
+              </div>
+              <span className="text-xs text-muted-foreground shrink-0">
+                {intro.active_lead_action.priority === "high" || intro.active_lead_action.priority === "urgent"
+                  ? "⚡ prioritaire" : ""}
+              </span>
+            </div>
+          )}
+          {/* Fallback to next_best_action string if no real action yet */}
+          {intro.lead_next_best_action && !intro.active_lead_action && !intro.lead_opportunity_id && (
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Action :</span>
+              <span className="text-xs text-muted-foreground">Action suggérée :</span>
               <LeadActionBadge action={intro.lead_next_best_action} />
             </div>
           )}
