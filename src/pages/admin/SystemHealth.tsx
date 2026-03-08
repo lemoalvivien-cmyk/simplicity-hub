@@ -9,7 +9,7 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import {
   CheckCircle2, AlertTriangle, XCircle, Clock,
   Settings, Search, Filter, Shield, Code2,
-  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock
+  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers
 } from "lucide-react";
 import {
   FEATURE_REGISTRY,
