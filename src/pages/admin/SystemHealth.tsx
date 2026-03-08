@@ -206,6 +206,10 @@ export default function AdminSystemHealth() {
   const [showMocks, setShowMocks] = useState(false);
   const [showTypeDebt, setShowTypeDebt] = useState(false);
   const [showForensics, setShowForensics] = useState(false);
+  // PROOF:AUTOMATION_V1:automation_engine_health
+  // PROOF:AUTOMATION_V1:automation_rule_admin_visibility
+  const { health: engineHealth, loading: engineLoading, loaded: engineLoaded, load: loadEngine } = useAutomationEngine();
+  const [showEnginePanel, setShowEnginePanel] = useState(false);
 
   // PROOF:GOLIVE_V1:action_events_admin_visibility — live count from DB via SECURITY DEFINER RPC
   // PROOF:GOLIVE_V1:passive_admin_visibility — live passive events count from DB
