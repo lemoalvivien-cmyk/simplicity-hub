@@ -1,10 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Zap } from "lucide-react";
+
+/**
+ * Hash active state: uses IntersectionObserver to detect when
+ * #comment-ca-marche is in viewport. Falls back to URL hash.
+ * Pathname-based active state remains for /pricing and other routes.
+ */
+function useHashActive(sectionId: string): boolean {
+  const { hash } = useLocation();
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    // Sync with explicit URL hash on navigation
+    if (hash === `#${sectionId}`) {
+      setInView(true);
+    } else if (hash && hash !== `#${sectionId}`) {
+      setInView(false);
+    }
+  }, [hash, sectionId]);
+
+  useEffect(() => {
+    const el = document.getElementById(sectionId);
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      // section is "active" when ≥30% visible
+      { threshold: 0.3, rootMargin: "-64px 0px 0px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [sectionId]);
+
+  return inView;
+}
 
 export default function PublicNav() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const howItWorksActive = useHashActive("comment-ca-marche");
+
+  const isActive = (to: string, isHash?: boolean): boolean => {
+    if (isHash) return howItWorksActive;
+    return pathname === to;
+  };
 
   const links: { to: string; label: string; isHash?: boolean }[] = [
     { to: "/#comment-ca-marche", label: "Comment ça marche", isHash: true },
@@ -34,7 +74,7 @@ export default function PublicNav() {
               key={to}
               href={to}
               className={`text-sm font-medium transition-colors ${
-                !isHash && pathname === to
+                isActive(to, isHash)
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}
@@ -72,12 +112,16 @@ export default function PublicNav() {
       {open && (
         <div className="md:hidden border-t border-border bg-card animate-fade-in">
           <div className="container py-4 flex flex-col gap-1">
-            {links.map(({ to, label }) => (
+            {links.map(({ to, label, isHash }) => (
               <a
                 key={to}
                 href={to}
                 onClick={() => setOpen(false)}
-                className="py-2.5 text-sm font-medium text-foreground hover:text-primary transition-colors"
+                className={`py-2.5 text-sm font-medium transition-colors ${
+                  isActive(to, isHash)
+                    ? "text-primary"
+                    : "text-foreground hover:text-primary"
+                }`}
               >
                 {label}
               </a>

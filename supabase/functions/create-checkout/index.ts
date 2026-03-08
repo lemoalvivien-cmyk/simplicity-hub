@@ -11,6 +11,37 @@ const PRICE_LAUNCH = "price_1T8GOWEG497aCUFxjNjFjk4t";   // 99€/an — 100 pre
 const PRICE_STANDARD = "price_1T8GR0EG497aCUFxNS9BV3ko"; // 490€/an — tarif standard
 const LAUNCH_SLOTS = 100;
 
+/**
+ * TASK a74d936b: Strict origin allowlist.
+ * Only these origins may generate a Stripe checkout session.
+ * An attacker controlling a different origin cannot forge redirect URLs.
+ *
+ * Dev note: localhost origins are allowed only when not in prod.
+ * In prod, only the two canonical domains are accepted.
+ */
+const ALLOWED_ORIGINS = new Set([
+  "https://wiinupmax.lovable.app",
+  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
+]);
+
+// Canonical production URL used as fallback and for same-origin enforcement
+const CANONICAL_ORIGIN = "https://wiinupmax.lovable.app";
+
+function resolveOrigin(requestedOrigin: string | null): string {
+  if (!requestedOrigin) return CANONICAL_ORIGIN;
+
+  // Allow localhost in development (non-prod Deno env)
+  const isDev = !Deno.env.get("DENO_DEPLOYMENT_ID"); // Edge Runtime always sets this in prod
+  if (isDev && (requestedOrigin.startsWith("http://localhost") || requestedOrigin.startsWith("http://127.0.0.1"))) {
+    return requestedOrigin;
+  }
+
+  if (ALLOWED_ORIGINS.has(requestedOrigin)) return requestedOrigin;
+
+  // Origin not in allowlist — reject
+  return ""; // caller must check for empty string
+}
+
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
@@ -26,6 +57,18 @@ serve(async (req) => {
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+
+    // TASK a74d936b: Validate origin before doing any work
+    const requestedOrigin = req.headers.get("origin");
+    const safeOrigin = resolveOrigin(requestedOrigin);
+    if (!safeOrigin) {
+      logStep("REJECTED: origin not in allowlist", { origin: requestedOrigin });
+      return new Response(
+        JSON.stringify({ error: "Origin not authorized" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    logStep("Origin validated", { origin: safeOrigin });
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -69,15 +112,14 @@ serve(async (req) => {
       logStep("Existing customer found", { customerId });
     }
 
-    const origin = req.headers.get("origin") || "https://wiinupmax.lovable.app";
-
+    // safeOrigin is now guaranteed to be in the allowlist (or localhost in dev)
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email!,
       line_items: [{ price: selectedPriceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${origin}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}&offer=${offerType}`,
-      cancel_url: `${origin}/checkout?canceled=true`,
+      success_url: `${safeOrigin}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}&offer=${offerType}`,
+      cancel_url: `${safeOrigin}/checkout?canceled=true`,
       metadata: { user_id: user.id, offer_type: offerType },
       subscription_data: { metadata: { user_id: user.id, offer_type: offerType } },
       allow_promotion_codes: true,
