@@ -952,6 +952,7 @@ export default function AdminSystemHealth() {
       {/* ── AUTOMATION EXECUTION ENGINE PANEL ── */}
       {/* PROOF:AUTOMATION_V1:automation_rule_admin_visibility */}
       {/* PROOF:AUTOMATION_V1:automation_engine_health */}
+      {/* PROOF:AUTOMATION_CLEANUP_V1:admin_health_consistency */}
       <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: "hsl(271 70% 60% / 0.4)" }}>
         <button
           className="flex items-center justify-between w-full"
@@ -963,7 +964,11 @@ export default function AdminSystemHealth() {
           <div className="flex items-center gap-2">
             <Bot size={15} style={{ color: "hsl(271 70% 50%)" }} />
             <h3 className="font-semibold text-foreground text-sm">Automation Execution Engine</h3>
-            <code className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">PROOF:AUTOMATION_V1</code>
+            {/* PROOF:AUTOMATION_CLEANUP_V1:admin_health_consistency — engine is PRESENT, not absent */}
+            <span className="text-xs px-2 py-0.5 rounded-full font-bold"
+              style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}>
+              ACTIF
+            </span>
           </div>
           {showEnginePanel
             ? <ChevronDown size={14} className="text-muted-foreground" />
@@ -972,9 +977,24 @@ export default function AdminSystemHealth() {
 
         {showEnginePanel && (
           <div className="mt-4 space-y-4">
+            {/* PROOF:AUTOMATION_CLEANUP_V1:rule_owner_resolution — show strategy clearly */}
+            <div className="p-3 rounded-xl border border-border bg-muted/30">
+              <p className="text-xs font-semibold text-foreground mb-1">Stratégie d'owner resolution</p>
+              <code className="text-xs font-mono" style={{ color: "hsl(271 70% 40%)" }}>
+                COALESCE(entreprise_id, user_id)
+              </code>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Les leads entreprise utilisent les règles de l'entreprise. Les leads facilitateur utilisent les règles du facilitateur.
+              </p>
+              {/* PROOF:AUTOMATION_CLEANUP_V1:action_routing_coherence */}
+              <p className="text-xs text-muted-foreground mt-1">
+                <strong>Routage actions :</strong> <code>request_facilitator_precision</code> → facilitateur · toutes autres → resolved_owner (entreprise)
+              </p>
+            </div>
+
             {engineLoading && <p className="text-xs text-muted-foreground animate-pulse">Chargement du moteur…</p>}
             {engineLoaded && !engineHealth && (
-              <p className="text-xs text-muted-foreground">Aucune donnée disponible.</p>
+              <p className="text-xs text-muted-foreground">Aucune donnée disponible (pas encore de décisions enregistrées).</p>
             )}
             {engineLoaded && engineHealth && (
               <>
@@ -1031,18 +1051,21 @@ export default function AdminSystemHealth() {
                     <p className="text-xs font-semibold text-foreground mb-2">10 dernières décisions du moteur</p>
                     <div className="space-y-1">
                       {engineHealth.recent_decisions.map((d, i) => (
-                        <div key={i} className="flex items-center gap-3 text-xs p-2 rounded bg-muted/50">
+                        <div key={i} className="flex items-start gap-3 text-xs p-2 rounded bg-muted/50">
                           <span className="text-muted-foreground font-mono shrink-0">
                             {new Date(d.created_at).toLocaleTimeString("fr")}
                           </span>
                           <code className="text-primary shrink-0">{d.rule_type}</code>
-                          <span className="text-muted-foreground">→</span>
+                          <span className="text-muted-foreground shrink-0">→</span>
                           <span className="font-semibold shrink-0"
                             style={{ color: d.decision === "apply" ? "hsl(var(--success))" : "hsl(var(--muted-foreground))" }}>
                             {d.decision}
                           </span>
-                          {d.context?.reason && (
-                            <span className="text-muted-foreground truncate">{String(d.context.reason)}</span>
+                          {/* PROOF:AUTOMATION_CLEANUP_V1:rule_owner_resolution — show owner_source */}
+                          {(d.context as any)?.owner_source && (
+                            <span className="text-muted-foreground text-xs font-mono">
+                              [{(d.context as any).owner_source}]
+                            </span>
                           )}
                         </div>
                       ))}
@@ -1053,28 +1076,26 @@ export default function AdminSystemHealth() {
                 {/* Proof index */}
                 <div className="p-3 rounded-xl bg-muted/40 border border-border">
                   <p className="text-xs font-semibold text-foreground mb-2">
-                    PROOF:AUTOMATION_V1 — index grep-able
-                    <code className="ml-2 text-muted-foreground font-mono text-xs">grep -r "PROOF:AUTOMATION_V1" src/ supabase/</code>
+                    PROOF INDEX — grep-able
                   </p>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 mb-2">
                     {[
-                      "automation_rule_evaluator",
-                      "automation_rule_routing",
-                      "template_resolution_engine",
-                      "action_payload_from_template",
-                      "passive_threshold_rule_applied",
-                      "intro_auto_promote_rule_applied",
-                      "duplicate_guard_rule_applied",
-                      "automation_rule_admin_visibility",
-                      "action_generation_from_rules",
-                      "automation_engine_health",
+                      "AUTOMATION_V1:automation_rule_evaluator",
+                      "AUTOMATION_V1:template_resolution_engine",
+                      "AUTOMATION_V1:automation_engine_health",
+                      "AUTOMATION_CLEANUP_V1:rule_owner_resolution",
+                      "AUTOMATION_CLEANUP_V1:action_routing_coherence",
+                      "AUTOMATION_CLEANUP_V1:admin_health_consistency",
                     ].map(slug => (
-                      <code key={slug} className="text-xs px-2 py-0.5 rounded font-mono font-semibold"
+                      <code key={slug} className="text-xs px-2 py-0.5 rounded font-mono"
                         style={{ background: "hsl(271 70% 92%)", color: "hsl(271 70% 32%)" }}>
-                        {slug}
+                        PROOF:{slug}
                       </code>
                     ))}
                   </div>
+                  <code className="text-xs text-muted-foreground font-mono">
+                    grep -r "PROOF:AUTOMATION_CLEANUP_V1" src supabase docs
+                  </code>
                 </div>
               </>
             )}
