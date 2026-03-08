@@ -94,6 +94,7 @@ export const PASSIVE_INGESTION_MODE: OpsStatusValue = "PAGE_MOUNT";
 
 // PROOF:GOLIVE_OPS_V1:template_substitution_mode
 // PROOF:GOLIVE_EXPORT_V1:template_substitution_mode
+// PROOF:GOLIVE_EXPORT_V2:template_substitution_mode
 export const TEMPLATE_SUBSTITUTION_MODE: OpsStatusValue = "CLIENT_ONLY";
 // resolveTemplateVariables() in templateVariables.ts is implemented and works.
 // Substitution happens client-side in the Messages preview.
