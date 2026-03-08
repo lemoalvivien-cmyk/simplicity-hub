@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify:quota": "deno run --allow-env --allow-net scripts/verify-quota-flow.ts"
   },
   "dependencies": {
     "@elevenlabs/react": "^0.14.1",
