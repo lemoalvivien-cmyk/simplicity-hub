@@ -1,4 +1,5 @@
 # CANONICAL_EXPORT_MANIFEST — Export Lock V1
+# PROOF:EXPORT_RECOVERY_V1:canonical_manifest_present → this file
 # PROOF:CANONICAL_EXPORT_V1:canonical_manifest → this file
 # PROOF:CANONICAL_EXPORT_V1:canonical_build_stamp → src/lib/canonicalBuildStamp.ts
 

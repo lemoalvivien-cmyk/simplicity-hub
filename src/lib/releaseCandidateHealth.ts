@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:release_candidate_health_present → this file
 /**
  * RELEASE CANDIDATE HEALTH — Source de vérité des blockers RC.
  * PROOF:CANONICAL_EXPORT_V1:release_candidate_health_present → this file

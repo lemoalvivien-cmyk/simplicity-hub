@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:pipeline_metrics_hook_present → this file
 /**
  * usePipelineMetrics — Real pipeline counters from the DB.
  * PROOF:CANONICAL_EXPORT_V1:pipeline_metrics_hook_present → this file

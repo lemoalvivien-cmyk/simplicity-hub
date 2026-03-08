@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:automation_engine_present → this file
 /**
  * automationEngine.ts — Client-side bridge to the DB automation rule evaluator.
  * PROOF:CANONICAL_EXPORT_V1:automation_engine_present → this file

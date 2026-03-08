@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:system_health_present → this file
 /**
  * Admin — System Health / Feature Registry v2
  * PROOF:CANONICAL_EXPORT_V1:system_health_present → this file

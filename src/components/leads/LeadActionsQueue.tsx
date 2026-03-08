@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:lead_actions_queue_present → this file
 /**
  * LeadActionsQueue — Renders real lead_actions from the DB with business context.
  * PROOF:CANONICAL_EXPORT_V1:lead_actions_queue_present → this file

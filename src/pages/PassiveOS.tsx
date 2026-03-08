@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:passive_page_present → this file
 /**
  * PassiveOS — Passive Facilitator OS MAX
  * PROOF:CANONICAL_EXPORT_V1:passive_page_present → this file

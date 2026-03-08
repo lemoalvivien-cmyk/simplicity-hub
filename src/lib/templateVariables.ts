@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:template_variables_present → this file
 /**
  * templateVariables — Real template variable resolution with fallback.
  * PROOF:CANONICAL_EXPORT_V1:template_variables_present → this file

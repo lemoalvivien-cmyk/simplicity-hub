@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:opportunities_page_present → this file
 /**
  * Opportunites — Pipeline V2 cockpit: reads real opportunities from DB.
  * PROOF:CANONICAL_EXPORT_V1:opportunities_page_present → this file
