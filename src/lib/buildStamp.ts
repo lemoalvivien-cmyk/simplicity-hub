@@ -2,23 +2,26 @@
  * BUILD STAMP — Repo Sync Gate proof of identity.
  * PROOF:SYNC_GATE_V1:build_stamp_visible → this file
  * PROOF:RELEASE_V1:build_stamp_consistency → this file
+ * PROOF:RELEASE_SYNC_V1:build_stamp_visible → this file
  *
  * Generated: 2026-03-08
- * Passe courante: RELEASE INTEGRITY V1
+ * Passe courante: RELEASE SYNC GATE V1
  *
  * Ce fichier est l'ancre unique entre le repo, l'export zip et le preview déployé.
- * Le stamp courant est RELEASE-2026-03-08-1300-V1.
- * Les anciens stamps (SYNCGATE-*, GOLIVE-*) sont de l'historique uniquement.
+ * Le stamp courant est RELEASESYNC-2026-03-08-1315-V1.
+ * Les anciens stamps (SYNCGATE-*, GOLIVE-*, RELEASE-*) sont de l'historique uniquement.
  *
  * Pour vérifier:
- *   grep -r "RELEASE-2026-03-08-1300-V1" src/
+ *   grep -r "RELEASESYNC-2026-03-08-1315-V1" src/
+ *   grep -r "PROOF:RELEASE_SYNC_V1" src/ docs/
  *   grep -r "PROOF:RELEASE_V1" src/ supabase/ docs/
  */
 
 // PROOF:SYNC_GATE_V1:build_stamp_visible
 // PROOF:RELEASE_V1:build_stamp_consistency
+// PROOF:RELEASE_SYNC_V1:build_stamp_visible
 // PROOF:GOLIVE_V1:ops_diagnostics_panel → see SystemHealth.tsx
-export const BUILD_STAMP = "RELEASE-2026-03-08-1300-V1" as const;
+export const BUILD_STAMP = "RELEASESYNC-2026-03-08-1315-V1" as const;
 
 export const SYNC_GATE_META = {
   stamp:       BUILD_STAMP,
