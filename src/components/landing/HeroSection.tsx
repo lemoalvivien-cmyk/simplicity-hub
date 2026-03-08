@@ -9,15 +9,14 @@ const trustItems = [
   { icon: TrendingUp, label: "Résultats mesurables" },
 ];
 
-// A/B copy variants
 const HEADLINE_VARIANTS = {
   v1_clients: {
     top: "Trouvez vos prochains clients.",
-    sub: "Via votre réseau. Via l'IA.\nDans un seul cockpit.",
+    sub: ["Via votre réseau. Via l'IA.", "Dans un seul cockpit."],
   },
   v2_cockpit: {
     top: "Un cockpit. Deux moteurs. Des clients.",
-    sub: "Prospection IA + réseau humain structuré.\nTout dans le même système.",
+    sub: ["Prospection IA + réseau humain structuré.", "Tout dans le même système."],
   },
 };
 
@@ -50,7 +49,7 @@ export default function HeroSection() {
           <LaunchQuotaBanner variant="hero" />
         </div>
 
-        {/* Main headline — dominant */}
+        {/* Main headline */}
         <div className="text-center mb-10">
           <h1 className="font-display font-bold text-white leading-[1.08] tracking-tight mb-6">
             <span
@@ -64,8 +63,10 @@ export default function HeroSection() {
             >
               {copy.top}
             </span>
-            <span className="block text-[clamp(1.55rem,4.5vw,2.6rem)] text-white/85 mt-3 font-semibold whitespace-pre-line">
-              {copy.sub}
+            <span className="block text-[clamp(1.55rem,4.5vw,2.6rem)] text-white/85 mt-3 font-semibold">
+              {copy.sub[0]}
+              <br className="hidden sm:block" />
+              {" "}{copy.sub[1]}
             </span>
           </h1>
 
@@ -81,7 +82,6 @@ export default function HeroSection() {
             <Link
               to="/pricing"
               className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
-              style={{ fontSize: "clamp(0.9rem, 2vw, 1.02rem)" }}
               onClick={() => track("cta_hero_enterprise", { label: ctaLabel, variant: ctaVariant })}
             >
               {ctaLabel}

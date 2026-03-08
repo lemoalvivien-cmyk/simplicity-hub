@@ -98,7 +98,7 @@ export default function PublicNav() {
                 onClick={() => setOpen(false)}
                 className="btn-cta text-sm text-center"
               >
-                Démarrer gratuitement →
+                Lancer ma première mission →
               </Link>
             </div>
           </div>

@@ -20,18 +20,17 @@ const facilitateurFeatures = [
   "Toutes les missions disponibles",
   "Introductions illimitées",
   "Suivi des gains en temps réel",
-  "Protection de chaque intro",
+  "Protection de chaque introduction",
   "Score de confiance visible",
   "Aucune commission prélevée par la plateforme",
 ];
 
-// A/B pricing frame variants
 const PRICING_FRAME = {
   v1_offre: {
     badge: "Offre lancement",
     headline: "Simple, honnête, transparent.",
     sub: "L'offre entreprise est payante. L'accès facilitateur est gratuit. Il n'y a rien de caché.",
-    ctaLabel: (isLaunch: boolean) => isLaunch ? "Démarrer — 99 € / an" : "S'abonner — 490 € / an",
+    ctaLabel: (isLaunch: boolean) => isLaunch ? "Lancer ma première mission — 99 €" : "Lancer ma première mission — 490 €",
   },
   v2_investissement: {
     badge: "Investissement acquisition",
@@ -74,7 +73,7 @@ export default function PricingSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 items-start">
           {/* Entreprise — dominant */}
           <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-lg flex flex-col">
             {/* Header */}
@@ -103,7 +102,7 @@ export default function PricingSection() {
               <p className="text-white/45 text-xs">
                 {launchAvailable
                   ? "Réservée aux 100 premières entreprises — accès complet immédiat"
-                  : "Abonnement annuel — accès complet"}
+                  : "Abonnement annuel — accès complet, support inclus"}
               </p>
             </div>
 
@@ -139,15 +138,15 @@ export default function PricingSection() {
               style={{ background: "var(--gradient-accent)" }}
             >
               <p className="text-white/80 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur / Apporteur</p>
-              <div className="flex items-end gap-2 mb-1">
+              <div className="flex items-baseline gap-3 mb-1">
                 <span className="font-display font-bold text-5xl text-white">Gratuit</span>
               </div>
               <p className="text-white/65 text-xs mt-1">Pour toujours · Sans carte bancaire · Zéro frais caché</p>
             </div>
 
             {/* Features */}
-            <div className="px-7 py-6 flex flex-col flex-1">
-              <ul className="space-y-3 mb-7 flex-1">
+            <div className="px-7 py-6 flex flex-col">
+              <ul className="space-y-3 mb-7">
                 {facilitateurFeatures.map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <CheckCircle2 size={14} className="shrink-0 mt-0.5" style={{ color: "hsl(var(--accent))" }} />
