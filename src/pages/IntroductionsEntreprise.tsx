@@ -250,8 +250,9 @@ export default function IntroductionsEntreprise() {
         db.from("profiles").select("id, prenom").in("id", facilitateurIds),
         db.from("gains").select("id, introduction_id").in("introduction_id", introIds),
         // Load lead intake data linked to these introductions
+        // RLS allows: entreprise_id = auth.uid() (propagated by trigger)
         db.from("lead_intakes")
-          .select("introduction_id, qualification_status, next_best_action, dedup_status")
+          .select("id, introduction_id, qualification_status, next_best_action, dedup_status, linked_opportunity_id")
           .in("introduction_id", introIds),
       ]);
 
