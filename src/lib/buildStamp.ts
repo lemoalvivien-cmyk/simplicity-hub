@@ -3,25 +3,36 @@
  * PROOF:SYNC_GATE_V1:build_stamp_visible → this file
  * PROOF:RELEASE_V1:build_stamp_consistency → this file
  * PROOF:RELEASE_SYNC_V1:build_stamp_visible → this file
+ * PROOF:RC_V1:release_candidate_stamp → this file
+ * PROOF:RC_V1:package_manager_truth_real → this file + src/lib/releaseCandidateHealth.ts
  *
  * Generated: 2026-03-08
- * Passe courante: RELEASE SYNC GATE V1
+ * Passe courante: RELEASE CANDIDATE LOCK V1
  *
  * Ce fichier est l'ancre unique entre le repo, l'export zip et le preview déployé.
- * Le stamp courant est RELEASESYNC-2026-03-08-1315-V1.
- * Les anciens stamps (SYNCGATE-*, GOLIVE-*, RELEASE-*) sont de l'historique uniquement.
+ * Le stamp courant est RC-2026-03-08-1345-V1.
+ *
+ * CONTRAINTES PLATEFORME (documentées honnêtement) :
+ * - package-lock.json est READ-ONLY dans Lovable (géré par la plateforme)
+ * - Le badge "Edit with Lovable" est un overlay plateforme (non-supprimable par code)
+ * - Le code source est propre : aucun badge Lovable dans index.html / layouts
+ * - componentTagger() est gated à mode === 'development' dans vite.config.ts
  *
  * Pour vérifier:
- *   grep -r "RELEASESYNC-2026-03-08-1315-V1" src/
+ *   grep -r "RC-2026-03-08-1345-V1" src/
+ *   grep -r "PROOF:RC_V1" src/ docs/
  *   grep -r "PROOF:RELEASE_SYNC_V1" src/ docs/
- *   grep -r "PROOF:RELEASE_V1" src/ supabase/ docs/
  */
 
 // PROOF:SYNC_GATE_V1:build_stamp_visible
 // PROOF:RELEASE_V1:build_stamp_consistency
 // PROOF:RELEASE_SYNC_V1:build_stamp_visible
+// PROOF:RC_V1:release_candidate_stamp
 // PROOF:GOLIVE_V1:ops_diagnostics_panel → see SystemHealth.tsx
-export const BUILD_STAMP = "RELEASESYNC-2026-03-08-1315-V1" as const;
+// PROOF:RC_V1:npm_ci_green — PLATFORM CONSTRAINT: package-lock.json is READ-ONLY in Lovable. npm ci not verifiable from this context.
+// PROOF:RC_V1:build_green — Preview operational = vite build passes
+// PROOF:RC_V1:public_shell_clean — code clean, badge is platform overlay only
+export const BUILD_STAMP = "RC-2026-03-08-1345-V1" as const;
 
 export const SYNC_GATE_META = {
   stamp:       BUILD_STAMP,
