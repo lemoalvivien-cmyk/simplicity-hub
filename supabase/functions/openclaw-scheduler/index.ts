@@ -77,16 +77,35 @@ Deno.serve(async (req) => {
     const svc = createClient(supabaseUrl, serviceKey);
 
     // ── Auth ─────────────────────────────────────────────────────────────────
+    // Strategy:
+    //   1. Bearer <SUPABASE_SERVICE_ROLE_KEY>  → pg_cron / internal scheduler call → OK
+    //   2. Bearer <user JWT>                   → authenticated user trigger        → OK
+    //   3. No / invalid token                  → 401
     const authHeader = req.headers.get("Authorization") || "";
     let requestUserId: string | null = null;
 
-    if (authHeader && authHeader !== `Bearer ${anonKey}` && authHeader !== `Bearer ${serviceKey}`) {
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Missing authorization" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const isServiceRole = authHeader === `Bearer ${serviceKey}`;
+
+    if (!isServiceRole) {
+      // Validate as a user JWT
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: { user } } = await userClient.auth.getUser();
-      requestUserId = user?.id || null;
+      const { data: { user }, error: authErr } = await userClient.auth.getUser();
+      if (authErr || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      requestUserId = user.id;
     }
+    // If isServiceRole: requestUserId stays null → scheduler processes all pending users
 
     let body: SchedulerRequest = {};
     try { body = await req.json(); } catch { /* cron may send empty body */ }
