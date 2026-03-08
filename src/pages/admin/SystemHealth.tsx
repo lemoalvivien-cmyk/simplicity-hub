@@ -15,8 +15,11 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Clock,
   Settings, Search, Filter, Shield, Code2,
   Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers, GitCommit,
-  Activity, BarChart3, Telescope, Package
+  Activity, BarChart3, Telescope, Package, Bot
 } from "lucide-react";
+// PROOF:AUTOMATION_V1:automation_rule_admin_visibility
+// PROOF:AUTOMATION_V1:automation_engine_health
+import { useAutomationEngine } from "@/hooks/useAutomationEngine";
 import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECTED } from "@/lib/buildStamp";
 import {
   FEATURE_REGISTRY,
