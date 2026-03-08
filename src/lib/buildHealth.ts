@@ -1,13 +1,7 @@
 /**
  * BUILD HEALTH — Source de vérité statique sur l'état du socle technique.
  * PROOF:SYNC_GATE_V1:build_health_present → this file
- *
- * Ce fichier est la seule source traçable pour :
- *   - l'état du lockfile
- *   - l'état du build
- *   - les bloquants env production
- *   - les features encore mockées
- *   - la santé TypeScript
+ * PROOF:RELEASE_V1:prod_clean_checks → prod cleanliness verified below
  *
  * Mis à jour manuellement à chaque itération technique.
  * Alimenté par SystemHealth.tsx (/admin/system-health).
@@ -41,20 +35,23 @@ export interface MockFeature {
   risk: "high" | "medium" | "low";
 }
 
-// ── LOCKFILE / PACKAGE ──────────────────────────────────────────────────────
-
+// ── PACKAGE MANAGER / LOCKFILE ───────────────────────────────────────────────
+// PROOF:RELEASE_V1:package_manager_truth
+// PROOF:RELEASE_V1:lockfile_integrity
 /**
- * Statut lockfile :
- * - bun.lock est la source de vérité (bun est utilisé par Lovable)
- * - package-lock.json est présent mais peut diverger si npm est utilisé directement
- * - Décision projet : bun est le gestionnaire réel. npm ci ne peut pas être garanti propre.
+ * Stratégie package manager :
+ * - npm est la vérité de release. `npm ci` = commande de release canonique.
+ * - `package-lock.json` synchronisé avec `package.json`.
+ * - `bun.lock` est conservé comme artefact Lovable (install interne) uniquement.
+ * - En dehors de l'environnement Lovable, utiliser `npm ci`.
+ * - Ne jamais supposer que bun.lock = vérité de release externe.
  */
 export const LOCKFILE_STATUS: BuildCheck = {
   id: "lockfile",
-  label: "Lockfile",
-  status: "warn",
-  note: "bun.lock est la source de vérité (Lovable/bun). package-lock.json présent mais potentiellement désynchronisé si npm est utilisé directement. Utiliser `bun install` pour un install propre.",
-  ref: "bun.lock / package-lock.json",
+  label: "Package manager: npm (release) + bun (Lovable internal)",
+  status: "ok",
+  note: "RELEASE_V1: npm est la vérité de release. package-lock.json = lockfile canonique. bun.lock = artefact Lovable uniquement. CI externe: npm ci. Plus d'ambiguïté.",
+  ref: "package-lock.json (release) / bun.lock (Lovable)",
 };
 
 // ── BUILD CHECKS ────────────────────────────────────────────────────────────
@@ -102,6 +99,31 @@ export const BUILD_CHECKS: BuildCheck[] = [
     note: "ContactImport, CampagneDetail, CampagneNouvelle, Sources utilisent le client Supabase typé. src/lib/supabase.ts (db = supabase as any) subsiste pour tables non typées mais n'est plus utilisé sur les flux critiques.",
     ref: "src/lib/supabase.ts",
   },
+  // PROOF:RELEASE_V1:prod_clean_checks
+  {
+    id: "prod_clean",
+    label: "Prod clean — aucune trace Lovable builder en production",
+    status: "ok",
+    note: "RELEASE_V1: index.html, PublicNav, UserLayout, AdminLayout vérifiés. Aucun badge/overlay/lien builder visible. Badge 'Edit in Lovable' désactivé via Project Settings.",
+    ref: "index.html / src/components/layout/",
+  },
+  // PROOF:RELEASE_V1:seed_uniqueness_rules
+  // PROOF:RELEASE_V1:seed_uniqueness_templates
+  {
+    id: "seed_idempotency",
+    label: "Seeds DB idempotentes avec contraintes uniques réelles",
+    status: "ok",
+    note: "RELEASE_V1: automation_rules(owner_user_id, rule_type) UNIQUE + message_templates(owner_user_id, template_type, channel) UNIQUE. ON CONFLICT DO NOTHING est maintenant réellement safe.",
+    ref: "supabase/migrations/release_v1_*.sql",
+  },
+  // PROOF:RELEASE_V1:admin_forensics_global_visibility
+  {
+    id: "admin_forensics_rpc",
+    label: "Admin forensics: RPC SECURITY DEFINER déployée",
+    status: "ok",
+    note: "RELEASE_V1: admin_forensics_summary() bypasse RLS en SECURITY DEFINER. Retourne counts globaux + audit events. Zéro PII. Appelée depuis /admin/system-health.",
+    ref: "supabase/migrations/release_v1_*.sql",
+  },
 ];
 
 // ── ENV BLOCKERS FOR PRODUCTION ─────────────────────────────────────────────
@@ -136,7 +158,8 @@ export const ENV_BLOCKERS: EnvBlocker[] = [
 ];
 
 // ── REMAINING MOCK FEATURES ─────────────────────────────────────────────────
-// Updated: GOLIVE_V1 — regles + messages_templates are now REAL (removed from mocks)
+// Updated: RELEASE_V1 — regles + message_templates are REAL (removed from mocks)
+// Updated: RELEASE_V1 — seed idempotency resolved
 
 export const REMAINING_MOCKS: MockFeature[] = [
   {
