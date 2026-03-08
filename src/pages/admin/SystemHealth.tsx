@@ -700,12 +700,13 @@ export default function AdminSystemHealth() {
         )}
       </div>
 
-      {/* ── REPO SYNC GATE ── */}
+      {/* ── RELEASE SYNC GATE ── */}
       {/* PROOF:SYNC_GATE_V1:system_health_sync_stamp */}
+      {/* PROOF:RELEASE_SYNC_V1:system_health_sync_stamp */}
       <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: "hsl(142 70% 45% / 0.5)" }}>
         <div className="flex items-center gap-2 mb-1">
           <GitCommit size={15} style={{ color: "hsl(142 70% 35%)" }} />
-          <h3 className="font-semibold text-foreground text-sm">Repo Sync Gate</h3>
+          <h3 className="font-semibold text-foreground text-sm">Release Sync Gate</h3>
           <span className="ml-auto text-xs font-mono px-2 py-0.5 rounded font-bold"
             style={{ background: "hsl(142 70% 92%)", color: "hsl(142 70% 28%)" }}>
             {BUILD_STAMP}
@@ -713,8 +714,28 @@ export default function AdminSystemHealth() {
         </div>
         <p className="text-xs text-muted-foreground mb-4">
           Estampillage unique. Grep-able. Preuve de synchronisation entre le code, le zip exporté et le repo Git.
-          Passe : <strong>{SYNC_GATE_META.pass}</strong> · {SYNC_GATE_META.date}
+          Passe : <strong>{SYNC_GATE_META.pass}</strong> · {SYNC_GATE_META.date} · {SYNC_GATE_META.time}
         </p>
+
+        {/* Proof summary */}
+        <div className="mb-3 p-2.5 rounded-lg bg-muted/60 border border-border flex flex-wrap gap-3 text-xs">
+          <span className="flex items-center gap-1.5">
+            <CheckCircle2 size={10} style={{ color: "hsl(142 70% 35%)" }} />
+            <strong>{CRITICAL_FILES_EXPECTED.length}</strong> fichiers critiques attendus
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Database size={10} style={{ color: "hsl(218 72% 55%)" }} />
+            <strong>{MIGRATIONS_EXPECTED.length}</strong> migrations pipeline/integrity/release
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Shield size={10} style={{ color: "hsl(218 72% 55%)" }} />
+            Manifest : <code className="font-mono ml-1">docs/REPO_SYNC_MANIFEST.md</code>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Package size={10} style={{ color: "hsl(var(--muted-foreground))" }} />
+            Lockfile : <code className="font-mono ml-1">package-lock.json (npm)</code>
+          </span>
+        </div>
 
         {/* Critical files */}
         <div className="mb-4">
@@ -745,11 +766,38 @@ export default function AdminSystemHealth() {
           </div>
         </div>
 
-        {/* Proof marker index */}
+        {/* Proof marker index — RELEASE_SYNC_V1 */}
+        <div className="mb-3">
+          <p className="text-xs font-semibold text-foreground mb-2">
+            Marqueurs RELEASE_SYNC_V1 (10)
+            <code className="ml-2 text-muted-foreground bg-muted px-1 rounded font-mono text-xs">grep -r "PROOF:RELEASE_SYNC_V1" src/ docs/</code>
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {[
+              "build_stamp_visible",
+              "repo_sync_manifest",
+              "system_health_sync_stamp",
+              "regles_page_present",
+              "messages_page_present",
+              "passive_page_present",
+              "system_health_present",
+              "build_health_present",
+              "package_lock_present",
+              "migrations_present",
+            ].map(slug => (
+              <code key={slug} className="text-xs px-2 py-0.5 rounded font-mono font-semibold"
+                style={{ background: "hsl(142 70% 92%)", color: "hsl(142 70% 28%)" }}>
+                {slug}
+              </code>
+            ))}
+          </div>
+        </div>
+
+        {/* Proof marker index — legacy SYNC_GATE_V1 */}
         <div>
           <p className="text-xs font-semibold text-foreground mb-2">
-            Marqueurs SYNC_GATE_V1 ({9})
-            <code className="ml-2 text-muted-foreground bg-muted px-1 rounded font-mono">grep -r "PROOF:SYNC_GATE_V1" src/ docs/</code>
+            Marqueurs SYNC_GATE_V1 (9)
+            <code className="ml-2 text-muted-foreground bg-muted px-1 rounded font-mono text-xs">grep -r "PROOF:SYNC_GATE_V1" src/ docs/</code>
           </p>
           <div className="flex flex-wrap gap-1">
             {[
@@ -764,7 +812,7 @@ export default function AdminSystemHealth() {
               "build_health_present",
             ].map(slug => (
               <code key={slug} className="text-xs px-2 py-0.5 rounded font-mono font-semibold"
-                style={{ background: "hsl(142 70% 92%)", color: "hsl(142 70% 28%)" }}>
+                style={{ background: "hsl(218 72% 92%)", color: "hsl(218 72% 35%)" }}>
                 {slug}
               </code>
             ))}
