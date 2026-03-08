@@ -2,6 +2,7 @@
  * Admin — System Health / Feature Registry v2
  * PROOF GATE: confidence badges, evidence panels, blocking issues from buildHealth.ts,
  * build health, remaining mocks, manual declarations.
+ * PROOF:SYNC_GATE_V1:system_health_sync_stamp → BUILD_STAMP + Repo Sync Gate section below
  * Toutes les données sont importées de sources traçables dans le code.
  */
 import { useState } from "react";
@@ -9,8 +10,9 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import {
   CheckCircle2, AlertTriangle, XCircle, Clock,
   Settings, Search, Filter, Shield, Code2,
-  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers
+  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers, GitCommit
 } from "lucide-react";
+import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECTED } from "@/lib/buildStamp";
 import {
   FEATURE_REGISTRY,
   STATUS_META,
