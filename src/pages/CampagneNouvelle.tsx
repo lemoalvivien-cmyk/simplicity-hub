@@ -10,7 +10,7 @@ import {
   ChevronRight, ChevronLeft, Check, Sparkles, Users, Mail,
   Phone, Play, Shield, Zap, Target, X, Loader2, AlertCircle
 } from "lucide-react";
-import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
