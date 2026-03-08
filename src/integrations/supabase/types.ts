@@ -145,6 +145,45 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_rules: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_enabled: boolean
+          label: string
+          niveau: string
+          owner_user_id: string
+          rule_type: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          label: string
+          niveau?: string
+          owner_user_id: string
+          rule_type: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_enabled?: boolean
+          label?: string
+          niveau?: string
+          owner_user_id?: string
+          rule_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       billing_events: {
         Row: {
           created_at: string
@@ -1548,6 +1587,45 @@ export type Database = {
           nom?: string
           owner_user_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      message_templates: {
+        Row: {
+          body: string
+          channel: string
+          created_at: string
+          id: string
+          is_active: boolean
+          owner_user_id: string
+          template_type: string
+          title: string
+          updated_at: string
+          utilises: number
+        }
+        Insert: {
+          body?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          owner_user_id: string
+          template_type: string
+          title: string
+          updated_at?: string
+          utilises?: number
+        }
+        Update: {
+          body?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          owner_user_id?: string
+          template_type?: string
+          title?: string
+          updated_at?: string
+          utilises?: number
         }
         Relationships: []
       }
@@ -3887,6 +3965,16 @@ export type Database = {
           zone_score: number
         }[]
       }
+      ingest_passive_signal: {
+        Args: {
+          p_company_name?: string
+          p_context?: string
+          p_person_email?: string
+          p_share_link_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       promote_lead_to_opportunity: {
         Args: { p_intake_id: string }
         Returns: string
@@ -3894,6 +3982,14 @@ export type Database = {
       recompute_edge_weight: { Args: { p_edge_id: string }; Returns: undefined }
       refresh_trust_score: {
         Args: { p_facilitator_id: string }
+        Returns: undefined
+      }
+      seed_default_automation_rules: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      seed_default_message_templates: {
+        Args: { p_user_id: string }
         Returns: undefined
       }
       seed_openclaw_channels: {
