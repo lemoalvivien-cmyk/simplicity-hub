@@ -314,6 +314,10 @@ export default function DashboardFacilitateur() {
           </div>
         )}
 
+        {/* ── LEADS PIPELINE (facilitateur view) ───────────── */}
+        {/* asEntreprise=false → fetches leads where user_id = me (I created these leads via intros) */}
+        {!isLaunchMode && <UnifiedLeadsBlock asEntreprise={false} linkTo="/introductions" />}
+
         {/* ── GAINS ────────────────────────────────────────── */}
         {(totalValide > 0 || totalAttendu > 0) && (
           <div className="card-surface p-5">
