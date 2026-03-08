@@ -142,20 +142,20 @@ export default function PassiveOS() {
     }
   };
 
-  // PROOF:EXECUTION_V1:passive_pipeline_wired — manual trigger call site
+  // PROOF:EXECUTION_V1:passive_pipeline_wired — manual trigger via RPC
   const triggerPassiveLead = async (shareLinkId: string, email?: string, company?: string) => {
     if (!user) return;
-    const result = await createLeadFromPassive({
-      userId: user.id,
-      shareLinkId,
-      personEmail: email,
-      companyName: company,
-      context: "passive_interest_from_share_link",
-    });
-    if (result.intakeId) {
+    const { data } = await supabase.rpc("ingest_passive_signal" as string, {
+      p_user_id:       user.id,
+      p_share_link_id: shareLinkId,
+      p_person_email:  email ?? null,
+      p_company_name:  company ?? null,
+      p_context:       "passive_interest_from_share_link",
+    } as Record<string, unknown>);
+    if (data) {
       toast({ title: "Lead passif enregistré", description: "Visible dans votre pipeline." });
     }
-    return result;
+    return data;
   };
 
   const passiveGainsTotal = gains.filter(g => g.statut === "valide").reduce((s, g) => s + (g.montant || 0), 0);
