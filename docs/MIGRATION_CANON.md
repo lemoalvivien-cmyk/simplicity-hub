@@ -61,14 +61,20 @@ statements in `d8c2baed` are unrelated to quota and are otherwise correct.
 ## launch_quota singleton
 
 **AT LEAST one row**: Guaranteed by the squash migration `4ea7ab1c` via
-`INSERT WHERE NOT EXISTS`.
+`INSERT WHERE NOT EXISTS` — **on a fresh deploy only**. A database that was
+partially migrated before this squash was applied may not have the row.
 
-**AT MOST one row**: Guaranteed by migration `1c3240fc` via
+**AT MOST one row**: Enforced by migration `1c3240fc` via
 `CREATE UNIQUE INDEX idx_launch_quota_singleton ON public.launch_quota ((TRUE))`.
+**Caveat**: this index is created without a prior dedup cleanup. If the database
+already contains more than one row in `launch_quota` at migration time (e.g. from
+a corrupted earlier deploy), the `CREATE UNIQUE INDEX` will fail. The guarantee
+holds **only on a clean or fresh-deployed database**.
 
-**Combined guarantee**: On a fresh deploy with both migrations applied in order,
-`launch_quota` will contain exactly one row. This is a DB-enforced constraint,
-not a documentation claim.
+**Honest combined guarantee**: On a fresh deploy with all 5 migrations applied in
+order, `launch_quota` contains exactly one row. This is DB-enforced.
+On a database that was previously in a corrupt state (multiple rows), the singleton
+is **not automatically recovered** by these migrations — manual cleanup is required.
 
 **Script behaviour**: `verify-quota-flow.ts` uses `.maybeSingle()` (not `.single()`)
 plus `.limit(1)` to read quota state. It will throw if the row is missing, but
