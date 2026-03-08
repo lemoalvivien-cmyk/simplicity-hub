@@ -1,9 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-// Price ID for the launch offer — only this price consumes a quota slot
-const PRICE_LAUNCH = "price_1T8GOWEG497aCUFxjNjFjk4t";
+import { consumeLaunchSlotIfEligible } from "../_shared/quotaEngine.ts";
 
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
@@ -17,8 +15,6 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
-    // TASK c55bf4dd: Hard-fail if either secret is missing.
-    // No JSON.parse fallback — unverified webhooks are not accepted.
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
     if (!webhookSecret) {
       logStep("FATAL: STRIPE_WEBHOOK_SECRET not configured — rejecting request");
@@ -44,13 +40,11 @@ serve(async (req) => {
       );
     }
 
-    // Signature verification is now mandatory — no fallback.
+    // Signature verification is mandatory — no fallback.
     const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     logStep("Event verified", { type: event.type, id: event.id });
 
-    // Log to billing_events — dedup by stripe_event_id prevents double processing.
-    // ignoreDuplicates: true means a re-delivered event will not re-trigger side effects
-    // if the row already exists. All downstream logic is gated on this upsert result.
+    // Dedup by stripe_event_id — ignoreDuplicates prevents double-processing on re-delivery
     const { data: eventRow, error: eventError } = await supabase
       .from("billing_events")
       .upsert(
@@ -65,7 +59,6 @@ serve(async (req) => {
       .select("id")
       .maybeSingle();
 
-    // If upsert returned null (duplicate detected), this event was already processed — skip.
     if (!eventError && !eventRow) {
       logStep("Duplicate event — skipping", { eventId: event.id });
       return new Response(JSON.stringify({ received: true, skipped: true }), {
@@ -115,65 +108,6 @@ serve(async (req) => {
       );
     };
 
-    /**
-     * TASK 44f34b6c: Idempotent launch quota increment.
-     *
-     * Conditions for consuming a slot:
-     * 1. offer_type === "launch" in session metadata (set at checkout creation time)
-     * 2. The subscription price ID matches PRICE_LAUNCH (double guard)
-     * 3. Not already consumed — checked via launch_quota_consumed table
-     *
-     * The dedup key is the Stripe subscription ID. A re-delivered webhook for the
-     * same subscription will find the existing record and skip the increment.
-     */
-    const consumeLaunchSlotIfEligible = async (
-      subscriptionId: string,
-      offerType: string | null | undefined,
-      priceId: string | null | undefined
-    ) => {
-      // Guard: only consume for launch offer with matching price
-      if (offerType !== "launch" || priceId !== PRICE_LAUNCH) {
-        logStep("Slot consumption skipped — not a launch offer", { offerType, priceId });
-        return;
-      }
-
-      // Idempotency: check if this subscription already consumed a slot
-      const { data: existing } = await supabase
-        .from("launch_quota_consumed")
-        .select("id")
-        .eq("stripe_subscription_id", subscriptionId)
-        .maybeSingle();
-
-      if (existing) {
-        logStep("Slot already consumed for this subscription — skipping", { subscriptionId });
-        return;
-      }
-
-      // Record consumption FIRST (prevents race conditions on re-delivery)
-      const { error: insertError } = await supabase
-        .from("launch_quota_consumed")
-        .insert({ stripe_subscription_id: subscriptionId });
-
-      if (insertError) {
-        // Unique constraint violation = concurrent duplicate — safe to skip
-        logStep("Slot insert conflict (concurrent redelivery) — skipping", { error: insertError.message });
-        return;
-      }
-
-      // Increment used_slots — atomic update, no race condition possible
-      const { error: updateError } = await supabase.rpc("increment_launch_quota_used_slots");
-      if (updateError) {
-        logStep("ERROR incrementing launch quota", { error: updateError.message });
-        // Rollback the consumed record to maintain consistency
-        await supabase
-          .from("launch_quota_consumed")
-          .delete()
-          .eq("stripe_subscription_id", subscriptionId);
-      } else {
-        logStep("Launch slot consumed", { subscriptionId });
-      }
-    };
-
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
@@ -187,12 +121,16 @@ serve(async (req) => {
               const sub = await stripe.subscriptions.retrieve(session.subscription as string);
               await upsertSubscription(userId, customerId, sub);
 
-              // Consume launch slot if applicable — idempotent
-              await consumeLaunchSlotIfEligible(
+              // Quota consumption delegated entirely to shared quotaEngine module.
+              // This is the ONLY call site — no duplicate logic in this file.
+              const consumeResult = await consumeLaunchSlotIfEligible(
+                supabase,
                 sub.id,
                 session.metadata?.offer_type,
-                sub.items.data[0]?.price.id
+                sub.items.data[0]?.price.id,
+                logStep
               );
+              logStep("Quota consume result", { consumeResult, subId: sub.id });
 
               logStep("Subscription synced after checkout", { userId });
             }
@@ -239,7 +177,6 @@ serve(async (req) => {
       case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice;
         logStep("Invoice paid", { invoiceId: invoice.id });
-        // Subscription state is updated via subscription.updated event
         break;
       }
 
