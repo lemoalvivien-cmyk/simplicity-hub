@@ -16,11 +16,13 @@ import ActivationProgressBar from "@/components/activation/ActivationProgressBar
 import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
+import { useTranslation } from "react-i18next";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
 
 export default function DashboardEntreprise() {
+  const { t } = useTranslation();
   const { user, profile } = useAuth();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [introductions, setIntroductions] = useState<Introduction[]>([]);
@@ -80,8 +82,8 @@ export default function DashboardEntreprise() {
                 <Brain size={20} className="text-white" />
               </div>
               <div>
-                <p className="font-bold text-white text-sm">Bonjour {prenom} 👋</p>
-                <p className="text-white/50 text-xs mt-0.5">Votre acquisition client dans un seul endroit.</p>
+                <p className="font-bold text-white text-sm">{t("dash_hello", { prenom })}</p>
+                <p className="text-white/50 text-xs mt-0.5">{t("dash_acquisition")}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -91,18 +93,17 @@ export default function DashboardEntreprise() {
                   border: "1px solid hsl(38 90% 55% / 0.3)",
                   color: "hsl(38 90% 65%)"
                 }}>
-                  <ShieldAlert size={12} /> {validationsCount} validation{validationsCount > 1 ? "s" : ""}
+                  <ShieldAlert size={12} /> {validationsCount} {validationsCount > 1 ? t("dash_validations_plural") : t("dash_validations")}
                 </Link>
               )}
             </div>
           </div>
 
-          {/* Stats */}
           <div className="relative z-10 mt-4 grid grid-cols-3 gap-2">
             {[
-              { label: "Missions actives", value: loading ? "…" : missions.length, icon: Briefcase },
-              { label: "Introductions", value: loading ? "…" : introductions.length, icon: Send },
-              { label: "Opps chaudes", value: loading ? "…" : hotOpps, icon: Target },
+              { label: t("dash_missions_active"), value: loading ? "…" : missions.length, icon: Briefcase },
+              { label: t("dash_intros"), value: loading ? "…" : introductions.length, icon: Send },
+              { label: t("dash_hot_opps"), value: loading ? "…" : hotOpps, icon: Target },
             ].map(({ label, value, icon: Icon }) => (
               <div key={label} className="text-center py-2.5 px-2 rounded-xl" style={{ background: "hsl(218 40% 16% / 0.6)" }}>
                 <Icon size={12} className="mx-auto mb-1 text-white/40" />
@@ -112,34 +113,30 @@ export default function DashboardEntreprise() {
             ))}
           </div>
 
-          {/* Activation progress bar */}
           <ActivationProgressBar stepsCompleted={stepsCompleted} nextStep={nextStep} />
         </div>
 
-        {/* ── LAUNCH MODE — CRÉER PREMIÈRE MISSION ─────────── */}
+        {/* ── LAUNCH MODE ─────────────────────────────────── */}
         {isLaunchMode && !loading && (
-          <div className="rounded-2xl p-6 border-2" style={{
-            borderColor: "hsl(var(--primary) / 0.6)",
-            background: "hsl(var(--secondary))"
-          }}>
+          <div className="rounded-2xl p-6 border-2" style={{ borderColor: "hsl(var(--primary) / 0.6)", background: "hsl(var(--secondary))" }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
                 <Star size={18} className="text-white" />
               </div>
               <div>
-                <p className="font-bold text-foreground text-sm">Lancez votre première mission</p>
-                <p className="text-muted-foreground text-xs mt-0.5">C'est la première étape pour recevoir des introductions.</p>
+                <p className="font-bold text-foreground text-sm">{t("dash_ent_launch_title")}</p>
+                <p className="text-muted-foreground text-xs mt-0.5">{t("dash_ent_launch_sub")}</p>
               </div>
             </div>
             <div className="space-y-2 mb-5">
               {[
-                { n: "1", text: "Décrivez votre client idéal en quelques lignes" },
-                { n: "2", text: "Les apporteurs de votre secteur voient votre mission" },
-                { n: "3", text: "Vous recevez des introductions vérifiées directement" },
-              ].map(({ n, text }) => (
-                <div key={n} className="flex items-center gap-2.5">
+                t("dash_ent_launch_step1"),
+                t("dash_ent_launch_step2"),
+                t("dash_ent_launch_step3"),
+              ].map((text, i) => (
+                <div key={i} className="flex items-center gap-2.5">
                   <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-primary-foreground" style={{ background: "hsl(var(--primary))" }}>
-                    {n}
+                    {i + 1}
                   </div>
                   <p className="text-sm text-muted-foreground">{text}</p>
                 </div>
@@ -147,49 +144,42 @@ export default function DashboardEntreprise() {
             </div>
             <Link to="/missions/nouvelle" className="btn-primary w-full text-center block py-3.5 text-sm">
               <Plus size={14} className="inline mr-1" />
-              Créer ma première mission
+              {t("dash_ent_create_mission")}
             </Link>
-            <p className="text-center text-xs text-muted-foreground mt-3">
-              Moins de 5 minutes · Le moteur est prêt · Commencez par l'essentiel.
-            </p>
+            <p className="text-center text-xs text-muted-foreground mt-3">{t("dash_ent_launch_note")}</p>
           </div>
         )}
 
-        {/* ── OPENCLAW CERVEAU VIVANT ───────────────────────── */}
         <OpenClawBrainWidget variant="entreprise" />
-
-        {/* ── MEILLEUR CHEMIN D'ACCÈS ───────────────────────── */}
-        {!isLaunchMode && <BestAccessPanel title="Meilleur chemin d'accès" context={{ limit: 3 }} compact showAlternatives={false} />}
-
-        {/* ── CHECKLIST D'ACTIVATION ────────────────────────── */}
+        {!isLaunchMode && <BestAccessPanel title={t("best_path_title")} context={{ limit: 3 }} compact showAlternatives={false} />}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
-        {/* ── ACTION PRIORITAIRE — INTRO EN ATTENTE ────────── */}
+        {/* ── PRIORITY ACTION ───────────────────────────────── */}
         {nextIntro && (
           <div className="rounded-xl border-2 p-5" style={{ borderColor: "hsl(var(--accent))", background: "hsl(var(--accent-light))" }}>
             <div className="flex items-center gap-2 mb-2">
               <Zap size={14} style={{ color: "hsl(var(--accent))" }} />
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(38 80% 30%)" }}>Action prioritaire</p>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(38 80% 30%)" }}>{t("dash_ent_priority_action")}</p>
             </div>
-            <h2 className="font-display text-lg font-bold text-foreground mb-1">Une introduction attend votre validation</h2>
+            <h2 className="font-display text-lg font-bold text-foreground mb-1">{t("dash_ent_intro_waiting")}</h2>
             <p className="text-sm text-muted-foreground mb-4">
-              <strong>{nextIntro.contact_nom}</strong> a été présenté pour une de vos missions.
+              <strong>{nextIntro.contact_nom}</strong>
             </p>
             <Link to="/entreprise/introductions" className="btn-cta text-sm py-2.5 px-5 inline-flex gap-2">
-              Valider l'introduction <ArrowRight size={14} />
+              {t("dash_ent_validate_intro")} <ArrowRight size={14} />
             </Link>
           </div>
         )}
 
-        {/* ── MES MISSIONS ─────────────────────────────────── */}
+        {/* ── MISSIONS ─────────────────────────────────────── */}
         {!isLaunchMode && (
           <div className="card-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-                <Briefcase size={14} className="text-primary" /> Mes missions
+                <Briefcase size={14} className="text-primary" /> {t("dash_ent_my_missions")}
               </h2>
               <Link to="/missions/nouvelle" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
-                <Plus size={11} /> Nouvelle
+                <Plus size={11} /> {t("dash_ent_new")}
               </Link>
             </div>
             {loading ? (
@@ -204,10 +194,8 @@ export default function DashboardEntreprise() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{m.titre}</p>
                     </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                      m.statut === "active" ? "bg-success/10 text-success" : "bg-muted-foreground/10 text-muted-foreground"
-                    }`}>
-                      {m.statut === "active" ? "Active" : m.statut}
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${m.statut === "active" ? "bg-success/10 text-success" : "bg-muted-foreground/10 text-muted-foreground"}`}>
+                      {m.statut === "active" ? t("status_active") : m.statut}
                     </span>
                   </Link>
                 ))}
@@ -216,30 +204,28 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
-        {/* ── RECOMMANDER UN FACILITATEUR ──────────────────── */}
+        {/* ── INVITE FACILITATOR ───────────────────────────── */}
         {!isLaunchMode && introductions.length === 0 && !loading && (
           <Link to="/facilitateurs" className="card-surface p-4 flex items-center gap-3 hover:bg-secondary transition-colors">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
               <Users size={16} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground">Inviter un facilitateur</p>
-              <p className="text-xs text-muted-foreground">Trouvez les meilleurs profils pour votre mission.</p>
+              <p className="text-sm font-semibold text-foreground">{t("dash_ent_invite_facilitator")}</p>
+              <p className="text-xs text-muted-foreground">{t("dash_ent_find_profiles")}</p>
             </div>
             <ArrowRight size={14} className="text-muted-foreground shrink-0" />
           </Link>
         )}
 
-        {/* ── INTRODUCTIONS REÇUES ─────────────────────────── */}
+        {/* ── INTRODUCTIONS ────────────────────────────────── */}
         {!isLaunchMode && introductions.length > 0 && (
           <div className="card-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-                <Send size={14} className="text-primary" /> Introductions reçues
+                <Send size={14} className="text-primary" /> {t("dash_ent_intros_received")}
               </h2>
-              <Link to="/entreprise/introductions" className="text-xs text-primary font-medium hover:underline">
-                Tout voir
-              </Link>
+              <Link to="/entreprise/introductions" className="text-xs text-primary font-medium hover:underline">{t("dash_ent_see_all")}</Link>
             </div>
             <div className="space-y-2">
               {introductions.map((i) => (
@@ -253,7 +239,7 @@ export default function DashboardEntreprise() {
                     : i.statut === "en_attente" ? "bg-primary/10 text-primary"
                     : "bg-muted-foreground/10 text-muted-foreground"
                   }`}>
-                    {i.statut === "validee" ? "Validée" : i.statut === "en_attente" ? "À valider" : i.statut}
+                    {i.statut === "validee" ? t("status_validated") : i.statut === "en_attente" ? t("status_pending") : i.statut}
                   </span>
                 </div>
               ))}
@@ -261,23 +247,22 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
-        {/* ── ALERTES PASSIVES ─────────────────────────────── */}
+        {/* ── ALERTS ───────────────────────────────────────── */}
         {!loading && passiveAlerts.length > 0 && (
           <div className="card-surface p-5">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-                <Bell size={14} className="text-primary" /> Alertes
+                <Bell size={14} className="text-primary" /> {t("dash_ent_alerts")}
                 <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "hsl(24 100% 52%)" }}>
                   {passiveAlerts.length}
                 </span>
               </h2>
-              <Link to="/chaud" className="text-xs text-primary font-medium hover:underline">Tout voir</Link>
+              <Link to="/chaud" className="text-xs text-primary font-medium hover:underline">{t("dash_ent_see_all")}</Link>
             </div>
             <div className="space-y-2">
               {passiveAlerts.map(alert => (
                 <div key={alert.id} className="p-3 rounded-xl flex items-start gap-2.5" style={{
-                  background: "hsl(24 100% 52% / 0.06)",
-                  border: "1px solid hsl(24 100% 52% / 0.2)"
+                  background: "hsl(24 100% 52% / 0.06)", border: "1px solid hsl(24 100% 52% / 0.2)"
                 }}>
                   <Flame size={13} className="shrink-0 mt-0.5" style={{ color: "hsl(24 100% 52%)" }} />
                   <div className="min-w-0">
@@ -290,10 +275,9 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
-        {/* ── DOUBLE MOTEUR — VISIBLE APRÈS LANCEMENT ──────── */}
+        {/* ── DOUBLE ENGINE ────────────────────────────────── */}
         {!isLaunchMode && (
           <div className="grid grid-cols-2 gap-3">
-            {/* Moteur 1 */}
             <Link to="/agents" className="rounded-2xl p-4 hover:opacity-90 transition-all" style={{
               background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
               border: "1px solid hsl(218 40% 22% / 0.6)"
@@ -301,15 +285,14 @@ export default function DashboardEntreprise() {
               <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--gradient-primary)" }}>
                 <Brain size={15} className="text-white" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(218 72% 65%)" }}>Moteur 1</p>
-              <p className="font-semibold text-white text-sm">Prospection auto</p>
-              <p className="text-white/45 text-xs mt-1">OpenClaw · Radar · Campagnes</p>
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(218 72% 65%)" }}>{t("dash_ent_moteur1_label")}</p>
+              <p className="font-semibold text-white text-sm">{t("dash_ent_moteur1_title")}</p>
+              <p className="text-white/45 text-xs mt-1">{t("dash_ent_moteur1_sub")}</p>
               <div className="flex items-center gap-1 mt-2.5">
                 <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--success))" }} />
-                <span className="text-xs text-white/35">Actif</span>
+                <span className="text-xs text-white/35">{t("dash_ent_moteur1_active")}</span>
               </div>
             </Link>
-            {/* Moteur 2 */}
             <Link to="/facilitateurs" className="rounded-2xl p-4 hover:opacity-90 transition-all" style={{
               background: "linear-gradient(135deg, hsl(24 60% 8%), hsl(38 50% 11%))",
               border: "1px solid hsl(24 50% 20% / 0.6)"
@@ -317,49 +300,12 @@ export default function DashboardEntreprise() {
               <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--gradient-accent)" }}>
                 <Users size={15} className="text-white" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(24 100% 65%)" }}>Moteur 2</p>
-              <p className="font-semibold text-white text-sm">Apport d'affaires</p>
-              <p className="text-white/45 text-xs mt-1">Facilitateurs · Intros · Gains</p>
-              <div className="flex items-center gap-1 mt-2.5">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(24 100% 52%)" }} />
-                <span className="text-xs text-white/35">En cours</span>
-              </div>
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(24 100% 65%)" }}>{t("dash_ent_moteur2_label")}</p>
+              <p className="font-semibold text-white text-sm">{t("dash_ent_moteur2_title")}</p>
+              <p className="text-white/45 text-xs mt-1">{t("dash_ent_moteur2_sub")}</p>
             </Link>
           </div>
         )}
-
-        {/* ── CE QUI CHAUFFE ───────────────────────────────── */}
-        <Link to="/chaud" className="rounded-xl p-4 flex items-center justify-between gap-3 hover:opacity-90 transition-all" style={{
-          background: "linear-gradient(135deg, hsl(24 80% 8%), hsl(38 70% 11%))",
-          border: "1px solid hsl(24 100% 52% / 0.3)"
-        }}>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "linear-gradient(135deg, hsl(24 100% 52%), hsl(38 80% 45%))" }}>
-              <Flame size={16} className="text-white" />
-            </div>
-            <div>
-              <p className="font-semibold text-white text-sm">Ce qui chauffe</p>
-              <p className="text-white/50 text-xs">Leads chauds · Intérêts passifs · Opportunités</p>
-            </div>
-          </div>
-          <ArrowRight size={16} className="text-white/50 shrink-0" />
-        </Link>
-
-        {/* ── AIDE JARVIS ──────────────────────────────────── */}
-        <div className="card-surface p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-electric)" }}>
-            <Bot size={16} className="text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground">JARVIS est là pour vous aider</p>
-            <p className="text-xs text-muted-foreground">Posez-lui vos questions ou demandez une priorisation.</p>
-          </div>
-          <Link to="/help" className="p-2 rounded-lg hover:bg-muted transition-colors">
-            <HelpCircle size={16} className="text-muted-foreground" />
-          </Link>
-        </div>
-
       </div>
     </UserLayout>
   );

@@ -17,42 +17,36 @@ import { useToast } from "@/hooks/use-toast";
 import BestOfferToPush from "@/components/passive/BestOfferToPush";
 import NetworkValueMap from "@/components/passive/NetworkValueMap";
 import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
+import { useTranslation } from "react-i18next";
+import { formatNumber } from "@/lib/formatLocale";
+import i18n from "@/lib/i18n";
 
 interface ShareLink {
-  id: string;
-  offer_id: string | null;
-  tracking_code: string;
-  clicks_count: number;
-  unique_clicks_count: number;
-  qualified_interest_count: number;
-  opportunity_count: number;
-  converted: boolean;
-  last_click_at: string | null;
+  id: string; offer_id: string | null; tracking_code: string;
+  clicks_count: number; unique_clicks_count: number;
+  qualified_interest_count: number; opportunity_count: number;
+  converted: boolean; last_click_at: string | null;
 }
-
-interface PassiveGain {
-  id: string;
-  montant: number | null;
-  statut: string;
-  source: string | null;
-}
+interface PassiveGain { id: string; montant: number | null; statut: string; source: string | null; }
 
 const CHANNELS = [
-  { label: "WhatsApp", status: "ready", desc: "Copiez-collez · Prêt", icon: "💬", color: "hsl(142 70% 45%)" },
-  { label: "Email", status: "ready", desc: "Copiez-collez · Prêt", icon: "📧", color: "hsl(var(--primary))" },
-  { label: "LinkedIn", status: "assisted", desc: "Mode assisté · 1 message à la fois", icon: "💼", color: "hsl(218 80% 55%)" },
-  { label: "Lien direct", status: "ready", desc: "Partagez partout · Traqué", icon: "🔗", color: "hsl(24 100% 52%)" },
-  { label: "Facebook", status: "assisted", desc: "Mode assisté · Contenu préparé", icon: "📘", color: "hsl(220 70% 55%)" },
-  { label: "SMS / Appel", status: "soon", desc: "Bientôt disponible", icon: "📱", color: "hsl(var(--muted-foreground))" },
+  { label: "WhatsApp", status: "ready", descKey: "passive_channel_ready", icon: "💬" },
+  { label: "Email", status: "ready", descKey: "passive_channel_ready", icon: "📧" },
+  { label: "LinkedIn", status: "assisted", descKey: "passive_channel_assisted", icon: "💼" },
+  { label: "Lien direct", status: "ready", descKey: "passive_channel_ready", icon: "🔗" },
+  { label: "Facebook", status: "assisted", descKey: "passive_channel_assisted", icon: "📘" },
+  { label: "SMS / Appel", status: "soon", descKey: "passive_channel_soon", icon: "📱" },
 ];
 
-const STATUS_STYLES: Record<string, { label: string; color: string; bg: string }> = {
-  ready: { label: "Prêt", color: "hsl(152 62% 35%)", bg: "hsl(152 62% 35% / 0.12)" },
-  assisted: { label: "Assisté", color: "hsl(38 80% 35%)", bg: "hsl(38 80% 35% / 0.12)" },
-  soon: { label: "Bientôt", color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
+const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
+  ready: { color: "hsl(152 62% 35%)", bg: "hsl(152 62% 35% / 0.12)" },
+  assisted: { color: "hsl(38 80% 35%)", bg: "hsl(38 80% 35% / 0.12)" },
+  soon: { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
 };
 
 export default function PassiveOS() {
+  const { t } = useTranslation();
+  const lang = i18n.language || "fr";
   const { user } = useAuth();
   const { toast } = useToast();
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
@@ -91,14 +85,10 @@ export default function PassiveOS() {
 
   const generateLink = async (offerId: string) => {
     if (!user) return;
-    const { data, error } = await db.from("offer_share_links").insert({
-      facilitator_id: user.id,
-      offer_id: offerId,
-    }).select().single();
+    const { data, error } = await db.from("offer_share_links").insert({ facilitator_id: user.id, offer_id: offerId }).select().single();
     if (!error && data) {
       setShareLinks(prev => [data, ...prev]);
       copyLink(data.tracking_code);
-      toast({ title: "Lien traqué créé ✓", description: "Copié dans votre presse-papier." });
     }
   };
 
@@ -125,21 +115,21 @@ export default function PassiveOS() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "hsl(24 100% 65%)" }}>Passive Facilitator OS</span>
                   <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: "hsl(152 62% 35% / 0.2)", color: "hsl(152 62% 65%)" }}>
-                    <Wifi size={9} /> Actif
+                    <Wifi size={9} /> {t("status_active")}
                   </span>
                 </div>
-                <h1 className="font-display text-2xl font-bold text-white mb-1">Votre réseau travaille pendant que vous vivez.</h1>
-                <p className="text-white/55 text-sm">La machine prépare, diffuse, chauffe. Vous validez l'essentiel.</p>
+                <h1 className="font-display text-2xl font-bold text-white mb-1">{t("passive_subtitle")}</h1>
+                <p className="text-white/55 text-sm">{t("passive_openclaw_sub")}</p>
               </div>
             </div>
 
             {/* KPIs */}
             <div className="grid grid-cols-4 gap-2">
               {[
-                { label: "Contacts", value: loading ? "…" : contactsCount, icon: Users },
-                { label: "Clics", value: loading ? "…" : totalClicks, icon: BarChart3 },
-                { label: "Intérêts", value: loading ? "…" : totalInterests, icon: Flame },
-                { label: "Convertis", value: loading ? "…" : totalConverted, icon: CheckCircle2 },
+                { label: t("passive_kpi_contacts"), value: loading ? "…" : formatNumber(contactsCount, lang), icon: Users },
+                { label: t("passive_kpi_clicks"), value: loading ? "…" : formatNumber(totalClicks, lang), icon: BarChart3 },
+                { label: t("passive_kpi_interests"), value: loading ? "…" : formatNumber(totalInterests, lang), icon: Flame },
+                { label: t("passive_kpi_converted"), value: loading ? "…" : formatNumber(totalConverted, lang), icon: CheckCircle2 },
               ].map(({ label, value, icon: Icon }) => (
                 <div key={label} className="text-center py-2.5 px-2 rounded-xl" style={{ background: "hsl(218 40% 16% / 0.6)" }}>
                   <Icon size={12} className="mx-auto mb-1 text-white/40" />
@@ -149,12 +139,11 @@ export default function PassiveOS() {
               ))}
             </div>
 
-            {/* Gains passifs si disponibles */}
             {passiveGainsTotal > 0 && (
               <div className="mt-3 p-3 rounded-xl flex items-center gap-2" style={{ background: "hsl(152 62% 30% / 0.2)", border: "1px solid hsl(152 62% 35% / 0.3)" }}>
                 <TrendingUp size={14} style={{ color: "hsl(152 62% 60%)" }} className="shrink-0" />
                 <p className="text-sm font-semibold" style={{ color: "hsl(152 62% 65%)" }}>
-                  {passiveGainsTotal.toLocaleString("fr-FR")} € de gains passifs confirmés
+                  {formatNumber(passiveGainsTotal, lang)} € {t("passive_passive_gains")}
                 </p>
               </div>
             )}
@@ -164,9 +153,9 @@ export default function PassiveOS() {
         {/* ── TABS ────────────────────────────────────────────── */}
         <div className="flex gap-1 p-1 rounded-xl bg-muted">
           {([
-            { key: "home", label: "Tableau de bord" },
-            { key: "liens", label: `Mes liens (${shareLinks.length})` },
-            { key: "canaux", label: "Canaux" },
+            { key: "home", label: t("passive_tab_home") },
+            { key: "liens", label: `${t("passive_tab_links")} (${shareLinks.length})` },
+            { key: "canaux", label: t("passive_tab_channels") },
           ] as const).map(({ key, label }) => (
             <button key={key} onClick={() => setTab(key)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors ${tab === key ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
@@ -178,13 +167,9 @@ export default function PassiveOS() {
         {/* ── HOME TAB ────────────────────────────────────────── */}
         {tab === "home" && (
           <>
-            {/* Coach Banner */}
             <PassiveCoachBanner />
-
-            {/* Best offer to push */}
             <BestOfferToPush compact />
 
-            {/* Accès rapide Ce qui chauffe */}
             <Link to="/chaud" className="rounded-xl border-2 p-4 flex items-center justify-between gap-4 hover:opacity-90 transition-all" style={{
               borderColor: "hsl(24 100% 52% / 0.35)",
               background: "linear-gradient(135deg, hsl(24 80% 8%), hsl(38 70% 11%))"
@@ -195,31 +180,29 @@ export default function PassiveOS() {
                   <Flame size={17} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-bold text-white text-sm">Ce qui chauffe maintenant</p>
+                  <p className="font-bold text-white text-sm">{t("passive_heating_title")}</p>
                   {totalInterests > 0 ? (
                     <p className="text-xs font-semibold mt-0.5" style={{ color: "hsl(24 100% 65%)" }}>
-                      🔥 {totalInterests} intérêt{totalInterests > 1 ? "s" : ""} qualifié{totalInterests > 1 ? "s" : ""}
+                      🔥 {formatNumber(totalInterests, lang)} {totalInterests > 1 ? t("passive_heat_plural") : t("passive_heat_label")}
                     </p>
                   ) : (
-                    <p className="text-white/50 text-xs mt-0.5">Intérêts · Signaux · Opportunités</p>
+                    <p className="text-white/50 text-xs mt-0.5">{t("passive_heating_sub")}</p>
                   )}
                 </div>
               </div>
               <ArrowRight size={15} className="text-white/50 shrink-0" />
             </Link>
 
-            {/* Network Value Map */}
             <NetworkValueMap />
 
-            {/* Quick nav */}
             <div className="card-surface p-4">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Actions rapides</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("passive_quick_nav")}</p>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { to: "/offres", label: "Offres à partager", icon: Share2, color: "hsl(var(--primary))" },
+                  { to: "/offres", label: t("fac_best_path") === "fac_best_path" ? "Offres à partager" : t("fac_best_path"), icon: Share2, color: "hsl(var(--primary))" },
                   { to: "/import-reseau", label: "Importer mon réseau", icon: Upload, color: "hsl(38 80% 40%)" },
-                  { to: "/gains", label: "Mes gains", icon: TrendingUp, color: "hsl(152 62% 40%)" },
-                  { to: "/agents", label: "Agents IA", icon: Brain, color: "hsl(218 72% 55%)" },
+                  { to: "/gains", label: t("gains"), icon: TrendingUp, color: "hsl(152 62% 40%)" },
+                  { to: "/agents", label: t("openclaw"), icon: Brain, color: "hsl(218 72% 55%)" },
                 ].map(({ to, label, icon: Icon, color }) => (
                   <Link key={to} to={to}
                     className="flex items-center gap-2.5 p-3 rounded-xl border border-border hover:bg-secondary transition-colors">
@@ -239,9 +222,9 @@ export default function PassiveOS() {
             {shareLinks.length === 0 ? (
               <div className="card-surface p-10 text-center">
                 <Link2 size={28} className="mx-auto text-muted-foreground mb-3" />
-                <p className="font-semibold text-foreground mb-1">Aucun lien traqué</p>
-                <p className="text-sm text-muted-foreground mb-4">Créez votre premier lien depuis les offres disponibles.</p>
-                <Link to="/offres" className="text-sm text-primary font-semibold hover:underline">Voir les offres →</Link>
+                <p className="font-semibold text-foreground mb-1">{t("passive_no_links_title")}</p>
+                <p className="text-sm text-muted-foreground mb-4">{t("passive_no_links_sub")}</p>
+                <Link to="/offres" className="text-sm text-primary font-semibold hover:underline">{t("passive_no_links_cta")}</Link>
               </div>
             ) : (
               shareLinks.map((link) => {
@@ -259,16 +242,16 @@ export default function PassiveOS() {
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-mono text-muted-foreground truncate">/r/{link.tracking_code}</p>
                         <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                          <span className="text-xs font-semibold text-foreground">{link.clicks_count} clics</span>
-                          <span className="text-xs text-muted-foreground">{link.unique_clicks_count} uniques</span>
+                          <span className="text-xs font-semibold text-foreground">{formatNumber(link.clicks_count, lang)} clics</span>
+                          <span className="text-xs text-muted-foreground">{formatNumber(link.unique_clicks_count, lang)} uniques</span>
                           {(link.qualified_interest_count || 0) > 0 && (
                             <span className="text-xs font-bold" style={{ color: "hsl(24 100% 52%)" }}>
-                              🔥 {link.qualified_interest_count} intérêt{link.qualified_interest_count > 1 ? "s" : ""}
+                              🔥 {link.qualified_interest_count} {link.qualified_interest_count > 1 ? t("passive_heat_plural") : t("passive_heat_label")}
                             </span>
                           )}
                           {link.converted && (
                             <span className="text-xs font-bold flex items-center gap-1" style={{ color: "hsl(152 62% 35%)" }}>
-                              <CheckCircle2 size={10} /> Converti
+                              <CheckCircle2 size={10} /> {t("passive_converted_badge")}
                             </span>
                           )}
                         </div>
@@ -278,7 +261,6 @@ export default function PassiveOS() {
                         <Copy size={12} className="text-muted-foreground" />
                       </button>
                     </div>
-                    {/* Heat bar */}
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                         <div className="h-full rounded-full transition-all" style={{ width: `${heat}%`, background: heatColor }} />
@@ -297,11 +279,12 @@ export default function PassiveOS() {
           <div className="space-y-3">
             <div className="card-surface p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-sm">
-                <Zap size={14} className="text-primary" /> Mes canaux de diffusion
+                <Zap size={14} className="text-primary" /> {t("passive_channels_title")}
               </h2>
               <div className="grid grid-cols-2 gap-2">
-                {CHANNELS.map(({ label, status, desc, icon }) => {
+                {CHANNELS.map(({ label, status, descKey, icon }) => {
                   const style = STATUS_STYLES[status];
+                  const statusLabel = status === "ready" ? t("passive_channel_ready") : status === "assisted" ? t("passive_channel_assisted") : t("passive_channel_soon");
                   return (
                     <div key={label} className="p-3 rounded-xl border border-border bg-muted/20">
                       <div className="flex items-center gap-2 mb-1.5">
@@ -309,17 +292,16 @@ export default function PassiveOS() {
                         <span className="font-semibold text-foreground text-xs">{label}</span>
                         <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full font-medium"
                           style={{ background: style.bg, color: style.color }}>
-                          {style.label}
+                          {statusLabel}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{desc}</p>
+                      <p className="text-xs text-muted-foreground">{statusLabel}</p>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* OpenClaw assiste */}
             <div className="rounded-xl p-5 border" style={{
               background: "linear-gradient(135deg, hsl(218 65% 10%), hsl(218 60% 13%))",
               borderColor: "hsl(218 40% 25% / 0.4)"
@@ -329,17 +311,17 @@ export default function PassiveOS() {
                   <Brain size={16} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white text-sm">OpenClaw prépare tout</p>
-                  <p className="text-white/50 text-xs">Textes, priorités, canaux, suggestions — déjà prêts.</p>
+                  <p className="font-semibold text-white text-sm">{t("passive_openclaw_title")}</p>
+                  <p className="text-white/50 text-xs">{t("passive_openclaw_sub")}</p>
                 </div>
               </div>
               <div className="space-y-2">
-                {[
-                  "Génère les packs WhatsApp, Email, Post",
-                  "Classe les offres par chaleur",
-                  "Alerte quand un intérêt est qualifié",
-                  "Prépare la meilleure diffusion selon votre corridor",
-                ].map((item) => (
+                {([
+                  t("passive_openclaw_1"),
+                  t("passive_openclaw_2"),
+                  t("passive_openclaw_3"),
+                  t("passive_openclaw_4"),
+                ]).map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <CheckCircle2 size={11} style={{ color: "hsl(152 62% 50%)" }} className="shrink-0" />
                     <p className="text-xs text-white/60">{item}</p>
