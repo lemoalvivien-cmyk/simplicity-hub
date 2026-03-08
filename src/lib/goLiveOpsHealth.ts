@@ -1,4 +1,5 @@
 // PROOF:GOLIVE_OPS_V1:golive_truth_source → this file
+// PROOF:GOLIVE_EXPORT_V1:golive_truth_source → this file
 /**
  * GO-LIVE OPS HEALTH — Single operational source of truth.
  * Centralises release/ops statuses, separating:
@@ -7,7 +8,7 @@
  *   EXTERNAL       → requires third-party config / secret
  *   MANUAL_DEPLOY  → requires a human deployment step
  *
- * Updated: 2026-03-08 — GOLIVE_OPS_V1
+ * Updated: 2026-03-08 — GOLIVE_OPS_V1 / GOLIVE_EXPORT_V1
  * Used by /admin/system-health → Go-Live Ops panel
  */
 
