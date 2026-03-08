@@ -1217,6 +1217,45 @@ export type Database = {
           },
         ]
       }
+      landing_ab_events: {
+        Row: {
+          created_at: string
+          event_label: string | null
+          event_payload: Json | null
+          event_type: string
+          hero_cta_variant: string | null
+          hero_headline_variant: string | null
+          id: string
+          path: string | null
+          pricing_frame_variant: string | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_label?: string | null
+          event_payload?: Json | null
+          event_type: string
+          hero_cta_variant?: string | null
+          hero_headline_variant?: string | null
+          id?: string
+          path?: string | null
+          pricing_frame_variant?: string | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          event_label?: string | null
+          event_payload?: Json | null
+          event_type?: string
+          hero_cta_variant?: string | null
+          hero_headline_variant?: string | null
+          id?: string
+          path?: string | null
+          pricing_frame_variant?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
       launch_quota: {
         Row: {
           id: string
