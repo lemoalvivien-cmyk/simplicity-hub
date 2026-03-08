@@ -85,6 +85,7 @@ export const STRIPE_CUSTOMER_PORTAL_STATUS: OpsStatusValue = "CONFIG_MISSING";
 
 // PROOF:GOLIVE_OPS_V1:passive_ingestion_mode
 // PROOF:GOLIVE_EXPORT_V1:passive_ingestion_mode
+// PROOF:GOLIVE_EXPORT_V2:passive_ingestion_mode
 export const PASSIVE_INGESTION_MODE: OpsStatusValue = "PAGE_MOUNT";
 // ingest_passive_signal() RPC is deployed and idempotent.
 // Currently triggered client-side on PassiveOS page mount.
