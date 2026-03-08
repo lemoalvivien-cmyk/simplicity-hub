@@ -1,5 +1,9 @@
 # GO-LIVE EXPORT MANIFEST — WIINUP MAX
 # PROOF:GOLIVE_EXPORT_V2:golive_export_manifest → this file
+# PROOF:GOLIVE_FIX_V1:golive_export_manifest → this file
+# PROOF:GOLIVE_FIX_V1:files_present → section 2 below
+# PROOF:GOLIVE_FIX_V1:final_blockers → section 4 below
+# PROOF:GOLIVE_FIX_V1:acceptance_checklist → section 6 below
 
 **Build Stamp:** GOLIVE-EXPORT-V2-2026-03-08
 **Généré le :** 2026-03-08
