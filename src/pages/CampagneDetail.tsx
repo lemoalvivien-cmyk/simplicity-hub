@@ -1,18 +1,20 @@
 /**
  * CampagneDetail — réel depuis Supabase.
- * Charge la campagne par UUID depuis la table `campagnes`.
- * Les étapes de séquence ne sont pas encore stockées en base —
- * section honnêtement marquée "non disponible" si vide.
+ * Foundation Lock v2:
+ * - UUID invalide → redirect immédiat sans crash
+ * - Campagne introuvable → message clair + redirect
+ * - Erreur réseau → état d'erreur propre
+ * - Section séquences honnêtement absente (pas de fausse promesse)
  */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   ArrowLeft, Play, PauseCircle, CheckCircle2, Users,
-  Mail, Clock, Edit2, BarChart2, ChevronRight,
-  Loader2, AlertCircle, Sparkles, MessageCircle
+  Mail, Clock, BarChart2, ChevronRight,
+  Loader2, AlertCircle, Sparkles, MessageCircle, XCircle
 } from "lucide-react";
-import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -30,11 +32,14 @@ interface Campagne {
   owner_user_id: string;
 }
 
+// Validate UUID format to avoid unnecessary DB calls
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const statusConfig: Record<CampagneStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  brouillon:  { label: "Brouillon",  color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))", icon: <Clock size={13} /> },
-  en_cours:   { label: "En cours",   color: "hsl(var(--primary))", bg: "hsl(var(--secondary))", icon: <Play size={13} /> },
-  terminee:   { label: "Terminée",   color: "hsl(var(--success))", bg: "hsl(var(--success-light))", icon: <CheckCircle2 size={13} /> },
-  en_pause:   { label: "En pause",   color: "hsl(38 80% 30%)", bg: "hsl(var(--accent-light))", icon: <PauseCircle size={13} /> },
+  brouillon: { label: "Brouillon",  color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))",          icon: <Clock size={13} /> },
+  en_cours:  { label: "En cours",   color: "hsl(var(--primary))",          bg: "hsl(var(--secondary))",       icon: <Play size={13} /> },
+  terminee:  { label: "Terminée",   color: "hsl(142 72% 29%)",             bg: "hsl(142 72% 95%)",            icon: <CheckCircle2 size={13} /> },
+  en_pause:  { label: "En pause",   color: "hsl(38 80% 30%)",              bg: "hsl(var(--accent-light))",    icon: <PauseCircle size={13} /> },
 };
 
 const canalLabel: Record<string, string> = {
@@ -52,44 +57,74 @@ export default function CampagneDetail() {
   const { user } = useAuth();
   const [campagne, setCampagne] = useState<Campagne | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
   const [showCopilot, setShowCopilot] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
+
+    // Guard: validate UUID before hitting DB
+    if (!UUID_RE.test(id)) {
+      setLoadError("Identifiant de campagne invalide.");
+      setLoading(false);
+      return;
+    }
+
     const load = async () => {
       setLoading(true);
-      const { data, error } = await db
+      setLoadError(null);
+
+      const { data, error } = await supabase
         .from("campagnes")
         .select("*")
         .eq("id", id)
         .eq("owner_user_id", user.id)
         .maybeSingle();
-      if (error || !data) {
-        toast.error("Campagne introuvable.");
-        navigate("/campagnes");
+
+      if (error) {
+        console.error("CampagneDetail load error:", error.message);
+        setLoadError("Erreur lors du chargement de la campagne. Réessayez.");
+        setLoading(false);
         return;
       }
-      setCampagne(data);
+
+      if (!data) {
+        setLoadError("Cette campagne est introuvable ou ne vous appartient pas.");
+        setLoading(false);
+        return;
+      }
+
+      setCampagne(data as Campagne);
       setLoading(false);
     };
+
     load();
   }, [id, user]);
 
   const handleStatusChange = async (newStatus: CampagneStatus) => {
     if (!campagne) return;
     setUpdating(true);
-    const { error } = await db
+    const { error } = await supabase
       .from("campagnes")
       .update({ statut: newStatus })
       .eq("id", campagne.id);
-    if (!error) {
+
+    if (error) {
+      console.error("Status update error:", error.message);
+      toast.error("Impossible de mettre à jour le statut. Réessayez.");
+    } else {
       setCampagne(prev => prev ? { ...prev, statut: newStatus } : prev);
-      toast.success(`Campagne ${newStatus === "en_cours" ? "lancée" : newStatus === "en_pause" ? "mise en pause" : "mise à jour"}.`);
+      toast.success(
+        newStatus === "en_cours" ? "Campagne lancée." :
+        newStatus === "en_pause" ? "Campagne mise en pause." :
+        newStatus === "terminee" ? "Campagne terminée." : "Statut mis à jour."
+      );
     }
     setUpdating(false);
   };
 
+  // Loading state
   if (loading) {
     return (
       <UserLayout>
@@ -100,10 +135,32 @@ export default function CampagneDetail() {
     );
   }
 
-  if (!campagne) return null;
+  // Error state (UUID invalid, not found, or network error)
+  if (loadError || !campagne) {
+    return (
+      <UserLayout>
+        <div className="max-w-md mx-auto pt-8">
+          <div className="card-surface p-8 text-center">
+            <XCircle size={32} className="mx-auto mb-4" style={{ color: "hsl(0 60% 50%)" }} />
+            <h2 className="font-display text-lg font-bold text-foreground mb-2">Campagne introuvable</h2>
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              {loadError ?? "Cette campagne n'existe pas ou vous n'y avez pas accès."}
+            </p>
+            <button
+              onClick={() => navigate("/campagnes")}
+              className="btn-cta text-sm py-2.5 px-6 inline-flex items-center gap-2"
+            >
+              <ArrowLeft size={14} /> Retour aux campagnes
+            </button>
+          </div>
+        </div>
+      </UserLayout>
+    );
+  }
 
   const cfg = statusConfig[campagne.statut] ?? statusConfig.brouillon;
-  const formatDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
   return (
     <UserLayout jarvisContext="campagne">
@@ -134,7 +191,6 @@ export default function CampagneDetail() {
             </span>
           </div>
 
-          {/* Infos */}
           <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mt-3">
             {campagne.canal_principal && (
               <span className="flex items-center gap-1">
@@ -159,14 +215,14 @@ export default function CampagneDetail() {
             <h2 className="font-semibold text-foreground">Plan d'action</h2>
           </div>
 
-          {/* Note honnête : les étapes de séquence ne sont pas encore stockées en base */}
           <div className="flex items-start gap-3 p-3 rounded-xl bg-muted">
             <AlertCircle size={14} className="text-muted-foreground shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-semibold text-foreground mb-0.5">Séquences d'étapes — en développement</p>
+              <p className="text-xs font-semibold text-foreground mb-0.5">Séquences d'étapes — non disponible</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Les étapes détaillées de la campagne (premier contact, relance, appel…) seront stockées et visibles ici une fois la fonctionnalité de séquençage complètement câblée.
-                Pour l'instant, votre campagne est créée et son statut est gérable ci-dessous.
+                Les étapes détaillées de la campagne (premier contact, relance, appel…) nécessitent
+                une table de séquences qui n'est pas encore créée.
+                Votre campagne est active et son statut est gérable ci-dessous.
               </p>
             </div>
           </div>
@@ -274,7 +330,6 @@ export default function CampagneDetail() {
             </Link>
           )}
         </div>
-
       </div>
     </UserLayout>
   );
