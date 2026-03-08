@@ -17,6 +17,7 @@ import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
 import { useTranslation } from "react-i18next";
+import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
