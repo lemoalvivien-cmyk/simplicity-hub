@@ -207,15 +207,19 @@ export default function IntroductionsEntreprise() {
 
       if (!introData || introData.length === 0) { setIntros([]); setLoading(false); return; }
 
-      // Batch load missions and profiles
+      // Batch load missions, profiles, gains, and lead_intakes
       const missionIds = [...new Set(introData.map((i: IntroReçue) => i.mission_id).filter(Boolean))];
       const facilitateurIds = [...new Set(introData.map((i: IntroReçue) => i.facilitateur_id))];
       const introIds = introData.map((i: IntroReçue) => i.id);
 
-      const [missionsRes, profilesRes, gainsRes] = await Promise.all([
+      const [missionsRes, profilesRes, gainsRes, leadsRes] = await Promise.all([
         missionIds.length > 0 ? db.from("missions").select("id, titre").in("id", missionIds) : { data: [] },
         db.from("profiles").select("id, prenom").in("id", facilitateurIds),
         db.from("gains").select("id, introduction_id").in("introduction_id", introIds),
+        // Load lead intake data linked to these introductions
+        db.from("lead_intakes")
+          .select("introduction_id, qualification_status, next_best_action, dedup_status")
+          .in("introduction_id", introIds),
       ]);
 
       const missionsMap: Record<string, string> = {};
@@ -227,11 +231,19 @@ export default function IntroductionsEntreprise() {
       const gainsMap: Record<string, string> = {};
       (gainsRes.data || []).forEach((g: { id: string; introduction_id: string }) => { gainsMap[g.introduction_id] = g.id; });
 
+      const leadsMap: Record<string, { qualification_status: QualificationStatus; next_best_action: NextBestAction | null; dedup_status: string }> = {};
+      (leadsRes.data || []).forEach((l: { introduction_id: string; qualification_status: QualificationStatus; next_best_action: NextBestAction | null; dedup_status: string }) => {
+        if (l.introduction_id) leadsMap[l.introduction_id] = l;
+      });
+
       const enriched: IntroReçue[] = introData.map((i: IntroReçue) => ({
         ...i,
         mission_titre: i.mission_id ? missionsMap[i.mission_id] : null,
         facilitateur_prenom: profilesMap[i.facilitateur_id] || null,
         gain_id: gainsMap[i.id] || null,
+        lead_qualification_status: leadsMap[i.id]?.qualification_status ?? null,
+        lead_next_best_action: leadsMap[i.id]?.next_best_action ?? null,
+        lead_dedup_status: leadsMap[i.id]?.dedup_status ?? null,
       }));
 
       setIntros(enriched);
