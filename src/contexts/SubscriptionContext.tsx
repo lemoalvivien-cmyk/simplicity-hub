@@ -38,7 +38,7 @@ interface SubscriptionContextType extends SubscriptionInfo {
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  const { user, role } = useAuth();
+  const { user, role, registerSubscriptionReset } = useAuth();
   const [info, setInfo] = useState<SubscriptionInfo>({
     status: "loading",
     subscribed: false,
@@ -50,35 +50,33 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     launchSlotsRemaining: 100,
     loading: true,
   });
+  // PASSE F: coordinate refresh across tabs — prevents N×calls on multi-tab
+  const channelRef = useRef<BroadcastChannel | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // PASSE A: reset exposed to AuthContext for signOut cleanup
+  const reset = useCallback(() => {
+    setInfo({
+      status: "none", subscribed: false, subscriptionEnd: null, cancelAtPeriodEnd: false,
+      accessType: "none", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false,
+    });
+  }, []);
+
+  useEffect(() => {
+    registerSubscriptionReset(reset);
+  }, [registerSubscriptionReset, reset]);
 
   const checkSubscription = useCallback(async () => {
-    if (!user) {
-      setInfo({ status: "none", subscribed: false, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "none", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
-      return;
-    }
+    if (!user) { reset(); return; }
 
-    if (role === "facilitateur") {
-      setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
-      return;
-    }
-
-    if (role === "admin") {
+    if (role === "facilitateur" || role === "admin") {
       setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
       return;
     }
 
     try {
       setInfo(prev => ({ ...prev, loading: true }));
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setInfo({ status: "none", subscribed: false, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "none", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke("check-subscription", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-
+      const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error || !data) throw error;
 
       setInfo({
@@ -92,61 +90,54 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         launchSlotsRemaining: data.launch_slots_remaining ?? 100,
         loading: false,
       });
-    } catch (err) {
-      console.error("check-subscription error:", err);
+    } catch {
       setInfo(prev => ({ ...prev, loading: false }));
     }
-  }, [user, role]);
+  }, [user, role, reset]);
 
   useEffect(() => {
+    if (!user) { reset(); return; }
     checkSubscription();
-    const interval = setInterval(checkSubscription, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+
+    const bc = new BroadcastChannel("subscription_sync");
+    channelRef.current = bc;
+    bc.onmessage = (e) => { if (e.data?.type === "refresh") checkSubscription(); };
+
+    intervalRef.current = setInterval(checkSubscription, 5 * 60 * 1000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      bc.close(); channelRef.current = null;
+    };
+  }, [user, checkSubscription, reset]);
+
+  const refresh = useCallback(async () => {
+    await checkSubscription();
+    channelRef.current?.postMessage({ type: "refresh" });
   }, [checkSubscription]);
 
-  const startCheckout = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("Not authenticated");
-
-    const { data, error } = await supabase.functions.invoke("create-checkout", {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    });
-    if (error || !data?.url) throw error || new Error("No checkout URL");
-    window.open(data.url, "_blank");
+  const startCheckout = useCallback(async (): Promise<{ offer_type?: string }> => {
+    const { data, error } = await supabase.functions.invoke("create-checkout");
+    if (error || !data?.url) throw error || new Error("Impossible d'ouvrir le paiement. Réessayez.");
+    // PASSE E: same-tab navigation — coherent UX, no 2-tab split
+    window.location.href = data.url;
     return { offer_type: data.offer_type };
-  };
+  }, []);
 
-  const openBillingPortal = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("Not authenticated");
+  const openBillingPortal = useCallback(async () => {
+    const { data, error } = await supabase.functions.invoke("customer-portal");
+    if (error || !data?.url) throw error || new Error("Impossible d'ouvrir le portail. Réessayez.");
+    window.location.href = data.url;
+  }, []);
 
-    const { data, error } = await supabase.functions.invoke("customer-portal", {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    });
-    if (error || !data?.url) throw error || new Error("No portal URL");
-    window.open(data.url, "_blank");
-  };
-
-  const redeemPromo = async (code: string): Promise<{ valid: boolean; message: string }> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("Not authenticated");
-
-    const { data, error } = await supabase.functions.invoke("redeem-promo", {
-      body: { code },
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    });
-
+  const redeemPromo = useCallback(async (code: string): Promise<{ valid: boolean; message: string }> => {
+    const { data, error } = await supabase.functions.invoke("redeem-promo", { body: { code } });
     if (error) throw error;
-
-    if (data?.valid) {
-      await checkSubscription();
-    }
-
+    if (data?.valid) await checkSubscription();
     return { valid: data?.valid ?? false, message: data?.message ?? "Erreur inconnue" };
-  };
+  }, [checkSubscription]);
 
   return (
-    <SubscriptionContext.Provider value={{ ...info, refresh: checkSubscription, startCheckout, openBillingPortal, redeemPromo }}>
+    <SubscriptionContext.Provider value={{ ...info, refresh, startCheckout, openBillingPortal, redeemPromo }}>
       {children}
     </SubscriptionContext.Provider>
   );

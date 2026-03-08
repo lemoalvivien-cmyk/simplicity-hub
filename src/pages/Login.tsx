@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
-import { Eye, EyeOff, Zap, AlertCircle, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Zap, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
