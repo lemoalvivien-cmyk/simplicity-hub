@@ -12,34 +12,56 @@ const PRICE_STANDARD = "price_1T8GR0EG497aCUFxNS9BV3ko"; // 490€/an — tarif 
 const LAUNCH_SLOTS = 100;
 
 /**
- * TASK a74d936b: Strict origin allowlist.
- * Only these origins may generate a Stripe checkout session.
- * An attacker controlling a different origin cannot forge redirect URLs.
+ * Origin allowlist strategy:
  *
- * Dev note: localhost origins are allowed only when not in prod.
- * In prod, only the two canonical domains are accepted.
+ * PRIMARY (env var): ALLOWED_EXTRA_ORIGINS — comma-separated list injected at
+ *   deploy time via Supabase secrets. Add new preview/custom domains there
+ *   without touching code. Example value:
+ *     "https://staging.wiinup.com,https://other-preview.lovable.app"
+ *
+ * BUILT-IN (immutable prod domains): always accepted regardless of env var.
+ *
+ * LOCALHOST: accepted only when DENO_DEPLOYMENT_ID is absent (local Deno / CI).
+ *   Edge Runtime always sets this env var in deployed functions.
+ *
+ * DEFAULT FALLBACK: if origin header is missing, use CANONICAL_ORIGIN.
+ *   This keeps server-side calls working without an Origin header.
  */
-const ALLOWED_ORIGINS = new Set([
+const CANONICAL_ORIGIN = "https://wiinupmax.lovable.app";
+
+// Hard-coded prod + official preview — never deleted from allowlist
+const BUILTIN_ORIGINS = new Set([
   "https://wiinupmax.lovable.app",
   "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
 ]);
 
-// Canonical production URL used as fallback and for same-origin enforcement
-const CANONICAL_ORIGIN = "https://wiinupmax.lovable.app";
+function buildAllowedOrigins(): Set<string> {
+  const set = new Set(BUILTIN_ORIGINS);
+  // Extra origins injected via secret (no code change needed for new domains)
+  const extra = Deno.env.get("ALLOWED_EXTRA_ORIGINS") ?? "";
+  for (const o of extra.split(",").map((s) => s.trim()).filter(Boolean)) {
+    set.add(o);
+  }
+  return set;
+}
 
 function resolveOrigin(requestedOrigin: string | null): string {
   if (!requestedOrigin) return CANONICAL_ORIGIN;
 
-  // Allow localhost in development (non-prod Deno env)
-  const isDev = !Deno.env.get("DENO_DEPLOYMENT_ID"); // Edge Runtime always sets this in prod
-  if (isDev && (requestedOrigin.startsWith("http://localhost") || requestedOrigin.startsWith("http://127.0.0.1"))) {
+  // Allow localhost only in non-deployed environment (CI, local dev)
+  const isDeployed = !!Deno.env.get("DENO_DEPLOYMENT_ID");
+  if (!isDeployed && (
+    requestedOrigin.startsWith("http://localhost") ||
+    requestedOrigin.startsWith("http://127.0.0.1")
+  )) {
     return requestedOrigin;
   }
 
-  if (ALLOWED_ORIGINS.has(requestedOrigin)) return requestedOrigin;
+  const allowed = buildAllowedOrigins();
+  if (allowed.has(requestedOrigin)) return requestedOrigin;
 
-  // Origin not in allowlist — reject
-  return ""; // caller must check for empty string
+  // Origin not in allowlist — signal rejection to caller
+  return "";
 }
 
 const logStep = (step: string, details?: unknown) => {
