@@ -1,15 +1,27 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, ArrowRight, Zap } from "lucide-react";
+import { CheckCircle2, ArrowRight, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const included = [
-  "Accès complet à toutes les fonctionnalités",
-  "Assistant IA intégré pour vous guider",
-  "Tableau de bord clair et organisé",
-  "Centre d'aide disponible à tout moment",
-  "Support par e-mail inclus",
-  "Mises à jour automatiques sans surcoût",
+const entrepriseFeatures = [
+  "Missions illimitées",
+  "Introductions tracées & validées",
+  "Prospection automatisée OpenClaw",
+  "Deal Radar — signaux d'intention",
+  "Cockpit central de suivi",
+  "Assistant JARVIS illimité",
+  "Marketplace de facilitateurs",
+  "Gains & commissions traçables",
+  "Support inclus · Mises à jour incluses",
+];
+
+const facilitateurFeatures = [
+  "Toutes les missions disponibles",
+  "Introductions illimitées",
+  "Suivi des gains en temps réel",
+  "Protection de chaque intro",
+  "Score de confiance visible",
+  "Aucune commission prélevée",
 ];
 
 export default function PricingSection() {
@@ -17,82 +29,133 @@ export default function PricingSection() {
   const [slotsRemaining, setSlotsRemaining] = useState(100);
 
   useEffect(() => {
-    supabase.from("launch_quota").select("total_slots, used_slots").single().then(({ data }) => {
-      if (data) {
-        const remaining = Math.max(0, data.total_slots - data.used_slots);
-        setLaunchAvailable(remaining > 0);
-        setSlotsRemaining(remaining);
-      }
-    });
+    supabase
+      .from("launch_quota")
+      .select("total_slots, used_slots")
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          const remaining = Math.max(0, data.total_slots - data.used_slots);
+          setLaunchAvailable(remaining > 0);
+          setSlotsRemaining(remaining);
+        }
+      });
   }, []);
 
   return (
-    <section className="py-20 bg-muted">
-      <div className="container max-w-xl">
-        <div className="text-center mb-10">
-          <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">
-            {launchAvailable ? "Offre de lancement" : "Abonnement annuel"}
-          </p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">
-            Un seul tarif. Tout inclus.
+    <section className="py-20 bg-background">
+      <div className="container max-w-4xl">
+        <div className="text-center mb-12">
+          <p className="pill-tag mb-4 mx-auto w-fit">Tarifs</p>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
+            Simple, honnête, transparent.
           </h2>
+          <p className="text-muted-foreground text-base max-w-md mx-auto">
+            L'offre entreprise est payante. L'accès facilitateur est gratuit. Il n'y a rien de caché.
+          </p>
         </div>
 
-        <div className="bg-card border-2 border-primary rounded-2xl overflow-hidden shadow-lg">
-          {/* Price header */}
-          <div className="bg-primary px-8 py-8 text-center">
-            {launchAvailable && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold mb-3">
-                <Zap size={10} />
-                Offre lancement — {slotsRemaining} places restantes
-              </div>
-            )}
-            <div className="flex items-end justify-center gap-2">
-              {launchAvailable ? (
-                <>
-                  <span className="font-display font-bold text-5xl text-primary-foreground">99 €</span>
-                  <div className="pb-1 text-left">
-                    <p className="text-primary-foreground/70 text-sm">TTC / an</p>
-                    <p className="text-primary-foreground/40 text-xs line-through">490 € / an</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <span className="font-display font-bold text-5xl text-primary-foreground">490 €</span>
-                  <span className="text-primary-foreground/70 text-base pb-1">TTC / an</span>
-                </>
-              )}
-            </div>
-            <p className="text-primary-foreground/60 text-xs mt-2">
-              {launchAvailable ? "Offre réservée aux 100 premières entreprises" : "Abonnement annuel renouvelable"}
-            </p>
-          </div>
-
-          {/* Included */}
-          <div className="px-8 py-7">
-            <p className="text-sm font-semibold text-foreground mb-4">Ce qui est inclus :</p>
-            <ul className="space-y-3">
-              {included.map((item) => (
-                <li key={item} className="flex items-center gap-3 text-sm text-foreground">
-                  <CheckCircle2 size={16} className="text-primary shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-
-            <Link
-              to="/pricing"
-              className="btn-cta w-full text-center block mt-8 py-4 flex items-center justify-center gap-2"
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Entreprise — dominant */}
+          <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-lg flex flex-col">
+            {/* Header */}
+            <div
+              className="px-7 pt-7 pb-5"
+              style={{ background: "var(--gradient-primary)" }}
             >
-              {launchAvailable ? `Je commence — 99 € / an` : "Je m'abonne — 490 € / an"}
-              <ArrowRight size={16} />
-            </Link>
+              {launchAvailable && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold mb-4">
+                  <Zap size={10} />
+                  Offre lancement — {slotsRemaining} place{slotsRemaining > 1 ? "s" : ""} restante{slotsRemaining > 1 ? "s" : ""}
+                </div>
+              )}
+              <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
+              <div className="flex items-end gap-2 mb-1">
+                <span className="font-display font-bold text-5xl text-white">
+                  {launchAvailable ? "99 €" : "490 €"}
+                </span>
+                <div className="pb-1">
+                  <p className="text-white/60 text-sm">TTC / an</p>
+                  {launchAvailable && (
+                    <p className="text-white/35 text-xs line-through">490 € / an</p>
+                  )}
+                </div>
+              </div>
+              <p className="text-white/45 text-xs">
+                {launchAvailable
+                  ? "Offre réservée aux 100 premières entreprises"
+                  : "Abonnement annuel renouvelable"}
+              </p>
+            </div>
 
-            <p className="text-center text-xs text-muted-foreground mt-3">
-              Vous pouvez annuler à tout moment, sans justification.
-            </p>
+            {/* Features */}
+            <div className="px-7 py-6 flex flex-col flex-1">
+              <ul className="space-y-3 mb-7 flex-1">
+                {entrepriseFeatures.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <CheckCircle2 size={14} className="shrink-0 mt-0.5" style={{ color: "hsl(var(--primary))" }} />
+                    <span className="text-sm text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/pricing"
+                className="btn-cta w-full text-center flex items-center justify-center gap-2 py-4"
+              >
+                {launchAvailable ? "Je démarre — 99 € / an" : "Je m'abonne — 490 € / an"}
+                <ArrowRight size={16} />
+              </Link>
+              <p className="text-center text-xs text-muted-foreground mt-3">
+                Annulation libre · Aucun engagement
+              </p>
+            </div>
+          </div>
+
+          {/* Facilitateur — secondaire */}
+          <div className="bg-card rounded-2xl overflow-hidden border-2 border-accent flex flex-col">
+            {/* Header */}
+            <div
+              className="px-7 pt-7 pb-5"
+              style={{ background: "var(--gradient-accent)" }}
+            >
+              <p className="text-white/80 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur</p>
+              <div className="flex items-end gap-2 mb-1">
+                <span className="font-display font-bold text-5xl text-white">Gratuit</span>
+              </div>
+              <p className="text-white/65 text-xs mt-1">Pour toujours · Sans carte bancaire</p>
+            </div>
+
+            {/* Features */}
+            <div className="px-7 py-6 flex flex-col flex-1">
+              <ul className="space-y-3 mb-7 flex-1">
+                {facilitateurFeatures.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <CheckCircle2 size={14} className="shrink-0 mt-0.5" style={{ color: "hsl(var(--accent))" }} />
+                    <span className="text-sm text-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/signup"
+                className="w-full text-center flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-sm transition-colors border-2"
+                style={{
+                  borderColor: "hsl(var(--accent))",
+                  color: "hsl(var(--accent))",
+                }}
+              >
+                <Users size={15} />
+                Créer mon compte — Gratuit
+              </Link>
+              <p className="text-center text-xs text-muted-foreground mt-3">
+                Ce n'est pas du MLM · Apport d'affaires structuré
+              </p>
+            </div>
           </div>
         </div>
+
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          Paiement sécurisé · Données protégées · Facturation annuelle
+        </p>
       </div>
     </section>
   );
