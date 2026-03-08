@@ -3,14 +3,18 @@
  * PROOF GATE: confidence badges, evidence panels, blocking issues from buildHealth.ts,
  * build health, remaining mocks, manual declarations.
  * PROOF:SYNC_GATE_V1:system_health_sync_stamp → BUILD_STAMP + Repo Sync Gate section below
+ * PROOF:GOLIVE_V1:ops_diagnostics_panel → OPS / Forensics section below
+ * PROOF:GOLIVE_V1:action_events_admin_visibility → lead_action_events live count below
+ * PROOF:GOLIVE_V1:passive_admin_visibility → passive ingestion section below
  * Toutes les données sont importées de sources traçables dans le code.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import {
   CheckCircle2, AlertTriangle, XCircle, Clock,
   Settings, Search, Filter, Shield, Code2,
-  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers, GitCommit
+  Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers, GitCommit,
+  Activity, BarChart3, Telescope
 } from "lucide-react";
 import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECTED } from "@/lib/buildStamp";
 import {
@@ -33,6 +37,14 @@ import {
   TYPESCRIPT_DEBT,
   type BuildCheckStatus,
 } from "@/lib/buildHealth";
+import {
+  GO_LIVE_BLOCKERS,
+  BLOCKERS_ONLY,
+  WARNINGS_OPEN,
+  RESOLVED,
+  GO_LIVE_SCORE,
+} from "@/lib/goLiveHealth";
+import { db } from "@/lib/supabase";
 
 const AREA_LABELS: Record<OwnerArea, string> = {
   acquisition:    "Acquisition",
@@ -169,6 +181,40 @@ export default function AdminSystemHealth() {
   const [filterConfidence, setFilterConfidence] = useState<FeatureConfidence | "all">("all");
   const [showMocks, setShowMocks] = useState(false);
   const [showTypeDebt, setShowTypeDebt] = useState(false);
+  const [showForensics, setShowForensics] = useState(false);
+
+  // PROOF:GOLIVE_V1:action_events_admin_visibility — live count from DB
+  // PROOF:GOLIVE_V1:passive_admin_visibility — live passive events count from DB
+  const [forensics, setForensics] = useState<{
+    actionEventsCount: number;
+    automationRulesCount: number;
+    messageTemplatesCount: number;
+    passiveEventsCount: number;
+    recentEvents: Array<{ id: string; new_status: string; event_type: string; created_at: string }>;
+    loaded: boolean;
+  }>({ actionEventsCount: 0, automationRulesCount: 0, messageTemplatesCount: 0, passiveEventsCount: 0, recentEvents: [], loaded: false });
+
+  useEffect(() => {
+    if (!showForensics) return;
+    const load = async () => {
+      const [evtRes, rulesRes, tplRes, passiveRes, recentRes] = await Promise.all([
+        db.from("lead_action_events").select("id", { count: "exact", head: true }),
+        db.from("automation_rules").select("id", { count: "exact", head: true }),
+        db.from("message_templates").select("id", { count: "exact", head: true }),
+        db.from("lead_source_events").select("id", { count: "exact", head: true }).eq("source_type", "passive_click"),
+        db.from("lead_action_events").select("id, new_status, event_type, created_at").order("created_at", { ascending: false }).limit(5),
+      ]);
+      setForensics({
+        actionEventsCount:    evtRes.count ?? 0,
+        automationRulesCount: rulesRes.count ?? 0,
+        messageTemplatesCount: tplRes.count ?? 0,
+        passiveEventsCount:   passiveRes.count ?? 0,
+        recentEvents:         recentRes.data ?? [],
+        loaded: true,
+      });
+    };
+    load();
+  }, [showForensics]);
 
   const counts = STATUS_ORDER.reduce((acc, s) => {
     acc[s] = FEATURE_REGISTRY.filter(f => f.status === s).length;
@@ -536,7 +582,7 @@ export default function AdminSystemHealth() {
             { slug: "opportunity_factory",         status: "YES",             file: "supabase/migrations/20260308100159_*.sql lines 155+",  note: "Function promote_lead_to_opportunity() with anti-dup by company_name" },
             { slug: "lead_actions_queue",          status: "YES",             file: "supabase/migrations/20260308100159_*.sql lines 1-60",  note: "Table lead_actions + upsert_lead_action() + on_lead_intake_action_sync trigger" },
             { slug: "radar_pipeline_wired",        status: "YES",             file: "src/pages/Radar.tsx line ~129",                       note: "addManualSignal() calls createLeadFromRadar() → lead_source_events + lead_intakes" },
-            { slug: "passive_pipeline_wired",      status: "NOT_IMPLEMENTED", file: "src/lib/leadPipeline.ts (helper exists, not called)",  note: "createLeadFromPassive() exists but PassiveOS.tsx does not call it yet" },
+            { slug: "passive_pipeline_wired",      status: "YES",             file: "src/pages/PassiveOS.tsx",                             note: "ingestPassiveThreshold() calls ingest_passive_signal RPC — server-side idempotent" },
             { slug: "enterprise_dashboard_pipeline", status: "YES",           file: "src/pages/DashboardEntreprise.tsx",                    note: "<UnifiedLeadsBlock asEntreprise /> renders pipeline summary for company" },
             { slug: "facilitateur_dashboard_pipeline", status: "YES",         file: "src/pages/DashboardFacilitateur.tsx",                  note: "<UnifiedLeadsBlock asEntreprise={false} /> renders pipeline for facilitateur" },
             { slug: "introduction_pipeline_ui",    status: "YES",             file: "src/pages/IntroductionsEntreprise.tsx lines 122-149",   note: "<LeadIntakeStatus /> + <LeadActionBadge /> per introduction" },
@@ -559,6 +605,89 @@ export default function AdminSystemHealth() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ── GO-LIVE HEALTH ── */}
+      {/* PROOF:GOLIVE_V1:go_live_blockers_real */}
+      <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: BLOCKERS_ONLY.length > 0 ? "hsl(0 65% 70%)" : "hsl(var(--border))" }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Telescope size={15} style={{ color: BLOCKERS_ONLY.length > 0 ? "hsl(0 65% 40%)" : "hsl(var(--success))" }} />
+          <h3 className="font-semibold text-foreground text-sm">Go-Live Health</h3>
+          <span className="ml-auto text-xs font-mono px-2 py-0.5 rounded font-bold"
+            style={{ background: GO_LIVE_SCORE >= 60 ? "hsl(var(--success-light))" : "hsl(0 65% 95%)", color: GO_LIVE_SCORE >= 60 ? "hsl(var(--success))" : "hsl(0 65% 40%)" }}>
+            {GO_LIVE_SCORE}% résolu
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">Source : <code>src/lib/goLiveHealth.ts</code> · {BLOCKERS_ONLY.length} bloquant(s) · {WARNINGS_OPEN.length} warning(s) · {RESOLVED.length} résolu(s)</p>
+        <div className="space-y-1.5">
+          {GO_LIVE_BLOCKERS.map(b => (
+            <div key={b.id} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/50">
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5" style={{
+                color: b.status === "resolved" ? "hsl(var(--success))" : b.severity === "blocker" ? "hsl(0 65% 40%)" : b.severity === "warning" ? "hsl(38 80% 30%)" : "hsl(var(--muted-foreground))",
+                background: b.status === "resolved" ? "hsl(var(--success-light))" : b.severity === "blocker" ? "hsl(0 65% 95%)" : b.severity === "warning" ? "hsl(var(--accent-light))" : "hsl(var(--muted))",
+              }}>
+                {b.status === "resolved" ? "✓" : b.severity.toUpperCase()}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground">{b.label}</p>
+                <p className="text-xs text-muted-foreground">{b.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── OPS FORENSICS ── */}
+      {/* PROOF:GOLIVE_V1:ops_diagnostics_panel */}
+      {/* PROOF:GOLIVE_V1:action_events_admin_visibility */}
+      {/* PROOF:GOLIVE_V1:passive_admin_visibility */}
+      <div className="mt-6 p-5 rounded-xl border border-border bg-card">
+        <button className="flex items-center justify-between w-full" onClick={() => setShowForensics(!showForensics)}>
+          <div className="flex items-center gap-2">
+            <Activity size={14} className="text-primary" />
+            <h3 className="font-semibold text-foreground text-sm">Ops Forensics — données live</h3>
+          </div>
+          {showForensics ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
+        </button>
+        {showForensics && (
+          <div className="mt-4 space-y-4">
+            {!forensics.loaded ? (
+              <p className="text-xs text-muted-foreground animate-pulse">Chargement…</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: "Audit events (actions)", value: forensics.actionEventsCount, icon: Activity },
+                    { label: "Règles actives (DB)", value: forensics.automationRulesCount, icon: Settings },
+                    { label: "Templates messages (DB)", value: forensics.messageTemplatesCount, icon: BarChart3 },
+                    { label: "Signaux passifs ingérés", value: forensics.passiveEventsCount, icon: Zap },
+                  ].map(({ label, value, icon: Icon }) => (
+                    <div key={label} className="p-3 rounded-xl bg-muted text-center">
+                      <Icon size={12} className="mx-auto mb-1 text-muted-foreground" />
+                      <p className="font-bold text-foreground text-lg">{value}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
+                {forensics.recentEvents.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-foreground mb-2">Derniers événements d'audit (lead_action_events)</p>
+                    <div className="space-y-1">
+                      {forensics.recentEvents.map(e => (
+                        <div key={e.id} className="flex items-center gap-2 text-xs p-2 rounded bg-muted/50">
+                          <span className="font-mono text-muted-foreground">{new Date(e.created_at).toLocaleTimeString("fr")}</span>
+                          <span className="font-semibold text-foreground">{e.event_type}</span>
+                          <span className="text-muted-foreground">→</span>
+                          <code className="text-primary">{e.new_status}</code>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── REPO SYNC GATE ── */}
