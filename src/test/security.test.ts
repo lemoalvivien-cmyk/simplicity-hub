@@ -137,7 +137,8 @@ describe("payout status transition logic", () => {
 
   it("non-paid status should not set processed_at", () => {
     const newStatus: PayoutStatus = "failed";
-    const processed_at = newStatus === "paid" ? new Date().toISOString() : null;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const processed_at = (newStatus as string) === "paid" ? new Date().toISOString() : null;
     expect(processed_at).toBeNull();
   });
 });
