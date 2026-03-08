@@ -1,6 +1,7 @@
 /**
  * Dashboard Facilitateur — Passive-First OS + Double Moteur
  * PROOF:EXECUTION_V1:facilitateur_dashboard_actions → LeadActionsQueue rendered here
+ * PROOF:PREMIUM_V1:dashboard_actionability → pipeline metrics always shown, actions linkable
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -342,6 +343,32 @@ export default function DashboardFacilitateur() {
         {/* PROOF:PIPELINE_V2:facilitateur_dashboard_pipeline */}
         {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
         {!isLaunchMode && <UnifiedLeadsBlock asEntreprise={false} linkTo="/introductions" />}
+
+        {/* ── PIPELINE METRICS STRIP (facilitateur) ─────────── */}
+        {/* PROOF:PREMIUM_V1:dashboard_actionability — always visible, clickable */}
+        {!isLaunchMode && !metrics.loading && (
+          <div className="rounded-xl p-3 flex items-center gap-3 flex-wrap" style={{ background: "hsl(var(--secondary))" }}>
+            {metrics.openActions > 0 ? (
+              <Link to="/actions" className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(var(--primary))" }} />
+                <span className="text-xs font-semibold text-foreground">
+                  {metrics.openActions} action{metrics.openActions > 1 ? "s" : ""} à faire
+                </span>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--success))" }} />
+                <span className="text-xs text-muted-foreground">Toutes les actions sont traitées</span>
+              </div>
+            )}
+            {metrics.doneLast7d > 0 && (
+              <div className="flex items-center gap-1.5 ml-auto">
+                <div className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--success))" }} />
+                <span className="text-xs text-muted-foreground">{metrics.doneLast7d} terminées cette semaine</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── FACILITATEUR ACTION QUEUE (real lead_actions) ─── */}
         {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
