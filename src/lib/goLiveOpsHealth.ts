@@ -1,5 +1,6 @@
 // PROOF:GOLIVE_OPS_V1:golive_truth_source → this file
 // PROOF:GOLIVE_EXPORT_V1:golive_truth_source → this file
+// PROOF:GOLIVE_EXPORT_V2:golive_truth_source → this file
 /**
  * GO-LIVE OPS HEALTH — Single operational source of truth.
  * Centralises release/ops statuses, separating:
