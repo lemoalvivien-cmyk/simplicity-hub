@@ -6,8 +6,8 @@ export default function PublicNav() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
 
-  const links = [
-    { to: "/#comment-ca-marche", label: "Comment ça marche", hash: true },
+  const links: { to: string; label: string; isHash?: boolean }[] = [
+    { to: "/#comment-ca-marche", label: "Comment ça marche", isHash: true },
     { to: "/pricing", label: "Tarifs" },
   ];
 
