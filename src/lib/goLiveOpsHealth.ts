@@ -60,6 +60,7 @@ export const BUILD_STATUS: OpsStatusValue = "PASS";
 
 // PROOF:GOLIVE_OPS_V1:public_builder_trace_status
 // PROOF:GOLIVE_EXPORT_V1:public_builder_trace_status
+// PROOF:GOLIVE_EXPORT_V2:public_builder_trace_status
 export const PUBLIC_BUILDER_TRACE_STATUS: OpsStatusValue = "PLATFORM_OVERLAY";
 // "Edit with Lovable" badge is injected by the Lovable platform at preview/publish time.
 // It is NOT in the source code. It must be removed via:
