@@ -404,7 +404,7 @@ export default function Operations() {
                           {run.summary ?? meta?.label ?? run.run_type}
                         </p>
                         <span className="text-xs text-muted-foreground shrink-0">
-                          {formatRelative(run.created_at)}
+                          {formatDateRelative(run.created_at, lang)}
                         </span>
                       </div>
                     );
