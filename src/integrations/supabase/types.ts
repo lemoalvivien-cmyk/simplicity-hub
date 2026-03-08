@@ -1283,6 +1283,24 @@ export type Database = {
         }
         Relationships: []
       }
+      launch_quota_consumed: {
+        Row: {
+          created_at: string
+          id: string
+          stripe_subscription_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          stripe_subscription_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          stripe_subscription_id?: string
+        }
+        Relationships: []
+      }
       lead_action_events: {
         Row: {
           action_id: string
@@ -4074,6 +4092,7 @@ export type Database = {
         Args: { p_default?: number; p_owner_id: string; p_rule_type?: string }
         Returns: number
       }
+      increment_launch_quota_used_slots: { Args: never; Returns: string }
       ingest_passive_signal: {
         Args: {
           p_company_name?: string
