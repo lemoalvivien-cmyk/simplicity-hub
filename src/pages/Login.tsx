@@ -13,6 +13,11 @@ export default function Login() {
   const [redirecting, setRedirecting] = useState(false);
   const { signIn, profile, loading, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  // PASSE F: preserve intent URL + show confirmation banner
+  const confirmed = searchParams.get("confirmed") === "true";
+  const from = (location.state as { from?: Location })?.from?.pathname || null;
 
   // Redirect ONLY after profile is fully loaded (not on every render)
   useEffect(() => {
@@ -25,9 +30,10 @@ export default function Login() {
     } else if (profile.role === "admin") {
       navigate("/admin", { replace: true });
     } else {
-      navigate("/dashboard/facilitateur", { replace: true });
+      // PASSE F: restore intent URL if available
+      navigate(from || "/dashboard/facilitateur", { replace: true });
     }
-  }, [loading, user, profile, navigate]);
+  }, [loading, user, profile, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
