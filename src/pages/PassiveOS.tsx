@@ -27,6 +27,8 @@ import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/lib/formatLocale";
 import i18n from "@/lib/i18n";
+// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
+import { getPassiveThreshold } from "@/lib/automationEngine";
 
 interface ShareLink {
   id: string; offer_id: string | null; tracking_code: string;
