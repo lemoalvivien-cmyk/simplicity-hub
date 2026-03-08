@@ -1,5 +1,6 @@
 /**
  * useLeadActions — Fetches real lead_actions from DB for a given actor.
+ * PROOF:CANONICAL_EXPORT_V1:lead_actions_hook_present → this file
  * PROOF:EXECUTION_V1:action_queue_ui_real → this file
  * PROOF:EXECUTION_V1:enterprise_action_queue → used by DashboardEntreprise
  * PROOF:SYNC_GATE_V1:lead_actions_file_present → this file

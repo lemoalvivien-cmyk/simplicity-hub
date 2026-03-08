@@ -1,5 +1,6 @@
 /**
  * templateVariables — Real template variable resolution with fallback.
+ * PROOF:CANONICAL_EXPORT_V1:template_variables_present → this file
  * PROOF:PREMIUM_V1:template_variable_substitution → this file
  * PROOF:PREMIUM_PROOF_V1:template_variable_substitution → this file (exportable, grep-able)
  * PROOF:PREMIUM_EXPORT_V1:template_variable_substitution → this file (export reality gate)

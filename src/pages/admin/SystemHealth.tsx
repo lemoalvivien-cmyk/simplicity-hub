@@ -1,5 +1,6 @@
 /**
  * Admin — System Health / Feature Registry v2
+ * PROOF:CANONICAL_EXPORT_V1:system_health_present → this file
  * PROOF GATE: confidence badges, evidence panels, blocking issues from buildHealth.ts,
  * build health, remaining mocks, manual declarations.
  * PROOF:SYNC_GATE_V1:system_health_sync_stamp → BUILD_STAMP + Repo Sync Gate section below
@@ -24,6 +25,8 @@ import {
 // PROOF:AUTOMATION_PROOF_V1:automation_engine_health
 import { useAutomationEngine } from "@/hooks/useAutomationEngine";
 import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECTED } from "@/lib/buildStamp";
+// PROOF:CANONICAL_EXPORT_V1:system_health_present — canonical stamp wired here
+import { CANONICAL_BUILD_STAMP, CANONICAL_EXPORT_META } from "@/lib/canonicalBuildStamp";
 import {
   FEATURE_REGISTRY,
   STATUS_META,
@@ -837,6 +840,68 @@ export default function AdminSystemHealth() {
                 style={{ background: "hsl(218 72% 92%)", color: "hsl(218 72% 35%)" }}>
                 {slug}
               </code>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── CANONICAL EXPORT LOCK V1 ── */}
+      {/* PROOF:CANONICAL_EXPORT_V1:system_health_present */}
+      <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: "hsl(262 80% 55% / 0.5)" }}>
+        <div className="flex items-center gap-2 mb-1">
+          <Lock size={15} style={{ color: "hsl(262 80% 45%)" }} />
+          <h3 className="font-semibold text-foreground text-sm">Canonical Export Lock</h3>
+          <span className="ml-auto text-xs font-mono px-2 py-0.5 rounded font-bold"
+            style={{ background: "hsl(262 80% 95%)", color: "hsl(262 80% 35%)" }}>
+            {CANONICAL_BUILD_STAMP}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Passe : <strong>{CANONICAL_EXPORT_META.pass}</strong> · {CANONICAL_EXPORT_META.date} · {CANONICAL_EXPORT_META.time} — Régression : <strong className="text-green-600">{CANONICAL_EXPORT_META.regression}</strong>
+        </p>
+
+        <div className="mb-3">
+          <p className="text-xs font-semibold text-foreground mb-2">
+            Marqueurs CANONICAL_EXPORT_V1 (14)
+            <code className="ml-2 text-muted-foreground bg-muted px-1 rounded font-mono text-xs">grep -r "PROOF:CANONICAL_EXPORT_V1" src docs</code>
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {[
+              "canonical_build_stamp",
+              "canonical_manifest",
+              "automation_engine_present",
+              "automation_hook_present",
+              "lead_actions_hook_present",
+              "pipeline_metrics_hook_present",
+              "lead_actions_queue_present",
+              "template_variables_present",
+              "release_health_present",
+              "release_candidate_health_present",
+              "passive_page_present",
+              "opportunities_page_present",
+              "system_health_present",
+              "premium_manifest_present",
+            ].map(slug => (
+              <code key={slug} className="text-xs px-2 py-0.5 rounded font-mono font-semibold"
+                style={{ background: "hsl(262 80% 95%)", color: "hsl(262 80% 35%)" }}>
+                {slug}
+              </code>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold text-foreground mb-2">Fichiers critiques verrouillés ({CANONICAL_EXPORT_META.migrations.length} migrations)</p>
+          <div className="space-y-1">
+            {CANONICAL_EXPORT_META.migrations.map(m => (
+              <div key={m.file} className="flex items-start gap-2 text-xs rounded bg-muted px-2 py-1.5">
+                <CheckCircle2 size={10} style={{ color: "hsl(142 70% 35%)" }} className="shrink-0 mt-0.5" />
+                <div>
+                  <code className="font-mono text-foreground">{m.file.slice(0, 16)}…</code>
+                  <span className="ml-2 text-muted-foreground">{m.role.split("—")[0]}</span>
+                  <span className="ml-2 text-xs font-bold" style={{ color: "hsl(142 70% 35%)" }}>{m.status}</span>
+                </div>
+              </div>
             ))}
           </div>
         </div>

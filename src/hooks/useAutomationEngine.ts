@@ -1,5 +1,6 @@
 /**
  * useAutomationEngine — hook for admin visibility of the automation execution engine.
+ * PROOF:CANONICAL_EXPORT_V1:automation_hook_present → this file
  * PROOF:AUTOMATION_V1:automation_engine_health
  * PROOF:AUTOMATION_V1:automation_rule_admin_visibility
  * PROOF:AUTOMATION_PROOF_V1:automation_engine_health

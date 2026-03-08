@@ -1,5 +1,6 @@
 /**
  * RELEASE HEALTH — Source de vérité des blockers release.
+ * PROOF:CANONICAL_EXPORT_V1:release_health_present → this file
  * PROOF:RELEASE_V1:release_blockers_real → this file
  * PROOF:CONSISTENCY_V1:health_runtime_consistency → this file (no contradictions with RC health)
  *

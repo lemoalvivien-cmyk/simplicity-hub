@@ -1,4 +1,5 @@
 # PREMIUM_FINISH_MANIFEST — Final UX QA Pass
+# PROOF:CANONICAL_EXPORT_V1:premium_manifest_present → this file
 # PROOF:PREMIUM_V1:premium_finish_manifest
 # PROOF:PREMIUM_PROOF_V1:premium_finish_manifest → this file (exportable, grep-able)
 # PROOF:PREMIUM_EXPORT_V1:premium_finish_manifest → this file (export reality gate)

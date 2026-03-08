@@ -1,5 +1,6 @@
 /**
  * PassiveOS — Passive Facilitator OS MAX
+ * PROOF:CANONICAL_EXPORT_V1:passive_page_present → this file
  * PROOF:EXECUTION_V1:passive_pipeline_wired → triggerPassiveLead call site
  * PROOF:INTEGRITY_V1:passive_serverish_ingestion → dedicated ingestPassiveThreshold fn
  * PROOF:INTEGRITY_V1:passive_idempotency_guard → checks lead_source_events before creating
