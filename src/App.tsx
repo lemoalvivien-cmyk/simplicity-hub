@@ -36,6 +36,7 @@ import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import DashboardEntreprise from "./pages/DashboardEntreprise";
 import DashboardFacilitateur from "./pages/DashboardFacilitateur";
+import { useAuth } from "@/contexts/AuthContext";
 import Assistant from "./pages/Assistant";
 import Help from "./pages/Help";
 import Account from "./pages/Account";
