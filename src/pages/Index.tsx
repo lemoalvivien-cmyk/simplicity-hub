@@ -37,7 +37,7 @@ export default function LandingPage() {
       <FacilitateurSection />
 
       {/* 7 — PREUVES DE SÉRIEUX */}
-      <PreuveSérieuxSection />
+      <ProofSection />
 
       {/* 8 — ANTI-BULLSHIT / OBJECTIONS */}
       <AntiBullshitSection />
