@@ -6,6 +6,7 @@
  * PROOF:GOLIVE_V1:ops_diagnostics_panel → OPS / Forensics section below
  * PROOF:GOLIVE_V1:action_events_admin_visibility → lead_action_events live count below
  * PROOF:GOLIVE_V1:passive_admin_visibility → passive ingestion section below
+ * PROOF:RELEASE_V1:admin_forensics_global_visibility → admin_forensics_summary() RPC below
  * Toutes les données sont importées de sources traçables dans le code.
  */
 import { useState, useEffect } from "react";
@@ -14,7 +15,7 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Clock,
   Settings, Search, Filter, Shield, Code2,
   Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers, GitCommit,
-  Activity, BarChart3, Telescope
+  Activity, BarChart3, Telescope, Package
 } from "lucide-react";
 import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECTED } from "@/lib/buildStamp";
 import {
@@ -44,7 +45,15 @@ import {
   RESOLVED,
   GO_LIVE_SCORE,
 } from "@/lib/goLiveHealth";
-import { db } from "@/lib/supabase";
+import {
+  RELEASE_BLOCKERS,
+  RELEASE_BLOCKERS_ONLY,
+  RELEASE_WARNINGS_OPEN,
+  RELEASE_RESOLVED,
+  RELEASE_SCORE,
+  PACKAGE_MANAGER_TRUTH,
+} from "@/lib/releaseHealth";
+import { supabase } from "@/integrations/supabase/client";
 
 const AREA_LABELS: Record<OwnerArea, string> = {
   acquisition:    "Acquisition",
@@ -183,8 +192,9 @@ export default function AdminSystemHealth() {
   const [showTypeDebt, setShowTypeDebt] = useState(false);
   const [showForensics, setShowForensics] = useState(false);
 
-  // PROOF:GOLIVE_V1:action_events_admin_visibility — live count from DB
+  // PROOF:GOLIVE_V1:action_events_admin_visibility — live count from DB via SECURITY DEFINER RPC
   // PROOF:GOLIVE_V1:passive_admin_visibility — live passive events count from DB
+  // PROOF:RELEASE_V1:admin_forensics_global_visibility — uses admin_forensics_summary() RPC (bypasses RLS)
   const [forensics, setForensics] = useState<{
     actionEventsCount: number;
     automationRulesCount: number;
@@ -197,21 +207,21 @@ export default function AdminSystemHealth() {
   useEffect(() => {
     if (!showForensics) return;
     const load = async () => {
-      const [evtRes, rulesRes, tplRes, passiveRes, recentRes] = await Promise.all([
-        db.from("lead_action_events").select("id", { count: "exact", head: true }),
-        db.from("automation_rules").select("id", { count: "exact", head: true }),
-        db.from("message_templates").select("id", { count: "exact", head: true }),
-        db.from("lead_source_events").select("id", { count: "exact", head: true }).eq("source_type", "passive_click"),
-        db.from("lead_action_events").select("id, new_status, event_type, created_at").order("created_at", { ascending: false }).limit(5),
-      ]);
-      setForensics({
-        actionEventsCount:    evtRes.count ?? 0,
-        automationRulesCount: rulesRes.count ?? 0,
-        messageTemplatesCount: tplRes.count ?? 0,
-        passiveEventsCount:   passiveRes.count ?? 0,
-        recentEvents:         recentRes.data ?? [],
-        loaded: true,
-      });
+      // Use SECURITY DEFINER RPC for global visibility bypassing RLS
+      const { data, error } = await supabase.rpc("admin_forensics_summary" as any);
+      if (!error && data) {
+        const d = data as any;
+        setForensics({
+          actionEventsCount:    d.action_events_count    ?? 0,
+          automationRulesCount: d.automation_rules_count ?? 0,
+          messageTemplatesCount: d.message_templates_count ?? 0,
+          passiveEventsCount:   d.passive_events_count   ?? 0,
+          recentEvents:         d.recent_events          ?? [],
+          loaded: true,
+        });
+      } else {
+        setForensics(prev => ({ ...prev, loaded: true }));
+      }
     };
     load();
   }, [showForensics]);
@@ -759,6 +769,48 @@ export default function AdminSystemHealth() {
               </code>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ── RELEASE HEALTH ── */}
+      {/* PROOF:RELEASE_V1:admin_forensics_global_visibility */}
+      {/* PROOF:RELEASE_V1:release_blockers_real */}
+      <div className="mt-6 p-5 rounded-xl border-2 bg-card"
+        style={{ borderColor: RELEASE_BLOCKERS_ONLY.length > 0 ? "hsl(0 65% 70%)" : "hsl(142 70% 45% / 0.5)" }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Package size={15} style={{ color: RELEASE_BLOCKERS_ONLY.length > 0 ? "hsl(0 65% 40%)" : "hsl(142 70% 35%)" }} />
+          <h3 className="font-semibold text-foreground text-sm">Release Health</h3>
+          <span className="ml-auto text-xs font-mono px-2 py-0.5 rounded font-bold"
+            style={{ background: RELEASE_SCORE >= 60 ? "hsl(var(--success-light))" : "hsl(0 65% 95%)", color: RELEASE_SCORE >= 60 ? "hsl(var(--success))" : "hsl(0 65% 40%)" }}>
+            {RELEASE_SCORE}% résolu
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-2">
+          Source : <code>src/lib/releaseHealth.ts</code> ·{" "}
+          {RELEASE_BLOCKERS_ONLY.length} bloquant(s) · {RELEASE_WARNINGS_OPEN.length} warning(s) · {RELEASE_RESOLVED.length} résolu(s)
+        </p>
+        {/* Package manager truth */}
+        <div className="mb-3 p-2.5 rounded-lg bg-muted/50 border border-border">
+          <p className="text-xs font-semibold text-foreground mb-0.5">
+            Package Manager — <code className="font-mono">{PACKAGE_MANAGER_TRUTH.canonical}</code> (release canonical)
+          </p>
+          <p className="text-xs text-muted-foreground">{PACKAGE_MANAGER_TRUTH.lockfile_strategy}</p>
+        </div>
+        <div className="space-y-1.5">
+          {RELEASE_BLOCKERS.map(b => (
+            <div key={b.id} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/50">
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5" style={{
+                color: b.status === "resolved" ? "hsl(var(--success))" : b.severity === "blocker" ? "hsl(0 65% 40%)" : b.severity === "warning" ? "hsl(38 80% 30%)" : "hsl(var(--muted-foreground))",
+                background: b.status === "resolved" ? "hsl(var(--success-light))" : b.severity === "blocker" ? "hsl(0 65% 95%)" : b.severity === "warning" ? "hsl(var(--accent-light))" : "hsl(var(--muted))",
+              }}>
+                {b.status === "resolved" ? "✓" : b.severity.toUpperCase()}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground">{b.label}</p>
+                <p className="text-xs text-muted-foreground">{b.note}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
