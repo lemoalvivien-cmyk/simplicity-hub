@@ -61,19 +61,21 @@ const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
 // PROOF:GOLIVE_V1:passive_ingestion_trigger_real
 // PROOF:INTEGRITY_V1:passive_serverish_ingestion
 // PROOF:INTEGRITY_V1:passive_idempotency_guard
+// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
 // Uses server-side RPC ingest_passive_signal() which enforces idempotency in SQL.
-// No direct client inserts to lead_source_events or lead_intakes.
+// Threshold is read from active automation_rules via get_automation_rule_threshold().
 async function ingestPassiveThreshold(
   userId: string,
   links: ShareLink[]
 ): Promise<void> {
+  // PROOF:AUTOMATION_V1:passive_threshold_rule_applied — read live threshold from DB rules
+  const threshold = await getPassiveThreshold(userId);
   const qualifying = links.filter(
-    l => (l.qualified_interest_count ?? 0) >= PASSIVE_THRESHOLD && !l.converted
+    l => (l.qualified_interest_count ?? 0) >= threshold && !l.converted
   );
   if (qualifying.length === 0) return;
 
   // Each call to ingest_passive_signal() is idempotent at the SQL level.
-  // The RPC checks lead_source_events for existing entries before inserting.
   for (const link of qualifying) {
     // PROOF:EXECUTION_V1:passive_pipeline_wired — RPC call site
     void db.rpc("ingest_passive_signal", {
