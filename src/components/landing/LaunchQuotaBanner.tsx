@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Zap } from "lucide-react";
 
@@ -6,8 +6,7 @@ interface LaunchQuotaBannerProps {
   variant?: "hero" | "inline" | "pricing";
 }
 
-const LaunchQuotaBanner = forwardRef<HTMLDivElement, LaunchQuotaBannerProps>(
-  ({ variant = "inline" }, ref) => {
+export default function LaunchQuotaBanner({ variant = "inline" }: LaunchQuotaBannerProps) {
   const [slots, setSlots] = useState<number | null>(null);
   const [total, setTotal] = useState(100);
 
@@ -86,7 +85,4 @@ const LaunchQuotaBanner = forwardRef<HTMLDivElement, LaunchQuotaBannerProps>(
       {slots} place{slots > 1 ? "s" : ""} restante{slots > 1 ? "s" : ""} à 99 €
     </div>
   );
-});
-
-LaunchQuotaBanner.displayName = "LaunchQuotaBanner";
-export default LaunchQuotaBanner;
+}
