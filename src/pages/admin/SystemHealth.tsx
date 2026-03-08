@@ -2,6 +2,7 @@
 // PROOF:GOLIVE_OPS_V1:admin_golive_panel → this file
 // PROOF:GOLIVE_EXPORT_V1:admin_golive_panel → this file
 // PROOF:GOLIVE_EXPORT_V2:admin_golive_panel → this file
+// PROOF:GOLIVE_FIX_V1:admin_golive_panel → this file
 /**
  * Admin — System Health / Feature Registry v2
  * PROOF:CANONICAL_EXPORT_V1:system_health_present → this file
