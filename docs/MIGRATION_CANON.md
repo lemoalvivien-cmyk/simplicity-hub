@@ -31,7 +31,7 @@ Any filename not in this list that appears in docs is a fiction.
 
 | File slug | What it does | Status |
 |-----------|-------------|--------|
-| `d8c2baed` (`20260308213829`) | Adds `user_agent` + `referrer` columns to `landing_ab_events`, adds CHECK + label-length constraints. | **DIRTY MIGRATION**: Originally contained a false comment claiming `launch_quota_consumed already ran`. That comment has been replaced with an honest warning. The SQL itself only touches `landing_ab_events` and is correct on a fresh (empty) table. On a dirty DB with out-of-enum `event_type` rows, the CHECK will fail. |
+| `d8c2baed` (`20260308213829`) | Adds `user_agent` + `referrer` columns to `landing_ab_events`, adds CHECK + label-length constraints. | **DIRTY MIGRATION**: Contains a false comment claiming `launch_quota_consumed already ran`. **This comment is still present in the file and has NOT been corrected** — migration files are immutable once applied. The SQL itself only touches `landing_ab_events` and is correct on a fresh (empty) table. On a dirty DB with out-of-enum `event_type` rows, the CHECK will fail without the cleanup in subsequent migrations. |
 | `ff43d5d4` (`20260308214710`) | Creates `launch_quota_consumed` table + `increment_launch_quota_used_slots()` RPC. | **Sole source of truth** for quota schema. |
 | `d5ca7889` (`20260308214735`) | Cleans up legacy `event_type = 'variant_assign'` typo, then adds CHECK + label-length constraints idempotently. | Supersedes the unsafe CHECK in `d8c2baed` — runs UPDATE first, then guards the constraint with `IF NOT EXISTS`. |
 | `4ea7ab1c` (`20260308215734`) | **SQUASH CORRECTIF**: idempotent replay-safe baseline. Normalises all out-of-enum `event_type` values, re-applies constraints idempotently, and seeds `launch_quota` singleton row if missing. | **Recommended operational baseline** — run this if a previous replay left constraints in broken state. |
@@ -50,22 +50,31 @@ legacy data. On a dirty intermediate DB this will fail if rows with disallowed
 2. `4ea7ab1c` (squash) re-runs the same cleanup unconditionally — any clone that
    skipped `d5ca7889` or ran `d8c2baed` in isolation still reaches clean state.
 
-**The false comment** that was in `d8c2baed` line 2 has been replaced with an
-honest warning block. The SQL statements in that file are unchanged.
+**The false comment** in `d8c2baed` is **still present and has NOT been corrected**.
+Migration files are immutable once applied. The comment is factually wrong — it claims
+`launch_quota_consumed` was already created in a prior migration, which is false (it is
+created in `ff43d5d4`). This document explicitly contradicts that comment. The SQL
+statements in `d8c2baed` are unrelated to quota and are otherwise correct.
 
 ---
 
 ## launch_quota singleton
 
 **AT LEAST one row**: Guaranteed by the squash migration `4ea7ab1c` via
-`INSERT WHERE NOT EXISTS`.
+`INSERT WHERE NOT EXISTS` — **on a fresh deploy only**. A database that was
+partially migrated before this squash was applied may not have the row.
 
-**AT MOST one row**: Guaranteed by migration `1c3240fc` via
+**AT MOST one row**: Enforced by migration `1c3240fc` via
 `CREATE UNIQUE INDEX idx_launch_quota_singleton ON public.launch_quota ((TRUE))`.
+**Caveat**: this index is created without a prior dedup cleanup. If the database
+already contains more than one row in `launch_quota` at migration time (e.g. from
+a corrupted earlier deploy), the `CREATE UNIQUE INDEX` will fail. The guarantee
+holds **only on a clean or fresh-deployed database**.
 
-**Combined guarantee**: On a fresh deploy with both migrations applied in order,
-`launch_quota` will contain exactly one row. This is a DB-enforced constraint,
-not a documentation claim.
+**Honest combined guarantee**: On a fresh deploy with all 5 migrations applied in
+order, `launch_quota` contains exactly one row. This is DB-enforced.
+On a database that was previously in a corrupt state (multiple rows), the singleton
+is **not automatically recovered** by these migrations — manual cleanup is required.
 
 **Script behaviour**: `verify-quota-flow.ts` uses `.maybeSingle()` (not `.single()`)
 plus `.limit(1)` to read quota state. It will throw if the row is missing, but
@@ -81,7 +90,7 @@ prevents that case from arising.
 | Fresh deploy (all 5 migrations in order) | ✅ Yes | `4ea7ab1c` seeds quota row; `1c3240fc` enforces singleton; constraints idempotent |
 | Replay with dirty `event_type` data | ✅ Yes | `d5ca7889` + `4ea7ab1c` both UPDATE before CHECK |
 | `d8c2baed` applied alone on dirty data | ❌ No | CHECK without prior UPDATE will fail if bad rows exist |
-| `launch_quota` attempted duplicate INSERT | ✅ No | `idx_launch_quota_singleton` blocks it at DB level |
+| `launch_quota` multiple rows on dirty DB + migration `1c3240fc` | ❌ No | `CREATE UNIQUE INDEX` will fail if >1 row already exists — no cleanup is run before the index |
 
 **Verdict**: Fresh deploy with all 5 migrations is safe. Historical dirty replay
 is safe if the squash `4ea7ab1c` was included. `d8c2baed` alone on dirty data is
