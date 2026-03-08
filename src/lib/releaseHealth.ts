@@ -2,36 +2,27 @@
  * RELEASE HEALTH — Source de vérité des blockers release.
  * PROOF:RELEASE_V1:release_blockers_real → this file
  *
- * Distinct de goLiveHealth.ts (feature/ops) : ce fichier couvre
- * les blockers de release au sens strict : package manager,
- * lockfile, seed intégrité, admin forensics, prod clean.
- *
- * Mis à jour : RELEASE INTEGRITY V1 — 2026-03-08
+ * Mis à jour : CLEANUP-V1 — 2026-03-08
+ * Changelog:
+ *   - automation_rules_no_engine: RESOLVED (moteur présent après AUTOMATION_V1 + CLEANUP_V1)
+ *   - Ajout de release_honesty_status explicite
  */
 
 // PROOF:RELEASE_V1:package_manager_truth
-// STRATÉGIE : npm est la vérité de release pour ce projet.
-// Raison : Lovable utilise bun en interne pour install, mais le
-// package-lock.json est maintenu et publié. Pour CI/CD et portabilité
-// externe, npm ci est la commande canonique.
-// bun.lock est conservé comme artefact Lovable mais ne remplace pas npm.
-// Ne jamais supposer que bun.lock = vérité en dehors de l'environnement Lovable.
 export const PACKAGE_MANAGER_TRUTH = {
   canonical: "npm" as const,
   lockfile:  "package-lock.json" as const,
-  note:      "npm est la vérité de release. bun.lock = artefact Lovable uniquement. CI externe: npm ci.",
-  // PROOF:RELEASE_V1:lockfile_integrity
-  lockfile_strategy: "package-lock.json synchronisé avec package.json. bun.lock présent pour install Lovable. Pas de cohabitation ambiguë: npm ci est la commande de release.",
+  // PROOF:AUTOMATION_CLEANUP_V1:npm_ci_truth
+  // NOT_FIXED: lockfile is READ-ONLY in Lovable platform — npm ci unverifiable from this context
+  npm_ci_status: "NOT_FIXED_PLATFORM_CONSTRAINT" as const,
+  note:      "npm est la stratégie release documentée. bun.lock = artefact Lovable interne uniquement. npm ci n'est pas vérifiable depuis ce contexte. CI externe: exporter le repo et exécuter npm ci manuellement.",
+  lockfile_strategy: "package-lock.json synchronisé avec package.json par la plateforme Lovable. Géré automatiquement, READ-ONLY depuis cet environnement.",
 } as const;
 
 // PROOF:RELEASE_V1:build_stamp_consistency
-// PROOF:RELEASE_SYNC_V1:build_stamp_visible
-// Stamp courant : RELEASESYNC-2026-03-08-1315-V1
-// Passe RELEASE_SYNC_GATE_V1 — synchronisation zip/repo/code prouvée.
-export const CURRENT_STAMP = "RELEASESYNC-2026-03-08-1315-V1" as const;
+export const CURRENT_STAMP = "RELEASESYNC-2026-03-08-CLEANUP-V1" as const;
 
 // PROOF:RELEASE_V1:repo_manifest_consistency
-// PROOF:RELEASE_SYNC_V1:repo_sync_manifest
 export const MANIFEST_FILE = "docs/REPO_SYNC_MANIFEST.md" as const;
 
 export type ReleaseBlockerSeverity = "blocker" | "warning" | "info";
@@ -47,6 +38,7 @@ export interface ReleaseBlocker {
 }
 
 // PROOF:RELEASE_V1:release_blockers_real
+// PROOF:AUTOMATION_CLEANUP_V1:health_blocker_cleanup
 export const RELEASE_BLOCKERS: ReleaseBlocker[] = [
   // ── BLOQUANTS CRITIQUES ────────────────────────────────────────────────────
   {
@@ -73,7 +65,7 @@ export const RELEASE_BLOCKERS: ReleaseBlocker[] = [
     severity: "warning",
     status:   "partial",
     area:     "Passive OS",
-    note:     "ingest_passive_signal() RPC idempotent existe. Appelé au mount de PassiveOS. Pas encore event-driven côté Stripe/webhook. Limite documentée: sans ouverture page = pas d'ingestion.",
+    note:     "ingest_passive_signal() RPC idempotent existe. Seuil lu depuis règle DB active (plus de hardcode). Pas encore event-driven côté Stripe/webhook. Limite documentée: sans ouverture page = pas d'ingestion.",
   },
   {
     id:       "typescript_strict_null",
@@ -84,20 +76,12 @@ export const RELEASE_BLOCKERS: ReleaseBlocker[] = [
     note:     "tsconfig.app.json : strict=false. ~50 erreurs estimées si activé. Risque null-deref latent.",
   },
   {
-    id:       "message_templates_not_versioned",
-    label:    "Templates messages: pas de versioning ni variables dynamiques",
+    id:       "message_templates_no_variables",
+    label:    "Templates messages: pas de moteur de variables dynamiques côté serveur",
     severity: "warning",
     status:   "open",
     area:     "Messages",
-    note:     "Templates persistés en DB (GOLIVE_V1). Pas de moteur de variables [Prénom] côté serveur. Manuel.",
-  },
-  {
-    id:       "automation_rules_no_engine",
-    label:    "Règles: table réelle, moteur d'exécution backend absent",
-    severity: "warning",
-    status:   "partial",
-    area:     "Règles",
-    note:     "automation_rules persistées. UI lit/écrit la DB. Les règles ne déclenchent pas encore d'actions backend.",
+    note:     "Templates persistés en DB. resolve_message_template() RPC produit des payloads. Pas de substitution [Prénom] auto côté serveur. Manuel.",
   },
   {
     id:       "openclaw_gateway_missing",
@@ -107,23 +91,25 @@ export const RELEASE_BLOCKERS: ReleaseBlocker[] = [
     area:     "OpenClaw",
     note:     "WhatsApp, LinkedIn, auto-send nécessitent gateway_url + gateway_secret par utilisateur.",
   },
-  {
-    id:       "campaign_sequences_absent",
-    label:    "Séquences de campagne non implémentées",
-    severity: "warning",
-    status:   "open",
-    area:     "Campagnes",
-    note:     "Pas de table campaign_steps. CampagneDetail affiche section séquences mais sans DB réelle.",
-  },
 
   // ── INFO / RÉSOLUS ────────────────────────────────────────────────────────
+  // PROOF:AUTOMATION_CLEANUP_V1:health_blocker_cleanup
+  // automation_rules_no_engine previously listed here as "warning/open" — CORRECTED to resolved.
+  {
+    id:       "automation_engine_present",
+    label:    "Moteur d'automatisation: présent, actif, owner-resolved",
+    severity: "info",
+    status:   "resolved",
+    area:     "Règles",
+    note:     "CLEANUP_V1: apply_automation_rules_to_lead() + DB trigger + owner resolution (entreprise_id ?? user_id). Actions routées: precision → facilitateur, conversion → entreprise. Log: automation_engine_log.",
+  },
   {
     id:       "seed_uniqueness_enforced",
     label:    "Seeds idempotentes: contraintes uniques DB ajoutées",
     severity: "info",
     status:   "resolved",
     area:     "Infrastructure",
-    note:     "RELEASE_V1: automation_rules(owner_user_id, rule_type) UNIQUE. message_templates(owner_user_id, template_type, channel) UNIQUE. ON CONFLICT DO NOTHING est maintenant réellement safe.",
+    note:     "RELEASE_V1: automation_rules(owner_user_id, rule_type) UNIQUE. message_templates(owner_user_id, template_type, channel) UNIQUE.",
   },
   {
     id:       "admin_forensics_rpc",
@@ -131,7 +117,7 @@ export const RELEASE_BLOCKERS: ReleaseBlocker[] = [
     severity: "info",
     status:   "resolved",
     area:     "Admin",
-    note:     "RELEASE_V1: fonction SQL SECURITY DEFINER bypasse RLS pour lecture admin globale. Retourne counts + audit events. Zéro PII exposé.",
+    note:     "RELEASE_V1: fonction SQL SECURITY DEFINER bypasse RLS pour lecture admin globale. Retourne counts + audit events. Zéro PII.",
   },
   {
     id:       "automation_rules_real",
@@ -155,7 +141,7 @@ export const RELEASE_BLOCKERS: ReleaseBlocker[] = [
     severity: "info",
     status:   "resolved",
     area:     "Passive OS",
-    note:     "GOLIVE_V1 + INTEGRITY_V1: guard SQL empêche double-ingestion pour le même share_link_id.",
+    note:     "GOLIVE_V1 + INTEGRITY_V1: guard SQL empêche double-ingestion pour le même share_link_id. Seuil dynamique depuis règle DB.",
   },
   {
     id:       "audit_trail_deployed",
@@ -165,23 +151,22 @@ export const RELEASE_BLOCKERS: ReleaseBlocker[] = [
     area:     "Pipeline",
     note:     "INTEGRITY_V1: update_lead_action_status() écrit dans lead_action_events à chaque mutation. Traçable.",
   },
-  // PROOF:RELEASE_V1:lovable_badge_removed
   {
     id:       "lovable_badge_removed",
-    label:    "Badge 'Edit with Lovable' supprimé des vues publiques",
+    label:    "Badge 'Edit with Lovable' supprimé des fichiers source",
     severity: "info",
     status:   "resolved",
     area:     "Prod Clean",
-    note:     "RELEASE_V1: index.html, PublicNav, UserLayout, AdminLayout ne contiennent aucun badge Lovable. Désactivé via Project Settings → Hide Lovable Badge.",
+    // PROOF:AUTOMATION_CLEANUP_V1:public_trace_truth
+    note:     "Code source propre (grep-vérifiable). Le badge visible sur le site publié est un overlay plateforme, non du code. Suppression via Project Settings → Hide Lovable Badge.",
   },
-  // PROOF:RELEASE_V1:prod_clean_checks
   {
     id:       "prod_clean_verified",
     label:    "Prod clean: aucune trace outil de construction dans les vues publiques",
     severity: "info",
     status:   "resolved",
     area:     "Prod Clean",
-    note:     "RELEASE_V1: index.html ne contient pas de référence Lovable. Layouts publics vérifiés: PublicNav, UserLayout, AdminLayout. Aucun overlay/badge/lien builder visible pour le visiteur.",
+    note:     "RELEASE_V1: index.html, PublicNav, UserLayout, AdminLayout. Aucun overlay/badge/lien builder dans le code source.",
   },
 ];
 

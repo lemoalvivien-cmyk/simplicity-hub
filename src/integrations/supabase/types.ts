@@ -3907,7 +3907,7 @@ export type Database = {
     Functions: {
       admin_forensics_summary: { Args: never; Returns: Json }
       apply_automation_rules_to_lead: {
-        Args: { p_intake_id: string; p_owner_id: string }
+        Args: { p_intake_id: string; p_owner_id?: string }
         Returns: Json
       }
       apply_lead_policy: { Args: { p_intake_id: string }; Returns: undefined }
@@ -4046,6 +4046,7 @@ export type Database = {
         Args: { p_action_type: string; p_channel?: string; p_owner_id: string }
         Returns: Json
       }
+      resolve_rule_owner: { Args: { p_intake_id: string }; Returns: string }
       seed_default_automation_rules: {
         Args: { p_user_id: string }
         Returns: undefined
