@@ -87,3 +87,5 @@ function LaunchQuotaBanner({ variant = "inline" }: LaunchQuotaBannerProps) {
     </div>
   );
 }
+
+export default LaunchQuotaBanner;
