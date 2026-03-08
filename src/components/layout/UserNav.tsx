@@ -1,14 +1,15 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Briefcase, Send, TrendingUp,
   HelpCircle, Menu, X, LogOut, Building2, Users,
   Zap, Activity, Layers, Brain, AlertTriangle,
-  MessageSquare, Smartphone, SlidersHorizontal, Radar, Flag, Network,
+  MessageSquare, Smartphone, Radar, Flag, Network,
   Moon, Share2, Upload, ChevronDown, Lock, Swords, Cpu
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/lib/supabase";
 
 type UserRole = "entreprise" | "facilitateur";
 
