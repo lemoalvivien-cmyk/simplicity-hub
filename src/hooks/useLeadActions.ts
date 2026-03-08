@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:lead_actions_hook_present → this file
 /**
  * useLeadActions — Fetches real lead_actions from DB for a given actor.
  * PROOF:CANONICAL_EXPORT_V1:lead_actions_hook_present → this file

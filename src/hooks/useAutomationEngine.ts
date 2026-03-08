@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:automation_hook_present → this file
 /**
  * useAutomationEngine — hook for admin visibility of the automation execution engine.
  * PROOF:CANONICAL_EXPORT_V1:automation_hook_present → this file

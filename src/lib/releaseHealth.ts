@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:release_health_present → this file
 /**
  * RELEASE HEALTH — Source de vérité des blockers release.
  * PROOF:CANONICAL_EXPORT_V1:release_health_present → this file

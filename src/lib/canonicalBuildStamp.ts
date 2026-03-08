@@ -1,3 +1,4 @@
+// PROOF:EXPORT_RECOVERY_V1:canonical_stamp_present → this file
 /**
  * CANONICAL BUILD STAMP — Canonical Export Lock V1.
  * PROOF:CANONICAL_EXPORT_V1:canonical_build_stamp → this file
