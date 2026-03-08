@@ -34,7 +34,7 @@ export default function Sources() {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const { data } = await db
+      const { data } = await supabase
         .from("contacts")
         .select("origine")
         .eq("owner_user_id", user.id);
