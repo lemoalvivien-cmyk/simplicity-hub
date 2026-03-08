@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
-  Flame, Bell, Plus, Briefcase, Star, Users
+  Flame, Bell, Plus, Briefcase, Star, Users, Sparkles
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,10 +25,7 @@ import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
 import { useTranslation } from "react-i18next";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
-// PROOF:EXECUTION_V1:enterprise_dashboard_actions — imports real action queue component
-// PROOF:EXECUTION_V1:enterprise_dashboard_actions — imports real action queue component
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
-// PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics displayed
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 
 interface Mission { id: string; titre: string; statut: string; }
