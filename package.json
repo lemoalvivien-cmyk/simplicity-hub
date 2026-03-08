@@ -11,7 +11,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify:quota": "deno run --allow-env --allow-net scripts/verify-quota-flow.ts"
+    "verify:quota": "deno run --allow-env --allow-net scripts/verify-quota-flow.ts",
+    "verify:quota:gaps": "deno run --allow-env --allow-net scripts/verify-quota-gaps.ts",
+    "verify:quota:race": "deno run --allow-env --allow-net scripts/verify-quota-race.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@elevenlabs/react": "^0.14.1",
