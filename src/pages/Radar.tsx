@@ -10,6 +10,7 @@ import {
   ChevronRight, AlertCircle, Clock
 } from "lucide-react";
 import { toast } from "sonner";
+import { createLeadFromRadar } from "@/lib/leadPipeline";
 
 interface Signal {
   id: string;
