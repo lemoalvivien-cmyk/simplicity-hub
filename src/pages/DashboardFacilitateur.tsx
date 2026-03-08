@@ -1,6 +1,7 @@
 /**
  * Dashboard Facilitateur — Passive-First OS + Double Moteur
  * PROOF:EXECUTION_V1:facilitateur_dashboard_actions → LeadActionsQueue rendered here
+ * PROOF:PREMIUM_V1:dashboard_actionability → pipeline metrics always shown, actions linkable
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
