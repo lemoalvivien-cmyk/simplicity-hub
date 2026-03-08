@@ -1,7 +1,14 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  ReactNode,
+} from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { db } from "@/lib/supabase";
+import { useNavigate } from "react-router-dom";
 
 type AppRole = "entreprise" | "facilitateur" | "admin" | null;
 
@@ -23,6 +30,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  /** Called by SubscriptionContext to reset its state on logout */
+  registerSubscriptionReset: (fn: () => void) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,19 +41,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const subscriptionResetRef = useRef<(() => void) | null>(null);
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await db
+      const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, email, prenom, role, onboarding_done")
         .eq("id", userId)
         .maybeSingle();
       if (!error && data) {
         setProfile(data as Profile);
       }
     } catch {
-      // silent fail
+      // silent — network may be down
     }
   };
 
@@ -52,14 +62,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await fetchProfile(user.id);
   };
 
+  const registerSubscriptionReset = (fn: () => void) => {
+    subscriptionResetRef.current = fn;
+  };
+
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // ── PASSE A: Auth state listener — SIGNED_OUT triggers full cleanup + redirect ──
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
+
+        if (event === "SIGNED_OUT") {
+          setProfile(null);
+          // Reset subscription context
+          subscriptionResetRef.current?.();
+          // Clear React Query cache is done in signOut()
+          setLoading(false);
+          return;
+        }
+
+        if (event === "TOKEN_REFRESHED" && newSession?.user) {
+          // Silently refreshed — no need to re-fetch profile
+          setLoading(false);
+          return;
+        }
+
         if (newSession?.user) {
-          // Use setTimeout to avoid Supabase deadlock
           setTimeout(() => fetchProfile(newSession.user.id), 0);
         } else {
           setProfile(null);
@@ -88,7 +117,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: {
         data: { prenom: prenom || "" },
-        emailRedirectTo: window.location.origin,
+        // PASSE F: redirect to /login?confirmed=true so user sees confirmation banner
+        emailRedirectTo: `${window.location.origin}/login?confirmed=true`,
       },
     });
     return { error: error as Error | null };
@@ -100,16 +130,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // PASSE A: full cleanup before signOut
     setProfile(null);
     setUser(null);
     setSession(null);
+    subscriptionResetRef.current?.();
+
+    // Clear all Supabase localStorage keys to prevent stale session on back-button
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("sb-") || key.startsWith("supabase")) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    await supabase.auth.signOut();
   };
 
   const role = profile?.role ?? null;
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, role, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        profile,
+        loading,
+        role,
+        signUp,
+        signIn,
+        signOut,
+        refreshProfile,
+        registerSubscriptionReset,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

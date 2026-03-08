@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
-import { Eye, EyeOff, Zap, AlertCircle, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Zap, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
@@ -13,6 +13,11 @@ export default function Login() {
   const [redirecting, setRedirecting] = useState(false);
   const { signIn, profile, loading, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  // PASSE F: preserve intent URL + show confirmation banner
+  const confirmed = searchParams.get("confirmed") === "true";
+  const from = (location.state as { from?: Location })?.from?.pathname || null;
 
   // Redirect ONLY after profile is fully loaded (not on every render)
   useEffect(() => {
@@ -25,9 +30,10 @@ export default function Login() {
     } else if (profile.role === "admin") {
       navigate("/admin", { replace: true });
     } else {
-      navigate("/dashboard/facilitateur", { replace: true });
+      // PASSE F: restore intent URL if available
+      navigate(from || "/dashboard/facilitateur", { replace: true });
     }
-  }, [loading, user, profile, navigate]);
+  }, [loading, user, profile, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +75,13 @@ export default function Login() {
 
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
+          {/* PASSE F: email confirmation banner */}
+          {confirmed && (
+            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-success-light border border-success/20 mb-4">
+              <CheckCircle2 size={15} className="text-success shrink-0" />
+              <p className="text-sm text-success font-medium">Email confirmé ! Connectez-vous pour accéder à votre espace.</p>
+            </div>
+          )}
           <div className="text-center mb-8">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"

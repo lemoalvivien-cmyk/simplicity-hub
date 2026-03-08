@@ -72,7 +72,7 @@ export default function DashboardFacilitateur() {
           .eq("facilitator_id", user.id).order("created_at", { ascending: false }).limit(5),
         db.from("facilitator_requests").select("id, request_context, status, openclaw_note")
           .eq("facilitator_user_id", user.id).in("status", ["envoyee", "vue"]).order("created_at", { ascending: false }).limit(3),
-        db.from("gains").select("id, montant, statut").eq("facilitateur_id", user.id),
+        db.from("gains").select("id, montant, statut").eq("facilitateur_id", user.id).limit(200),
         db.from("introductions").select("id", { count: "exact", head: true }).eq("facilitateur_id", user.id),
         db.from("missions").select("id", { count: "exact", head: true }).eq("statut", "active"),
         db.from("missions").select("id, titre, recompense").eq("statut", "active").order("created_at", { ascending: false }).limit(1),

@@ -36,6 +36,7 @@ import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import DashboardEntreprise from "./pages/DashboardEntreprise";
 import DashboardFacilitateur from "./pages/DashboardFacilitateur";
+import { useAuth } from "@/contexts/AuthContext";
 import Assistant from "./pages/Assistant";
 import Help from "./pages/Help";
 import Account from "./pages/Account";
@@ -110,6 +111,13 @@ import AdminSystemHealth from "./pages/admin/SystemHealth";
 
 const queryClient = new QueryClient();
 
+// PASSE C: Route /dashboard to the correct dashboard based on user role
+function DashboardRouter() {
+  const { role } = useAuth();
+  if (role === "entreprise") return <DashboardEntreprise />;
+  return <DashboardFacilitateur />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -154,7 +162,8 @@ const App = () => (
               {/* ── Dashboards ───────────────────────────── */}
               <Route path="/dashboard/entreprise" element={<ProtectedRoute><DashboardEntreprise /></ProtectedRoute>} />
               <Route path="/dashboard/facilitateur" element={<ProtectedRoute><DashboardFacilitateur /></ProtectedRoute>} />
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardFacilitateur /></ProtectedRoute>} />
+              {/* ── PASSE C: /dashboard routes to correct dashboard per role ── */}
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
 
               {/* ── Prospection ──────────────────────────── */}
               <Route path="/contacts" element={<ProtectedRoute><Contacts /></ProtectedRoute>} />

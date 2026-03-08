@@ -1,6 +1,7 @@
-import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { ReactNode, useEffect } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -9,6 +10,20 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   const { user, loading, profile, role } = useAuth();
+  const location = useLocation();
+
+  // PASSE A: Re-validate session when tab regains focus to catch expired tokens
+  useEffect(() => {
+    const handleFocus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        // Session expired — supabase onAuthStateChange will handle the SIGNED_OUT event
+        await supabase.auth.signOut();
+      }
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, []);
 
   if (loading) {
     return (
@@ -22,7 +37,8 @@ export default function ProtectedRoute({ children, adminOnly = false }: Protecte
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    // PASSE F: preserve intent URL so Login can redirect back
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (adminOnly && role !== "admin") {
@@ -31,7 +47,7 @@ export default function ProtectedRoute({ children, adminOnly = false }: Protecte
 
   // Redirect to onboarding if not done
   if (profile && !profile.onboarding_done && !adminOnly) {
-    const currentPath = window.location.pathname;
+    const currentPath = location.pathname;
     if (!currentPath.startsWith("/onboarding")) {
       return <Navigate to="/onboarding" replace />;
     }

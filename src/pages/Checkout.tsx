@@ -35,11 +35,14 @@ export default function Checkout() {
   const [localLaunchAvailable, setLocalLaunchAvailable] = useState(true);
   const [localSlotsRemaining, setLocalSlotsRemaining] = useState(100);
 
+  // PASSE E: refresh subscription immediately when Stripe redirects back with ?success=true
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       const offerParam = searchParams.get("offer");
       setSuccessType(offerParam === "launch" ? "stripe_launch" : offerParam === "standard" ? "stripe_standard" : "promo");
       setStep("success");
+      // Trigger immediate subscription refresh — don't wait for the 5-min interval
+      refresh();
     }
     supabase.from("launch_quota").select("total_slots, used_slots").single().then(({ data }) => {
       if (data) {
@@ -48,7 +51,7 @@ export default function Checkout() {
         setLocalSlotsRemaining(remaining);
       }
     });
-  }, [searchParams]);
+  }, [searchParams, refresh]);
 
   const effectiveLaunchAvailable = user ? launchAvailable : localLaunchAvailable;
   const effectiveSlotsRemaining = user ? launchSlotsRemaining : localSlotsRemaining;
@@ -84,13 +87,15 @@ export default function Checkout() {
       window.location.href = "/signup?redirect=/checkout";
       return;
     }
+    // PASSE E: mutex — prevents double-click spawning 2 Stripe sessions
+    if (checkoutLoading) return;
     setCheckoutLoading(true);
     setCheckoutError("");
     try {
       const result = await startCheckout();
       setSuccessType(result?.offer_type === "launch" ? "stripe_launch" : "stripe_standard");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t("error");
+      const msg = err instanceof Error ? err.message : "Impossible d'ouvrir le paiement. Réessayez.";
       setCheckoutError(msg);
     } finally {
       setCheckoutLoading(false);
@@ -376,7 +381,7 @@ export default function Checkout() {
                 <button
                   onClick={handleStripeCheckout}
                   disabled={checkoutLoading}
-                  className="flex-1 btn-cta text-sm flex items-center justify-center gap-2 disabled:opacity-70"
+                  className="flex-1 btn-cta text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {checkoutLoading ? (
                     <><Loader2 size={14} className="animate-spin" /> {t("loading")}</>
