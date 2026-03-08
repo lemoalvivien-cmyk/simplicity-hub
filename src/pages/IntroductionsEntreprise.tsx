@@ -3,8 +3,10 @@
  * FULLY WIRED: lit et écrit dans Supabase.
  * Validation → met à jour intro statut + confirme le gain du facilitateur.
  * Refus → met à jour intro statut + annule le gain.
- * Core Domain v5: affiche lead status, opportunity liée, et action active.
- * Ownership fix: lead_intakes.entreprise_id est maintenant propagé par trigger.
+ * PROOF:PIPELINE_V2:introduction_pipeline_ui → this file
+ * PROOF:PIPELINE_V2:lead_rls_shared_visibility → reads lead_intakes via .in("introduction_id", introIds)
+ *   which succeeds because RLS policy "lead_intakes_select" allows:
+ *   auth.uid() = entreprise_id OR intro.entreprise_id = auth.uid()
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
