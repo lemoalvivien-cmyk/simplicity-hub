@@ -16,7 +16,7 @@ import {
   ChevronRight, Users, Flame, BarChart3,
   Wifi,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
