@@ -1,5 +1,5 @@
 # INTERNATIONAL PREMIUM TRUTH — WIINUP MAX
-Version: 2026-03-08
+Version: 2026-03-08 (rev 2 — core flows pass)
 
 ## Langues déclarées (10)
 fr · en · es · pt · ru · zh · hi · bn · ar · he
@@ -18,8 +18,7 @@ fr · en · es · pt · ru · zh · hi · bn · ar · he
 
 ### src/lib/i18n.ts — EXISTE ✅
 - 10 langues configurées
-- ~180 clés par langue principale (fr, en, es)
-- Clés couvertes : Nav, Dashboard, Hero, Pricing (titres + listes + FAQ), BestAccessPanel, Corridors, Marketplace, PassiveOS, Ops/WarRoom, GoLive, Statuts
+- ~280 clés par langue principale (fr, en) — dont clés onboarding, checkout, dashboards, passiveOS
 - RTL auto : ar et he → `dir="rtl"` sur `<html>` via `setLanguage()` et init
 
 ---
@@ -28,34 +27,35 @@ fr · en · es · pt · ru · zh · hi · bn · ar · he
 
 | Fichier / Zone | État |
 |---|---|
-| `src/components/landing/HeroSection.tsx` | ✅ 100% useTranslation — zéro hardcodé |
-| `src/pages/Pricing.tsx` | ✅ 100% useTranslation — moteur1/2, apporteur, FAQ branchés |
+| `src/components/landing/HeroSection.tsx` | ✅ 100% useTranslation |
+| `src/pages/Pricing.tsx` | ✅ 100% useTranslation + formatAmount |
 | `src/components/graph/BestAccessPanel.tsx` | ✅ 100% useTranslation |
+| `src/pages/Onboarding.tsx` | ✅ 100% useTranslation — tous les steps |
+| `src/pages/Checkout.tsx` | ✅ 100% useTranslation + formatAmount |
+| `src/pages/DashboardEntreprise.tsx` | ✅ 100% useTranslation + formatNumber |
+| `src/pages/DashboardFacilitateur.tsx` | ✅ 100% useTranslation + formatNumber |
+| `src/pages/PassiveOS.tsx` | ✅ 100% useTranslation + formatNumber |
 | Nav (UserNav, PublicNav) | ✅ Partiellement via t() |
-| DashboardEntreprise | ⚠️ Clés i18n présentes — branchement t() non systématique |
-| DashboardFacilitateur | ⚠️ Clés i18n présentes — branchement t() non systématique |
-| PassiveOS | ⚠️ Clés disponibles — pages encore majoritairement hardcodées |
 | Operations / WarRoom | ⚠️ Clés disponibles — pages non encore branchées |
 | Admin pages | ✅ En français intentionnel (back-office admin = usage interne) |
-| Onboarding | ⚠️ Non encore internationalisé |
-| Checkout / Success | ⚠️ Non encore internationalisé |
 
 ---
 
-## Chaînes hardcodées SUPPRIMÉES dans ce chantier
+## Chaînes hardcodées supprimées dans ce chantier (rev 2)
 
 | Fichier | Chaîne supprimée |
 |---|---|
-| `src/pages/Pricing.tsx` | `const moteur1Items = [...]` — 6 chaînes FR |
-| `src/pages/Pricing.tsx` | `const moteur2Items = [...]` — 6 chaînes FR |
-| `src/pages/Pricing.tsx` | `const apporteurIncludes = [...]` — 6 chaînes FR |
-| `src/pages/Pricing.tsx` | `const faqItems = [...]` — 5 Q/R FR hardcodées |
+| `src/pages/Onboarding.tsx` | Tous les steps (welcome, rôle, profil, action, fin) — ~40 chaînes FR |
+| `src/pages/Checkout.tsx` | Tous les steps (choose, promo, payment, success) — ~30 chaînes FR |
+| `src/pages/DashboardEntreprise.tsx` | Labels, KPIs, CTAs, sections, empty states — ~25 chaînes FR |
+| `src/pages/DashboardFacilitateur.tsx` | Labels, KPIs, CTAs, sections, gains — ~25 chaînes FR |
+| `src/pages/PassiveOS.tsx` | KPIs, tabs, canaux, channels, OpenClaw — ~20 chaînes FR |
 
 ---
 
 ## Support RTL — état réel
 
-- `ar` et `he` : `dir="rtl"` appliqué sur `<html>` automatiquement à l'init et au changement
+- `ar` et `he` : `dir="rtl"` appliqué sur `<html>` automatiquement
 - Tailwind respecte `dir="rtl"` nativement (flex, text-align)
 - Radix UI composants : support RTL natif via direction
 - **Non testé visuellement page par page** — risque de débordement sur mobile pour textes AR/HE longs
@@ -66,32 +66,23 @@ fr · en · es · pt · ru · zh · hi · bn · ar · he
 
 | Fonction | Utilisée dans |
 |---|---|
-| `formatAmount` | `Pricing.tsx` ✅ |
+| `formatAmount` | `Pricing.tsx` ✅, `Checkout.tsx` ✅ |
+| `formatNumber` | `DashboardFacilitateur.tsx` ✅, `PassiveOS.tsx` ✅ |
 | `formatDateShort` | Disponible, non encore branchée sur pages internes |
-| `formatNumber` | Disponible, non encore branchée |
 | `formatPercent` | Disponible, non encore branchée |
 | `formatCompact` | Disponible, non encore branchée |
 | `formatDateRelative` | Disponible, non encore branchée |
 
 ---
 
-## Corridors internationaux — état réel
-
-- Clés i18n créées : France→Israël, France→UK, France→UAE, France→LATAM
-- `BestAccessPanel` affiche corridor_score et corridor label
-- `facilitator_match_scores` table contient `best_corridor`, `corridor_score`
-- Mise en avant dans les dashboards : clés créées, branchement partiel
-
----
-
 ## Limitations honnêtes restantes
 
-1. **hi, bn** : clés critiques uniquement (nav, hero, best_path) — fallback fr/en pour le reste
-2. **Pages internes** (Dashboard, PassiveOS, Ops, WarRoom) : clés i18n créées mais composants non branchés systématiquement avec `useTranslation`
-3. **Copy marketing profond** (FAQ détaillées landing, features items) : FR/EN complet, autres langues via fallback
-4. **RTL visuel** : non testé page par page sur toutes les pages de l'app
-5. **Checkout / Success / Onboarding** : non internationalisés dans ce chantier
-6. **formatDateShort / formatNumber sur pages internes** : non encore branchés
+1. **hi, bn** : clés critiques uniquement (nav, hero, best_path) — fallback fr/en pour les nouvelles clés onboarding/checkout/dashboards
+2. **Operations / WarRoom** : clés i18n créées, pages non encore branchées avec useTranslation
+3. **RTL visuel** : non testé page par page sur toutes les pages de l'app
+4. **formatDateShort / formatNumber sur pages internes** : non encore branchés sur Operations, WarRoom, Gains, etc.
+5. **Sector options & Goal options dans Onboarding** : encore hardcodés en français (données business difficiles à traduire sans liste complète de traduction secteurs)
+6. **Admin pages** : intentionnellement en français (back-office interne)
 
 ---
 
@@ -99,17 +90,4 @@ fr · en · es · pt · ru · zh · hi · bn · ar · he
 
 - "Visiteurs landing" : non mesurable via DB native — pas de tracker analytics externe branché
 - Clés hi/bn au-delà du minimum : fallback FR, pas de traduction complète
-
----
-
-## Preuve de suppression finale
-
-| Chaîne | État |
-|---|---|
-| `const moteur1Items = [` | **SUPPRIMÉ** de Pricing.tsx |
-| `const moteur2Items = [` | **SUPPRIMÉ** de Pricing.tsx |
-| `const apporteurIncludes = [` | **SUPPRIMÉ** de Pricing.tsx |
-| `const faqItems` avec hardcodage FR | **SUPPRIMÉ** — remplacé par t() |
-| `"Recevez vos premiers clients"` (hardcodé dans JSX) | **SUPPRIMÉ** — dans i18n.ts via hero_headline_1 |
-| `"Simple, honnête, transparent."` (hardcodé dans JSX) | **SUPPRIMÉ** — dans i18n.ts via pricing_title |
-| `"Pas de frais cachés."` (hardcodé dans JSX) | **SUPPRIMÉ** — dans i18n.ts via pricing_subtitle |
+- "RTL premium testé" : dir appliqué mais visuellement non audité page par page
