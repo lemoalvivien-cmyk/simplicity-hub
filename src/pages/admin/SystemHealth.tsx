@@ -1,7 +1,9 @@
 // PROOF:EXPORT_RECOVERY_V1:system_health_present → this file
+// PROOF:GOLIVE_OPS_V1:admin_golive_panel → this file
 /**
  * Admin — System Health / Feature Registry v2
  * PROOF:CANONICAL_EXPORT_V1:system_health_present → this file
+ * PROOF:GOLIVE_OPS_V1:admin_golive_panel → Go-Live Ops control tower section below
  * PROOF GATE: confidence badges, evidence panels, blocking issues from buildHealth.ts,
  * build health, remaining mocks, manual declarations.
  * PROOF:SYNC_GATE_V1:system_health_sync_stamp → BUILD_STAMP + Repo Sync Gate section below
@@ -18,7 +20,7 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Clock,
   Settings, Search, Filter, Shield, Code2,
   Cpu, ChevronDown, ChevronRight, Database, Zap, FileCode, Lock, Layers, GitCommit,
-  Activity, BarChart3, Telescope, Package, Bot
+  Activity, BarChart3, Telescope, Package, Bot, Radio, ExternalLink
 } from "lucide-react";
 // PROOF:AUTOMATION_V1:automation_rule_admin_visibility
 // PROOF:AUTOMATION_V1:automation_engine_health
@@ -30,6 +32,27 @@ import { BUILD_STAMP, SYNC_GATE_META, CRITICAL_FILES_EXPECTED, MIGRATIONS_EXPECT
 import { CANONICAL_BUILD_STAMP, CANONICAL_EXPORT_META } from "@/lib/canonicalBuildStamp";
 // PROOF:EXPORT_RECOVERY_V1:system_health_present — recovery stamp wired here
 import { EXPORT_RECOVERY_STAMP, EXPORT_RECOVERY_META } from "@/lib/exportRecoveryStamp";
+// PROOF:GOLIVE_OPS_V1:admin_golive_panel — ops health imported here
+import {
+  OPS_CHECKS,
+  OPS_HARD_BLOCKERS,
+  OPS_PLATFORM_ACTIONS,
+  OPS_EXTERNAL_ACTIONS,
+  OPS_MANUAL_STEPS,
+  OPS_CODE_ITEMS,
+  OPS_PASSING,
+  OPS_SCORE,
+  NPM_CI_STATUS,
+  BUILD_STATUS,
+  PUBLIC_BUILDER_TRACE_STATUS,
+  STRIPE_WEBHOOK_STATUS,
+  STRIPE_CUSTOMER_PORTAL_STATUS,
+  PASSIVE_INGESTION_MODE,
+  TEMPLATE_SUBSTITUTION_MODE,
+  type OpsCheck,
+  type OpsStatusValue,
+  type OpsResponsibility,
+} from "@/lib/goLiveOpsHealth";
 import {
   FEATURE_REGISTRY,
   STATUS_META,
@@ -78,6 +101,70 @@ import {
   LOVABLE_TRACE_STATUS,
 } from "@/lib/releaseCandidateHealth";
 import { supabase } from "@/integrations/supabase/client";
+
+// ── GO-LIVE OPS HELPERS ───────────────────────────────────────────────────────
+
+const OPS_STATUS_STYLE: Record<OpsStatusValue, { color: string; bg: string; label: string }> = {
+  PASS:            { color: "hsl(var(--success))",          bg: "hsl(var(--success-light))",       label: "PASS" },
+  FAIL:            { color: "hsl(0 65% 40%)",               bg: "hsl(0 65% 95%)",                  label: "FAIL" },
+  PARTIAL:         { color: "hsl(38 80% 35%)",              bg: "hsl(38 80% 95%)",                 label: "PARTIAL" },
+  NOT_VERIFIABLE:  { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))",               label: "NOT VERIF." },
+  CONFIG_MISSING:  { color: "hsl(0 65% 40%)",               bg: "hsl(0 65% 95%)",                  label: "MISSING" },
+  CONFIGURED:      { color: "hsl(var(--success))",          bg: "hsl(var(--success-light))",       label: "CONFIGURED" },
+  PRESENT:         { color: "hsl(218 72% 55%)",             bg: "hsl(218 72% 95%)",                label: "PRESENT" },
+  REMOVED:         { color: "hsl(var(--success))",          bg: "hsl(var(--success-light))",       label: "REMOVED" },
+  PLATFORM_OVERLAY:{ color: "hsl(38 80% 35%)",              bg: "hsl(38 80% 95%)",                 label: "PLATFORM" },
+  PAGE_MOUNT:      { color: "hsl(38 80% 35%)",              bg: "hsl(38 80% 95%)",                 label: "PAGE MOUNT" },
+  EVENT_DRIVEN:    { color: "hsl(var(--success))",          bg: "hsl(var(--success-light))",       label: "EVENT-DRIVEN" },
+  CLIENT_ONLY:     { color: "hsl(38 80% 35%)",              bg: "hsl(38 80% 95%)",                 label: "CLIENT ONLY" },
+  SERVER:          { color: "hsl(var(--success))",          bg: "hsl(var(--success-light))",       label: "SERVER" },
+  NONE:            { color: "hsl(0 65% 40%)",               bg: "hsl(0 65% 95%)",                  label: "NONE" },
+};
+
+const RESP_STYLE: Record<OpsResponsibility, { color: string; bg: string; label: string }> = {
+  CODE:          { color: "hsl(218 72% 55%)",  bg: "hsl(218 72% 95%)",  label: "CODE" },
+  PLATFORM:      { color: "hsl(280 60% 50%)",  bg: "hsl(280 60% 95%)",  label: "PLATFORM" },
+  EXTERNAL:      { color: "hsl(38 80% 35%)",   bg: "hsl(38 80% 95%)",   label: "EXTERNE" },
+  MANUAL_DEPLOY: { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))", label: "MANUEL" },
+};
+
+function OpsCheckRow({ check }: { check: OpsCheck }) {
+  const s = OPS_STATUS_STYLE[check.status];
+  const r = RESP_STYLE[check.responsibility];
+  return (
+    <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-muted/60 border border-border/40">
+      <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5 font-mono"
+        style={{ background: s.bg, color: s.color }}>
+        {s.label}
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-xs font-semibold text-foreground">{check.label}</p>
+          <span className="text-xs font-medium px-1.5 py-0.5 rounded shrink-0"
+            style={{ background: r.bg, color: r.color }}>
+            {r.label}
+          </span>
+        </div>
+        <p className="text-xs text-muted-foreground mt-0.5">{check.note}</p>
+        {check.action && check.status !== "PASS" && (
+          <p className="text-xs mt-1 font-medium" style={{ color: "hsl(218 72% 55%)" }}>
+            → {check.action}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OpsStatusChip({ value }: { value: OpsStatusValue }) {
+  const s = OPS_STATUS_STYLE[value];
+  return (
+    <span className="text-xs font-bold px-2 py-0.5 rounded font-mono"
+      style={{ background: s.bg, color: s.color }}>
+      {s.label}
+    </span>
+  );
+}
 
 const AREA_LABELS: Record<OwnerArea, string> = {
   acquisition:    "Acquisition",
@@ -279,11 +366,146 @@ export default function AdminSystemHealth() {
   const declaredFeatures = getDeclaredOnlyFeatures();
   const envFeatures = getEnvBlockedFeatures();
 
+  const [showGoLiveOps, setShowGoLiveOps] = useState(true);
+
   return (
     <AdminLayout
       title="System Health — Feature Registry v2"
       subtitle="État réel, preuves techniques, bloquants prod. Source: src/lib/featureRegistry.ts + src/lib/buildHealth.ts"
     >
+
+      {/* ── GO-LIVE OPS — TOUR DE CONTRÔLE ── */}
+      {/* PROOF:GOLIVE_OPS_V1:admin_golive_panel → rendered here */}
+      <div className="mb-6 rounded-xl border-2 bg-card overflow-hidden"
+        style={{ borderColor: OPS_HARD_BLOCKERS.length > 0 ? "hsl(0 65% 70%)" : "hsl(var(--border))" }}>
+        <button
+          className="flex items-center justify-between w-full p-4 hover:bg-muted/30 transition-colors"
+          onClick={() => setShowGoLiveOps(!showGoLiveOps)}
+        >
+          <div className="flex items-center gap-2">
+            <Radio size={16} style={{ color: OPS_HARD_BLOCKERS.length > 0 ? "hsl(0 65% 40%)" : "hsl(var(--success))" }} />
+            <h2 className="font-semibold text-foreground text-sm">
+              Go-Live Ops — Tour de contrôle
+            </h2>
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full ml-1"
+              style={{
+                background: OPS_HARD_BLOCKERS.length > 0 ? "hsl(0 65% 95%)" : "hsl(var(--success-light))",
+                color: OPS_HARD_BLOCKERS.length > 0 ? "hsl(0 65% 40%)" : "hsl(var(--success))",
+              }}>
+              {OPS_HARD_BLOCKERS.length > 0
+                ? `${OPS_HARD_BLOCKERS.length} BLOQUEUR${OPS_HARD_BLOCKERS.length > 1 ? "S" : ""}`
+                : `${OPS_SCORE}% OK`}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground font-mono">
+              Source: goLiveOpsHealth.ts
+            </span>
+            {showGoLiveOps ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
+          </div>
+        </button>
+
+        {showGoLiveOps && (
+          <div className="px-4 pb-4 space-y-4">
+            {/* ── STATUS RAPIDE ── */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+              {[
+                { label: "npm ci", value: NPM_CI_STATUS },
+                { label: "Badge public", value: PUBLIC_BUILDER_TRACE_STATUS },
+                { label: "Stripe webhook", value: STRIPE_WEBHOOK_STATUS },
+                { label: "Customer Portal", value: STRIPE_CUSTOMER_PORTAL_STATUS },
+                { label: "Passive ingestion", value: PASSIVE_INGESTION_MODE },
+                { label: "Template substitution", value: TEMPLATE_SUBSTITUTION_MODE },
+                { label: "Build Vite", value: BUILD_STATUS },
+                { label: "Action queue mutations", value: "PASS" as const },
+              ].map(item => (
+                <div key={item.label} className="flex flex-col gap-1 p-2.5 rounded-lg bg-muted/60 border border-border/40">
+                  <p className="text-xs text-muted-foreground font-medium">{item.label}</p>
+                  <OpsStatusChip value={item.value} />
+                </div>
+              ))}
+            </div>
+
+            {/* ── SÉPARATION PAR RESPONSABILITÉ ── */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              {/* PLATFORM */}
+              <div className="p-3 rounded-lg border border-border bg-muted/30">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="font-bold px-1.5 py-0.5 rounded text-xs"
+                    style={{ background: "hsl(280 60% 95%)", color: "hsl(280 60% 50%)" }}>
+                    PLATFORM
+                  </span>
+                  <span className="text-muted-foreground">— Lovable Project Settings</span>
+                </div>
+                {OPS_PLATFORM_ACTIONS.map(c => (
+                  <p key={c.id} className="text-xs text-muted-foreground mb-1">
+                    {c.status !== "PASS" ? "⚠ " : "✓ "}{c.label}
+                  </p>
+                ))}
+              </div>
+
+              {/* EXTERNAL */}
+              <div className="p-3 rounded-lg border border-border bg-muted/30">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="font-bold px-1.5 py-0.5 rounded text-xs"
+                    style={{ background: "hsl(38 80% 95%)", color: "hsl(38 80% 35%)" }}>
+                    EXTERNE
+                  </span>
+                  <span className="text-muted-foreground">— Services tiers</span>
+                </div>
+                {OPS_EXTERNAL_ACTIONS.map(c => (
+                  <p key={c.id} className="text-xs text-muted-foreground mb-1">
+                    {c.status !== "PASS" && c.status !== "CONFIGURED" ? "⚠ " : "✓ "}{c.label}
+                  </p>
+                ))}
+              </div>
+
+              {/* MANUEL */}
+              <div className="p-3 rounded-lg border border-border bg-muted/30">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className="font-bold px-1.5 py-0.5 rounded text-xs"
+                    style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                    MANUEL
+                  </span>
+                  <span className="text-muted-foreground">— Steps humains</span>
+                </div>
+                {OPS_MANUAL_STEPS.map(c => (
+                  <p key={c.id} className="text-xs text-muted-foreground mb-1">
+                    {c.status !== "PASS" ? "⬜ " : "✓ "}{c.label}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            {/* ── HARD BLOCKERS DÉTAIL ── */}
+            {OPS_HARD_BLOCKERS.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2">
+                  🚫 Bloqueurs actifs ({OPS_HARD_BLOCKERS.length})
+                </p>
+                <div className="space-y-1.5">
+                  {OPS_HARD_BLOCKERS.map(c => <OpsCheckRow key={c.id} check={c} />)}
+                </div>
+              </div>
+            )}
+
+            {/* ── TOUTES LES VÉRIFICATIONS ── */}
+            <details className="text-xs">
+              <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors mb-2">
+                Voir toutes les vérifications ops ({OPS_CHECKS.length})
+              </summary>
+              <div className="space-y-1.5 mt-2">
+                {OPS_CHECKS.map(c => <OpsCheckRow key={c.id} check={c} />)}
+              </div>
+            </details>
+
+            <p className="text-xs text-muted-foreground">
+              Source : <code className="bg-muted px-1 rounded">src/lib/goLiveOpsHealth.ts</code> —
+              Checklist : <code className="bg-muted px-1 rounded">docs/GO_LIVE_CHECKLIST.md</code>
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* ── SECTION 1: BLOCKING ISSUES FOR PRODUCTION ── */}
       <div className="mb-6 p-4 rounded-xl border-2 rounded-xl bg-card"
