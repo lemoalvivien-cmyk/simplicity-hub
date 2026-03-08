@@ -1,18 +1,16 @@
 /**
  * openclaw-scheduler
  * ──────────────────
- * Autonomous scheduler: claims due jobs from openclaw_job_queue,
- * executes them via openclaw-job-executor, handles retries and backoff.
+ * SECURITY HARDENED v2:
+ *   - user JWT can ONLY target its own user_id
+ *   - service_role (pg_cron) may pass body.user_id to target any user
+ *   - body.user_id from a non-service-role call is SILENTLY IGNORED (uses JWT userId)
  *
  * Invoked by:
  *   - pg_cron every 5 minutes  (jobid:4 openclaw-scheduler-tick)
  *   - pg_cron daily at 07:00   (jobid:5 openclaw-daily-sweep)
  *   - pg_cron weekly monday 06 (jobid:6 openclaw-weekly-sweep)
- *   - Manual trigger from Operations UI
- *
- * PROOF LAYER: Every invocation writes:
- *   - openclaw_scheduled_runs (started + ended row)
- *   - openclaw_scheduler_heartbeats (per user + global)
+ *   - Manual trigger from Operations UI (user JWT)
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
@@ -30,16 +28,14 @@ interface SchedulerRequest {
   user_id?: string;
   max_jobs?: number;
   dry_run?: boolean;
-  run_key?: string;      // "scheduler_tick" | "daily_sweep" | "weekly_sweep" | "manual_trigger" | "smoke_test"
-  trigger_source?: string; // "cron" | "manual" | "smoke_test"
+  run_key?: string;
+  trigger_source?: string;
 }
 
-// Compute next_run_at for known run_key cadences
 function computeNextRun(runKey: string): string | null {
   const now = new Date();
   switch (runKey) {
     case "scheduler_tick": {
-      // Next multiple of 5 minutes
       const mins = now.getMinutes();
       const nextMins = Math.ceil((mins + 1) / 5) * 5;
       const next = new Date(now);
@@ -77,13 +73,7 @@ Deno.serve(async (req) => {
     const svc = createClient(supabaseUrl, serviceKey);
 
     // ── Auth ─────────────────────────────────────────────────────────────────
-    // Strategy:
-    //   1. Bearer <SUPABASE_SERVICE_ROLE_KEY>  → pg_cron / internal scheduler call → OK
-    //   2. Bearer <user JWT>                   → authenticated user trigger        → OK
-    //   3. No / invalid token                  → 401
     const authHeader = req.headers.get("Authorization") || "";
-    let requestUserId: string | null = null;
-
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Missing authorization" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -91,9 +81,9 @@ Deno.serve(async (req) => {
     }
 
     const isServiceRole = authHeader === `Bearer ${serviceKey}`;
+    let requestUserId: string | null = null;
 
     if (!isServiceRole) {
-      // Validate as a user JWT
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
@@ -105,12 +95,22 @@ Deno.serve(async (req) => {
       }
       requestUserId = user.id;
     }
-    // If isServiceRole: requestUserId stays null → scheduler processes all pending users
 
     let body: SchedulerRequest = {};
     try { body = await req.json(); } catch { /* cron may send empty body */ }
 
-    const targetUserId   = body.user_id || requestUserId;
+    // ── SECURITY GUARD: user_id override only allowed for service_role ────────
+    // A non-service-role JWT CANNOT target another user's jobs via body.user_id.
+    // If they attempt it, body.user_id is IGNORED — only their own ID is used.
+    let targetUserId: string | null;
+    if (isServiceRole) {
+      // pg_cron / internal: may specify a target user_id or null (= all users)
+      targetUserId = body.user_id || null;
+    } else {
+      // User JWT: ALWAYS their own user_id. body.user_id is IGNORED.
+      targetUserId = requestUserId;
+    }
+
     const maxJobs        = body.max_jobs || MAX_JOBS_PER_TICK;
     const dryRun         = body.dry_run || false;
     const runKey         = body.run_key || (targetUserId ? "manual_trigger" : "scheduler_tick");
@@ -141,6 +141,7 @@ Deno.serve(async (req) => {
     if (targetUserId) {
       userIds = [targetUserId];
     } else {
+      // Service role only: fetch all pending users
       const { data: pendingUsers } = await svc
         .from("openclaw_job_queue")
         .select("user_id")
@@ -222,8 +223,11 @@ Deno.serve(async (req) => {
             });
             if (execResult.status === "termine") { completed++; }
             else { failed++; }
-            results.push({ job_id: job.job_id, job_type: job.job_type, trigger_source: triggerSource,
-              status: execResult.status === "termine" ? "done" : "failed", output_count: execResult.output_count });
+            results.push({
+              job_id: job.job_id, job_type: job.job_type,
+              status: execResult.status === "termine" ? "done" : "failed",
+              output_count: execResult.output_count,
+            });
           } else {
             const errText = await execResponse.text();
             await svc.rpc("complete_queue_job", {
@@ -245,7 +249,6 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Write per-user heartbeat
       const engineStatus =
         failed > 0 && completed === 0 ? "error"
         : failed > 0 ? "degraded"
@@ -262,7 +265,6 @@ Deno.serve(async (req) => {
         note: dryRun ? "dry_run" : `run_key:${runKey}`,
       });
 
-      // Clean up old heartbeats (keep 48h)
       await svc.from("openclaw_scheduler_heartbeats")
         .delete()
         .eq("user_id", userId)
@@ -273,11 +275,9 @@ Deno.serve(async (req) => {
       totalFailed    += failed;
     }
 
-    // ── Write global heartbeat (cron ticks even with 0 users) ────────────────
-    // This is the PROOF that cron ran. Written for every tick regardless of user count.
     if (triggerSource === "cron" || runKey === "smoke_test") {
       await svc.from("openclaw_scheduler_heartbeats").insert({
-        user_id: null,           // global / cron-level heartbeat
+        user_id: null,
         jobs_claimed: totalClaimed,
         jobs_completed: totalCompleted,
         jobs_failed: totalFailed,
@@ -289,21 +289,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── Close scheduled_run row ───────────────────────────────────────────────
     if (scheduledRunId) {
-      const durationMs = Date.now() - tickStart;
-      const finalStatus =
-        totalFailed > 0 && totalCompleted === 0 ? "failed"
-        : dryRun ? "done"
-        : "done";
-
       await svc.from("openclaw_scheduled_runs").update({
-        status: finalStatus,
+        status: totalFailed > 0 && totalCompleted === 0 ? "failed" : "done",
         jobs_claimed: totalClaimed,
         jobs_completed: totalCompleted,
         jobs_failed: totalFailed,
         ended_at: new Date().toISOString(),
-        duration_ms: durationMs,
+        duration_ms: Date.now() - tickStart,
         error_detail: totalFailed > 0 ? `${totalFailed} job(s) failed` : null,
       }).eq("id", scheduledRunId);
     }
