@@ -75,6 +75,13 @@ export default function Login() {
 
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
+          {/* PASSE F: email confirmation banner */}
+          {confirmed && (
+            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-success-light border border-success/20 mb-4">
+              <CheckCircle2 size={15} className="text-success shrink-0" />
+              <p className="text-sm text-success font-medium">Email confirmé ! Connectez-vous pour accéder à votre espace.</p>
+            </div>
+          )}
           <div className="text-center mb-8">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
