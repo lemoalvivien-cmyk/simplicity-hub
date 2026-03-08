@@ -88,13 +88,17 @@ prevents that case from arising.
 | Scenario | Safe? | Notes |
 |----------|-------|-------|
 | Fresh deploy (all 5 migrations in order) | ✅ Yes | `4ea7ab1c` seeds quota row; `1c3240fc` enforces singleton; constraints idempotent |
-| Replay with dirty `event_type` data | ✅ Yes | `d5ca7889` + `4ea7ab1c` both UPDATE before CHECK |
+| Replay with dirty `event_type` data in `landing_ab_events` | ✅ Yes | `d5ca7889` + `4ea7ab1c` both UPDATE before CHECK |
 | `d8c2baed` applied alone on dirty data | ❌ No | CHECK without prior UPDATE will fail if bad rows exist |
 | `launch_quota` multiple rows on dirty DB + migration `1c3240fc` | ❌ No | `CREATE UNIQUE INDEX` will fail if >1 row already exists — no cleanup is run before the index |
 
-**Verdict**: Fresh deploy with all 5 migrations is safe. Historical dirty replay
-is safe if the squash `4ea7ab1c` was included. `d8c2baed` alone on dirty data is
-still unsafe — the fix is to always run the full migration chain.
+**Verdict**: Fresh deploy with all 5 migrations in order is safe.
+
+Historical dirty replay is **partially safe**:
+- ✅ Safe for `landing_ab_events` constraint replay, provided the full chain (including squash `4ea7ab1c`) is applied.
+- ❌ **Not safe** if `launch_quota` already contains more than one row — migration `1c3240fc` will fail with a unique index error. Manual dedup is required before the index can be created. See `docs/REPAIR_LAUNCH_QUOTA.md` for the procedure.
+
+`d8c2baed` alone on dirty data is still unsafe — always run the full migration chain.
 
 ---
 
