@@ -2,45 +2,55 @@
  * BUILD STAMP — Repo Sync Gate proof of identity.
  * PROOF:SYNC_GATE_V1:build_stamp_visible → this file
  * PROOF:RELEASE_V1:build_stamp_consistency → this file
+ * PROOF:RELEASE_SYNC_V1:build_stamp_visible → this file
  *
  * Generated: 2026-03-08
- * Passe courante: RELEASE INTEGRITY V1
+ * Passe courante: RELEASE SYNC GATE V1
  *
  * Ce fichier est l'ancre unique entre le repo, l'export zip et le preview déployé.
- * Le stamp courant est RELEASE-2026-03-08-1300-V1.
- * Les anciens stamps (SYNCGATE-*, GOLIVE-*) sont de l'historique uniquement.
+ * Le stamp courant est RELEASESYNC-2026-03-08-1315-V1.
+ * Les anciens stamps (SYNCGATE-*, GOLIVE-*, RELEASE-*) sont de l'historique uniquement.
  *
  * Pour vérifier:
- *   grep -r "RELEASE-2026-03-08-1300-V1" src/
+ *   grep -r "RELEASESYNC-2026-03-08-1315-V1" src/
+ *   grep -r "PROOF:RELEASE_SYNC_V1" src/ docs/
  *   grep -r "PROOF:RELEASE_V1" src/ supabase/ docs/
  */
 
 // PROOF:SYNC_GATE_V1:build_stamp_visible
 // PROOF:RELEASE_V1:build_stamp_consistency
+// PROOF:RELEASE_SYNC_V1:build_stamp_visible
 // PROOF:GOLIVE_V1:ops_diagnostics_panel → see SystemHealth.tsx
-export const BUILD_STAMP = "RELEASE-2026-03-08-1300-V1" as const;
+export const BUILD_STAMP = "RELEASESYNC-2026-03-08-1315-V1" as const;
 
 export const SYNC_GATE_META = {
   stamp:       BUILD_STAMP,
-  pass:        "RELEASE_INTEGRITY_V1",
+  pass:        "RELEASE_SYNC_GATE_V1",
   date:        "2026-03-08",
-  time:        "13:00",
-  description: "Release Integrity — unique constraints seeds, admin_forensics_summary RPC, package manager truth, prod clean, release blockers source of truth",
+  time:        "13:15",
+  description: "Release Sync Gate — proof that code/zip/repo are the same. No new features. Stamp only.",
   history: [
-    { stamp: "SYNCGATE-2026-03-08-1147-V1", pass: "REPO_SYNC_GATE_V1",    date: "2026-03-08" },
-    { stamp: "GOLIVE-2026-03-08-1200-V1",   pass: "GOLIVE_HARDENING_V1",  date: "2026-03-08" },
-    { stamp: "RELEASE-2026-03-08-1300-V1",  pass: "RELEASE_INTEGRITY_V1", date: "2026-03-08" },
+    { stamp: "SYNCGATE-2026-03-08-1147-V1",    pass: "REPO_SYNC_GATE_V1",     date: "2026-03-08" },
+    { stamp: "GOLIVE-2026-03-08-1200-V1",       pass: "GOLIVE_HARDENING_V1",   date: "2026-03-08" },
+    { stamp: "RELEASE-2026-03-08-1300-V1",      pass: "RELEASE_INTEGRITY_V1",  date: "2026-03-08" },
+    { stamp: "RELEASESYNC-2026-03-08-1315-V1",  pass: "RELEASE_SYNC_GATE_V1",  date: "2026-03-08" },
   ],
 } as const;
 
 /**
  * CRITICAL FILES — Expected to be present in the repo.
- * PROOF:SYNC_GATE_V1:feature_registry_present  → src/lib/featureRegistry.ts
- * PROOF:SYNC_GATE_V1:build_health_present       → src/lib/buildHealth.ts
- * PROOF:SYNC_GATE_V1:lead_actions_file_present  → src/hooks/useLeadActions.ts
- * PROOF:SYNC_GATE_V1:pipeline_metrics_file_present → src/hooks/usePipelineMetrics.ts
- * PROOF:SYNC_GATE_V1:opportunities_page_present → src/pages/Opportunites.tsx
- * PROOF:SYNC_GATE_V1:passive_page_present       → src/pages/PassiveOS.tsx
+ * PROOF:SYNC_GATE_V1:feature_registry_present       → src/lib/featureRegistry.ts
+ * PROOF:SYNC_GATE_V1:build_health_present            → src/lib/buildHealth.ts
+ * PROOF:SYNC_GATE_V1:lead_actions_file_present       → src/hooks/useLeadActions.ts
+ * PROOF:SYNC_GATE_V1:pipeline_metrics_file_present   → src/hooks/usePipelineMetrics.ts
+ * PROOF:SYNC_GATE_V1:opportunities_page_present      → src/pages/Opportunites.tsx
+ * PROOF:SYNC_GATE_V1:passive_page_present            → src/pages/PassiveOS.tsx
+ * PROOF:RELEASE_SYNC_V1:regles_page_present          → src/pages/Regles.tsx
+ * PROOF:RELEASE_SYNC_V1:messages_page_present        → src/pages/Messages.tsx
+ * PROOF:RELEASE_SYNC_V1:system_health_present        → src/pages/admin/SystemHealth.tsx
+ * PROOF:RELEASE_SYNC_V1:build_health_present         → src/lib/buildHealth.ts
+ * PROOF:RELEASE_SYNC_V1:package_lock_present         → package-lock.json
+ * PROOF:RELEASE_SYNC_V1:migrations_present           → supabase/migrations/
  */
 export const CRITICAL_FILES_EXPECTED = [
   "src/lib/buildStamp.ts",
@@ -58,7 +68,11 @@ export const CRITICAL_FILES_EXPECTED = [
   "src/pages/admin/SystemHealth.tsx",
   "src/pages/Opportunites.tsx",
   "src/pages/PassiveOS.tsx",
+  "src/pages/Regles.tsx",
+  "src/pages/Messages.tsx",
   "docs/REPO_SYNC_MANIFEST.md",
+  "package.json",
+  "package-lock.json",
 ] as const;
 
 export const MIGRATIONS_EXPECTED = [

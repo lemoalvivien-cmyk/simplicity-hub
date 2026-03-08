@@ -25,13 +25,13 @@ export const PACKAGE_MANAGER_TRUTH = {
 } as const;
 
 // PROOF:RELEASE_V1:build_stamp_consistency
-// Stamp courant : RELEASE-2026-03-08-1300-V1
-// Ce stamp est le seul stamp de référence pour la passe RELEASE INTEGRITY V1.
-// Les anciens stamps (SYNCGATE-*, GOLIVE-*) restent dans l'historique mais
-// le stamp courant dans buildStamp.ts doit être RELEASE-2026-03-08-1300-V1.
-export const CURRENT_STAMP = "RELEASE-2026-03-08-1300-V1" as const;
+// PROOF:RELEASE_SYNC_V1:build_stamp_visible
+// Stamp courant : RELEASESYNC-2026-03-08-1315-V1
+// Passe RELEASE_SYNC_GATE_V1 — synchronisation zip/repo/code prouvée.
+export const CURRENT_STAMP = "RELEASESYNC-2026-03-08-1315-V1" as const;
 
 // PROOF:RELEASE_V1:repo_manifest_consistency
+// PROOF:RELEASE_SYNC_V1:repo_sync_manifest
 export const MANIFEST_FILE = "docs/REPO_SYNC_MANIFEST.md" as const;
 
 export type ReleaseBlockerSeverity = "blocker" | "warning" | "info";
