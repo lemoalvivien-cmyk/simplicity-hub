@@ -518,6 +518,46 @@ export default function AdminSystemHealth() {
           Mise à jour manuelle à chaque itération.
         </p>
       </div>
+
+      {/* ── PROOF INDEX PIPELINE V2 ── */}
+      {/* PROOF:PIPELINE_V2:enterprise_dashboard_pipeline — visible below */}
+      <div className="mt-6 p-5 rounded-xl border-2 bg-card" style={{ borderColor: "hsl(var(--primary) / 0.3)" }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Layers size={14} className="text-primary" />
+          <h3 className="font-semibold text-foreground text-sm">PROOF INDEX — Pipeline V2</h3>
+          <code className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">grep PROOF:PIPELINE_V2</code>
+        </div>
+        <div className="space-y-2">
+          {[
+            { slug: "lead_tables_created",        status: "YES",             file: "supabase/migrations/20260308092314_*.sql",          note: "Tables: lead_source_events, lead_intakes, lead_entity_links" },
+            { slug: "lead_rls_shared_visibility",  status: "YES",             file: "supabase/migrations/20260308100159_*.sql lines 63-104", note: "Policy lead_intakes_select: user_id OR entreprise_id OR via intro.entreprise_id" },
+            { slug: "opportunity_factory",         status: "YES",             file: "supabase/migrations/20260308100159_*.sql lines 155+",  note: "Function promote_lead_to_opportunity() with anti-dup by company_name" },
+            { slug: "lead_actions_queue",          status: "YES",             file: "supabase/migrations/20260308100159_*.sql lines 1-60",  note: "Table lead_actions + upsert_lead_action() + on_lead_intake_action_sync trigger" },
+            { slug: "radar_pipeline_wired",        status: "YES",             file: "src/pages/Radar.tsx line ~129",                       note: "addManualSignal() calls createLeadFromRadar() → lead_source_events + lead_intakes" },
+            { slug: "passive_pipeline_wired",      status: "NOT_IMPLEMENTED", file: "src/lib/leadPipeline.ts (helper exists, not called)",  note: "createLeadFromPassive() exists but PassiveOS.tsx does not call it yet" },
+            { slug: "enterprise_dashboard_pipeline", status: "YES",           file: "src/pages/DashboardEntreprise.tsx",                    note: "<UnifiedLeadsBlock asEntreprise /> renders pipeline summary for company" },
+            { slug: "facilitateur_dashboard_pipeline", status: "YES",         file: "src/pages/DashboardFacilitateur.tsx",                  note: "<UnifiedLeadsBlock asEntreprise={false} /> renders pipeline for facilitateur" },
+            { slug: "introduction_pipeline_ui",    status: "YES",             file: "src/pages/IntroductionsEntreprise.tsx lines 122-149",   note: "<LeadIntakeStatus /> + <LeadActionBadge /> per introduction" },
+          ].map(({ slug, status, file, note }) => (
+            <div key={slug} className="flex items-start gap-3 p-3 rounded-lg bg-muted/40">
+              <span
+                className="shrink-0 text-xs font-bold px-2 py-0.5 rounded-full mt-0.5"
+                style={{
+                  color: status === "YES" ? "hsl(var(--success))" : status === "NOT_IMPLEMENTED" ? "hsl(0 65% 40%)" : "hsl(38 80% 30%)",
+                  background: status === "YES" ? "hsl(var(--success-light))" : status === "NOT_IMPLEMENTED" ? "hsl(0 65% 95%)" : "hsl(var(--accent-light))",
+                }}
+              >
+                {status}
+              </span>
+              <div className="min-w-0">
+                <code className="text-xs font-mono text-primary block">PROOF:PIPELINE_V2:{slug}</code>
+                <code className="text-xs text-muted-foreground block truncate">{file}</code>
+                <p className="text-xs text-muted-foreground mt-0.5">{note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </AdminLayout>
   );
 }
