@@ -44,8 +44,10 @@ export default function DashboardEntreprise() {
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
   const isLaunchMode = missions.length === 0;
-  // PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics
   const metrics = usePipelineMetrics();
+
+  // AI recommendations badge
+  const [aiRecoCount, setAiRecoCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -54,24 +56,28 @@ export default function DashboardEntreprise() {
       try {
         const missionIds = (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
 
-        const [missionsRes, introsRes, hotOppsRes] = await Promise.all([
+        const [missionsRes, introsRes, hotOppsRes, aiRecoRes] = await Promise.all([
           db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(3),
           missionIds.length > 0
             ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).order("created_at", { ascending: false }).limit(3)
             : Promise.resolve({ data: [] }),
-          // Use lead_actions table (real schema) to count pending actions
           db.from("lead_actions").select("id", { count: "exact", head: true }).eq("actor_user_id", user.id).eq("status", "open"),
+          db.from("openclaw_recommendations")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("status", "nouvelle")
+            .eq("ai_generated", true),
         ]);
 
         setMissions(missionsRes.data || []);
         setIntroductions(introsRes.data || []);
-        // Count introductions awaiting validation as "validations count"
         const pendingIntros = (introsRes.data || []).filter((i: { statut: string }) => i.statut === "en_attente");
         setValidationsCount(pendingIntros.length);
         setHotOpps(hotOppsRes.count || 0);
+        setAiRecoCount(aiRecoRes.count || 0);
         setPassiveAlerts([]);
       } catch {
-        // silent fail — don't crash the dashboard
+        // silent fail
       } finally {
         setLoading(false);
       }
