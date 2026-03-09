@@ -1,18 +1,23 @@
-// PROOF:CONTROL_PLANE_V2:use_control_plane_hook
+// PROOF:CONTROL_PLANE_V3:use_control_plane_hook_billing_first
 /**
  * useControlPlane — Hook principal du Control Plane
  *
  * Orchestre:
  * 1. Checks de capacités calculés (runtime + statiques honnêtes)
  * 2. Evidence registry construite depuis des sources réelles
- * 3. Release gate calculé depuis les résultats réels
+ * 3. Release gate calculé depuis les résultats réels + billing proof context live
  * 4. Stale detection automatique
+ *
+ * V3 : billingProofContext injecté depuis get_billing_proof_summary (RPC admin).
+ * Si l'appelant n'est pas admin, le context est absent → fallback comportement V2.
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { runAllCapabilityChecks, buildCapabilityMatrix } from "../services/capability-engine";
 import { computeReleaseGate } from "../services/release-gate-engine";
+import type { BillingProofContext } from "../services/release-gate-engine";
 import { buildEvidenceRegistry } from "../services/evidence-engine";
+import { supabase } from "@/integrations/supabase/client";
 import type { Capability } from "../domain/capability.types";
 import type { ReleaseGateResult } from "../domain/gate.types";
 import type { EvidenceRecord } from "../domain/evidence.types";
@@ -25,6 +30,7 @@ export interface ControlPlaneState {
   capabilitiesByGroup: Record<string, Capability[]>;
   releaseGate: ReleaseGateResult;
   evidence: EvidenceRecord[];
+  billingProof: BillingProofContext | null;
   summary: {
     ready: number;
     partial: number;
@@ -40,15 +46,31 @@ export interface ControlPlaneState {
 }
 
 async function fetchControlPlaneData() {
-  const [checkResults, evidenceRecords] = await Promise.all([
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any;
+
+  const [checkResults, evidenceRecords, summaryRes] = await Promise.all([
     runAllCapabilityChecks(),
     buildEvidenceRegistry(),
+    db.rpc("get_billing_proof_summary").then((r: { data: unknown; error: unknown }) => r),
   ]);
 
   const capabilities = buildCapabilityMatrix(checkResults);
-  const releaseGate  = computeReleaseGate(capabilities);
 
-  return { capabilities, evidenceRecords, releaseGate };
+  // Build billing proof context from live DB summary (admin-only RPC)
+  let billingProof: BillingProofContext | undefined;
+  if (summaryRes.data && !summaryRes.error) {
+    const s = summaryRes.data as Record<string, number>;
+    billingProof = {
+      totalBillingEvents: s.total_billing_events ?? 0,
+      fullProofEvents:    s.full_proof_events    ?? 0,
+      quotaConsumedCount: s.quota_consumed_count ?? 0,
+    };
+  }
+
+  const releaseGate = computeReleaseGate(capabilities, billingProof);
+
+  return { capabilities, evidenceRecords, releaseGate, billingProof: billingProof ?? null };
 }
 
 export function useControlPlane(): ControlPlaneState {
@@ -60,9 +82,10 @@ export function useControlPlane(): ControlPlaneState {
     retry: 1,
   });
 
-  const capabilities = data?.capabilities ?? [];
-  const evidence     = data?.evidenceRecords ?? [];
-  const releaseGate  = data?.releaseGate ?? {
+  const capabilities  = data?.capabilities ?? [];
+  const evidence      = data?.evidenceRecords ?? [];
+  const billingProof  = data?.billingProof ?? null;
+  const releaseGate   = data?.releaseGate ?? {
     verdict: "DEV_ONLY" as const,
     justification: "Données en cours de chargement…",
     blockers: [],
@@ -95,6 +118,7 @@ export function useControlPlane(): ControlPlaneState {
     capabilitiesByGroup,
     releaseGate,
     evidence,
+    billingProof,
     summary: { ready, partial, blocked, unknown, total, score },
     loading: isLoading,
     error: error ? String(error) : null,
