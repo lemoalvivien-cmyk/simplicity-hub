@@ -1,15 +1,27 @@
 // PROOF:AUDIT_V1:dashboard_real_data — replaced hardcoded mock with real auth profile
+// ONE PRICE 99 HARD LOCK: subscription status now shown from real runtime (useSubscription)
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   MessageCircle, HelpCircle, ArrowRight,
-  CheckCircle2, Circle, User, Zap, BookOpen
+  CheckCircle2, Circle, User, Zap, BookOpen, ShieldCheck, AlertCircle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription, isAccessActive } from "@/contexts/SubscriptionContext";
 
 export default function Dashboard() {
   const { profile } = useAuth();
+  const { status, offerType, subscriptionEnd, loading } = useSubscription();
   const userName = profile?.prenom || "vous";
+
+  // Real subscription state
+  const accessActive = isAccessActive(status);
+  const offerLabel =
+    offerType === "launch" ? "Offre de lancement — 99 € TTC / an"
+    : offerType === "standard" ? "Abonnement annuel — 490 € TTC / an"
+    : offerType === "promo" ? "Code d'invitation — Accès offert"
+    : status === "active" ? "Accès actif"
+    : null;
 
   const steps = [
     { id: 1, label: "Compte créé", done: true },
@@ -50,7 +62,7 @@ export default function Dashboard() {
     <UserLayout>
       <div className="max-w-2xl mx-auto space-y-6">
 
-        {/* ── BLOC 1 — Bienvenue ───────────────────────────────── */}
+        {/* ── BLOC 1 — Bienvenue + Subscription Status (real runtime) ──── */}
         <div className="card-surface p-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
@@ -62,12 +74,46 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="shrink-0">
-              <span className="badge-success">
-                <CheckCircle2 size={12} />
-                Accès actif
-              </span>
+              {loading ? (
+                <span className="badge-warning">
+                  <Zap size={12} className="animate-pulse" />
+                  Vérification...
+                </span>
+              ) : accessActive ? (
+                <span className="badge-success">
+                  <CheckCircle2 size={12} />
+                  Accès actif
+                </span>
+              ) : (
+                <Link to="/pricing" className="badge-warning hover:opacity-80 transition-opacity">
+                  <AlertCircle size={12} />
+                  Accès inactif
+                </Link>
+              )}
             </div>
           </div>
+          {accessActive && offerLabel && (
+            <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck size={13} style={{ color: "hsl(var(--success))" }} />
+              <span>{offerLabel}</span>
+              {subscriptionEnd && (
+                <span className="ml-auto font-mono">
+                  Expire le {new Date(subscriptionEnd).toLocaleDateString("fr-FR")}
+                </span>
+              )}
+            </div>
+          )}
+          {!loading && !accessActive && (
+            <div className="mt-4 p-3 rounded-xl border border-accent/30 bg-accent/5 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Activez votre accès Entreprise</p>
+                <p className="text-xs text-muted-foreground">Offre de lancement à 99 € TTC / an — accès complet immédiat</p>
+              </div>
+              <Link to="/pricing" className="btn-cta text-xs px-4 py-2 shrink-0">
+                99 € <ArrowRight size={12} />
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* ── BLOC 2 — À faire maintenant ─────────────────────── */}

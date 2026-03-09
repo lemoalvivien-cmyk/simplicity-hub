@@ -21,10 +21,11 @@ export default function Checkout() {
   const lang = i18n.language || "fr";
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { redeemPromo, startCheckout, status, launchAvailable, launchSlotsRemaining, refresh } = useSubscription();
 
-  const [step, setStep] = useState<Step>("choose");
+  // ONE PRICE 99 HARD LOCK: default to payment step directly — skip choose screen
+  const [step, setStep] = useState<Step>("payment");
   const [promoCode, setPromoCode] = useState("");
   const [promoStatus, setPromoStatus] = useState<"idle" | "valid" | "invalid">("idle");
   const [promoMessage, setPromoMessage] = useState("");
@@ -160,9 +161,19 @@ export default function Checkout() {
                 </div>
               )}
 
-              <Link to={user ? "/onboarding" : "/signup"} className="btn-cta text-sm px-8 py-4 block text-center">
-                {user ? t("checkout_configure") : t("checkout_create_account")}
-              </Link>
+              {/* ONE PRICE 99 HARD LOCK: route by onboarding_done — paying users already onboarded go straight to dashboard */}
+              {user ? (
+                <Link
+                  to={profile?.onboarding_done ? "/dashboard" : "/onboarding"}
+                  className="btn-cta text-sm px-8 py-4 block text-center"
+                >
+                  {profile?.onboarding_done ? "Accéder à mon espace" : t("checkout_configure")}
+                </Link>
+              ) : (
+                <Link to="/signup" className="btn-cta text-sm px-8 py-4 block text-center">
+                  {t("checkout_create_account")}
+                </Link>
+              )}
             </div>
           </div>
         </div>
