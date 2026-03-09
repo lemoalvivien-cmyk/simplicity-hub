@@ -14,6 +14,7 @@ import CopilotPanel from "@/components/ai/CopilotPanel";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/analytics";
 
 interface Mission {
   id: string;
