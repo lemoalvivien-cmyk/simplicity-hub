@@ -274,6 +274,33 @@ export default function AdminReactivation() {
                       <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(job.scheduled_at)}</td>
                       <td className="px-4 py-3">
                         {job.status === "pending" && (
+                          <div className="flex gap-1 flex-wrap">
+                            {/* Real email via Resend — PROOF:REACTIVATION_EMAIL_V1 */}
+                            <button
+                              onClick={() => sendEmail(job.id)}
+                              disabled={actionLoading === job.id + "_email"}
+                              className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50 flex items-center gap-1"
+                              title="Envoyer email réel via Resend"
+                            >
+                              <Mail size={11} />
+                              {actionLoading === job.id + "_email" ? "Envoi…" : "Envoyer email"}
+                            </button>
+                            <button
+                              onClick={() => updateJobStatus(job.id, "sent")}
+                              disabled={actionLoading === job.id + "_status"}
+                              className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors disabled:opacity-50"
+                              title="Marquer comme envoyé manuellement (sans email)"
+                            >
+                              {actionLoading === job.id + "_status" ? "…" : "✓ Marquer envoyé"}
+                            </button>
+                            <button
+                              onClick={() => updateJobStatus(job.id, "dismissed")}
+                              disabled={!!actionLoading}
+                              className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors disabled:opacity-50"
+                            >
+                              Ignorer
+                            </button>
+                          </div>
                           <div className="flex gap-1">
                             <button
                               onClick={() => updateJobStatus(job.id, "sent")}
