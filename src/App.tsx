@@ -111,6 +111,7 @@ import AdminSystemHealth from "./pages/admin/SystemHealth";
 import AdminPayoutOps from "./pages/admin/PayoutOps";
 import AdminReactivation from "./pages/admin/Reactivation";
 import AdminEnvCheck from "./pages/admin/EnvCheck";
+import ROIDashboard from "./pages/ROIDashboard";
 
 const queryClient = new QueryClient();
 
