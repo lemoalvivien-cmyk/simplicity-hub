@@ -140,14 +140,21 @@ export function computeReleaseGate(
   } else if (mediumIssues.length > 3) {
     verdict = "PRIVATE_BETA_POSSIBLE";
     justification = `${mediumIssues.length} points medium non résolus. Beta privée possible avec monitoring.`;
+  } else if (!billingCtxPresent) {
+    // RÈGLE ABSOLUE : si billing context absent (non-admin ou RPC inaccessible),
+    // on ne peut JAMAIS certifier PRIVATE_BETA_READY — le flux revenu est non vérifiable.
+    verdict = "PRIVATE_BETA_POSSIBLE";
+    justification =
+      "Billing proof context non disponible (non-admin ou RPC get_billing_proof_summary inaccessible). " +
+      "Impossible de certifier le flux revenu E2E. Vérifier le rôle admin et le déploiement des RPCs.";
   } else {
-    // Seul chemin vers PRIVATE_BETA_READY : full_proof_events > 0 observé
+    // Seul chemin vers PRIVATE_BETA_READY :
+    // billingCtxPresent=true ET full_proof_events > 0 ET aucun bloquant critique.
     verdict = "PRIVATE_BETA_READY";
-    justification = billingProof && fullProofCount > 0
-      ? `${fullProofCount} preuve(s) E2E billing confirmée(s). ` +
-        `Quota: ${billingProof.quotaUsedSlots ?? "?"}/${billingProof.quotaTotalSlots ?? "?"} slots. ` +
-        `Tous bloquants critiques résolus. Beta privée autorisée.`
-      : "Tous les bloquants critiques résolus. Beta privée possible.";
+    justification =
+      `${fullProofCount} preuve(s) E2E billing confirmée(s). ` +
+      `Quota: ${billingProof!.quotaUsedSlots ?? "?"}/${billingProof!.quotaTotalSlots ?? "?"} slots. ` +
+      `Tous bloquants critiques résolus. Beta privée autorisée.`;
   }
 
   return {
