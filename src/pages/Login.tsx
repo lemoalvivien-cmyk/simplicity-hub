@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation, useSearchParams } from "react-router-do
 import PublicNav from "@/components/layout/PublicNav";
 import { Eye, EyeOff, Zap, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackEvent } from "@/lib/analytics";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);

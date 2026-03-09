@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import { Eye, EyeOff, CheckCircle2, Zap, AlertCircle, Loader2, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackEvent } from "@/lib/analytics";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
