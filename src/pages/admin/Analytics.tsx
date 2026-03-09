@@ -113,7 +113,7 @@ export default function AdminAnalytics() {
       setEvents([
         // analytics_events tracked
         { label: "Vues landing",              value: landingViews,            status: "observed",      source: "analytics_events" },
-        { label: "Clics CTA",                 value: ctaClicks,               status: "observed",      source: "analytics_events" },
+        { label: "Clics CTA",                 value: ctaClicks,               status: "observed",      source: "analytics_events", note: "Pricing CTA uniquement — CTAs landing dans landing_ab_events" },
         { label: "Vues pricing",              value: pricingViews,            status: "observed",      source: "analytics_events" },
         { label: "Starts checkout",           value: checkoutStarts,          status: "observed",      source: "analytics_events" },
         { label: "Succès checkout",           value: checkoutSuccesses,       status: "observed",      source: "analytics_events" },
