@@ -156,8 +156,7 @@ export default function Account() {
                   <div className="flex items-center gap-2 mb-2">
                     <ShieldCheck size={16} className="text-success" />
                     <p className="font-semibold text-sm text-foreground">
-                      Abonnement actif —{" "}
-                      {offerType === "launch" ? "Offre de lancement 99 € / an" : "490 € / an"}
+                      Abonnement actif — 99 € TTC / an
                     </p>
                   </div>
                   {endDate && (
@@ -233,20 +232,13 @@ export default function Account() {
                 )}
                 {!isFree && !isActive && profile?.role === "entreprise" && (
                   <div className="space-y-2">
-                    <Link
-                      to="/checkout"
-                      className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border-2 border-accent/30 bg-accent/8 text-sm font-medium text-foreground hover:bg-accent/15 transition-colors"
-                    >
-                      <Gift size={14} className="text-accent" />
-                      Utiliser un code d'invitation gratuit
-                    </Link>
                     <button
                       onClick={handleCheckout}
                       disabled={checkoutLoading}
                       className="btn-cta w-full text-sm flex items-center justify-center gap-2"
                     >
                       {checkoutLoading ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}
-                      {launchAvailable ? `S'abonner — Offre lancement 99 € / an` : "S'abonner — 490 € / an"}
+                      Activer mon accès — 99 € TTC / an
                     </button>
                   </div>
                 )}
