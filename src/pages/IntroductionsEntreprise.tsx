@@ -362,6 +362,9 @@ export default function IntroductionsEntreprise() {
       await promoteLeadToOpportunity(intro.lead_intake_id);
     }
 
+    // PROOF: intro_validated → analytics_events (real write)
+    trackEvent("intro_validated", user!.id, { intro_id: id });
+
     setIntros(prev => prev.map(i => i.id === id ? { ...i, statut: "validee" as Status } : i));
     toast.success("Introduction validée ! Le gain de l'apporteur est confirmé.");
   };
