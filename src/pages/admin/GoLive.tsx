@@ -65,7 +65,7 @@ const KNOWN_LIMITATIONS = [
   { item: "Admin Users / Payments", note: "Données statiques (mock). À connecter à la DB après premiers vrais utilisateurs." },
   { item: "Admin Overview stats", note: "Chiffres affichés sont hardcodés. Utiliser /admin/revenue pour les vraies métriques." },
   { item: "Gateway OpenClaw", note: "Nécessite une instance OpenClaw auto-hébergée par l'utilisateur. Pas de gateway centralisé." },
-  { item: "Scheduler cron", note: "pg_cron configuré mais non encore observé — DB vide au lancement. Activé dès 1er utilisateur." },
+  { item: "Scheduler cron reactivation + payout", note: "Crons pg_cron NON créés en base. Scripts disponibles dans supabase/infra/scheduled-jobs.md. Déclenchement = manuel via UI admin jusqu'à création explicite." },
   { item: "NetworkValueMap passive", note: "Requiert CSV bien renseigné (secteur/zone/langue) pour être précis." },
   { item: "WhatsApp / LinkedIn channels", note: "Préparation du message OK — envoi réel nécessite gateway ou API externe." },
   { item: "Webhook Stripe signature", note: "STRIPE_WEBHOOK_SECRET non configuré → pas de vérification de signature (risque en prod)." },
