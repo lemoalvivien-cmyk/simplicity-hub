@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { trackEvent } from "@/lib/analytics";
 
 type Role = "entreprise" | "facilitateur" | null;
 

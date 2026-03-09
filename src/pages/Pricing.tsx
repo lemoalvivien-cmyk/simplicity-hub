@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { formatAmount } from "@/lib/formatLocale";
+import { trackEvent } from "@/lib/analytics";
 
 export default function Pricing() {
   const { t, i18n } = useTranslation();

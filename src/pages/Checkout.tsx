@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { formatAmount } from "@/lib/formatLocale";
 import i18n from "@/lib/i18n";
+import { trackEvent } from "@/lib/analytics";
 
 type Step = "choose" | "promo" | "payment" | "success";
 type SuccessType = "promo" | "stripe_launch" | "stripe_standard";
