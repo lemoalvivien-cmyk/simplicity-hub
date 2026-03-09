@@ -24,7 +24,8 @@ export default function Checkout() {
   const { user } = useAuth();
   const { redeemPromo, startCheckout, status, launchAvailable, launchSlotsRemaining, refresh } = useSubscription();
 
-  const [step, setStep] = useState<Step>("choose");
+  // ONE PRICE 99 HARD LOCK: default to payment step directly — skip choose screen
+  const [step, setStep] = useState<Step>("payment");
   const [promoCode, setPromoCode] = useState("");
   const [promoStatus, setPromoStatus] = useState<"idle" | "valid" | "invalid">("idle");
   const [promoMessage, setPromoMessage] = useState("");
