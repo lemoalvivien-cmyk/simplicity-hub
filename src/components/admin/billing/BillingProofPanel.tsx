@@ -1,4 +1,4 @@
-// PROOF:BILLING_PROOF_CHAIN_V2:billing_proof_panel_first_euro
+// PROOF:BILLING_PROOF_CHAIN_V3:billing_proof_panel_post_test_lock
 /**
  * BillingProofPanel — Surface admin billing proof chain
  *
