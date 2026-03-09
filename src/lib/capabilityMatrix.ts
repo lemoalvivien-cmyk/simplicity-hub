@@ -345,8 +345,20 @@ export function getCapabilityStatusSummary() {
   return { ready, partial, blocked, unknown, total, score };
 }
 
+// PROOF:CAPABILITY_MATRIX_V4:release_gate_billing_blind_fixed
+/**
+ * getReleaseGate() — VERSION STATIQUE / BILLING-BLIND
+ *
+ * RÈGLE ABSOLUE : Cette fonction n'a PAS accès au billing runtime (get_billing_proof_summary).
+ * Elle ne peut JAMAIS retourner PRIVATE_BETA_READY.
+ * Le seul chemin vers PRIVATE_BETA_READY passe par computeReleaseGate() dans release-gate-engine.ts
+ * qui reçoit un BillingProofContext réel avec full_proof_events > 0.
+ *
+ * Utilisation autorisée : CapabilityMatrixPanel (legacy), useSystemHooks (legacy).
+ * Utilisation canonique : useControlPlane → computeReleaseGate().
+ */
 export function getReleaseGate(): {
-  verdict: "PROD_BLOCKED" | "PUBLIC_BETA_BLOCKED" | "PRIVATE_BETA_READY" | "INTERNAL_TEST" | "DEV_ONLY";
+  verdict: "PROD_BLOCKED" | "PUBLIC_BETA_BLOCKED" | "PRIVATE_BETA_POSSIBLE" | "INTERNAL_TEST" | "DEV_ONLY";
   justification: string;
 } {
   const hardBlockers = CAPABILITY_MATRIX.filter(
@@ -373,15 +385,13 @@ export function getReleaseGate(): {
     };
   }
 
-  if (hardBlockers.length > 0 || highBlockers.length > 0) {
-    return {
-      verdict: "PRIVATE_BETA_READY",
-      justification: `${hardBlockers.length + highBlockers.length} points à valider avant public. Stripe E2E non exercé, Customer Portal non activé, crons pg_cron non créés.`,
-    };
-  }
-
+  // BILLING-BLIND : sans full_proof_event vérifié, jamais PRIVATE_BETA_READY.
+  // Cette fonction ne consulte pas get_billing_proof_summary → au mieux PRIVATE_BETA_POSSIBLE.
   return {
-    verdict: "PRIVATE_BETA_READY",
-    justification: "Tous les bloquants critiques sont résolus. Beta privée possible avec monitoring actif.",
+    verdict: "PRIVATE_BETA_POSSIBLE",
+    justification:
+      "Capabilities statiques: 0 bloquant critique. " +
+      "Verdict limité à PRIVATE_BETA_POSSIBLE car billing runtime non vérifié ici. " +
+      "Voir /admin → Control Plane pour le verdict définitif incluant full_proof_events.",
   };
 }
