@@ -87,14 +87,18 @@
 
 | Item | Statut | Preuve |
 |------|--------|--------|
-| `index.html` canonical / OG / JSON-LD | **wiinupmax.com** ✅ | Vérifié par grep |
+| `index.html` canonical / OG / JSON-LD | **wiinupmax.com** ✅ | Vérifié par grep — 0 occurrence lovable |
 | `create-checkout` CANONICAL_ORIGIN | **wiinupmax.com** ✅ | Ligne 30 |
-| `create-checkout` BUILTIN_ORIGINS | **Contient wiinupmax.lovable.app** | Allowlist technique interne pour dev/staging — acceptable |
+| `create-checkout` BUILTIN_ORIGINS | **wiinupmax.com UNIQUEMENT** ✅ | lovable.app RETIRÉ du code dur — doit aller dans ALLOWED_EXTRA_ORIGINS secret |
 | `customer-portal` fallback origin | **wiinupmax.com** ✅ | Ligne 50 |
 | `send-reactivation-email` liens emails | **wiinupmax.com** ✅ | APP_BASE_URL ligne 34 |
-| `MentionsLegales.tsx` lien lovable.dev | **Acceptable** | Mention légale hébergeur — obligation juridique |
+| `MentionsLegales.tsx` lien lovable.dev | **Acceptable** | Mention légale hébergeur — obligation juridique française |
 | AI gateway URLs (lovable.dev) | **Acceptable** | API interne Lovable, jamais exposée aux utilisateurs |
 | DNS wiinupmax.com configuré | **DÉPEND CONFIG EXTERNE** | Non vérifiable depuis Lovable |
+
+> **ACTION REQUISE (dev/staging)** : Pour que les previews Lovable fonctionnent avec create-checkout,
+> ajouter dans Lovable Cloud > Secrets :
+> `ALLOWED_EXTRA_ORIGINS=https://wiinupmax.lovable.app,https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app`
 
 ### 1.8 Hygiène Env / Lockfile
 

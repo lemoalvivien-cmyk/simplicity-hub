@@ -29,14 +29,14 @@ const LAUNCH_SLOTS = 100;
  */
 const CANONICAL_ORIGIN = "https://wiinupmax.com";
 
-// Hard-coded prod + official preview — never deleted from allowlist
-// INTERNAL ALLOWLIST: lovable.app entries are for dev/staging preview only.
-// They are NEVER the canonical user-facing domain (wiinupmax.com is).
-// They exist solely because Lovable preview environments use these origins.
+// Hard-coded prod domains — never deleted from allowlist.
+// POLICY: Lovable preview origins (*.lovable.app) are NOT hardcoded here.
+//   They must be added via the ALLOWED_EXTRA_ORIGINS secret (Lovable Cloud > Secrets):
+//     ALLOWED_EXTRA_ORIGINS=https://wiinupmax.lovable.app,https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app
+//   This keeps the production function code free of transient preview domains.
+//   Reason: preview URLs can change between Lovable redeployments; secrets can be updated without code changes.
 const BUILTIN_ORIGINS = new Set([
-  "https://wiinupmax.com",                                                // CANONICAL — production
-  "https://wiinupmax.lovable.app",                                        // staging preview (internal only)
-  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app", // Lovable preview (internal only)
+  "https://wiinupmax.com", // CANONICAL — production only
 ]);
 
 function buildAllowedOrigins(): Set<string> {
