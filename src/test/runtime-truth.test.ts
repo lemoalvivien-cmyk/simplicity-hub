@@ -58,6 +58,7 @@ describe("analytics writer registry", () => {
       ...CLAIMED_IN_DASHBOARD,
       "promo_redeemed",   // src/pages/Checkout.tsx promo flow
       "login_success",    // src/pages/Login.tsx
+      "signup_started",   // src/pages/Signup.tsx form submit
     ]);
     ANALYTICS_EVENTS.forEach(evt => {
       expect(explicitlyAllowed.has(evt)).toBe(true);
