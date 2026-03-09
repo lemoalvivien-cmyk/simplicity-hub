@@ -1,16 +1,18 @@
 /**
  * Admin Reactivation Jobs — PROOF:REACTIVATION_V1:admin_reads_reactivation_jobs
  * Reads from: reactivation_jobs (populated by scan_reactivation_candidates() cron)
- * Actions: dismiss job, mark sent, trigger scan manually
- * Email sending: NOT implemented (provider-dependent). Queue is visible + actionable.
- * Honest state: pending jobs are visible; "envoi" requires a provider email external to this app.
+ * Actions: dismiss job, send email via Resend (real), trigger scan manually
+ *
+ * Email sending: PROUVÉ PAR LE REPO — send-reactivation-email edge fn + RESEND_API_KEY secret
+ * Manual mark-sent: still available as fallback.
+ * CRON: CRÉÉ MAIS NON BRANCHÉ — scripts in supabase/infra/scheduled-jobs.md
  */
 import { useEffect, useState, useCallback } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AlertCircle, RefreshCw, BellOff, Send, Clock, CheckCircle2 } from "lucide-react";
+import { AlertCircle, RefreshCw, BellOff, Send, Clock, CheckCircle2, Mail } from "lucide-react";
 
 type JobStatus = "pending" | "sent" | "dismissed" | "converted";
 type TriggerType = "checkout_abandoned" | "onboarding_incomplete" | "mission_no_intro" | "intro_not_validated";
