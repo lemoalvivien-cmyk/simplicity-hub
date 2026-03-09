@@ -75,18 +75,18 @@ const KNOWN_LIMITATIONS = [
 ];
 
 const PRE_LAUNCH_CHECKLIST = [
-  { done: true,  item: "Configurer STRIPE_SECRET_KEY en secret Supabase" },
+  { done: true,  item: "Configurer STRIPE_SECRET_KEY en secret" },
   { done: true,  item: "Déployer toutes les edge functions" },
   { done: false, item: "Créer crons pg_cron reactivation + payout (scripts dans supabase/infra/scheduled-jobs.md)" },
   { done: true,  item: "Créer les codes promo (304 créés)" },
   { done: true,  item: "Vérifier quota lancement (100 slots)" },
   { done: true,  item: "RLS activé sur toutes les tables critiques" },
-  { done: false, item: "Configurer STRIPE_WEBHOOK_SECRET pour sécuriser le webhook" },
+  { done: true,  item: "Configurer STRIPE_WEBHOOK_SECRET — signature vérification active" },
+  { done: true,  item: "Email réactivation via Resend — RESEND_API_KEY configurée" },
   { done: false, item: "Activer le Customer Portal Stripe (pour manage subscription)" },
   { done: false, item: "Tester un vrai checkout end-to-end avec carte de test Stripe" },
   { done: false, item: "Tester redeem-promo avec un code réel" },
   { done: false, item: "Configurer le domaine email custom (auth emails)" },
-  { done: false, item: "Connecter un outil d'analytics réel (Plausible, PostHog...)" },
 ];
 
 const WATCH_FIRST_7_DAYS = [
