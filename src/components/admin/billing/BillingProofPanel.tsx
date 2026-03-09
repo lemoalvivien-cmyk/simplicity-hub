@@ -741,6 +741,9 @@ export default function BillingProofPanel() {
       {/* Banner secondary */}
       <BillingProofBanner summary={summary} loading={loading} />
 
+      {/* ── DÉCISION RELEASE SUGGÉRÉE — bloc contextuel post-test ── */}
+      <ReleaseDecisionBlock summary={summary} loading={loading} />
+
       {/* 2-col layout */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Correlation table — 2/3 */}
