@@ -234,12 +234,14 @@ export async function buildEvidenceRegistry(): Promise<EvidenceRecord[]> {
     ),
     staticEvidence(
       "envHygiene",
-      "Hygiène .env — clés publishable uniquement dans .env",
-      ".env contient uniquement VITE_SUPABASE_* (clés publishable, non sensibles). Secrets dans Cloud.",
+      "Hygiène .env — clés publishable uniquement, .gitignore platform-managed",
+      ".env contient uniquement VITE_SUPABASE_* (clés publishable anon). " +
+        ".gitignore est read-only (plateforme Lovable). " +
+        "LIMITE: .env reste visible dans export Lovable (contrainte plateforme). Secrets dans Cloud.",
       "code",
       "code-presence",
-      ".env + .env.example + .gitignore",
-      "info",
+      ".env + .env.example — .gitignore: platform-managed",
+      "low",
     ),
     staticEvidence(
       "smokeTestAvailable",

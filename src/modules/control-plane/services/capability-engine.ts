@@ -396,13 +396,13 @@ export async function runAllCapabilityChecks(): Promise<CapabilityCheckResult[]>
       "envHygiene",
       "partial",
       "code",
-      ".env.example présent. " +
-        ".gitignore configuré pour ignorer .env. " +
-        "LIMITE: .env réel présent dans l'export Lovable (non évitable dans cet environnement). " +
-        "VÉRITÉ: les secrets sensibles sont dans Cloud secrets, pas dans .env. " +
-        ".env contient uniquement les clés publishable/anon (non sensibles).",
-      65,
-      "code:.env.example + .gitignore"
+      ".env.example présent comme template. " +
+        ".gitignore est géré par la plateforme Lovable (read-only) — contenu non modifiable ici. " +
+        "LIMITE: .env réel reste visible dans l'export Lovable (contrainte plateforme non évitable). " +
+        "VÉRITÉ: .env ne contient que des clés publishable/anon (VITE_SUPABASE_*), pas de secrets. " +
+        "Les secrets sensibles (Stripe, Resend) sont exclusivement dans Cloud secrets.",
+      55,
+      "code:.env.example — .gitignore:platform-managed"
     ),
     staticCheck(
       "typescriptStrict",
