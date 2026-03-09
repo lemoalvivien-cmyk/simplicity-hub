@@ -1,15 +1,27 @@
 // PROOF:AUDIT_V1:dashboard_real_data — replaced hardcoded mock with real auth profile
+// ONE PRICE 99 HARD LOCK: subscription status now shown from real runtime (useSubscription)
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   MessageCircle, HelpCircle, ArrowRight,
-  CheckCircle2, Circle, User, Zap, BookOpen
+  CheckCircle2, Circle, User, Zap, BookOpen, ShieldCheck, AlertCircle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription, isAccessActive } from "@/contexts/SubscriptionContext";
 
 export default function Dashboard() {
   const { profile } = useAuth();
+  const { status, offerType, subscriptionEnd, loading } = useSubscription();
   const userName = profile?.prenom || "vous";
+
+  // Real subscription state
+  const accessActive = isAccessActive(status);
+  const offerLabel =
+    offerType === "launch" ? "Offre de lancement — 99 € TTC / an"
+    : offerType === "standard" ? "Abonnement annuel — 490 € TTC / an"
+    : offerType === "promo" ? "Code d'invitation — Accès offert"
+    : status === "active" ? "Accès actif"
+    : null;
 
   const steps = [
     { id: 1, label: "Compte créé", done: true },

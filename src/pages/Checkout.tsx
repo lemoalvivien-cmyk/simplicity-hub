@@ -21,7 +21,7 @@ export default function Checkout() {
   const lang = i18n.language || "fr";
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { redeemPromo, startCheckout, status, launchAvailable, launchSlotsRemaining, refresh } = useSubscription();
 
   // ONE PRICE 99 HARD LOCK: default to payment step directly — skip choose screen
