@@ -39,11 +39,14 @@ verdict: PROD_BLOCKED | PUBLIC_BETA_BLOCKED | PRIVATE_BETA_POSSIBLE | PRIVATE_BE
 
 ### Règles absolues du gate (dans computeReleaseGate)
 
-1. `full_proof_events === 0` ET `billingCtxPresent` → verdict ≤ `PRIVATE_BETA_POSSIBLE`, jamais `PRIVATE_BETA_READY`
-2. `brokenEvents > 0 && fullProofEvents === 0` → `PUBLIC_BETA_BLOCKED` (chaîne cassée)
-3. `full_proof_events >= 1` → promotion possible vers `PRIVATE_BETA_READY` selon les capabilities residuelles
-4. Customer Portal non activé = billing incomplet → `PUBLIC_BETA_BLOCKED`
-5. Config Stripe (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) non vérifiable côté client = `DÉPEND CONFIG EXTERNE`
+1. `full_proof_events === 0` ET `billingCtxPresent=true` → verdict ≤ `PRIVATE_BETA_POSSIBLE`, jamais `PRIVATE_BETA_READY`
+2. `billingCtxPresent=false` (non-admin ou RPC inaccessible) → verdict forcé `PRIVATE_BETA_POSSIBLE` — le gate ne peut pas certifier le flux revenu sans contexte billing. **CETTE RÈGLE FERME LE BYPASS** : sans billing proof context, `PRIVATE_BETA_READY` est impossible même si toutes les capabilities sont vertes.
+3. `brokenEvents > 0 && fullProofEvents === 0` → `PUBLIC_BETA_BLOCKED` (chaîne cassée)
+4. `full_proof_events >= 1` ET `billingCtxPresent=true` ET 0 capability critique bloquante → `PRIVATE_BETA_READY` autorisé
+5. Customer Portal non activé = billing incomplet → `PUBLIC_BETA_BLOCKED`
+6. Config Stripe (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) non vérifiable côté client = `DÉPEND CONFIG EXTERNE`
+
+> **CAVEAT CRITIQUE** : `billingCtxPresent=false` signifie que `get_billing_proof_summary` a retourné une erreur (RPC inexistant, rôle non-admin, ou erreur réseau). Dans ce cas, le gate ne peut PAS savoir si `full_proof_events > 0` ou non — il doit refuser de certifier `PRIVATE_BETA_READY`. Avant 2026-03-09 patch, ce cas retournait `PRIVATE_BETA_READY` par défaut si toutes les capabilities étaient vertes. Ce bypass est maintenant fermé.
 
 ### Lecture post-test dans /admin/payments
 
