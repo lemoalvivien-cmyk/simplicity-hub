@@ -22,10 +22,19 @@ import type { ReleaseGateResult, ReleaseVerdict } from "../domain/gate.types";
 export interface BillingProofContext {
   /** Nombre d'événements billing_events en base */
   totalBillingEvents: number;
-  /** Nombre de proof_level='full' en base */
+  /** Nombre de proof_level='full' en base — RÈGLE ABSOLUE : 0 = jamais PRIVATE_BETA_READY */
   fullProofEvents: number;
+  /** Nombre de checkout.session.completed reçus */
+  checkoutCompletedEvents: number;
+  /** Nombre de preuve partielle (checkout + sub, quota non consommé) */
+  partialProofEvents: number;
+  /** Nombre d'événements cassés (sans corrélation) */
+  brokenEvents: number;
   /** Nombre de launch_quota_consumed */
   quotaConsumedCount: number;
+  /** Slots utilisés / total */
+  quotaUsedSlots: number | null;
+  quotaTotalSlots: number | null;
 }
 
 export function computeReleaseGate(
