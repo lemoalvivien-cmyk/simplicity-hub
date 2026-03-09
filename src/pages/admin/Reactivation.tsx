@@ -92,7 +92,7 @@ export default function AdminReactivation() {
   };
 
   const updateJobStatus = async (jobId: string, newStatus: JobStatus) => {
-    setActionLoading(jobId);
+    setActionLoading(jobId + "_status");
     try {
       const update: Partial<ReactivationJob> & { sent_at?: string | null } = { status: newStatus };
       if (newStatus === "sent") update.sent_at = new Date().toISOString();
@@ -104,6 +104,52 @@ export default function AdminReactivation() {
       setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus, ...(newStatus === "sent" ? { sent_at: new Date().toISOString() } : {}) } : j));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erreur de mise à jour");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Send real email via Resend edge function
+  // PROOF:REACTIVATION_EMAIL_V1:resend_provider_wired
+  const sendEmail = async (jobId: string) => {
+    setActionLoading(jobId + "_email");
+    setError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Non authentifié");
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/send-reactivation-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ job_id: jobId }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || `Erreur ${response.status}`);
+      }
+
+      if (result.skipped) {
+        // Already sent — refresh UI
+        await load();
+        return;
+      }
+
+      // Update local state
+      setJobs(prev => prev.map(j =>
+        j.id === jobId ? { ...j, status: "sent", sent_at: new Date().toISOString() } : j
+      ));
+
+      if (import.meta.env.DEV) {
+        console.info(`[reactivation] Email sent via Resend — id: ${result.resend_id}`);
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erreur d'envoi email");
     } finally {
       setActionLoading(null);
     }
