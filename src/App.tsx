@@ -110,6 +110,7 @@ import AdminGoLive from "./pages/admin/GoLive";
 import AdminSystemHealth from "./pages/admin/SystemHealth";
 import AdminPayoutOps from "./pages/admin/PayoutOps";
 import AdminReactivation from "./pages/admin/Reactivation";
+import AdminEnvCheck from "./pages/admin/EnvCheck";
 import ROIDashboard from "./pages/ROIDashboard";
 
 const queryClient = new QueryClient();
@@ -231,6 +232,7 @@ const App = () => (
               <Route path="/admin/payments" element={<ProtectedRoute adminOnly><AdminPayments /></ProtectedRoute>} />
               <Route path="/admin/payout-ops" element={<ProtectedRoute adminOnly><AdminPayoutOps /></ProtectedRoute>} />
               <Route path="/admin/reactivation" element={<ProtectedRoute adminOnly><AdminReactivation /></ProtectedRoute>} />
+              <Route path="/admin/env-check" element={<ProtectedRoute adminOnly><AdminEnvCheck /></ProtectedRoute>} />
               <Route path="/admin/help" element={<ProtectedRoute adminOnly><AdminHelpContent /></ProtectedRoute>} />
               <Route path="/admin/analytics" element={<ProtectedRoute adminOnly><AdminAnalytics /></ProtectedRoute>} />
               <Route path="/admin/revenue" element={<ProtectedRoute adminOnly><AdminRevenue /></ProtectedRoute>} />

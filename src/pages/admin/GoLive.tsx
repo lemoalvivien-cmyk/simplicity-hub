@@ -38,7 +38,7 @@ const BRICKS: ReadinessItem[] = [
   { label: "Trust engine (scores, litiges)", status: "ready", note: "trust_scores + disputes + triggers automatiques" },
 
   // OpenClaw
-  { label: "Scheduler autonome (pg_cron)", status: "partial", note: "Edge fn + cron configuré — pas encore observé en production (DB vide)" },
+  { label: "Scheduler autonome (pg_cron)", status: "partial", note: "Edge fn openclaw-scheduler + cron tick configuré et observé (jobid 4). Jobs reactivation/payout : scripts disponibles dans supabase/infra/scheduled-jobs.md, PAS encore créés en base." },
   { label: "Job executor", status: "ready", note: "openclaw-job-executor + claim_next_job() avec verrouillage atomique" },
   { label: "Event bus (bus d'événements)", status: "ready", note: "openclaw-event-bus + triggers DB sur 5 tables" },
   { label: "Channel actions / dispatch", status: "ready", note: "openclaw-channel-dispatch — email + introduction opérationnels" },
@@ -65,7 +65,7 @@ const KNOWN_LIMITATIONS = [
   { item: "Admin Users / Payments", note: "Données statiques (mock). À connecter à la DB après premiers vrais utilisateurs." },
   { item: "Admin Overview stats", note: "Chiffres affichés sont hardcodés. Utiliser /admin/revenue pour les vraies métriques." },
   { item: "Gateway OpenClaw", note: "Nécessite une instance OpenClaw auto-hébergée par l'utilisateur. Pas de gateway centralisé." },
-  { item: "Scheduler cron", note: "pg_cron configuré mais non encore observé — DB vide au lancement. Activé dès 1er utilisateur." },
+  { item: "Scheduler cron reactivation + payout", note: "Crons pg_cron NON créés en base. Scripts disponibles dans supabase/infra/scheduled-jobs.md. Déclenchement = manuel via UI admin jusqu'à création explicite." },
   { item: "NetworkValueMap passive", note: "Requiert CSV bien renseigné (secteur/zone/langue) pour être précis." },
   { item: "WhatsApp / LinkedIn channels", note: "Préparation du message OK — envoi réel nécessite gateway ou API externe." },
   { item: "Webhook Stripe signature", note: "STRIPE_WEBHOOK_SECRET non configuré → pas de vérification de signature (risque en prod)." },
@@ -74,12 +74,12 @@ const KNOWN_LIMITATIONS = [
 ];
 
 const PRE_LAUNCH_CHECKLIST = [
-  { done: true, item: "Configurer STRIPE_SECRET_KEY en secret Supabase" },
-  { done: true, item: "Déployer toutes les edge functions" },
-  { done: true, item: "Configurer pg_cron + pg_net pour le scheduler" },
-  { done: true, item: "Créer les codes promo (304 créés)" },
-  { done: true, item: "Vérifier quota lancement (100 slots)" },
-  { done: true, item: "RLS activé sur toutes les tables critiques" },
+  { done: true,  item: "Configurer STRIPE_SECRET_KEY en secret Supabase" },
+  { done: true,  item: "Déployer toutes les edge functions" },
+  { done: false, item: "Créer crons pg_cron reactivation + payout (scripts dans supabase/infra/scheduled-jobs.md)" },
+  { done: true,  item: "Créer les codes promo (304 créés)" },
+  { done: true,  item: "Vérifier quota lancement (100 slots)" },
+  { done: true,  item: "RLS activé sur toutes les tables critiques" },
   { done: false, item: "Configurer STRIPE_WEBHOOK_SECRET pour sécuriser le webhook" },
   { done: false, item: "Activer le Customer Portal Stripe (pour manage subscription)" },
   { done: false, item: "Tester un vrai checkout end-to-end avec carte de test Stripe" },

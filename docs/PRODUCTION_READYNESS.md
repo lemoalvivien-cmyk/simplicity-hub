@@ -1,279 +1,256 @@
-/**
- * PRODUCTION READYNESS — WIINUP MAX
- * Generated: 2026-03-08
- * Stamp: RC-2026-03-08-HARDENING-V1
- *
- * THIS DOCUMENT IS A FACTUAL AUDIT — NOT MARKETING.
- * Every claim maps to a file or an executed test. No claim exceeds its proof.
- */
-
-# PRODUCTION READYNESS
-
-## 1. State Before This Hardening Pass
-
-| What                               | State                                           |
-|------------------------------------|-------------------------------------------------|
-| Quota engine (`quotaEngine.ts`)    | ✅ Shared, single source of truth               |
-| Stripe webhook                     | ✅ Imports quotaEngine, mandatory sig verify     |
-| DB-level idempotency (5 scenarios) | ✅ `scripts/verify-quota-flow.ts` — 5 scenarios  |
-| Gap 1 — RPC error rollback         | ⚠️  Logic in code, not exercised by test         |
-| Gap 2 — no_quota_row               | ⚠️  Logic in code, not exercised by test         |
-| Gap 3 — Stripe HTTP path           | ❌  Not exercised (requires Stripe CLI relay)     |
-| Gap 4 — Concurrent delivery race   | ⚠️  DB constraint exists, not tested concurrently |
-| CI pipeline                        | ❌  None                                         |
-| Hardened public endpoints          | ⚠️  Partial (create-checkout had origin check)   |
-| Structured logs on critical flows  | ⚠️  Inconsistent                                 |
-| PRODUCTION_READYNESS doc           | ❌  None                                         |
+# PRODUCTION READYNESS — WIINUP MAX
+> Version: 2026-03-09 | Stamp: RC-2026-03-09-TRUTH-V2
+>
+> Document factuel. Chaque claim mappe vers un fichier ou une exécution réelle.
+> Vocabulaire : ABSENT / CRÉÉ MAIS NON BRANCHÉ / BRANCHÉ MAIS NON PROUVÉ / PROUVÉ PAR LE REPO / PROUVÉ PAR EXÉCUTION
 
 ---
 
-## 2. Gap Coverage After This Pass
+## 1. État Actuel — Inventaire Vérité
 
-### Gap 1 — RPC Error Rollback
+### 1.1 Télémétrie
 
-- **Script:** `scripts/verify-quota-gaps.ts`
-- **Technique:** Fault injection — temporarily swaps `increment_launch_quota_used_slots()`
-  with a version that raises an exception, exercises the rollback branch, then restores.
-- **Status:** ⚠️  PARTIALLY CLOSED
-- **Blocker:** The swap requires `CREATE OR REPLACE FUNCTION` rights via DDL execution.
-  Standard Supabase projects do not expose arbitrary DDL over HTTP. Requires one of:
-  - An `execute_ddl` RPC created by an admin in the Supabase SQL editor
-  - A direct `psql` connection with the service role credentials
-  - The Supabase Management API (project-level SQL endpoint)
-- **What the code proves:** The rollback branch exists and is correct by code inspection.
-  `quotaEngine.ts:104–113` — on RPC error, the consumed row is deleted before returning.
-- **Residual risk:** If the DELETE in the rollback branch fails silently, an orphaned row
-  could block future retries. This failure mode is not tested.
-- **Honest verdict:** Logic is correct. Test is not executable via HTTP-only API.
-  Run manually: see `scripts/verify-quota-gaps.ts` + Supabase SQL editor.
+| Item | Statut | Preuve |
+|------|--------|--------|
+| `analytics.ts` (writer singleton) | **PROUVÉ PAR LE REPO** | `src/lib/analytics.ts` — `ANALYTICS_EVENTS` const + `trackEvent()` |
+| `landing_view` writer | **PROUVÉ PAR LE REPO** | `src/pages/Index.tsx` — useEffect mount |
+| `pricing_view` writer | **PROUVÉ PAR LE REPO** | `src/pages/Pricing.tsx` — useEffect mount |
+| `cta_click` writer | **PROUVÉ PAR LE REPO** | `src/pages/Pricing.tsx` — onClick CTA → `trackEvent("cta_click")` |
+| `checkout_start` writer | **PROUVÉ PAR LE REPO** | `src/pages/Checkout.tsx` — `handleStripeCheckout` |
+| `checkout_success` writer | **PROUVÉ PAR LE REPO** | `src/pages/Checkout.tsx` — useEffect `?success=true` |
+| `onboarding_done` writer | **PROUVÉ PAR LE REPO** | `src/pages/Onboarding.tsx` — `saveProfile` success |
+| `mission_created` writer | **PROUVÉ PAR LE REPO** | `src/pages/MissionNouvelle.tsx` — `handleSave` success |
+| `intro_submitted` writer | **PROUVÉ PAR LE REPO** | `src/pages/MissionDetail.tsx` — IntroductionForm.handleSubmit |
+| `intro_validated` writer | **PROUVÉ PAR LE REPO** | `src/pages/IntroductionsEntreprise.tsx` — `handleValidate` |
+| `signup_started` writer | **PROUVÉ PAR LE REPO** | `src/pages/Signup.tsx` — handleSubmit, avant signUp |
+| `login_success` writer | **PROUVÉ PAR LE REPO** | `src/pages/Login.tsx` — handleSubmit, après signIn success |
+| `promo_redeemed` writer | **PROUVÉ PAR LE REPO** | `src/pages/Checkout.tsx` — checkPromo result.valid |
+| CTAs landing (hero, final, etc.) | **PROUVÉ PAR LE REPO** | `src/lib/landingTracking.ts` → `landing_ab_events` (Option B séparation assumée) |
+| Dashboard analytics source-honnête | **PROUVÉ PAR LE REPO** | `src/pages/admin/Analytics.tsx` — source affichée par métrique, statuts env_dependent déclarés |
 
-### Gap 2 — no_quota_row
+**Séparation télémétrie (Option B — assumée) :**
+- `analytics_events` = runtime app (13 events writers réels)
+- `landing_ab_events` = marketing landing (trackEvent via `landingTracking.ts`)
+- `openclaw_logs` / `openclaw_scheduled_runs` = interne automation
 
-- **Script:** `scripts/verify-quota-gaps.ts`
-- **Technique:** Swap RPC to return `'no_quota_row'` unconditionally, verify rollback.
-- **Status:** ⚠️  PARTIALLY CLOSED (same DDL blocker as Gap 1)
-- **What the code proves:** `quotaEngine.ts:120–126` — `no_quota_row` triggers the same
-  rollback path as `at_capacity`. Consumed row is deleted.
-- **Honest verdict:** Same as Gap 1. DDL access required for execution.
+### 1.2 Revenue / Payouts
 
-### Gap 3 — Stripe HTTP Path + Signature Verification
+| Item | Statut | Preuve |
+|------|--------|--------|
+| `generate_payouts_from_validated_gains()` RPC | **PROUVÉ PAR LE REPO** | migration DB — idempotent, `NOT EXISTS` guard |
+| `update_payout_status()` RPC | **PROUVÉ PAR LE REPO** | migration DB — admin only, écrit `payout_audit_log` |
+| `create_payout_batch()` RPC | **PROUVÉ PAR LE REPO** | migration DB — admin only |
+| `PayoutOps.tsx` appelle les RPCs | **PROUVÉ PAR LE REPO** | `src/pages/admin/PayoutOps.tsx` — `supabase.rpc("generate_payouts_from_validated_gains")` |
+| Tables `payouts`, `payout_batches`, `payout_audit_log` | **PROUVÉ PAR LE REPO** | migrations DB |
+| Génération automatique payout (cron) | **CRÉÉ MAIS NON BRANCHÉ** | Script SQL dans `supabase/infra/scheduled-jobs.md` — pas encore exécuté en base |
+| Webhook Stripe → quota → payout | **BRANCHÉ MAIS NON PROUVÉ** | `stripe-webhook/index.ts` → `quotaEngine.ts` → `launch_quota` — STRIPE_WEBHOOK_SECRET non confirmé configuré |
 
-- **Script:** None automated. Manual procedure only.
-- **Status:** ❌  NOT EXERCISED AUTOMATICALLY
-- **Manual procedure (must be run before go-live):**
-  ```
-  # Install Stripe CLI
-  brew install stripe/stripe-cli/stripe
-  stripe login
+### 1.3 Réactivation
 
-  # Forward to deployed function
-  stripe listen --forward-to https://usnriklfiagazpffsqew.supabase.co/functions/v1/stripe-webhook
+| Item | Statut | Preuve |
+|------|--------|--------|
+| `scan_reactivation_candidates()` RPC | **PROUVÉ PAR LE REPO** | migration DB — détecte 3 types de candidats |
+| Table `reactivation_jobs` | **PROUVÉ PAR LE REPO** | migration DB |
+| UI admin lit `reactivation_jobs` | **PROUVÉ PAR LE REPO** | `src/pages/admin/Reactivation.tsx` |
+| Déclenchement manuel scan (UI) | **PROUVÉ PAR LE REPO** | `Reactivation.tsx` — bouton appelle `supabase.rpc("scan_reactivation_candidates")` |
+| Déclenchement automatique scan (cron) | **CRÉÉ MAIS NON BRANCHÉ** | Script SQL dans `supabase/infra/scheduled-jobs.md` — pas encore exécuté en base |
+| Envoi email réel (provider) | **ABSENT** | Aucun provider email (Resend, Loops, Brevo) n'est configuré |
+| Mode manuel assisté (UI) | **PROUVÉ PAR LE REPO** | `Reactivation.tsx` — "Marquer envoyé", "Ignorer" — audit manuel opérateur |
 
-  # In a second terminal, trigger a test event
-  stripe trigger checkout.session.completed
+**Verdict réactivation :** Détection réelle. Queue visible et actable. Envoi = ABSENT (manuel explicitement assumé).
 
-  # Expected logs in function:
-  #   [STRIPE-WEBHOOK] Event verified - { type: "checkout.session.completed", id: "evt_..." }
-  #   [STRIPE-WEBHOOK] Quota consume result - { consumeResult: "incremented" | "skipped_not_launch" }
-  ```
-- **What the existing code proves:**
-  - `stripe-webhook/index.ts:44` — `constructEventAsync()` is mandatory; no fallback.
-  - A missing or invalid signature returns 400.
-  - A missing `STRIPE_WEBHOOK_SECRET` returns 500 with a clear error message.
-- **Residual risk (HIGH):** The Stripe HTTP path has never been exercised end-to-end.
-  The signature verification key (`STRIPE_WEBHOOK_SECRET`) must be set and correct.
-  Without this, all real Stripe events will fail at the signature check.
-- **Prerequisite:** `STRIPE_WEBHOOK_SECRET` secret must be configured before go-live.
+### 1.4 Infrastructure Planifiée
 
-### Gap 4 — Concurrent Delivery Race
+| Job | Statut | Preuve |
+|-----|--------|--------|
+| `openclaw-scheduler-tick` (5min) | **PROUVÉ PAR EXÉCUTION** | `supabase/infra/cron-jobs.md` — jobid 4, runs observés en base |
+| `openclaw-daily-sweep` (7h UTC) | **BRANCHÉ MAIS NON PROUVÉ** | `supabase/infra/cron-jobs.md` — jobid 5, jamais observé en run |
+| `openclaw-weekly-sweep` (lun 6h) | **BRANCHÉ MAIS NON PROUVÉ** | `supabase/infra/cron-jobs.md` — jobid 6, jamais observé en run |
+| `reactivation-daily-scan` (3h UTC) | **CRÉÉ MAIS NON BRANCHÉ** | `supabase/infra/scheduled-jobs.md` — script SQL prêt, pas exécuté |
+| `payout-generation-daily` (4h UTC) | **CRÉÉ MAIS NON BRANCHÉ** | `supabase/infra/scheduled-jobs.md` — script SQL prêt, pas exécuté |
 
-- **Script:** `scripts/verify-quota-race.ts`
-- **Technique:** `Promise.all()` with N=5 parallel clients, same subscription ID.
-- **Status:** ✅ EXERCISED (JS concurrency level)
-- **What is proved:** The DB unique constraint on `launch_quota_consumed.stripe_subscription_id`
-  fires correctly under JavaScript event-loop concurrency. Exactly 1 `'incremented'`,
-  N-1 `'skipped_*'` results. Used slots increases by exactly 1.
-- **What is NOT proved:** True OS-level parallelism (two separate Deno workers / HTTP
-  requests arriving simultaneously at the Edge Function). The DB-level `FOR UPDATE`
-  lock in `increment_launch_quota_used_slots()` is the real guard for that case,
-  and it exists in the function body.
-- **Honest verdict:** JS concurrency: ✅ proved. OS-level concurrency: ⚠️  not directly
-  tested but protected by the DB `FOR UPDATE` lock + unique constraint.
+### 1.5 Tests
 
----
+| Item | Statut | Preuve |
+|------|--------|--------|
+| `runtime-truth.test.ts` | **PROUVÉ PAR LE REPO** | `src/test/runtime-truth.test.ts` — 5 suites, 15 tests |
+| `example.test.ts` | **PROUVÉ PAR LE REPO** | `src/test/example.test.ts` |
+| `security.test.ts` | **PROUVÉ PAR LE REPO** | `src/test/security.test.ts` |
+| Tests exécutés en CI | **PROUVÉ PAR LE REPO** | `.github/workflows/ci.yml` — `npm run test` |
+| Tests d'intégration Stripe réels | **ABSENT** | Nécessite Stripe CLI + STRIPE_WEBHOOK_SECRET |
+| Tests OS-level concurrent (wrk/k6) | **ABSENT** | Nécessite outil de charge externe |
 
-## 3. Required Secrets / Environment Variables
+### 1.6 Secrets / Environnement
 
-| Variable                   | Required for                        | Where to set               |
-|----------------------------|-------------------------------------|----------------------------|
-| `STRIPE_SECRET_KEY`        | create-checkout, stripe-webhook     | Supabase Edge Function secrets |
-| `STRIPE_WEBHOOK_SECRET`    | stripe-webhook (CRITICAL)           | Supabase Edge Function secrets |
-| `SUPABASE_URL`             | All edge functions (auto-set)       | Lovable Cloud (auto)       |
-| `SUPABASE_SERVICE_ROLE_KEY`| All edge functions (auto-set)       | Lovable Cloud (auto)       |
-| `SUPABASE_ANON_KEY`        | Client-side auth (auto-set)         | Lovable Cloud (auto)       |
-| `ALLOWED_EXTRA_ORIGINS`    | create-checkout (optional)          | Supabase Edge Function secrets |
-
-**CRITICAL:** If `STRIPE_WEBHOOK_SECRET` is not set, the stripe-webhook function returns
-500 on every request with the message "Webhook secret not configured." No subscriptions
-will be processed.
+| Variable | Requis pour | Statut |
+|----------|-------------|--------|
+| `STRIPE_SECRET_KEY` | create-checkout, create-payout | **BRANCHÉ MAIS NON PROUVÉ** (configuré selon GoLive.tsx) |
+| `STRIPE_WEBHOOK_SECRET` | stripe-webhook (CRITIQUE) | **ABSENT / non confirmé** |
+| `SUPABASE_URL` | Toutes les edge functions | ✅ Auto-injecté Lovable Cloud |
+| `SUPABASE_SERVICE_ROLE_KEY` | Toutes les edge functions | ✅ Auto-injecté Lovable Cloud |
+| `ALLOWED_EXTRA_ORIGINS` | create-checkout (optionnel) | **ABSENT** (pas bloquant) |
+| Provider email (Resend/Brevo) | Réactivation automatique | **ABSENT** |
 
 ---
 
-## 4. Verification Commands
+## 2. Bloquants Go-Live
+
+### 🔴 BLOQUANTS RÉELS (empêchent tout argent réel)
+
+| Bloquant | Impact | Action requise |
+|----------|--------|----------------|
+| `STRIPE_WEBHOOK_SECRET` non configuré | Tous les webhooks Stripe échouent avec 500. Aucun abonnement traité. | Configurer dans les secrets Edge Function MAINTENANT |
+| Webhook Stripe jamais testé end-to-end | Gap 3 non exercé | Stripe CLI relay + `stripe trigger checkout.session.completed` |
+| Customer Portal Stripe non activé | `customer-portal` edge fn inutilisable | Activer dans Stripe Dashboard |
+
+### 🟠 SÉRIEUX (fix avant lancement public)
+
+| Item | Impact | Action |
+|------|--------|--------|
+| Crons `reactivation` + `payout` non créés en base | Exécution manuelle uniquement | Exécuter scripts dans `supabase/infra/scheduled-jobs.md` |
+| Aucun provider email | Réactivation = queue admin manuelle uniquement | Intégrer Resend ou Brevo |
+| TypeScript `strict: false` | Risque de null-deref latent (~50 erreurs estimées) | Activer progressivement |
+
+### 🟡 ACCEPTABLES (documentés, non bloquants pour beta privée)
+
+| Item | Note |
+|------|------|
+| `openclaw-daily-sweep` jamais observé | Fenêtre 7h UTC — pas encore passée depuis création |
+| `openclaw-weekly-sweep` jamais observé | Fenêtre lundi 6h UTC — même raison |
+| `cta_click` analytics = pricing CTA uniquement | Landing CTAs dans `landing_ab_events` — assumé Option B |
+| Rate limiting in-process | Reset sur cold start — acceptable en beta privée |
+
+---
+
+## 3. Commandes de Vérification
 
 ```bash
-# 5 DB-level idempotency scenarios (no secrets needed beyond Supabase)
-npm run verify:quota
-
-# Gap 4: concurrent race test
-deno run --allow-env --allow-net scripts/verify-quota-race.ts
-
-# Gap 1 + 2: fault injection (requires execute_ddl RPC or direct pg access)
-deno run --allow-env --allow-net scripts/verify-quota-gaps.ts
-
-# Full quality gate (local)
-npm run lint
-npx tsc --noEmit
+# Tests unitaires + registry télémétrie
 npm run test
+
+# Type check
+npx tsc --noEmit
+
+# Lint
+npm run lint
+
+# Build production
 npm run build
 
-# Gap 3: Stripe HTTP path (manual — requires Stripe CLI)
-# stripe listen --forward-to <stripe-webhook-url>
-# stripe trigger checkout.session.completed
+# Idempotency quota (5 scénarios DB)
+npm run verify:quota
+
+# Race condition concurrent (JS-level)
+deno run --allow-env --allow-net scripts/verify-quota-race.ts
+```
+
+```sql
+-- Vérifier jobs planifiés actifs en base
+SELECT jobid, jobname, schedule, active
+FROM cron.job
+WHERE jobname IN (
+  'openclaw-scheduler-tick',
+  'openclaw-daily-sweep',
+  'openclaw-weekly-sweep',
+  'reactivation-daily-scan',
+  'payout-generation-daily'
+)
+ORDER BY jobid;
+
+-- Vérifier RPCs critiques existent
+SELECT routine_name, routine_type
+FROM information_schema.routines
+WHERE routine_schema = 'public'
+  AND routine_name IN (
+    'generate_payouts_from_validated_gains',
+    'scan_reactivation_candidates',
+    'increment_launch_quota_used_slots',
+    'update_payout_status',
+    'create_payout_batch'
+  );
+
+-- Générer payouts manuellement
+SELECT public.generate_payouts_from_validated_gains();
+
+-- Scanner candidats réactivation manuellement
+SELECT public.scan_reactivation_candidates();
 ```
 
 ---
 
-## 5. Public Endpoint Security Audit
+## 4. Procédure Manuelle Go-Live (Gap 3 — Stripe)
+
+```bash
+# Installer Stripe CLI
+brew install stripe/stripe-cli/stripe
+stripe login
+
+# Forwarder vers l'edge function déployée
+stripe listen --forward-to https://usnriklfiagazpffsqew.supabase.co/functions/v1/stripe-webhook
+
+# Dans un second terminal
+stripe trigger checkout.session.completed
+
+# Logs attendus :
+#   [STRIPE-WEBHOOK] Event verified — { type: "checkout.session.completed", id: "evt_..." }
+#   [STRIPE-WEBHOOK] Quota consume result — { consumeResult: "incremented" | "skipped_not_launch" }
+```
+
+---
+
+## 5. Sécurité Endpoints Publics
 
 ### `stripe-webhook` (POST)
-| Check                     | Status |
-|---------------------------|--------|
-| Signature verification    | ✅  Mandatory (`constructEventAsync`) |
-| Missing secret → 500      | ✅  Explicit check + message |
-| Dedup by stripe_event_id  | ✅  `ignoreDuplicates: true` |
-| Rate limit                | ⚠️  None (Stripe itself throttles) |
-| Input validation          | ✅  Via Stripe SDK parsing |
+| Check | Statut |
+|-------|--------|
+| Signature Stripe | ✅ Obligatoire (`constructEventAsync`) — retourne 400 si absente |
+| Secret manquant → 500 | ✅ Message explicite "Webhook secret not configured." |
+| Dédup `stripe_event_id` | ✅ `ignoreDuplicates: true` |
+| Rate limit | ⚠️ Aucun (Stripe throttle côté Stripe) |
 
 ### `create-checkout` (POST)
-| Check                     | Status |
-|---------------------------|--------|
-| Auth required             | ✅  JWT mandatory |
-| Origin allowlist          | ✅  Explicit allowlist + fallback |
-| Unauthorized origin → 403 | ✅  Returns 403 |
-| Structured logs           | ✅  `logStep` on every path |
-| Input validation          | ✅  Auth token checked before use |
+| Check | Statut |
+|-------|--------|
+| JWT obligatoire | ✅ |
+| Origin allowlist | ✅ |
+| Logs structurés | ✅ `logStep` sur chaque path |
 
-### `track-click` (GET — public, unauthenticated)
-| Check                     | Status |
-|---------------------------|--------|
-| code param required       | ✅  Returns 400 |
-| code max length           | ✅  64 chars (added in hardening) |
-| code pattern              | ✅  `[a-zA-Z0-9_-]` only (added) |
-| Rate limit                | ✅  20 req/min/IP in-process (added; resets on cold start) |
-| No internal details in 500| ✅  "Internal server error" only (added) |
-| Structured logs           | ✅  `log()` on all paths (added) |
-
-### `redeem-promo` (POST)
-| Check                     | Status |
-|---------------------------|--------|
-| Auth required             | ✅  JWT mandatory |
-| Role check                | ✅  Facilitateur blocked with clear message |
-| Code format validation    | ✅  Trim + toUpperCase |
-| Code length validation    | ⚠️  No max length check |
-| Structured logs           | ✅  `logStep` |
-
-### `landing analytics` / `track-click` (public GET)
-| Rate limit                | ✅  Added (in-process, resets on cold start) |
-
-**Outstanding hardening (not yet done):**
-- `redeem-promo`: add max length check on `code` field (LOW risk — code format is controlled)
-- All public endpoints: persistent rate limiting (Redis/Upstash) for production hardness
+### `track-click` (GET — public)
+| Check | Statut |
+|-------|--------|
+| `code` requis | ✅ 400 si absent |
+| Longueur max 64 | ✅ |
+| Pattern `[a-zA-Z0-9_-]` | ✅ |
+| Rate limit in-process | ✅ 20 req/min/IP (reset cold start) |
 
 ---
 
-## 6. Automated vs. Manual vs. Not Proved
+## 6. Ce Qui Reste Non Prouvé (aucune omission)
 
-### ✅ Proved Automatically (runnable without human interaction)
-- DB-level idempotency: 5 scenarios (`npm run verify:quota`)
-- Concurrent race under JS concurrency (`scripts/verify-quota-race.ts`)
-- TypeScript type safety (`npx tsc --noEmit`)
-- Unit tests (`npm run test`)
-- Production build (`npm run build`)
-
-### ⚠️  Proved Manually (requires human operator + external tool)
-- Stripe webhook HTTP path + signature verification (Stripe CLI required)
-- Origin allowlist enforcement (HTTP client required)
-- Promo code redemption end-to-end (requires valid promo code + test account)
-
-### ❌  Not Proved (documented gaps, not hidden)
-- Gap 1: RPC error rollback under fault injection (requires DDL execution rights)
-- Gap 2: no_quota_row scenario under fault injection (same DDL requirement)
-- OS-level multi-process concurrent webhook delivery (requires load testing tool)
-- Full E2E Stripe payment flow in test mode (requires Stripe test card + manual checkout)
+1. **STRIPE_WEBHOOK_SECRET** configuré et fonctionnel — non confirmé
+2. **Gap 3** (Stripe end-to-end) — jamais exercé avec Stripe CLI relay
+3. **Gap 1+2** (rollback RPC / no_quota_row) — nécessite DDL access (psql ou execute_ddl RPC admin)
+4. **Crons reactivation + payout** en base de production — scripts prêts, non exécutés
+5. **openclaw-daily-sweep + weekly-sweep** — configurés, jamais observés en run autonome
+6. **Concurrence OS-level** (wrk/k6 sur stripe-webhook) — non testée
+7. **Provider email réactivation** — ABSENT
+8. **TypeScript strict mode** — désactivé
+9. **Full E2E Stripe** (carte test → checkout → webhook → quota) — non exercé
 
 ---
 
-## 7. Remaining Risks
+## 7. Verdict Go-Live
 
-### 🔴 BLOCKING — Must fix before any real money flows
+| Cible | Décision | Condition |
+|-------|----------|-----------|
+| **Dev / test interne** | ✅ GO | État actuel suffisant |
+| **Beta privée (billing réel)** | ⚠️ CONDITIONNEL | Exige : STRIPE_WEBHOOK_SECRET configuré + Gap 3 exercé manuellement |
+| **Prod publique** | ⚠️ CONDITIONNEL | Exige : tous les BLOQUANTS résolus + crons réactivation/payout créés en base + Gap 3 exercé |
+| **Prod scale-ready** | ❌ PAS ENCORE | Exige : rate limiting Redis, OS-level race test, strict TS, provider email |
 
-| Risk                                      | Mitigation                                    |
-|-------------------------------------------|-----------------------------------------------|
-| `STRIPE_WEBHOOK_SECRET` not configured    | Set in Supabase Edge Function secrets NOW      |
-| Stripe webhook URL not registered         | Add endpoint in Stripe dashboard (test + live) |
-| Gap 3 never exercised                     | Run Stripe CLI relay before opening billing    |
-
-### 🟠 SERIOUS — Fix before public launch
-
-| Risk                                      | Mitigation                                    |
-|-------------------------------------------|-----------------------------------------------|
-| In-process rate limit resets on cold start| Migrate to Upstash Redis rate limiter         |
-| Gap 1 rollback not exercised by a test    | Add execute_ddl RPC + run verify-quota-gaps   |
-| OS-level concurrent race not tested       | k6/wrk test against stripe-webhook endpoint  |
-| `launch_quota` dirty-DB singleton         | See `docs/REPAIR_LAUNCH_QUOTA.md`             |
-
-### 🟡 ACCEPTABLE — Can go live with awareness
-
-| Risk                                      | Mitigation                                    |
-|-------------------------------------------|-----------------------------------------------|
-| redeem-promo missing code length check    | Low risk — code format is platform-controlled |
-| Gap 2 not exercised by a test             | Same DDL limitation as Gap 1; logic is correct|
-| No persistent audit log for quota events  | `billing_events` + `launch_quota_consumed` cover it partially |
+**VERDICT ACTUEL : BETA PRIVÉE**
 
 ---
 
-## 8. Go-Live Decision
-
-| Target                         | Decision            | Condition                                      |
-|--------------------------------|---------------------|------------------------------------------------|
-| **Dev / internal testing**     | ✅ GO               | Current state is sufficient                    |
-| **Beta (closed, real billing)**| ⚠️  CONDITIONAL     | Requires: STRIPE_WEBHOOK_SECRET set + Gap 3 manually exercised |
-| **Production (open, public)**  | ⚠️  CONDITIONAL     | Requires: all BLOCKING risks resolved + Stripe CLI E2E run      |
-| **Production (scale / HA)**    | ❌ NOT YET          | Requires: persistent rate limiting, OS-level race test, Gap 1+2 automated |
-
----
-
-## 9. CI Pipeline
-
-**File:** `.github/workflows/ci.yml`
-
-Steps on every push to `main`/PR:
-1. `npm ci` — install
-2. `npx tsc --noEmit` — type check
-3. `npm run lint` — ESLint
-4. `npm run test` — Vitest unit tests
-5. `npm run build` — production build
-6. `npm run verify:quota` — DB idempotency (if secrets configured)
-7. `deno run verify-quota-race.ts` — concurrent race test (if secrets configured)
-8. `npm audit --audit-level=high` — security audit
-
-**Manual gates** (not in CI, must be run before go-live):
-- Stripe CLI relay test (Gap 3)
-- Fault injection test (Gap 1+2, if execute_ddl RPC available)
-- Full E2E Stripe test mode checkout
-
----
-
-*Last updated: 2026-03-08 — Hardening pass RC-2026-03-08-HARDENING-V1*
-*Author: Lovable AI + operator review*
+*Dernière mise à jour : 2026-03-09 — RC-2026-03-09-TRUTH-V2*
+*Auteur : Principal Engineer audit — zéro fiction*
