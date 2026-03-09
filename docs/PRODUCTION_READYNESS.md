@@ -1,8 +1,58 @@
 # PRODUCTION READYNESS — WIINUP MAX
-> Version: 2026-03-09 | Stamp: RC-2026-03-09-SYNC-V5
+> Version: 2026-03-09 | Stamp: RC-2026-03-09-SYNC-V6
+> PROOF:PRODUCTION_READYNESS_V6:billing_gate_dependency_explicit
 >
 > Document factuel unique. Chaque claim mappe vers un fichier ou une exécution réelle.
 > Vocabulaire : ABSENT / CRÉÉ MAIS NON BRANCHÉ / BRANCHÉ MAIS NON PROUVÉ / PROUVÉ PAR LE CODE / PROUVÉ PAR RUNTIME / DÉPEND CONFIG EXTERNE / ÉTAPE MANUELLE REQUISE / NON PROUVÉ
+
+---
+
+## 0. Release Gate — Dépendance Explicite au Runtime Billing
+
+> **VÉRITÉ ARCHITECTURALE : Le release gate lit le billing runtime réel.**
+
+### Chaîne de dépendance exacte
+
+```
+get_billing_proof_summary (RPC admin, sécurisée)
+  ↓
+useControlPlane.ts → fetchControlPlaneData()
+  ↓ map vers BillingProofContext (8 champs)
+  ↓
+computeReleaseGate(capabilities, billingProof) — release-gate-engine.ts
+  ↓
+verdict: PROD_BLOCKED | PUBLIC_BETA_BLOCKED | PRIVATE_BETA_POSSIBLE | PRIVATE_BETA_READY
+```
+
+### Champs mappés de get_billing_proof_summary vers BillingProofContext
+
+| Champ RPC                    | Champ BillingProofContext         | Usage dans le gate                               |
+|------------------------------|-----------------------------------|--------------------------------------------------|
+| `total_billing_events`       | `totalBillingEvents`              | Détecter si webhooks jamais reçus                |
+| `checkout_completed_events`  | `checkoutCompletedEvents`         | Détecter si checkout complété                    |
+| `full_proof_events`          | `fullProofEvents`                 | **RÈGLE ABSOLUE** : 0 = jamais PRIVATE_BETA_READY |
+| `partial_proof_events`       | `partialProofEvents`              | Avertissement billing partiel                    |
+| `broken_events`              | `brokenEvents`                    | Force PUBLIC_BETA_BLOCKED si > 0 sans full_proof  |
+| `quota_consumed_count`       | `quotaConsumedCount`              | Confirme mutation quota                          |
+| `quota_used_slots`           | `quotaUsedSlots`                  | Affiché dans justification du gate               |
+| `quota_total_slots`          | `quotaTotalSlots`                 | Affiché dans justification du gate               |
+
+### Règles absolues du gate (dans computeReleaseGate)
+
+1. `full_proof_events === 0` ET `billingCtxPresent` → verdict ≤ `PRIVATE_BETA_POSSIBLE`, jamais `PRIVATE_BETA_READY`
+2. `brokenEvents > 0 && fullProofEvents === 0` → `PUBLIC_BETA_BLOCKED` (chaîne cassée)
+3. `full_proof_events >= 1` → promotion possible vers `PRIVATE_BETA_READY` selon les capabilities residuelles
+4. Customer Portal non activé = billing incomplet → `PUBLIC_BETA_BLOCKED`
+5. Config Stripe (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) non vérifiable côté client = `DÉPEND CONFIG EXTERNE`
+
+### Lecture post-test dans /admin/payments
+
+Après exécution du test Stripe, l'opérateur doit observer dans `/admin/payments` → onglet Billing Proof Chain :
+
+1. **Bloc "Premier paiement prouvé"** — OUI/NON + badge CODE_READY/RUNTIME_READY/E2E_PROVEN
+2. **Bloc "Dernière tentative observée"** — dernier event ANY (type, stripeEventId, userId, date, proofLevel, quotaStatus)
+3. **Pipeline billing** — état actif mis en évidence parmi : Aucun event → Webhook reçu → Quota en attente → Quota muté → Preuve complète
+4. **Bloc "Décision release suggérée"** — verdict calculé + justification + prochaine action unique
 
 ---
 
@@ -152,7 +202,8 @@
 
 **VERDICT ACTUEL : PUBLIC_BETA_BLOCKED**
 
-Justification : 3 capabilities billing (checkout, webhook, customer portal) non prouvées E2E.
+Justification : `full_proof_events = 0` (règle absolue). Le gate recalcule automatiquement dès réception
+du premier `full_proof_event` via `get_billing_proof_summary → computeReleaseGate()`.
 
 ### Billing Proof Chain — État réel au 2026-03-09
 
@@ -163,6 +214,8 @@ Justification : 3 capabilities billing (checkout, webhook, customer portal) non 
 | `get_billing_proof_summary` RPC | ✅ **DÉPLOYÉ** — sécurisé admin-only |
 | `BillingProofPanel.tsx` | ✅ **BRANCHÉ** — branché sur les RPCs |
 | `/admin/payments` tab "Billing Proof Chain" | ✅ **VISIBLE** — onglet par défaut |
+| `useControlPlane.ts` lit `get_billing_proof_summary` | ✅ **BRANCHÉ** — injecte BillingProofContext dans computeReleaseGate |
+| `computeReleaseGate()` reçoit BillingProofContext | ✅ **BRANCHÉ** — 0 full_proof = jamais PRIVATE_BETA_READY |
 | `billing_events` rows | 0 — aucun webhook reçu à ce jour |
 | Preuve E2E full | **ZÉRO** — `full_proof_events = 0` |
 
@@ -186,7 +239,22 @@ Un seul checkout test Stripe peut la remplir.
 
 ---
 
-## 5. Prochain Chantier Unique
+## 5. Post-Test Promotion Logic
+
+Après réception du premier `full_proof_event` réel :
+
+1. `get_billing_proof_summary` retourne `full_proof_events >= 1`
+2. `useControlPlane.ts` → `fetchControlPlaneData()` mappe le champ vers `BillingProofContext.fullProofEvents`
+3. `computeReleaseGate(capabilities, billingProof)` lève le blocage billing (ligne ~88-93 release-gate-engine.ts)
+4. Si aucune capability critique bloquante résiduelle → verdict passe à `PRIVATE_BETA_READY`
+5. `/admin/payments` → bloc "Premier paiement prouvé : OUI ✓" + badge "E2E_PROVEN"
+6. Bloc "Décision release suggérée" → "Promotion possible → PRIVATE_BETA_READY"
+
+Ce flux est **entièrement automatique** : aucune modification de code requise après le premier `full_proof_event`.
+
+---
+
+## 6. Prochain Chantier Unique
 
 **Stripe E2E complet** : tester checkout → webhook → quota increment → activation abonnement.
 C'est le seul chantier qui débloque le passage de PUBLIC_BETA_BLOCKED à PRIVATE_BETA_READY.
@@ -195,5 +263,5 @@ Runbook : `scripts/verify-stripe-webhook.sh`
 
 ---
 
-*Dernière mise à jour : 2026-03-09 — RC-2026-03-09-SYNC-V5*
+*Dernière mise à jour : 2026-03-09 — RC-2026-03-09-SYNC-V6*
 *Auteur : Release adversary audit — zéro fiction, zéro mensonge*

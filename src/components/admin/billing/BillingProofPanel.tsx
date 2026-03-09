@@ -1,4 +1,4 @@
-// PROOF:BILLING_PROOF_CHAIN_V2:billing_proof_panel_first_euro
+// PROOF:BILLING_PROOF_CHAIN_V3:billing_proof_panel_post_test_lock
 /**
  * BillingProofPanel — Surface admin billing proof chain
  *
@@ -110,55 +110,57 @@ function shortId(s: string | null): string {
 }
 
 // ── Pipeline State Machine ─────────────────────────────────────────────────────
-// États exacts, lisibles opérateur, sans ambiguïté :
-//   no_checkout        → aucun event billing reçu (billing_events = 0)
-//   checkout_created   → un checkout a été créé côté Stripe mais webhook absent
-//   webhook_missing    → checkout complété, webhook non reçu / non persisté
-//   webhook_received   → webhook reçu et persisté (au moins un billing_event)
-//   quota_not_mutated  → checkout complété + persisté, quota pas encore muté
-//   quota_mutated      → quota/entitlement muté dans launch_quota_consumed
-//   full_proof         → chaîne complète checkout→webhook→quota corrélée
-//   broken             → événement(s) sans corrélation possible
+// PROOF:BILLING_PROOF_CHAIN_V3:pipeline_state_machine_post_test
+//
+// États observables depuis get_billing_proof_summary (pas de checkbox_created/webhook_missing
+// car ces états pré-completion ne sont pas disponibles sans données checkout côté Stripe).
+//
+//   no_checkout       → billing_events = 0, rien reçu
+//   webhook_received  → billing_events > 0, aucun checkout.session.completed
+//   quota_not_mutated → checkout complété + persisté, quota non muté (launch sans consommation)
+//   quota_mutated     → launch_quota_consumed > 0, pas encore full_proof corrélé
+//   full_proof        → proof_level='full' confirmé dans billing_proof_chain
+//   broken            → broken_events > 0, corrélation impossible
+//
+// NOTE : checkout_created / webhook_missing sont des états Stripe-side non observables
+// depuis la DB seule. Ils sont exclus pour éviter l'ambiguïté.
 type PipelineState =
   | "no_checkout"
-  | "checkout_created"
-  | "webhook_missing"
   | "webhook_received"
   | "quota_not_mutated"
   | "quota_mutated"
   | "full_proof"
   | "broken";
 
-function computePipelineState(summary: BillingProofSummary | null, rows: BillingProofRow[]): PipelineState {
+function computePipelineState(summary: BillingProofSummary | null): PipelineState {
   if (!summary || summary.total_billing_events === 0) return "no_checkout";
-  if (summary.broken_events > 0 && summary.full_proof_events === 0 && summary.checkout_completed_events === 0) return "broken";
+  // Broken: events with no correlation AND no full proof
+  if (summary.broken_events > 0 && summary.full_proof_events === 0) return "broken";
+  // Full proof: the only terminal success state
   if (summary.full_proof_events > 0) return "full_proof";
+  // Quota consumed but not yet full_proof correlated
   if (summary.quota_consumed_count > 0) return "quota_mutated";
-  // checkout complété (webhook reçu) mais quota non muté
+  // Checkout completed but quota not mutated (offer_type issue or not launch)
   if (summary.checkout_completed_events > 0 && summary.quota_consumed_count === 0) return "quota_not_mutated";
-  // billing_events > 0 mais aucun checkout complété → webhooks reçus mais pas de checkout finalisé
-  if (summary.total_billing_events > 0 && summary.checkout_completed_events === 0) return "webhook_received";
-  return "no_checkout";
+  // Events received but no checkout.session.completed yet
+  return "webhook_received";
 }
 
-// Étapes dans l'ordre du pipeline (sans no_checkout qui est l'état initial)
-const PIPELINE_STEPS: { key: PipelineState; label: string; desc: string }[] = [
-  { key: "no_checkout",       label: "Aucun event",       desc: "billing_events = 0" },
-  { key: "webhook_received",  label: "Webhook reçu",      desc: "Persisté, signature OK" },
-  { key: "quota_not_mutated", label: "Quota en attente",  desc: "Checkout OK, quota non muté" },
-  { key: "quota_mutated",     label: "Quota muté",        desc: "Entitlement activé" },
-  { key: "full_proof",        label: "Preuve complète",   desc: "E2E prouvé ✓" },
+const PIPELINE_STEPS: { key: PipelineState; label: string; desc: string; cause?: string; action?: string }[] = [
+  { key: "no_checkout",       label: "Aucun event",       desc: "billing_events = 0",         cause: "Webhook Stripe jamais reçu",             action: "Exécuter scripts/verify-stripe-webhook.sh" },
+  { key: "webhook_received",  label: "Webhook reçu",      desc: "Persisté, pas de checkout",  cause: "Événements reçus, checkout non finalisé", action: "Tester checkout complet sur /pricing" },
+  { key: "quota_not_mutated", label: "Quota en attente",  desc: "Checkout OK, quota non muté", cause: "offer_type≠launch ou quotaEngine skip",  action: "Vérifier offer_type=launch dans metadata Stripe" },
+  { key: "quota_mutated",     label: "Quota muté",        desc: "Entitlement activé",          cause: "Corrélation billing_proof_chain incomplète", action: "Vérifier billing_proof_chain → proof_level" },
+  { key: "full_proof",        label: "Preuve complète",   desc: "E2E prouvé ✓",                cause: "—",                                      action: "—" },
 ];
 
 const PIPELINE_ORDER: Record<PipelineState, number> = {
-  no_checkout: 0,
-  checkout_created: 0,
-  webhook_missing: 1,
-  webhook_received: 1,
+  no_checkout:       0,
+  webhook_received:  1,
   quota_not_mutated: 2,
-  quota_mutated: 3,
-  full_proof: 4,
-  broken: -1,
+  quota_mutated:     3,
+  full_proof:        4,
+  broken:            -1,
 };
 
 // ── Premier Euro Hero Block ────────────────────────────────────────────────────
@@ -168,10 +170,16 @@ function PremierEuroBlock({
 }: { summary: BillingProofSummary | null; rows: BillingProofRow[]; loading: boolean }) {
   const isProven = (summary?.full_proof_events ?? 0) > 0;
 
-  // Find the last full_proof row
+  // Last full_proof row (for proven details)
   const lastFullProof = rows.find((r) => r.proof_level === "full");
-  const pipelineState = computePipelineState(summary, rows);
+  // Last ANY row (for "Dernière tentative observée" — shown even when no full proof)
+  const lastAnyRow = rows[0] ?? null;
+
+  const pipelineState = computePipelineState(summary);
   const pipelineIdx = pipelineState === "broken" ? -1 : PIPELINE_ORDER[pipelineState];
+
+  // Active step metadata for contextual action
+  const activeStep = PIPELINE_STEPS.find((s) => s.key === pipelineState);
 
   if (loading) {
     return (
@@ -188,7 +196,8 @@ function PremierEuroBlock({
         ? "border-success/40 bg-success/5"
         : "border-destructive/30 bg-destructive/5"
     }`}>
-      {/* Status line */}
+
+      {/* ① Bloc Premier paiement prouvé */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
           {isProven ? (
@@ -210,7 +219,6 @@ function PremierEuroBlock({
             </p>
           </div>
         </div>
-        {/* Overall classification badge */}
         <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-lg border shrink-0 ${
           isProven
             ? "bg-success/10 text-success border-success/30"
@@ -222,7 +230,7 @@ function PremierEuroBlock({
         </span>
       </div>
 
-      {/* Details grid when proven */}
+      {/* ② Détails preuve complète (si prouvé) */}
       {isProven && lastFullProof && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-xs">
           <div className="rounded-lg bg-background border border-border p-2.5">
@@ -254,7 +262,51 @@ function PremierEuroBlock({
         </div>
       )}
 
-      {/* Pipeline state machine */}
+      {/* ③ Dernière tentative observée — PROOF:BILLING_PROOF_CHAIN_V3:derniere_tentative_block */}
+      {/* Visible même sans full_proof : montre le dernier event ANY (partial, broken, etc.) */}
+      {!isProven && lastAnyRow && (
+        <div className="mb-4 p-3 rounded-xl border border-border bg-background/60">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Dernière tentative observée
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div>
+              <p className="text-muted-foreground">Type</p>
+              <p className="font-mono font-medium text-foreground truncate">{lastAnyRow.event_type.replace("customer.subscription.", "sub.")}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Stripe Event ID</p>
+              <p className="font-mono font-medium text-foreground">{shortId(lastAnyRow.stripe_event_id)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">User impacté</p>
+              <p className="font-mono font-medium text-foreground">{shortId(lastAnyRow.user_id)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Date</p>
+              <p className="font-medium text-foreground">{fmtDate(lastAnyRow.occurred_at)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Proof Level</p>
+              <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold border ${proofLevelConfig(lastAnyRow.proof_level).cls}`}>
+                {proofLevelConfig(lastAnyRow.proof_level).label}
+              </span>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Quota</p>
+              <span className={`text-xs font-medium ${quotaStatusConfig(lastAnyRow.quota_status).cls}`}>
+                {quotaStatusConfig(lastAnyRow.quota_status).label}
+              </span>
+            </div>
+            <div className="col-span-2">
+              <p className="text-muted-foreground">Sub ID</p>
+              <p className="font-mono text-foreground">{shortId(lastAnyRow.stripe_subscription_id_from_event)}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ④ Pipeline state machine */}
       <div className="border-t border-border/60 pt-3">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
           État du pipeline billing
@@ -269,13 +321,12 @@ function PremierEuroBlock({
               const stepOrder = PIPELINE_ORDER[step.key];
               const isActive = stepOrder === pipelineIdx;
               const isPast = stepOrder < pipelineIdx;
-              const isFuture = stepOrder > pipelineIdx;
               return (
                 <div key={step.key} className="flex items-center gap-1">
                   <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border ${
-                    isPast ? "bg-success/10 border-success/20 text-success" :
+                    isPast   ? "bg-success/10 border-success/20 text-success" :
                     isActive ? "bg-primary/10 border-primary/30 text-primary font-bold" :
-                    "bg-muted border-border text-muted-foreground opacity-50"
+                               "bg-muted border-border text-muted-foreground opacity-50"
                   }`}>
                     {isPast ? <CheckCircle2 size={9} /> : isActive ? <Zap size={9} /> : <Clock size={9} />}
                     {step.label}
@@ -290,33 +341,25 @@ function PremierEuroBlock({
         )}
       </div>
 
-      {/* Next action — contextuelle selon l'état exact du pipeline */}
-      {!isProven && (
+      {/* ⑤ Prochaine action unique — dérivée de l'état actif du pipeline */}
+      {!isProven && activeStep && (
         <div className="mt-3 pt-3 border-t border-border/60">
           <p className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-1">
             <Zap size={11} className="text-primary" />
-            {pipelineState === "no_checkout" && "ACTION : Exercer le premier webhook Stripe"}
-            {pipelineState === "checkout_created" && "ACTION : Attendre ou forcer le webhook checkout.session.completed"}
-            {pipelineState === "webhook_missing" && "DIAGNOSTIC : Webhook non reçu après checkout"}
-            {pipelineState === "webhook_received" && "ACTION : Déclencher un checkout complet"}
+            {pipelineState === "no_checkout"       && "ACTION : Exercer le premier webhook Stripe"}
+            {pipelineState === "webhook_received"  && "ACTION : Déclencher un checkout complet"}
             {pipelineState === "quota_not_mutated" && "DIAGNOSTIC : Quota non muté — vérifier quotaEngine"}
-            {pipelineState === "quota_mutated" && "ACTION : Vérifier la corrélation checkout → quota"}
-            {pipelineState === "broken" && "DIAGNOSTIC : Chaîne cassée — corrélation impossible"}
+            {pipelineState === "quota_mutated"     && "ACTION : Vérifier la corrélation checkout → quota"}
+            {pipelineState === "broken"            && "DIAGNOSTIC : Chaîne cassée — corrélation impossible"}
           </p>
           <p className="text-xs text-muted-foreground">
-            {(pipelineState === "no_checkout") &&
-              "1. Configurer STRIPE_WEBHOOK_SECRET dans Cloud Secrets → 2. stripe listen --forward-to [endpoint] → 3. Déclencher checkout sur /pricing avec 4242 4242 4242 4242"}
-            {(pipelineState === "checkout_created" || pipelineState === "webhook_missing") &&
-              "Checkout créé mais webhook absent. Vérifier : STRIPE_WEBHOOK_SECRET configuré ? stripe listen actif ? Logs Edge Function stripe-webhook → erreur 500 = secret manquant."}
-            {(pipelineState === "webhook_received") &&
-              "Webhooks reçus mais aucun checkout.session.completed traité. Tester un checkout complet sur /pricing avec carte 4242 4242 4242 4242."}
-            {(pipelineState === "quota_not_mutated") &&
-              "Checkout complété, persisté, mais quota non muté. Vérifier : offer_type=launch dans metadata ? Logs stripe-webhook → 'Quota consume result'. Table launch_quota_consumed."}
-            {(pipelineState === "quota_mutated") &&
-              "Quota muté mais preuve non corrélée complète. Vérifier billing_proof_chain → chercher proof_level='full'. Comparer stripe_subscription_id avec launch_quota_consumed."}
-            {(pipelineState === "broken") &&
-              "Événements sans stripe_event_id ou webhooks non corrélés. Causes : signature invalide, webhook réexpédié, event non traité. Vérifier logs Edge Function."}
+            {pipelineState === "no_checkout"       && "1. Configurer STRIPE_WEBHOOK_SECRET dans Cloud Secrets → 2. stripe listen --forward-to [endpoint] → 3. Déclencher checkout sur /pricing avec 4242 4242 4242 4242"}
+            {pipelineState === "webhook_received"  && "Webhooks reçus mais aucun checkout.session.completed traité. Tester un checkout complet sur /pricing avec carte 4242 4242 4242 4242."}
+            {pipelineState === "quota_not_mutated" && "Checkout complété, persisté, mais quota non muté. Vérifier : offer_type=launch dans metadata ? Logs stripe-webhook → 'Quota consume result'. Table launch_quota_consumed."}
+            {pipelineState === "quota_mutated"     && "Quota muté mais preuve non corrélée complète. Vérifier billing_proof_chain → chercher proof_level='full'. Comparer stripe_subscription_id avec launch_quota_consumed."}
+            {pipelineState === "broken"            && "Événements sans stripe_event_id ou webhooks non corrélés. Causes : signature invalide, webhook réexpédié, event non traité. Vérifier logs Edge Function."}
           </p>
+          <p className="text-xs text-primary/80 mt-1 font-mono">→ {activeStep.action}</p>
         </div>
       )}
     </div>
