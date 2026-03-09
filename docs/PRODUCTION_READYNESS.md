@@ -153,7 +153,21 @@
 **VERDICT ACTUEL : PUBLIC_BETA_BLOCKED**
 
 Justification : 3 capabilities billing (checkout, webhook, customer portal) non prouvées E2E.
-Le release gate engine (`src/modules/control-plane/services/release-gate-engine.ts`) calcule ce verdict automatiquement.
+
+### Billing Proof Chain — État réel au 2026-03-09
+
+| Composant | Statut |
+|-----------|--------|
+| `billing_proof_chain` VIEW | ✅ **DÉPLOYÉ EN BASE** — migration 2026-03-09 |
+| `get_billing_proof_chain` RPC | ✅ **DÉPLOYÉ** — sécurisé admin-only |
+| `get_billing_proof_summary` RPC | ✅ **DÉPLOYÉ** — sécurisé admin-only |
+| `BillingProofPanel.tsx` | ✅ **BRANCHÉ** — branché sur les RPCs |
+| `/admin/payments` tab "Billing Proof Chain" | ✅ **VISIBLE** — onglet par défaut |
+| `billing_events` rows | 0 — aucun webhook reçu à ce jour |
+| Preuve E2E full | **ZÉRO** — `full_proof_events = 0` |
+
+La chaîne de preuve est **architecturalement complète** mais **vide de preuves runtime**.
+Un seul checkout test Stripe peut la remplir.
 
 ---
 
@@ -177,7 +191,9 @@ Le release gate engine (`src/modules/control-plane/services/release-gate-engine.
 **Stripe E2E complet** : tester checkout → webhook → quota increment → activation abonnement.
 C'est le seul chantier qui débloque le passage de PUBLIC_BETA_BLOCKED à PRIVATE_BETA_READY.
 
+Runbook : `scripts/verify-stripe-webhook.sh`
+
 ---
 
-*Dernière mise à jour : 2026-03-09 — RC-2026-03-09-SYNC-V4*
+*Dernière mise à jour : 2026-03-09 — RC-2026-03-09-SYNC-V5*
 *Auteur : Release adversary audit — zéro fiction, zéro mensonge*
