@@ -58,13 +58,19 @@ async function fetchControlPlaneData() {
   const capabilities = buildCapabilityMatrix(checkResults);
 
   // Build billing proof context from live DB summary (admin-only RPC)
+  // ALL fields from get_billing_proof_summary are mapped here — nothing left on the floor.
   let billingProof: BillingProofContext | undefined;
   if (summaryRes.data && !summaryRes.error) {
-    const s = summaryRes.data as Record<string, number>;
+    const s = summaryRes.data as Record<string, number | null>;
     billingProof = {
-      totalBillingEvents: s.total_billing_events ?? 0,
-      fullProofEvents:    s.full_proof_events    ?? 0,
-      quotaConsumedCount: s.quota_consumed_count ?? 0,
+      totalBillingEvents:       Number(s.total_billing_events      ?? 0),
+      fullProofEvents:          Number(s.full_proof_events         ?? 0),
+      checkoutCompletedEvents:  Number(s.checkout_completed_events ?? 0),
+      partialProofEvents:       Number(s.partial_proof_events      ?? 0),
+      brokenEvents:             Number(s.broken_events             ?? 0),
+      quotaConsumedCount:       Number(s.quota_consumed_count      ?? 0),
+      quotaUsedSlots:           s.quota_used_slots  != null ? Number(s.quota_used_slots)  : null,
+      quotaTotalSlots:          s.quota_total_slots != null ? Number(s.quota_total_slots) : null,
     };
   }
 
