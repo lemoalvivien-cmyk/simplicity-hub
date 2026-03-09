@@ -67,10 +67,12 @@ async function checkRPC(name: string): Promise<{ ok: boolean; detail: string }> 
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _supabase = supabase as any;
+
 async function checkTableCount(table: string): Promise<{ ok: boolean; detail: string; count: number }> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { count, error } = await (supabase.from(table) as any)
+    const { count, error } = await _supabase.from(table)
       .select("*", { count: "exact", head: true });
     if (error) {
       return { ok: false, detail: `Table inaccessible : ${error.message}`, count: 0 };
