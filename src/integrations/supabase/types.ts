@@ -4370,6 +4370,29 @@ export type Database = {
         Args: { p_default?: number; p_owner_id: string; p_rule_type?: string }
         Returns: number
       }
+      get_billing_proof_chain: {
+        Args: { p_limit?: number }
+        Returns: {
+          amount_eur: number
+          currency: string
+          event_id: string
+          event_type: string
+          metadata_user_id: string
+          object_status: string
+          occurred_at: string
+          offer_type: string
+          processed_at: string
+          proof_level: string
+          quota_status: string
+          stripe_customer_id: string
+          stripe_event_id: string
+          stripe_object_id: string
+          stripe_subscription_id_from_event: string
+          subscription_sync_status: string
+          user_id: string
+        }[]
+      }
+      get_billing_proof_summary: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
