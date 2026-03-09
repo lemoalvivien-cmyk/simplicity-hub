@@ -123,8 +123,10 @@ export default function AdminPayments() {
   const fmtDate      = (d: string | null) =>
     d ? format(new Date(d), "d MMM yyyy", { locale: fr }) : "—";
 
+  const [tab, setTab] = useState<"subscriptions" | "proof">("proof");
+
   return (
-    <AdminLayout title="Paiements" subtitle="Abonnements Stripe + accès promo — données réelles">
+    <AdminLayout title="Paiements" subtitle="Abonnements Stripe + accès promo — chaîne de preuve billing">
       {/* Summary */}
       <div className="grid sm:grid-cols-4 gap-4 mb-6">
         <div className="stat-card">
