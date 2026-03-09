@@ -355,18 +355,8 @@ export default function Checkout() {
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    {effectiveLaunchAvailable ? (
-                      <>
-                        <p className="font-display text-2xl font-bold text-foreground">{formatAmount(99, lang)}</p>
-                        <p className="text-xs text-muted-foreground">/ an TTC</p>
-                        <p className="text-xs text-muted-foreground line-through mt-0.5">{formatAmount(490, lang)} / an</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="font-display text-2xl font-bold text-foreground">{formatAmount(490, lang)}</p>
-                        <p className="text-xs text-muted-foreground">/ an TTC</p>
-                      </>
-                    )}
+                    <p className="font-display text-2xl font-bold text-foreground">{formatAmount(99, lang)}</p>
+                    <p className="text-xs text-muted-foreground">/ an TTC</p>
                   </div>
                 </div>
               </div>
