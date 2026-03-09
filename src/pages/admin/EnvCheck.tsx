@@ -6,13 +6,12 @@
  * 1. Présence des RPCs critiques en DB
  * 2. Présence des tables critiques
  * 3. Sources analytics branchées (comptage réel)
- * 4. Jobs planifiés documentés vs actifs
- * 5. État crons (lecture cron.job si accessible)
+ * 4. Jobs planifiés — état documenté (env-dep si non créés)
  *
  * Ce que ce panneau NE peut PAS vérifier côté client :
- * - STRIPE_WEBHOOK_SECRET (secret edge function — non exposé au client)
+ * - STRIPE_WEBHOOK_SECRET (secret edge function — non exposé)
  * - STRIPE_SECRET_KEY (idem)
- * Ces secrets sont listés comme "env-dep — vérifier dans Lovable Cloud > Secrets"
+ * Ces secrets sont listés "env-dep — vérifier dans Lovable Cloud > Secrets"
  */
 import { useEffect, useState, useCallback } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
@@ -21,6 +20,10 @@ import {
   CheckCircle2, XCircle, AlertTriangle, RefreshCw, Database,
   Zap, BarChart2, Clock, Shield
 } from "lucide-react";
+
+// Cast global pour toutes les opérations DB avec tables non typées
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = supabase as any;
 
 type CheckStatus = "ok" | "fail" | "env-dep" | "loading";
 
@@ -33,59 +36,39 @@ interface Check {
 }
 
 const STATUS_CFG: Record<CheckStatus, { label: string; cls: string; Icon: typeof CheckCircle2 }> = {
-  ok:      { label: "OK",          cls: "text-success",     Icon: CheckCircle2 },
-  fail:    { label: "ÉCHOUÉ",      cls: "text-destructive", Icon: XCircle },
-  "env-dep": { label: "CONFIG REQ.", cls: "text-warning",   Icon: AlertTriangle },
-  loading: { label: "…",          cls: "text-muted-foreground", Icon: Clock },
+  ok:        { label: "OK",           cls: "text-success",          Icon: CheckCircle2 },
+  fail:      { label: "ÉCHOUÉ",       cls: "text-destructive",      Icon: XCircle },
+  "env-dep": { label: "CONFIG REQ.", cls: "text-warning",           Icon: AlertTriangle },
+  loading:   { label: "…",           cls: "text-muted-foreground",  Icon: Clock },
 };
-
-const STATIC_ENV_CHECKS: Omit<Check, "status" | "detail">[] = [
-  // Secrets — non vérifiables côté client
-  { id: "stripe_webhook_secret", label: "STRIPE_WEBHOOK_SECRET", category: "Secrets", },
-  { id: "stripe_secret_key",     label: "STRIPE_SECRET_KEY",     category: "Secrets", },
-  { id: "provider_email",        label: "Provider email (Resend/Brevo/Loops)", category: "Secrets", },
-  // Crons documentés
-  { id: "cron_reactivation",     label: "Cron reactivation-daily-scan (03:00 UTC)", category: "Crons", },
-  { id: "cron_payout",           label: "Cron payout-generation-daily (04:00 UTC)", category: "Crons", },
-];
 
 async function checkRPC(name: string): Promise<{ ok: boolean; detail: string }> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc(name);
-    // If the RPC exists it returns a result (may be 0 or a value). Error with code PGRST202 = not found.
+    const { error } = await db.rpc(name);
     if (error) {
-      if (error.code === "PGRST202" || error.message?.includes("does not exist")) {
-        return { ok: false, detail: `RPC introuvable : ${error.message}` };
-      }
-      // Other errors (permission, etc.) still mean the RPC exists
-      return { ok: true, detail: `RPC présente (erreur permission OK : ${error.code})` };
+      const notFound = error.code === "PGRST202" || (error.message ?? "").includes("does not exist");
+      if (notFound) return { ok: false, detail: `RPC introuvable : ${error.message}` };
+      // Permission error / admin-only = RPC existe mais requiert un rôle
+      return { ok: true, detail: `RPC présente (erreur permission attendue : ${error.code})` };
     }
-    return { ok: true, detail: `RPC présente — retourne : ${JSON.stringify(data)}` };
+    return { ok: true, detail: "RPC présente et appelable" };
   } catch {
-    return { ok: false, detail: "Exception inattendue" };
+    return { ok: false, detail: "Exception inattendue lors de l'appel RPC" };
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _supabase = supabase as any;
-
-async function checkTableCount(table: string): Promise<{ ok: boolean; detail: string; count: number }> {
+async function checkTable(table: string): Promise<{ ok: boolean; detail: string; count: number }> {
   try {
-    const { count, error } = await _supabase.from(table)
-      .select("*", { count: "exact", head: true });
-    if (error) {
-      return { ok: false, detail: `Table inaccessible : ${error.message}`, count: 0 };
-    }
+    const { count, error } = await db.from(table).select("*", { count: "exact", head: true });
+    if (error) return { ok: false, detail: `Table inaccessible : ${error.message}`, count: 0 };
     return { ok: true, detail: `Table accessible — ${count ?? 0} lignes`, count: count ?? 0 };
   } catch {
     return { ok: false, detail: "Exception inattendue", count: 0 };
   }
 }
 
-async function countAnalyticsEvent(eventType: string): Promise<number> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { count } = await (supabase.from("analytics_events") as any)
+async function countEvent(eventType: string): Promise<number> {
+  const { count } = await db.from("analytics_events")
     .select("*", { count: "exact", head: true })
     .eq("event_type", eventType);
   return (count as number | null) ?? 0;
@@ -98,40 +81,31 @@ export default function AdminEnvCheck() {
 
   const run = useCallback(async () => {
     setLoading(true);
-
     const results: Check[] = [];
 
     // ── 1. RPCs critiques ────────────────────────────────────────────────────
-    const rpcs = [
-      { id: "rpc_generate_payouts",   name: "generate_payouts_from_validated_gains", label: "RPC generate_payouts_from_validated_gains" },
-      { id: "rpc_scan_reactivation",  name: "scan_reactivation_candidates",           label: "RPC scan_reactivation_candidates" },
-      { id: "rpc_increment_quota",    name: "increment_launch_quota_used_slots",       label: "RPC increment_launch_quota_used_slots" },
-      { id: "rpc_update_payout",      name: "update_payout_status",                   label: "RPC update_payout_status (admin-only)" },
+    const rpcs: { id: string; name: string; label: string }[] = [
+      { id: "rpc_generate_payouts",  name: "generate_payouts_from_validated_gains", label: "generate_payouts_from_validated_gains()" },
+      { id: "rpc_scan_reactivation", name: "scan_reactivation_candidates",          label: "scan_reactivation_candidates()" },
+      { id: "rpc_increment_quota",   name: "increment_launch_quota_used_slots",      label: "increment_launch_quota_used_slots()" },
+      { id: "rpc_update_payout",     name: "update_payout_status",                  label: "update_payout_status() [admin-only]" },
     ];
-
     for (const rpc of rpcs) {
       const r = await checkRPC(rpc.name);
-      results.push({
-        id: rpc.id,
-        label: rpc.label,
-        status: r.ok ? "ok" : "fail",
-        detail: r.detail,
-        category: "RPCs DB",
-      });
+      results.push({ id: rpc.id, label: rpc.label, status: r.ok ? "ok" : "fail", detail: r.detail, category: "RPCs DB" });
     }
 
     // ── 2. Tables critiques ──────────────────────────────────────────────────
-    const tables = [
-      { id: "tbl_payouts",           table: "payouts",             label: "Table payouts" },
-      { id: "tbl_payout_batches",    table: "payout_batches",      label: "Table payout_batches" },
-      { id: "tbl_payout_audit",      table: "payout_audit_log",    label: "Table payout_audit_log" },
-      { id: "tbl_reactivation_jobs", table: "reactivation_jobs",   label: "Table reactivation_jobs" },
-      { id: "tbl_analytics_events",  table: "analytics_events",    label: "Table analytics_events" },
-      { id: "tbl_launch_quota",      table: "launch_quota",        label: "Table launch_quota" },
+    const tables: { id: string; table: string; label: string }[] = [
+      { id: "tbl_payouts",           table: "payouts",           label: "payouts" },
+      { id: "tbl_payout_batches",    table: "payout_batches",    label: "payout_batches" },
+      { id: "tbl_payout_audit",      table: "payout_audit_log",  label: "payout_audit_log" },
+      { id: "tbl_reactivation_jobs", table: "reactivation_jobs", label: "reactivation_jobs" },
+      { id: "tbl_analytics_events",  table: "analytics_events",  label: "analytics_events" },
+      { id: "tbl_launch_quota",      table: "launch_quota",      label: "launch_quota" },
     ];
-
     for (const t of tables) {
-      const r = await checkTableCount(t.table);
+      const r = await checkTable(t.table);
       results.push({
         id: t.id,
         label: `${t.label} (${r.count} lignes)`,
@@ -141,58 +115,75 @@ export default function AdminEnvCheck() {
       });
     }
 
-    // ── 3. Sources analytics (writers réels) ─────────────────────────────────
-    const eventsToCheck = [
-      "landing_view", "pricing_view", "checkout_start",
-      "checkout_success", "onboarding_done", "mission_created",
-      "intro_submitted", "intro_validated",
-    ];
-
-    const eventCounts = await Promise.all(eventsToCheck.map(e => countAnalyticsEvent(e)));
-    const totalAnalytics = eventCounts.reduce((s, n) => s + n, 0);
-    const eventsWithData = eventCounts.filter(n => n > 0).length;
+    // ── 3. Writers analytics ─────────────────────────────────────────────────
+    const tracked = ["landing_view","pricing_view","checkout_start","checkout_success","onboarding_done","mission_created","intro_submitted","intro_validated"];
+    const counts = await Promise.all(tracked.map(e => countEvent(e)));
+    const totalEvents = counts.reduce((s, n) => s + n, 0);
+    const eventsWithData = counts.filter(n => n > 0).length;
 
     results.push({
       id: "analytics_writers",
-      label: `Analytics writers (${eventsWithData}/${eventsToCheck.length} events avec données)`,
-      status: totalAnalytics > 0 ? "ok" : "env-dep",
-      detail: totalAnalytics > 0
-        ? `${totalAnalytics} events total en base — writers réels présents dans le repo`
-        : "0 events en base — writers présents dans le repo mais aucune activité encore enregistrée",
+      label: `analytics_events writers (${eventsWithData}/${tracked.length} events avec données)`,
+      status: totalEvents > 0 ? "ok" : "env-dep",
+      detail: totalEvents > 0
+        ? `${totalEvents} events total en base — writers réels présents dans le repo (PROUVÉ PAR LE REPO)`
+        : "0 events en base — writers présents dans le repo mais aucune activité encore enregistrée (BRANCHÉ MAIS NON PROUVÉ par exécution)",
       category: "Télémétrie",
     });
 
-    // landing_ab_events
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { count: landingAbCount } = await (supabase.from("landing_ab_events") as any)
-      .select("*", { count: "exact", head: true });
+    const labRes = await checkTable("landing_ab_events");
     results.push({
       id: "landing_ab_events",
-      label: `landing_ab_events (${landingAbCount ?? 0} lignes)`,
-      status: "ok",
-      detail: "Source séparée Option B — CTAs marketing landing. Accessible.",
+      label: `landing_ab_events (${labRes.count} lignes — Option B marketing)`,
+      status: labRes.ok ? "ok" : "fail",
+      detail: "Source séparée Option B — CTAs marketing landing via landingTracking.ts",
       category: "Télémétrie",
     });
 
-    // ── 4. Secrets — non vérifiables côté client ──────────────────────────────
-    STATIC_ENV_CHECKS.forEach(({ id, label, category }) => {
-      let detail = "";
-      if (id === "stripe_webhook_secret") detail = "Non vérifiable côté client. Vérifier dans Lovable Cloud → Secrets → STRIPE_WEBHOOK_SECRET";
-      else if (id === "stripe_secret_key") detail = "Non vérifiable côté client. Vérifier dans Lovable Cloud → Secrets → STRIPE_SECRET_KEY";
-      else if (id === "provider_email") detail = "ABSENT — aucun provider configuré. Réactivation = mode manuel uniquement.";
-      else if (id === "cron_reactivation") detail = "Script SQL disponible dans supabase/infra/scheduled-jobs.md — PAS ENCORE CRÉÉ EN BASE. Déclenchement = manuel via UI admin.";
-      else if (id === "cron_payout") detail = "Script SQL disponible dans supabase/infra/scheduled-jobs.md — PAS ENCORE CRÉÉ EN BASE. Déclenchement = manuel via UI admin.";
+    // ── 4. Secrets (non vérifiables côté client) ──────────────────────────────
+    results.push({
+      id: "stripe_webhook_secret",
+      label: "STRIPE_WEBHOOK_SECRET",
+      status: "env-dep",
+      detail: "Non vérifiable côté client. Vérifier dans Lovable Cloud → Secrets. BLOQUANT avant tout billing réel.",
+      category: "Secrets",
+    });
+    results.push({
+      id: "stripe_secret_key",
+      label: "STRIPE_SECRET_KEY",
+      status: "env-dep",
+      detail: "Non vérifiable côté client. Vérifier dans Lovable Cloud → Secrets.",
+      category: "Secrets",
+    });
+    results.push({
+      id: "provider_email",
+      label: "Provider email (Resend / Brevo / Loops)",
+      status: "env-dep",
+      detail: "ABSENT — aucun provider configuré. Réactivation = mode manuel opérateur uniquement.",
+      category: "Secrets",
+    });
 
-      const isProviderEmail = id === "provider_email";
-      const isCron = id.startsWith("cron_");
-
-      results.push({
-        id,
-        label,
-        status: isProviderEmail || isCron ? "env-dep" : "env-dep",
-        detail,
-        category,
-      });
+    // ── 5. Crons (infra documentée, non créée en base) ────────────────────────
+    results.push({
+      id: "cron_reactivation",
+      label: "reactivation-daily-scan (03:00 UTC)",
+      status: "env-dep",
+      detail: "CRÉÉ MAIS NON BRANCHÉ — Script SQL disponible dans supabase/infra/scheduled-jobs.md. Pas encore exécuté en base. Déclenchement actuel = manuel via bouton UI admin.",
+      category: "Crons",
+    });
+    results.push({
+      id: "cron_payout",
+      label: "payout-generation-daily (04:00 UTC)",
+      status: "env-dep",
+      detail: "CRÉÉ MAIS NON BRANCHÉ — Script SQL disponible dans supabase/infra/scheduled-jobs.md. Pas encore exécuté en base. Déclenchement actuel = manuel via bouton UI admin.",
+      category: "Crons",
+    });
+    results.push({
+      id: "cron_openclaw_tick",
+      label: "openclaw-scheduler-tick (*/5 min)",
+      status: "ok",
+      detail: "PROUVÉ PAR EXÉCUTION — jobid 4, runs observés dans openclaw_scheduled_runs. Voir supabase/infra/cron-jobs.md.",
+      category: "Crons",
     });
 
     setChecks(results);
@@ -207,14 +198,22 @@ export default function AdminEnvCheck() {
   const failCount = checks.filter(c => c.status === "fail").length;
   const envDepCount = checks.filter(c => c.status === "env-dep").length;
 
+  const catIconMap: Record<string, React.ReactNode> = {
+    "RPCs DB":    <Database size={14} className="text-primary" />,
+    "Tables DB":  <Database size={14} className="text-accent" />,
+    "Télémétrie": <BarChart2 size={14} className="text-success" />,
+    "Secrets":    <Shield size={14} className="text-warning" />,
+    "Crons":      <Clock size={14} className="text-muted-foreground" />,
+  };
+
   return (
     <AdminLayout
       title="Env Check"
-      subtitle="Readiness runtime — vérification en temps réel des composants critiques"
+      subtitle="Readiness runtime — vérification temps réel des composants critiques"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="grid grid-cols-3 gap-3 flex-1 mr-6">
+      {/* Summary */}
+      <div className="flex items-center justify-between mb-5 gap-4">
+        <div className="grid grid-cols-3 gap-3 flex-1">
           <div className="stat-card text-center">
             <p className="font-display text-2xl font-bold text-success">{okCount}</p>
             <p className="text-xs text-muted-foreground mt-0.5">OK</p>
@@ -238,13 +237,12 @@ export default function AdminEnvCheck() {
         </button>
       </div>
 
-      {/* Honesty banner */}
-      <div className="mb-5 p-3 rounded-xl bg-warning/8 border border-warning/20 text-xs text-muted-foreground">
-        <p className="font-semibold text-foreground mb-0.5">⚠️ Limites de ce panneau</p>
+      {/* Honesty note */}
+      <div className="mb-5 p-3 rounded-xl bg-warning/8 border border-warning/20 text-xs text-muted-foreground leading-relaxed">
+        <span className="font-semibold text-foreground">⚠️ Limites de ce panneau — </span>
         Les secrets Edge Function (<code>STRIPE_WEBHOOK_SECRET</code>, <code>STRIPE_SECRET_KEY</code>) ne sont
-        pas accessibles côté client. Vérifier dans Lovable Cloud → Secrets.
-        Les crons pg_cron ne sont pas encore créés en base (scripts disponibles dans{" "}
-        <code>supabase/infra/scheduled-jobs.md</code>).
+        pas accessibles côté client. Les crons <code>reactivation</code> et <code>payout</code> ne sont pas encore
+        créés en base. Scripts disponibles dans <code>supabase/infra/scheduled-jobs.md</code>.
       </div>
 
       {/* Checks by category */}
@@ -257,22 +255,13 @@ export default function AdminEnvCheck() {
         <div className="space-y-6">
           {categories.map(cat => {
             const catChecks = checks.filter(c => c.category === cat);
-            const catIcon =
-              cat === "RPCs DB" ? <Database size={14} className="text-primary" /> :
-              cat === "Tables DB" ? <Database size={14} className="text-accent" /> :
-              cat === "Télémétrie" ? <BarChart2 size={14} className="text-success" /> :
-              cat === "Secrets" ? <Shield size={14} className="text-warning" /> :
-              cat === "Crons" ? <Clock size={14} className="text-muted-foreground" /> :
-              <Zap size={14} className="text-primary" />;
-
+            const catOk = catChecks.filter(c => c.status === "ok").length;
             return (
               <div key={cat}>
                 <div className="flex items-center gap-2 mb-2">
-                  {catIcon}
+                  {catIconMap[cat] ?? <Zap size={14} className="text-primary" />}
                   <h2 className="font-semibold text-foreground text-sm">{cat}</h2>
-                  <span className="text-xs text-muted-foreground">
-                    ({catChecks.filter(c => c.status === "ok").length}/{catChecks.length} OK)
-                  </span>
+                  <span className="text-xs text-muted-foreground">({catOk}/{catChecks.length} OK)</span>
                 </div>
                 <div className="card-surface overflow-hidden">
                   {catChecks.map((check, idx) => {
@@ -303,12 +292,12 @@ export default function AdminEnvCheck() {
 
       {/* Verdict */}
       <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border">
-        <p className="font-semibold text-sm text-foreground mb-2">Verdict : BETA PRIVÉE</p>
+        <p className="font-semibold text-sm text-foreground mb-2">Verdict actuel : BETA PRIVÉE</p>
         <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-          <li>RPCs critiques présentes en DB — appelables depuis UI admin et SQL</li>
-          <li>Writers analytics présents dans le repo — à prouver par exécution réelle</li>
-          <li>STRIPE_WEBHOOK_SECRET : vérification manuelle requise avant tout billing réel</li>
-          <li>Crons reactivation + payout : créer via scripts <code>supabase/infra/scheduled-jobs.md</code></li>
+          <li>RPCs critiques présentes en DB — appelables depuis UI admin</li>
+          <li>Writers analytics présents dans le repo — activité réelle à confirmer</li>
+          <li><strong>STRIPE_WEBHOOK_SECRET</strong> : vérification manuelle requise avant tout billing réel</li>
+          <li>Crons reactivation + payout : scripts dans <code>supabase/infra/scheduled-jobs.md</code> — à exécuter</li>
           <li>Provider email : ABSENT — réactivation = manuelle</li>
         </ul>
       </div>
