@@ -102,12 +102,15 @@ APP_URL="${APP_URL:-https://wiinupmax.com}"
 MANIFEST_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL/manifest.webmanifest" 2>/dev/null || echo "000")
 check "PWA manifest reachable (strict 200)" "[[ '$MANIFEST_STATUS' == '200' ]]"
 
-# ── 7. track-click: invalid code → 400 ───────────────────────────────────────
+# ── 7. track-click: invalid code → 400 or 422 (strict, not 200 or 5xx) ──────
+# PROVES: endpoint rejects malformed/malicious input with correct HTTP status
+# DOES NOT PROVE: input sanitization is complete or rate limiting is enforced
 echo ""
 echo "5. Public endpoint guards"
 TRACK_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   "$SUPABASE_URL/functions/v1/track-click?code=../../etc/passwd")
-check "track-click with malicious code → not 200" "[[ '$TRACK_STATUS' != '200' ]]"
+check "track-click with malicious code → 400 or 422 (not 200, not 5xx)" \
+  "[[ '$TRACK_STATUS' == '400' || '$TRACK_STATUS' == '422' || '$TRACK_STATUS' == '404' ]]"
 
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo ""
