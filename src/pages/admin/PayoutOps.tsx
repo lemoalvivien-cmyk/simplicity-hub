@@ -188,6 +188,25 @@ export default function AdminPayoutOps() {
   return (
     <AdminLayout title="Payout Ops" subtitle="Gestion des paiements facilitateurs — données réelles">
 
+      {/* PROOF:PAYOUT_PIPELINE_V1 — generate_payouts_from_validated_gains */}
+      <div className="mb-5 p-4 rounded-xl bg-muted/50 border border-border flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p className="font-semibold text-sm text-foreground">Pipeline payout → gains validés</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Scanne les gains <code>valide/recu</code> sans payout existant et crée les entrées manquantes.
+            Idempotent — appel multiple sans risque.
+          </p>
+        </div>
+        <button
+          onClick={generateFromGains}
+          disabled={generating}
+          className="btn-primary flex items-center gap-2 px-4 py-2 text-sm disabled:opacity-50 shrink-0"
+        >
+          <RefreshCw size={13} className={generating ? "animate-spin" : ""} />
+          {generating ? "Génération…" : "Générer depuis gains validés"}
+        </button>
+      </div>
+
       {/* Summary */}
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
         <div className="stat-card">
