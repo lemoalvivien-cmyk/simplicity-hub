@@ -110,14 +110,13 @@ export default function CGU() {
           {/* 9. Tarification et paiement */}
           <div>
             <h2 className="text-lg font-semibold text-foreground mb-3">9. Tarification et conditions de paiement</h2>
-            <p>Les tarifs en vigueur sont affichés sur la page <Link to="/pricing" className="text-primary underline">Tarifs</Link>. Deux offres sont disponibles :</p>
+            <p>Le tarif en vigueur est affiché sur la page <Link to="/pricing" className="text-primary underline">Tarifs</Link>.</p>
             <ul className="mt-2 space-y-1 list-disc pl-5">
-              <li><strong>Offre Lancement :</strong> 99 € HT/an — réservée aux 100 premières entreprises ;</li>
-              <li><strong>Offre Standard :</strong> 490 € HT/an — tarif régulier.</li>
+              <li><strong>Accès Entreprise :</strong> 99 € TTC/an.</li>
             </ul>
             <p className="mt-2">
               Le paiement est effectué en ligne via Stripe. L'abonnement est annuel et se renouvelle automatiquement sauf
-              résiliation au moins 30 jours avant l'échéance. Les prix sont indiqués hors taxes applicables.
+              résiliation au moins 30 jours avant l'échéance. Les prix sont indiqués toutes taxes comprises.
             </p>
             <p className="mt-2">
               Conformément à l'article L.221-28 du Code de la consommation (services numériques), le droit de

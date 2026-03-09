@@ -382,22 +382,14 @@ export default function Checkout() {
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => setStep("choose")}
-                  className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                >
-                  {t("checkout_back")}
-                </button>
-                <button
                   onClick={handleStripeCheckout}
                   disabled={checkoutLoading}
-                  className="flex-1 btn-cta text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full btn-cta text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {checkoutLoading ? (
                     <><Loader2 size={14} className="animate-spin" /> {t("loading")}</>
-                  ) : effectiveLaunchAvailable ? (
-                    <>{t("checkout_pay_launch")} <ArrowRight size={14} /></>
                   ) : (
-                    <>{t("checkout_pay_standard")} <ArrowRight size={14} /></>
+                    <>Activer mon accès — 99 € / an <ArrowRight size={14} /></>
                   )}
                 </button>
               </div>
