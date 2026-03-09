@@ -3671,6 +3671,7 @@ export type Database = {
           currency: string
           facilitator_id: string
           failure_reason: string | null
+          gain_id: string | null
           gain_ids: string[] | null
           id: string
           method: string
@@ -3689,6 +3690,7 @@ export type Database = {
           currency?: string
           facilitator_id: string
           failure_reason?: string | null
+          gain_id?: string | null
           gain_ids?: string[] | null
           id?: string
           method?: string
@@ -3707,6 +3709,7 @@ export type Database = {
           currency?: string
           facilitator_id?: string
           failure_reason?: string | null
+          gain_id?: string | null
           gain_ids?: string[] | null
           id?: string
           method?: string
@@ -3718,7 +3721,15 @@ export type Database = {
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "payouts_gain_id_fkey"
+            columns: ["gain_id"]
+            isOneToOne: false
+            referencedRelation: "gains"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -4353,6 +4364,7 @@ export type Database = {
           zone_score: number
         }[]
       }
+      generate_payouts_from_validated_gains: { Args: never; Returns: number }
       get_automation_engine_health: { Args: never; Returns: Json }
       get_automation_rule_threshold: {
         Args: { p_default?: number; p_owner_id: string; p_rule_type?: string }
