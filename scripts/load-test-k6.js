@@ -33,9 +33,12 @@ const ANON_KEY = __ENV.ANON_KEY || __ENV.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 export const options = {
   scenarios: {
     // Scenario 1: track-click under moderate load
+    // PROVES: edge fn handles concurrent requests without 5xx cascade
+    // DOES NOT PROVE: correct business logic or end-user experience
     track_click: {
       executor: "constant-arrival-rate",
-      rate: 20,           // 20 req/s
+      exec: "handleTrackClick",
+      rate: 20,
       timeUnit: "1s",
       duration: "30s",
       preAllocatedVUs: 10,
@@ -43,9 +46,12 @@ export const options = {
       tags: { scenario: "track_click" },
     },
     // Scenario 2: launch_quota read (landing page scenario)
+    // PROVES: DB reads under load don't degrade beyond 1s p95
+    // DOES NOT PROVE: write atomicity under concurrent checkouts
     quota_read: {
       executor: "constant-arrival-rate",
-      rate: 50,           // 50 req/s — simulates landing page traffic
+      exec: "handleQuotaRead",
+      rate: 50,
       timeUnit: "1s",
       duration: "30s",
       preAllocatedVUs: 20,
@@ -55,10 +61,9 @@ export const options = {
     },
   },
   thresholds: {
-    // TARGETS — not proven. Document failures honestly.
-    http_req_duration: ["p(95)<2000"], // 95th percentile < 2s (Supabase edge has cold starts)
-    http_req_failed:   ["rate<0.05"],  // < 5% error rate
-    success_rate:      ["rate>0.95"],  // > 95% success
+    http_req_duration: ["p(95)<2000"],
+    http_req_failed:   ["rate<0.05"],
+    success_rate:      ["rate>0.95"],
   },
 };
 
