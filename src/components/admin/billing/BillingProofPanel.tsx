@@ -821,6 +821,14 @@ function ReleaseDecisionBlock({
           </div>
           <p className="text-xs text-muted-foreground mb-1.5">{decision.justification}</p>
           <p className="text-xs text-foreground font-medium">→ {decision.nextAction}</p>
+          {decision.billingGatePassed && (
+            <p className="text-xs text-muted-foreground mt-1.5 border-t border-border/60 pt-1.5">
+              <span className="font-semibold text-foreground">Note :</span> Ce bloc juge uniquement la chaîne billing.
+              Le verdict global (<span className="font-mono">PRIVATE_BETA_READY</span>) est calculé par{" "}
+              <span className="font-mono">computeReleaseGate()</span> — visible dans{" "}
+              <span className="font-mono">/admin/overview → ReleaseGateBanner</span>.
+            </p>
+          )}
         </div>
       </div>
     </div>
