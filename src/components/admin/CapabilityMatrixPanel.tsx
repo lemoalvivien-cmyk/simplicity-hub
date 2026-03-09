@@ -34,11 +34,14 @@ const EVIDENCE_CONFIG: Record<string, { label: string; chipClass: string }> = {
 };
 
 const VERDICT_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  PROD_BLOCKED:       { label: "PROD BLOCKED",        color: "hsl(var(--level-critical-fg))", bg: "hsl(var(--level-critical-bg))" },
-  PUBLIC_BETA_BLOCKED:{ label: "PUBLIC BETA BLOCKED",  color: "hsl(var(--level-high-fg))",    bg: "hsl(var(--level-high-bg))" },
-  PRIVATE_BETA_READY: { label: "PRIVATE BETA READY",   color: "hsl(var(--level-ok-fg))",      bg: "hsl(var(--level-ok-bg))" },
-  INTERNAL_TEST:      { label: "INTERNAL TEST ONLY",   color: "hsl(var(--level-medium-fg))",  bg: "hsl(var(--level-medium-bg))" },
-  DEV_ONLY:           { label: "DEV ONLY",             color: "hsl(var(--level-unknown-fg))", bg: "hsl(var(--level-unknown-bg))" },
+  PROD_BLOCKED:          { label: "PROD BLOCKED",           color: "hsl(var(--level-critical-fg))", bg: "hsl(var(--level-critical-bg))" },
+  PUBLIC_BETA_BLOCKED:   { label: "PUBLIC BETA BLOCKED",    color: "hsl(var(--level-high-fg))",     bg: "hsl(var(--level-high-bg))" },
+  // PRIVATE_BETA_READY : uniquement via computeReleaseGate() + billing runtime. Affiché ici pour compatibilité.
+  PRIVATE_BETA_READY:    { label: "PRIVATE BETA READY",     color: "hsl(var(--level-ok-fg))",       bg: "hsl(var(--level-ok-bg))" },
+  // PRIVATE_BETA_POSSIBLE : verdict billing-blind (getReleaseGate seule, sans full_proof_events).
+  PRIVATE_BETA_POSSIBLE: { label: "PRIVATE BETA POSSIBLE",  color: "hsl(var(--level-medium-fg))",   bg: "hsl(var(--level-medium-bg))" },
+  INTERNAL_TEST:         { label: "INTERNAL TEST ONLY",     color: "hsl(var(--level-medium-fg))",   bg: "hsl(var(--level-medium-bg))" },
+  DEV_ONLY:              { label: "DEV ONLY",               color: "hsl(var(--level-unknown-fg))",  bg: "hsl(var(--level-unknown-bg))" },
 };
 
 function CapabilityRow({ cap }: { cap: Capability }) {

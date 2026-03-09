@@ -116,11 +116,11 @@ export default function AdminOverview() {
         onRefresh={() => cp.refetch()}
       />
 
-      {/* ── BILLING RUNTIME MINI-BLOC ────────────────────────────────────────────
-          ÉCART CORRIGÉ: Overview ne montrait pas le billing summary.
-          Payments et Overview racontaient deux vérités différentes.
-          Ce bloc lit cp.billingProof (déjà chargé par useControlPlane via get_billing_proof_summary).
-          Aucune requête supplémentaire. Même source de vérité que Payments.
+      {/* ── BILLING RUNTIME MINI-BLOC ─────────────────────────────────────────────
+          PROOF:CONTROL_PLANE_V4:overview_billing_verdict_colocated
+          Même source de vérité que Payments : cp.billingProof (via get_billing_proof_summary).
+          Verdict cp.releaseGate.verdict co-localisé — une seule ligne suffit à piloter la décision.
+          RÈGLE : PRIVATE_BETA_READY n'apparaît que si full_proof_events > 0 (garanti par computeReleaseGate).
       ─────────────────────────────────────────────────────────────────────── */}
       {!cp.loading && (
         <div className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs mb-4 ${
@@ -130,7 +130,7 @@ export default function AdminOverview() {
             ? "border-warning/20 bg-warning/5"
             : "border-border bg-muted/20"
         }`}>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <DollarSign size={12} className={
               cp.billingProof && cp.billingProof.fullProofEvents > 0 ? "text-success" :
               cp.billingProof && cp.billingProof.totalBillingEvents > 0 ? "text-warning" :
@@ -144,12 +144,22 @@ export default function AdminOverview() {
             </span>
             {cp.billingProof && (
               <span className="text-muted-foreground">
-                · {cp.billingProof.fullProofEvents} full_proof · {cp.billingProof.totalBillingEvents} events total
+                · {cp.billingProof.fullProofEvents} full_proof · {cp.billingProof.totalBillingEvents} events
                 {cp.billingProof.quotaUsedSlots != null && ` · quota ${cp.billingProof.quotaUsedSlots}/${cp.billingProof.quotaTotalSlots ?? "?"}`}
               </span>
             )}
+            {/* Décision release co-localisée — même vérité que ReleaseGateBanner */}
+            <span className={`font-mono font-bold text-xs px-2 py-0.5 rounded border ${
+              cp.releaseGate.verdict === "PRIVATE_BETA_READY"
+                ? "text-success border-success/30 bg-success/10"
+                : cp.releaseGate.verdict === "PRIVATE_BETA_POSSIBLE"
+                ? "text-warning border-warning/30 bg-warning/10"
+                : "text-destructive border-destructive/30 bg-destructive/10"
+            }`}>
+              {cp.releaseGate.verdict.replace(/_/g, " ")}
+            </span>
           </div>
-          <Link to="/admin/payments" className="text-xs text-primary hover:underline font-medium flex items-center gap-1">
+          <Link to="/admin/payments" className="text-xs text-primary hover:underline font-medium flex items-center gap-1 shrink-0">
             Détail billing <ArrowUpRight size={10} />
           </Link>
         </div>
