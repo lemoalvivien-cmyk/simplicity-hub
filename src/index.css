@@ -355,7 +355,7 @@
   }
 
   /* ── Evidence Chips ──────────────────────────────── */
-  .evidence-code     { @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-primary/8 text-primary text-xs font-mono; }
+  .evidence-code     { @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-primary text-xs font-mono; background: hsl(var(--primary) / 0.08); }
   .evidence-runtime  { @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-success/10 text-success text-xs font-mono; }
   .evidence-external { @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-warning/10 text-warning text-xs font-mono; }
   .evidence-manual   { @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-xs font-mono; }
