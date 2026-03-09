@@ -38,7 +38,7 @@ const BRICKS: ReadinessItem[] = [
   { label: "Trust engine (scores, litiges)", status: "ready", note: "trust_scores + disputes + triggers automatiques" },
 
   // OpenClaw
-  { label: "Scheduler autonome (pg_cron)", status: "partial", note: "Edge fn + cron configuré — pas encore observé en production (DB vide)" },
+  { label: "Scheduler autonome (pg_cron)", status: "partial", note: "Edge fn openclaw-scheduler + cron tick configuré et observé (jobid 4). Jobs reactivation/payout : scripts disponibles dans supabase/infra/scheduled-jobs.md, PAS encore créés en base." },
   { label: "Job executor", status: "ready", note: "openclaw-job-executor + claim_next_job() avec verrouillage atomique" },
   { label: "Event bus (bus d'événements)", status: "ready", note: "openclaw-event-bus + triggers DB sur 5 tables" },
   { label: "Channel actions / dispatch", status: "ready", note: "openclaw-channel-dispatch — email + introduction opérationnels" },
