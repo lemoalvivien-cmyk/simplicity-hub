@@ -73,6 +73,8 @@ export default function Checkout() {
       if (result.valid) {
         setPromoStatus("valid");
         setPromoMessage(result.message);
+        // PROOF: promo_redeemed → analytics_events (real write on successful promo)
+        trackEvent("promo_redeemed", user?.id, { code: promoCode.trim() });
         await refresh();
       } else {
         setPromoStatus("invalid");

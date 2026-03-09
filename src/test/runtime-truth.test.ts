@@ -22,17 +22,20 @@ describe("analytics writer registry", () => {
    * WRITERS PROOF (file → event):
    *  src/pages/Index.tsx          → landing_view     (useEffect on mount)
    *  src/pages/Pricing.tsx        → pricing_view     (useEffect on mount)
+   *  src/pages/Pricing.tsx        → cta_click        (onClick Link to /checkout)
    *  src/pages/Checkout.tsx       → checkout_start   (handleStripeCheckout)
    *  src/pages/Checkout.tsx       → checkout_success (useEffect ?success=true)
+   *  src/pages/Checkout.tsx       → promo_redeemed   (checkPromo → result.valid)
    *  src/pages/Onboarding.tsx     → onboarding_done  (saveProfile success)
    *  src/pages/MissionNouvelle.tsx → mission_created  (handleSave success)
    *  src/pages/MissionDetail.tsx  → intro_submitted  (IntroductionForm.handleSubmit)
    *  src/pages/IntroductionsEntreprise.tsx → intro_validated (handleValidate)
-   *  src/components/landing/*.tsx → cta_click        (track() via landingTracking.ts)
-   *  src/pages/Signup.tsx         → signup_started   (form submit)
+   *  src/pages/Signup.tsx         → signup_started   (handleSubmit, before signUp call)
+   *  src/pages/Login.tsx          → login_success    (handleSubmit, after successful signIn)
    *
-   * NOTE: cta_click and signup_started write to analytics_events.
-   * landing_ab_events receives marketing-only events via landingTracking.ts (Option B separation).
+   * NOTE: landing CTAs (HeroSection, FinalCTASection etc.) write to landing_ab_events
+   * via landingTracking.ts track() — NOT to analytics_events (Option B separation).
+   * cta_click in analytics_events = pricing CTA click only.
    */
   const CLAIMED_IN_DASHBOARD: string[] = [
     "landing_view",
@@ -56,9 +59,9 @@ describe("analytics writer registry", () => {
     // Every event in the array should be in the claimed set or explicitly documented
     const explicitlyAllowed = new Set([
       ...CLAIMED_IN_DASHBOARD,
-      "promo_redeemed",   // src/pages/Checkout.tsx promo flow
-      "login_success",    // src/pages/Login.tsx
-      "signup_started",   // src/pages/Signup.tsx form submit
+      "promo_redeemed",   // src/pages/Checkout.tsx → checkPromo → result.valid
+      "login_success",    // src/pages/Login.tsx → handleSubmit after successful signIn
+      "signup_started",   // src/pages/Signup.tsx → handleSubmit before signUp call
     ]);
     ANALYTICS_EVENTS.forEach(evt => {
       expect(explicitlyAllowed.has(evt)).toBe(true);

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import { Eye, EyeOff, CheckCircle2, Zap, AlertCircle, Loader2, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackEvent } from "@/lib/analytics";
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +24,8 @@ export default function Signup() {
       return;
     }
 
+    // PROOF: signup_started → analytics_events (real write on form submit)
+    trackEvent("signup_started", null, { source: "signup_form" });
     setLoading(true);
     const { error: authError } = await signUp(email, password, prenom);
     setLoading(false);
