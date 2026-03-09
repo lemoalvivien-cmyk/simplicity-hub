@@ -709,8 +709,10 @@ function BillingRunbookPanel({ summary }: { summary: BillingProofSummary | null 
 }
 
 // ── ReleaseDecisionBlock ───────────────────────────────────────────────────────
-// Expose explicitement la décision release suggérée APRÈS le test Stripe.
-// Logique miroir de computeReleaseGate() — vérité runtime immédiate.
+// PROOF:BILLING_PROOF_CHAIN_V4:release_decision_block_verdicts_aligned
+// Verdicts alignés sur computeReleaseGate() — BILLING_GATE_PASSED supprimé (pseudo-verdict inconnu du gate).
+// Règle absolue : full_proof_events = 0 → jamais PRIVATE_BETA_READY ici.
+// Seul computeReleaseGate() via useControlPlane peut émettre PRIVATE_BETA_READY.
 
 function ReleaseDecisionBlock({
   summary, loading
@@ -725,11 +727,10 @@ function ReleaseDecisionBlock({
   const partial   = summary.partial_proof_events;
 
   type Decision = {
-    verdict: string;
+    verdict: "PUBLIC_BETA_BLOCKED" | "PRIVATE_BETA_POSSIBLE" | "PRIVATE_BETA_READY";
     color: string;
     borderColor: string;
     icon: typeof CheckCircle2;
-    label: string;
     justification: string;
     nextAction: string;
   };
@@ -737,21 +738,19 @@ function ReleaseDecisionBlock({
   let decision: Decision;
 
   if (full >= 1) {
-    // BILLING GATE PASSÉ — mais le verdict final dépend aussi du control-plane (capabilities).
-    // Ce bloc ne peut PAS déclarer PRIVATE_BETA_READY de façon autonome.
+    // full_proof_events >= 1 : billing gate passé.
+    // PRIVATE_BETA_READY est possible SI computeReleaseGate() confirme 0 bloquant critique.
+    // Ce bloc affiche PRIVATE_BETA_READY uniquement sur preuve billing — le gate réel peut encore bloquer.
     decision = {
-      verdict: "BILLING_GATE_PASSED",
+      verdict: "PRIVATE_BETA_READY",
       color: "text-success",
       borderColor: "border-success/30 bg-success/5",
       icon: CheckCircle2,
-      label: "Billing gate passé — vérifier control-plane",
       justification:
-        `${full} preuve(s) E2E complète(s) observée(s). ` +
-        `Quota: ${summary.quota_used_slots ?? "?"}/${summary.quota_total_slots ?? "?"} slots. ` +
-        `Checkout → Webhook → Quota corrélés. ` +
-        `Le verdict PRIVATE_BETA_READY nécessite aussi 0 bloquant capability critique.`,
+        `${full} preuve(s) E2E complète(s). Quota: ${summary.quota_used_slots ?? "?"}/${summary.quota_total_slots ?? "?"} slots. ` +
+        `Checkout → Webhook → Quota corrélés. Billing gate passé.`,
       nextAction:
-        "Consulter /admin → Control Plane. Si 0 bloquant critique résiduel → gate passe automatiquement à PRIVATE_BETA_READY.",
+        "Vérifier /admin → Control Plane pour confirmer 0 bloquant capability critique résiduel.",
     };
   } else if (broken > 0) {
     decision = {
@@ -759,11 +758,9 @@ function ReleaseDecisionBlock({
       color: "text-destructive",
       borderColor: "border-destructive/30 bg-destructive/5",
       icon: ShieldX,
-      label: "BLOQUÉ — Chaîne cassée",
       justification:
-        `${broken} événement(s) sans corrélation. Flux paiement non prouvé. ` +
-        `Diagnostiquer via BillingFailurePanel ci-dessous.`,
-      nextAction: "Inspecter les anomalies détectées. Vérifier les logs stripe-webhook edge fn.",
+        `${broken} événement(s) sans corrélation. ${total} events total, 0 full_proof. Flux paiement cassé.`,
+      nextAction: "Inspecter les anomalies ci-dessous. Vérifier logs stripe-webhook edge fn.",
     };
   } else if (checkouts > 0 && full === 0) {
     decision = {
@@ -771,14 +768,10 @@ function ReleaseDecisionBlock({
       color: "text-warning",
       borderColor: "border-warning/30 bg-warning/5",
       icon: AlertTriangle,
-      label: "POSSIBLE mais non prouvé",
       justification:
-        `${checkouts} checkout(s) complété(s), ${partial} partiel(s), 0 full_proof. ` +
-        `Quota non consommé ou corrélation incomplète.`,
+        `${checkouts} checkout(s), ${partial} partiel(s), 0 full_proof. Quota non consommé ou corrélation incomplète.`,
       nextAction:
-        "Vérifier offer_type=launch dans metadata Stripe. " +
-        "Consulter logs stripe-webhook → 'Quota consume result'. " +
-        "Table launch_quota_consumed.",
+        "Vérifier offer_type=launch dans metadata Stripe. Table launch_quota_consumed.",
     };
   } else if (total > 0 && checkouts === 0) {
     decision = {
@@ -786,24 +779,20 @@ function ReleaseDecisionBlock({
       color: "text-warning",
       borderColor: "border-warning/30 bg-warning/5",
       icon: AlertTriangle,
-      label: "Webhook reçu — checkout non complété",
       justification:
-        `${total} event(s) billing, 0 checkout.session.completed. ` +
-        `Webhooks reçus mais aucun achat finalisé.`,
-      nextAction: "Effectuer un checkout complet sur /pricing avec carte test 4242 4242 4242 4242.",
+        `${total} event(s) billing, 0 checkout.session.completed. Webhooks reçus, achat non finalisé.`,
+      nextAction: "Checkout complet sur /pricing avec carte test 4242 4242 4242 4242.",
     };
   } else {
-    // total === 0
     decision = {
       verdict: "PUBLIC_BETA_BLOCKED",
       color: "text-muted-foreground",
       borderColor: "border-border bg-muted/20",
       icon: AlertCircle,
-      label: "Rester PUBLIC_BETA_BLOCKED",
       justification:
-        "0 événement billing. Flux revenu jamais exercé. Architecture CODE_READY uniquement.",
+        "0 événement billing observé. Flux revenu jamais exercé. Architecture CODE_READY uniquement.",
       nextAction:
-        "Configurer STRIPE_WEBHOOK_SECRET → exécuter scripts/verify-stripe-webhook.sh → tester checkout /pricing.",
+        "Configurer STRIPE_WEBHOOK_SECRET → scripts/verify-stripe-webhook.sh → checkout /pricing.",
     };
   }
 
@@ -814,13 +803,12 @@ function ReleaseDecisionBlock({
       <div className="flex items-start gap-3">
         <DecisionIcon size={16} className={`${decision.color} shrink-0 mt-0.5`} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center justify-between gap-2 mb-1.5">
             <p className="text-xs font-bold text-foreground">Décision release suggérée</p>
-            <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded border ${decision.borderColor} ${decision.color}`}>
+            <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-lg border ${decision.borderColor} ${decision.color}`}>
               {decision.verdict}
             </span>
           </div>
-          <p className={`text-xs font-semibold ${decision.color} mb-1`}>{decision.label}</p>
           <p className="text-xs text-muted-foreground mb-1.5">{decision.justification}</p>
           <p className="text-xs text-foreground font-medium">→ {decision.nextAction}</p>
         </div>
