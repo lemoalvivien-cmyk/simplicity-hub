@@ -110,36 +110,52 @@ function shortId(s: string | null): string {
 }
 
 // ── Pipeline State Machine ─────────────────────────────────────────────────────
+// États exacts, lisibles opérateur, sans ambiguïté :
+//   no_checkout        → aucun event billing reçu (billing_events = 0)
+//   checkout_created   → un checkout a été créé côté Stripe mais webhook absent
+//   webhook_missing    → checkout complété, webhook non reçu / non persisté
+//   webhook_received   → webhook reçu et persisté (au moins un billing_event)
+//   quota_not_mutated  → checkout complété + persisté, quota pas encore muté
+//   quota_mutated      → quota/entitlement muté dans launch_quota_consumed
+//   full_proof         → chaîne complète checkout→webhook→quota corrélée
+//   broken             → événement(s) sans corrélation possible
 type PipelineState =
   | "no_checkout"
+  | "checkout_created"
+  | "webhook_missing"
   | "webhook_received"
-  | "persisted_only"
+  | "quota_not_mutated"
   | "quota_mutated"
   | "full_proof"
   | "broken";
 
 function computePipelineState(summary: BillingProofSummary | null, rows: BillingProofRow[]): PipelineState {
   if (!summary || summary.total_billing_events === 0) return "no_checkout";
-  if (summary.broken_events > 0 && summary.full_proof_events === 0) return "broken";
+  if (summary.broken_events > 0 && summary.full_proof_events === 0 && summary.checkout_completed_events === 0) return "broken";
   if (summary.full_proof_events > 0) return "full_proof";
   if (summary.quota_consumed_count > 0) return "quota_mutated";
-  if (summary.checkout_completed_events > 0) return "persisted_only";
-  if (summary.total_billing_events > 0) return "webhook_received";
+  // checkout complété (webhook reçu) mais quota non muté
+  if (summary.checkout_completed_events > 0 && summary.quota_consumed_count === 0) return "quota_not_mutated";
+  // billing_events > 0 mais aucun checkout complété → webhooks reçus mais pas de checkout finalisé
+  if (summary.total_billing_events > 0 && summary.checkout_completed_events === 0) return "webhook_received";
   return "no_checkout";
 }
 
+// Étapes dans l'ordre du pipeline (sans no_checkout qui est l'état initial)
 const PIPELINE_STEPS: { key: PipelineState; label: string; desc: string }[] = [
-  { key: "no_checkout",      label: "Aucun checkout",    desc: "Aucun événement reçu" },
-  { key: "webhook_received", label: "Webhook reçu",      desc: "Signature vérifiée" },
-  { key: "persisted_only",   label: "Persisté",          desc: "Événement en DB" },
-  { key: "quota_mutated",    label: "Quota muté",        desc: "Entitlement activé" },
-  { key: "full_proof",       label: "Preuve complète",   desc: "E2E prouvé" },
+  { key: "no_checkout",       label: "Aucun event",       desc: "billing_events = 0" },
+  { key: "webhook_received",  label: "Webhook reçu",      desc: "Persisté, signature OK" },
+  { key: "quota_not_mutated", label: "Quota en attente",  desc: "Checkout OK, quota non muté" },
+  { key: "quota_mutated",     label: "Quota muté",        desc: "Entitlement activé" },
+  { key: "full_proof",        label: "Preuve complète",   desc: "E2E prouvé ✓" },
 ];
 
 const PIPELINE_ORDER: Record<PipelineState, number> = {
   no_checkout: 0,
+  checkout_created: 0,
+  webhook_missing: 1,
   webhook_received: 1,
-  persisted_only: 2,
+  quota_not_mutated: 2,
   quota_mutated: 3,
   full_proof: 4,
   broken: -1,
