@@ -161,8 +161,9 @@ export default function AdminEnvCheck() {
     });
 
     // landing_ab_events
-    const { count: landingAbCount } = await (supabase.from("landing_ab_events") as unknown as { count: number } & ReturnType<typeof supabase.from>)
-      .select("*", { count: "exact", head: true }) as unknown as { count: number | null };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { count: landingAbCount } = await (supabase.from("landing_ab_events") as any)
+      .select("*", { count: "exact", head: true });
     results.push({
       id: "landing_ab_events",
       label: `landing_ab_events (${landingAbCount ?? 0} lignes)`,
