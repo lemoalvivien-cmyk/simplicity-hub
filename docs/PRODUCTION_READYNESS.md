@@ -232,7 +232,7 @@ du premier `full_proof_event` via `get_billing_proof_summary → computeReleaseG
 | `/admin/payments` tab "Billing Proof Chain" | ✅ **VISIBLE** — onglet par défaut |
 | `useControlPlane.ts` lit `get_billing_proof_summary` | ✅ **BRANCHÉ** — injecte BillingProofContext dans computeReleaseGate |
 | `computeReleaseGate()` reçoit BillingProofContext | ✅ **BRANCHÉ** — `billingCtxPresent=false` → PRIVATE_BETA_POSSIBLE (bypass fermé). `full_proof=0` → jamais PRIVATE_BETA_READY. |
-| `ReleaseDecisionBlock` dans BillingProofPanel | ✅ **CORRIGÉ** — n'affiche plus "PRIVATE_BETA_READY" de façon autonome. Affiche "Billing gate passé — vérifier control-plane" pour guider vers le verdict réel du gate. |
+| `ReleaseDecisionBlock` dans BillingProofPanel | ✅ **VERROUILLÉ V5** — type `Decision` limité à `PUBLIC_BETA_BLOCKED | PRIVATE_BETA_POSSIBLE`. N'émet JAMAIS `PRIVATE_BETA_READY`. Quand `full_proof >= 1`, affiche `PRIVATE_BETA_POSSIBLE` + disclaimer explicite pointant vers `/admin/overview → ReleaseGateBanner` pour le verdict global. `PRIVATE_BETA_READY` ne peut venir que de `computeReleaseGate()` via `useControlPlane`. |
 | `billing_events` rows | 0 — aucun webhook reçu à ce jour |
 | Preuve E2E full | **ZÉRO** — `full_proof_events = 0` |
 
