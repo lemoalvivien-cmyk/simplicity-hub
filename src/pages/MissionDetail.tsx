@@ -14,6 +14,7 @@ import CopilotPanel from "@/components/ai/CopilotPanel";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/analytics";
 
 interface Mission {
   id: string;
@@ -108,6 +109,9 @@ function IntroductionForm({ mission, facilitateurId, onSuccess, onCancel }: Intr
         proof_status: "brouillon",
         validation_status: "en_attente",
       });
+
+      // PROOF: intro_submitted → analytics_events (real write)
+      trackEvent("intro_submitted", facilitateurId, { mission_id: mission.id, intro_id: intro.id });
 
       onSuccess();
     } catch (err) {

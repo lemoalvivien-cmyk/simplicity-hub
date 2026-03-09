@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { formatAmount } from "@/lib/formatLocale";
+import { trackEvent } from "@/lib/analytics";
 
 export default function Pricing() {
   const { t, i18n } = useTranslation();
@@ -15,6 +16,9 @@ export default function Pricing() {
   const [slotsRemaining, setSlotsRemaining] = useState(100);
 
   useEffect(() => {
+    // PROOF: pricing_view → analytics_events (real write)
+    trackEvent("pricing_view", null, { source: "direct" });
+
     supabase.from("launch_quota").select("total_slots, used_slots").single().then(({ data }) => {
       if (data) {
         const remaining = Math.max(0, data.total_slots - data.used_slots);

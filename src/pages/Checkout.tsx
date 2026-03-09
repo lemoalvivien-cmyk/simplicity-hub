@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { formatAmount } from "@/lib/formatLocale";
 import i18n from "@/lib/i18n";
+import { trackEvent } from "@/lib/analytics";
 
 type Step = "choose" | "promo" | "payment" | "success";
 type SuccessType = "promo" | "stripe_launch" | "stripe_standard";
@@ -39,8 +40,11 @@ export default function Checkout() {
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       const offerParam = searchParams.get("offer");
-      setSuccessType(offerParam === "launch" ? "stripe_launch" : offerParam === "standard" ? "stripe_standard" : "promo");
+      const sType = offerParam === "launch" ? "stripe_launch" : offerParam === "standard" ? "stripe_standard" : "promo";
+      setSuccessType(sType);
       setStep("success");
+      // PROOF: checkout_success → analytics_events (real write)
+      trackEvent("checkout_success", user?.id, { offer_type: sType });
       // Trigger immediate subscription refresh — don't wait for the 5-min interval
       refresh();
     }
@@ -51,7 +55,7 @@ export default function Checkout() {
         setLocalSlotsRemaining(remaining);
       }
     });
-  }, [searchParams, refresh]);
+  }, [searchParams, refresh, user?.id]);
 
   const effectiveLaunchAvailable = user ? launchAvailable : localLaunchAvailable;
   const effectiveSlotsRemaining = user ? launchSlotsRemaining : localSlotsRemaining;
@@ -91,6 +95,8 @@ export default function Checkout() {
     if (checkoutLoading) return;
     setCheckoutLoading(true);
     setCheckoutError("");
+    // PROOF: checkout_start → analytics_events (real write)
+    trackEvent("checkout_start", user.id, { source: "checkout_page" });
     try {
       const result = await startCheckout();
       setSuccessType(result?.offer_type === "launch" ? "stripe_launch" : "stripe_standard");

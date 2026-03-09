@@ -21,6 +21,7 @@ import LeadIntakeStatus from "@/components/leads/LeadIntakeStatus";
 import LeadActionBadge from "@/components/leads/LeadActionBadge";
 import { promoteLeadToOpportunity } from "@/lib/leadPipeline";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
+import { trackEvent } from "@/lib/analytics";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";
 
@@ -360,6 +361,9 @@ export default function IntroductionsEntreprise() {
     if (intro?.lead_intake_id) {
       await promoteLeadToOpportunity(intro.lead_intake_id);
     }
+
+    // PROOF: intro_validated → analytics_events (real write)
+    trackEvent("intro_validated", user!.id, { intro_id: id });
 
     setIntros(prev => prev.map(i => i.id === id ? { ...i, statut: "validee" as Status } : i));
     toast.success("Introduction validée ! Le gain de l'apporteur est confirmé.");

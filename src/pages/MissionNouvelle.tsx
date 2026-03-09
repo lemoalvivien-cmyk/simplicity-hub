@@ -11,6 +11,7 @@ import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActivation } from "@/hooks/useActivation";
 import { toast } from "sonner";
+import { trackEvent as analyticsTrackEvent } from "@/lib/analytics";
 import {
   ArrowLeft, ArrowRight, Sparkles, CheckCircle2, Briefcase,
   MapPin, Euro, Target, Loader2, Users, Star
@@ -80,6 +81,8 @@ export default function MissionNouvelle() {
       if (error) throw error;
       setCreatedMissionId(data?.id ?? null);
       await trackEvent("first_mission_created");
+      // PROOF: mission_created → analytics_events (real write, dual-write with activation hook)
+      analyticsTrackEvent("mission_created", user.id, { mission_id: data?.id ?? null });
       setStep("success");
     } catch {
       toast.error("Erreur lors de la création. Réessayez.");

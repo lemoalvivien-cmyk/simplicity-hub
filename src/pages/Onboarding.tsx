@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { trackEvent } from "@/lib/analytics";
 
 type Role = "entreprise" | "facilitateur" | null;
 
@@ -58,6 +59,8 @@ export default function Onboarding() {
       } else if (role === "facilitateur") {
         await db.from("facilitateur_profiles").upsert({ user_id: user.id, description_reseau: description, secteur: profile.secteur }, { onConflict: "user_id" });
       }
+      // PROOF: onboarding_done → analytics_events (real write)
+      trackEvent("onboarding_done", user.id, { role: role ?? "unknown" });
       await refreshProfile();
       setDone(true);
     } catch {
