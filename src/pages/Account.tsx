@@ -156,8 +156,7 @@ export default function Account() {
                   <div className="flex items-center gap-2 mb-2">
                     <ShieldCheck size={16} className="text-success" />
                     <p className="font-semibold text-sm text-foreground">
-                      Abonnement actif —{" "}
-                      {offerType === "launch" ? "Offre de lancement 99 € / an" : "490 € / an"}
+                      Abonnement actif — 99 € TTC / an
                     </p>
                   </div>
                   {endDate && (
