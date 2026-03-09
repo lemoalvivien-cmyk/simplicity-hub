@@ -23,7 +23,7 @@ const BRICKS: ReadinessItem[] = [
   // Billing
   { label: "Checkout Stripe (lancement 99 €)", status: "ready", note: `price_id: ${PRICING.launch.price_id} — edge fn create-checkout opérationnel` },
   { label: "Checkout Stripe (standard 490 €)", status: "ready", note: `price_id: ${PRICING.standard.price_id} — même edge fn, paramétrable` },
-  { label: "Webhook Stripe", status: "ready", note: "stripe-webhook edge fn déployé — vérifie la signature si STRIPE_WEBHOOK_SECRET est configuré" },
+  { label: "Webhook Stripe", status: "ready", note: "stripe-webhook edge fn déployé — STRIPE_WEBHOOK_SECRET configuré — vérification de signature active" },
   { label: "check-subscription", status: "ready", note: "Edge fn déployée — consultée au login + toutes les 5 min" },
   { label: "customer-portal", status: "ready", note: "Edge fn déployée — nécessite activation du Customer Portal dans Stripe Dashboard" },
 
