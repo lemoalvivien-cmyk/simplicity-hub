@@ -149,6 +149,7 @@ export default function AdminReactivation() {
       )}
 
       {/* Actions */}
+      {/* PROOF:REACTIVATION_CRON_V1 — scan is scheduled daily at 03:00 UTC via pg_cron job 'reactivation-daily-scan' */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
         <button
           onClick={runScan}
@@ -159,7 +160,7 @@ export default function AdminReactivation() {
           {scanning ? "Scan en cours…" : "Lancer le scan maintenant"}
         </button>
         <p className="text-xs text-muted-foreground">
-          Le scan s'exécute aussi automatiquement via pg_cron (si configuré).
+          Scan automatique actif : pg_cron job <code>reactivation-daily-scan</code> — 03:00 UTC quotidien.
         </p>
       </div>
 
