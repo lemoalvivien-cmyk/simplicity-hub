@@ -110,7 +110,7 @@ import AdminGoLive from "./pages/admin/GoLive";
 import AdminSystemHealth from "./pages/admin/SystemHealth";
 import AdminPayoutOps from "./pages/admin/PayoutOps";
 import AdminReactivation from "./pages/admin/Reactivation";
-import ROIDashboard from "./pages/ROIDashboard";
+import AdminEnvCheck from "./pages/admin/EnvCheck";
 
 const queryClient = new QueryClient();
 
