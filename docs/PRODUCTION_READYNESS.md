@@ -57,6 +57,19 @@ Après exécution du test Stripe, l'opérateur doit observer dans `/admin/paymen
 3. **Pipeline billing** — état actif mis en évidence parmi : Aucun event → Webhook reçu → Quota en attente → Quota muté → Preuve complète
 4. **Bloc "Décision release suggérée"** — verdict calculé + justification + prochaine action unique
 
+### Lecture post-test dans /admin/overview (MÊME VÉRITÉ)
+
+`/admin/overview` lit `cp.billingProof` depuis `useControlPlane` (même RPC `get_billing_proof_summary`).
+Aucune requête séparée. Aucune vérité divergente possible.
+
+En haut de la page Overview, visible immédiatement :
+
+- **Mini-bloc billing** : `Premier paiement prouvé : OUI ✓ / NON ✗` + détail full_proof/total events/quota
+- **ReleaseGateBanner** : verdict mis à jour automatiquement
+- **Distinction visuelle READY vs POSSIBLE** (patch V3) :
+  - `PRIVATE_BETA_READY` = vert (`level-ok`) — gate E2E passé
+  - `PRIVATE_BETA_POSSIBLE` = ambre (`level-medium`) — partiellement prouvé, jamais confondu avec READY
+
 ---
 
 ## 1. État Actuel — Inventaire Vérité
