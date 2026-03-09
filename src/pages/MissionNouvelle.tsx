@@ -11,7 +11,7 @@ import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActivation } from "@/hooks/useActivation";
 import { toast } from "sonner";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent as analyticsTrackEvent } from "@/lib/analytics";
 import {
   ArrowLeft, ArrowRight, Sparkles, CheckCircle2, Briefcase,
   MapPin, Euro, Target, Loader2, Users, Star
