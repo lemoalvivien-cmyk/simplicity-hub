@@ -1,13 +1,12 @@
 /**
- * CAPABILITY MATRIX — Single Source of Runtime Truth
+ * CAPABILITY MATRIX — Re-exports depuis le module control-plane
+ * PROOF:CONTROL_PLANE_V2:capability_matrix_re_export
  *
- * Chaque capability expose:
- *   status: ready | partial | blocked | unknown
- *   evidenceType: code | runtime | external-config | manual-step | unverifiable
- *   blockingLevel: critical | high | medium | low | none
+ * Source de vérité: src/modules/control-plane/
+ * Ce fichier conserve les types pour la compatibilité des composants existants.
+ * Les checks runtime réels sont dans capability-engine.ts + useControlPlane.ts
  *
- * RÈGLE ABSOLUE: jamais de status "ready" sans preuve réelle.
- * Si inconnu côté client → "unknown" ou "external-config".
+ * RÈGLE ABSOLUE: secrets cloud jamais "ready" côté client.
  */
 
 export type CapabilityStatus = "ready" | "partial" | "blocked" | "unknown";
