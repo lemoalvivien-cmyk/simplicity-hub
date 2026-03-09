@@ -146,6 +146,20 @@ export default function AdminOverview() {
               <span className="text-muted-foreground">
                 · {cp.billingProof.fullProofEvents} full_proof · {cp.billingProof.totalBillingEvents} events
                 {cp.billingProof.quotaUsedSlots != null && ` · quota ${cp.billingProof.quotaUsedSlots}/${cp.billingProof.quotaTotalSlots ?? "?"}`}
+                {/* dernier proofLevel dérivé : full > 0 → full | broken > 0 → broken | partial > 0 → partial | total > 0 → partial | sinon → none */}
+                {" · niveau: "}
+                <span className={`font-mono font-bold ${
+                  cp.billingProof.fullProofEvents > 0 ? "text-success" :
+                  cp.billingProof.brokenEvents > 0 ? "text-destructive" :
+                  cp.billingProof.totalBillingEvents > 0 ? "text-warning" :
+                  "text-muted-foreground"
+                }`}>
+                  {cp.billingProof.fullProofEvents > 0 ? "full" :
+                   cp.billingProof.brokenEvents > 0 ? "broken" :
+                   cp.billingProof.partialProofEvents > 0 ? "partial" :
+                   cp.billingProof.totalBillingEvents > 0 ? "webhook_only" :
+                   "none"}
+                </span>
               </span>
             )}
             {/* Décision release co-localisée — même vérité que ReleaseGateBanner */}
