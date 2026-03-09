@@ -709,10 +709,17 @@ function BillingRunbookPanel({ summary }: { summary: BillingProofSummary | null 
 }
 
 // ── ReleaseDecisionBlock ───────────────────────────────────────────────────────
-// PROOF:BILLING_PROOF_CHAIN_V4:release_decision_block_verdicts_aligned
-// Verdicts alignés sur computeReleaseGate() — BILLING_GATE_PASSED supprimé (pseudo-verdict inconnu du gate).
-// Règle absolue : full_proof_events = 0 → jamais PRIVATE_BETA_READY ici.
-// Seul computeReleaseGate() via useControlPlane peut émettre PRIVATE_BETA_READY.
+// PROOF:BILLING_PROOF_CHAIN_V5:release_decision_block_billing_only
+//
+// RÈGLE ABSOLUE : Ce bloc ne peut JAMAIS émettre PRIVATE_BETA_READY de façon autonome.
+// PRIVATE_BETA_READY n'est émis que par computeReleaseGate() dans release-gate-engine.ts,
+// qui reçoit un BillingProofContext réel depuis useControlPlane → get_billing_proof_summary.
+//
+// Ce bloc est BILLING-ONLY : il juge uniquement la chaîne billing (checkout → webhook → quota).
+// Si full_proof_events >= 1, le billing gate est passé → verdict ici = PRIVATE_BETA_POSSIBLE
+// (pas READY), avec instruction de vérifier le Control Plane pour le verdict global.
+//
+// Seul /admin/overview → ReleaseGateBanner affiche le verdict global réel (computeReleaseGate).
 
 function ReleaseDecisionBlock({
   summary, loading
@@ -727,30 +734,33 @@ function ReleaseDecisionBlock({
   const partial   = summary.partial_proof_events;
 
   type Decision = {
-    verdict: "PUBLIC_BETA_BLOCKED" | "PRIVATE_BETA_POSSIBLE" | "PRIVATE_BETA_READY";
+    verdict: "PUBLIC_BETA_BLOCKED" | "PRIVATE_BETA_POSSIBLE";
     color: string;
     borderColor: string;
     icon: typeof CheckCircle2;
     justification: string;
     nextAction: string;
+    billingGatePassed?: boolean;
   };
 
   let decision: Decision;
 
   if (full >= 1) {
-    // full_proof_events >= 1 : billing gate passé.
-    // PRIVATE_BETA_READY est possible SI computeReleaseGate() confirme 0 bloquant critique.
-    // Ce bloc affiche PRIVATE_BETA_READY uniquement sur preuve billing — le gate réel peut encore bloquer.
+    // full_proof_events >= 1 → billing gate passé côté Payments.
+    // MAIS : ce bloc ne peut pas connaître l'état des capabilities (stripeCustomerPortal, etc.)
+    // → verdict ici = PRIVATE_BETA_POSSIBLE (billing OK, verdict global = Control Plane)
+    // PRIVATE_BETA_READY ne peut venir que de computeReleaseGate() via useControlPlane.
     decision = {
-      verdict: "PRIVATE_BETA_READY",
+      verdict: "PRIVATE_BETA_POSSIBLE",
       color: "text-success",
       borderColor: "border-success/30 bg-success/5",
       icon: CheckCircle2,
       justification:
         `${full} preuve(s) E2E complète(s). Quota: ${summary.quota_used_slots ?? "?"}/${summary.quota_total_slots ?? "?"} slots. ` +
-        `Checkout → Webhook → Quota corrélés. Billing gate passé.`,
+        `Billing gate passé — verdict global dépend du Control Plane.`,
       nextAction:
-        "Vérifier /admin → Control Plane pour confirmer 0 bloquant capability critique résiduel.",
+        "→ /admin/overview → ReleaseGateBanner pour le verdict global (PRIVATE_BETA_READY si 0 bloquant critique).",
+      billingGatePassed: true,
     };
   } else if (broken > 0) {
     decision = {
