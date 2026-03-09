@@ -24,6 +24,8 @@ export default function Signup() {
       return;
     }
 
+    // PROOF: signup_started → analytics_events (real write on form submit)
+    trackEvent("signup_started", null, { source: "signup_form" });
     setLoading(true);
     const { error: authError } = await signUp(email, password, prenom);
     setLoading(false);
