@@ -254,6 +254,58 @@ export default function AdminReactivation() {
                 {filteredJobs.map(job => {
                   const cfg = STATUS_CFG[job.status];
                   const Icon = cfg.icon;
+                  return (
+                    <tr key={job.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                      <td className="px-4 py-3">
+                        <p className="font-mono text-xs text-muted-foreground">{job.user_id.slice(0, 8)}…</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-foreground text-xs">{TRIGGER_LABELS[job.trigger_type]}</p>
+                        {job.entity_id && (
+                          <p className="font-mono text-xs text-muted-foreground">{job.entity_id.slice(0, 8)}…</p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`${cfg.cls} inline-flex items-center gap-1`}>
+                          <Icon size={11} /> {cfg.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(job.scheduled_at)}</td>
+                      <td className="px-4 py-3">
+                        {job.status === "pending" && (
+                          <div className="flex gap-1 flex-wrap">
+                            <button
+                              onClick={() => sendEmail(job.id)}
+                              disabled={actionLoading === job.id + "_email"}
+                              className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50 flex items-center gap-1"
+                              title="Envoyer email réel via Resend"
+                            >
+                              <Mail size={11} />
+                              {actionLoading === job.id + "_email" ? "Envoi…" : "Envoyer email"}
+                            </button>
+                            <button
+                              onClick={() => updateJobStatus(job.id, "sent")}
+                              disabled={actionLoading === job.id + "_status"}
+                              className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors disabled:opacity-50"
+                            >
+                              {actionLoading === job.id + "_status" ? "…" : "✓ Manuel"}
+                            </button>
+                            <button
+                              onClick={() => updateJobStatus(job.id, "dismissed")}
+                              disabled={!!actionLoading}
+                              className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors disabled:opacity-50"
+                            >
+                              Ignorer
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredJobs.map(job => {
+                  const cfg = STATUS_CFG[job.status];
+                  const Icon = cfg.icon;
                   const isLoading = actionLoading === job.id;
                   return (
                     <tr key={job.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
