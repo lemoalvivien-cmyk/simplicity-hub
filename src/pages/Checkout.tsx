@@ -95,6 +95,8 @@ export default function Checkout() {
     if (checkoutLoading) return;
     setCheckoutLoading(true);
     setCheckoutError("");
+    // PROOF: checkout_start → analytics_events (real write)
+    trackEvent("checkout_start", user.id, { source: "checkout_page" });
     try {
       const result = await startCheckout();
       setSuccessType(result?.offer_type === "launch" ? "stripe_launch" : "stripe_standard");
