@@ -4229,6 +4229,66 @@ export type Database = {
       }
     }
     Views: {
+      billing_proof_chain: {
+        Row: {
+          amount_eur: number | null
+          currency: string | null
+          event_id: string | null
+          event_type: string | null
+          metadata_user_id: string | null
+          object_status: string | null
+          occurred_at: string | null
+          offer_type: string | null
+          processed_at: string | null
+          proof_level: string | null
+          quota_status: string | null
+          stripe_customer_id: string | null
+          stripe_event_id: string | null
+          stripe_object_id: string | null
+          stripe_subscription_id_from_event: string | null
+          subscription_sync_status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_eur?: never
+          currency?: never
+          event_id?: string | null
+          event_type?: string | null
+          metadata_user_id?: never
+          object_status?: never
+          occurred_at?: string | null
+          offer_type?: never
+          processed_at?: string | null
+          proof_level?: never
+          quota_status?: never
+          stripe_customer_id?: never
+          stripe_event_id?: string | null
+          stripe_object_id?: never
+          stripe_subscription_id_from_event?: never
+          subscription_sync_status?: never
+          user_id?: string | null
+        }
+        Update: {
+          amount_eur?: never
+          currency?: never
+          event_id?: string | null
+          event_type?: string | null
+          metadata_user_id?: never
+          object_status?: never
+          occurred_at?: string | null
+          offer_type?: never
+          processed_at?: string | null
+          proof_level?: never
+          quota_status?: never
+          stripe_customer_id?: never
+          stripe_event_id?: string | null
+          stripe_object_id?: never
+          stripe_subscription_id_from_event?: never
+          subscription_sync_status?: never
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       openclaw_cron_status: {
         Row: {
           avg_duration_ms: number | null
