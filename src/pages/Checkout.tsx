@@ -161,16 +161,13 @@ export default function Checkout() {
                 </div>
               )}
 
-              {/* ONE PRICE 99 HARD LOCK: route by onboarding_done to avoid re-sending paying users through onboarding */}
+              {/* ONE PRICE 99 HARD LOCK: route by onboarding_done — paying users already onboarded go straight to dashboard */}
               {user ? (
                 <Link
-                  to={isPromo ? "/dashboard" : (
-                    // Check onboarding via profile stored in AuthContext
-                    "/onboarding"
-                  )}
+                  to={profile?.onboarding_done ? "/dashboard" : "/onboarding"}
                   className="btn-cta text-sm px-8 py-4 block text-center"
                 >
-                  {t("checkout_configure")}
+                  {profile?.onboarding_done ? "Accéder à mon espace" : t("checkout_configure")}
                 </Link>
               ) : (
                 <Link to="/signup" className="btn-cta text-sm px-8 py-4 block text-center">
