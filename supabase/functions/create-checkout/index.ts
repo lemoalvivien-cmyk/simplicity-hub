@@ -27,12 +27,14 @@ const LAUNCH_SLOTS = 100;
  * DEFAULT FALLBACK: if origin header is missing, use CANONICAL_ORIGIN.
  *   This keeps server-side calls working without an Origin header.
  */
-const CANONICAL_ORIGIN = "https://wiinupmax.lovable.app";
+const CANONICAL_ORIGIN = "https://wiinupmax.com";
 
 // Hard-coded prod + official preview — never deleted from allowlist
+// NOTE: lovable.app preview URL kept for internal dev/testing only, not user-facing
 const BUILTIN_ORIGINS = new Set([
-  "https://wiinupmax.lovable.app",
-  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
+  "https://wiinupmax.com",
+  "https://wiinupmax.lovable.app",                                        // staging fallback
+  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app", // Lovable preview (internal)
 ]);
 
 function buildAllowedOrigins(): Set<string> {
