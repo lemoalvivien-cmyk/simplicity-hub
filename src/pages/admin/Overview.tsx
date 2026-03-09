@@ -116,6 +116,45 @@ export default function AdminOverview() {
         onRefresh={() => cp.refetch()}
       />
 
+      {/* ── BILLING RUNTIME MINI-BLOC ────────────────────────────────────────────
+          ÉCART CORRIGÉ: Overview ne montrait pas le billing summary.
+          Payments et Overview racontaient deux vérités différentes.
+          Ce bloc lit cp.billingProof (déjà chargé par useControlPlane via get_billing_proof_summary).
+          Aucune requête supplémentaire. Même source de vérité que Payments.
+      ─────────────────────────────────────────────────────────────────────── */}
+      {!cp.loading && (
+        <div className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs mb-4 ${
+          cp.billingProof && cp.billingProof.fullProofEvents > 0
+            ? "border-success/30 bg-success/5"
+            : cp.billingProof && cp.billingProof.totalBillingEvents > 0
+            ? "border-warning/20 bg-warning/5"
+            : "border-border bg-muted/20"
+        }`}>
+          <div className="flex items-center gap-3">
+            <DollarSign size={12} className={
+              cp.billingProof && cp.billingProof.fullProofEvents > 0 ? "text-success" :
+              cp.billingProof && cp.billingProof.totalBillingEvents > 0 ? "text-warning" :
+              "text-muted-foreground"
+            } />
+            <span className="font-semibold text-foreground">Premier paiement prouvé :</span>
+            <span className={`font-bold font-mono ${
+              cp.billingProof && cp.billingProof.fullProofEvents > 0 ? "text-success" : "text-destructive"
+            }`}>
+              {cp.billingProof && cp.billingProof.fullProofEvents > 0 ? "OUI ✓" : "NON ✗"}
+            </span>
+            {cp.billingProof && (
+              <span className="text-muted-foreground">
+                · {cp.billingProof.fullProofEvents} full_proof · {cp.billingProof.totalBillingEvents} events total
+                {cp.billingProof.quotaUsedSlots != null && ` · quota ${cp.billingProof.quotaUsedSlots}/${cp.billingProof.quotaTotalSlots ?? "?"}`}
+              </span>
+            )}
+          </div>
+          <Link to="/admin/payments" className="text-xs text-primary hover:underline font-medium flex items-center gap-1">
+            Détail billing <ArrowUpRight size={10} />
+          </Link>
+        </div>
+      )}
+
       {/* Metrics */}
       {statsLoading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
