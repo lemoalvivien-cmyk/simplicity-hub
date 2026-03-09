@@ -1,5 +1,5 @@
 # PRODUCTION READYNESS — WIINUP MAX
-> Version: 2026-03-09 | Stamp: RC-2026-03-09-SYNC-V4
+> Version: 2026-03-09 | Stamp: RC-2026-03-09-SYNC-V5
 >
 > Document factuel unique. Chaque claim mappe vers un fichier ou une exécution réelle.
 > Vocabulaire : ABSENT / CRÉÉ MAIS NON BRANCHÉ / BRANCHÉ MAIS NON PROUVÉ / PROUVÉ PAR LE CODE / PROUVÉ PAR RUNTIME / DÉPEND CONFIG EXTERNE / ÉTAPE MANUELLE REQUISE / NON PROUVÉ
