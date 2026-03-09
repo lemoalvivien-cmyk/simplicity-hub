@@ -161,9 +161,22 @@ export default function Checkout() {
                 </div>
               )}
 
-              <Link to={user ? "/onboarding" : "/signup"} className="btn-cta text-sm px-8 py-4 block text-center">
-                {user ? t("checkout_configure") : t("checkout_create_account")}
-              </Link>
+              {/* ONE PRICE 99 HARD LOCK: route by onboarding_done to avoid re-sending paying users through onboarding */}
+              {user ? (
+                <Link
+                  to={isPromo ? "/dashboard" : (
+                    // Check onboarding via profile stored in AuthContext
+                    "/onboarding"
+                  )}
+                  className="btn-cta text-sm px-8 py-4 block text-center"
+                >
+                  {t("checkout_configure")}
+                </Link>
+              ) : (
+                <Link to="/signup" className="btn-cta text-sm px-8 py-4 block text-center">
+                  {t("checkout_create_account")}
+                </Link>
+              )}
             </div>
           </div>
         </div>
