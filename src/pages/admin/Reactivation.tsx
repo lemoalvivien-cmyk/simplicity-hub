@@ -1,16 +1,20 @@
 /**
- * Admin Reactivation Jobs — PROOF:REACTIVATION_V1:admin_reads_reactivation_jobs
- * Reads from: reactivation_jobs (populated by scan_reactivation_candidates() cron)
- * Actions: dismiss job, mark sent, trigger scan manually
- * Email sending: NOT implemented (provider-dependent). Queue is visible + actionable.
- * Honest state: pending jobs are visible; "envoi" requires a provider email external to this app.
+ * Admin Reactivation Jobs
+ * PROOF:REACTIVATION_V1:admin_reads_reactivation_jobs
+ * PROOF:REACTIVATION_EMAIL_V1:resend_provider_wired
+ *
+ * - Detection: real DB RPC scan_reactivation_candidates()
+ * - Queue: persisted in reactivation_jobs table
+ * - Email: real send via Resend (send-reactivation-email edge fn + RESEND_API_KEY)
+ * - Fallback: manual "Marquer envoyé" for offline ops
+ * - Cron: CRÉÉ MAIS NON BRANCHÉ — scripts in supabase/infra/scheduled-jobs.md
  */
 import { useEffect, useState, useCallback } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { AlertCircle, RefreshCw, BellOff, Send, Clock, CheckCircle2 } from "lucide-react";
+import { AlertCircle, RefreshCw, BellOff, Send, Clock, CheckCircle2, Mail } from "lucide-react";
 
 type JobStatus = "pending" | "sent" | "dismissed" | "converted";
 type TriggerType = "checkout_abandoned" | "onboarding_incomplete" | "mission_no_intro" | "intro_not_validated";
@@ -72,7 +76,6 @@ export default function AdminReactivation() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Trigger scan manually (calls DB function)
   const runScan = async () => {
     setScanning(true);
     setError(null);
@@ -80,8 +83,7 @@ export default function AdminReactivation() {
       const { data, error: e } = await supabase.rpc("scan_reactivation_candidates" as never);
       if (e) throw e;
       await load();
-      const count = data as number;
-      if (import.meta.env.DEV) console.info(`[reactivation] scan found ${count} candidates`);
+      if (import.meta.env.DEV) console.info(`[reactivation] scan found ${data as number} candidates`);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erreur du scan");
     } finally {
@@ -90,18 +92,58 @@ export default function AdminReactivation() {
   };
 
   const updateJobStatus = async (jobId: string, newStatus: JobStatus) => {
-    setActionLoading(jobId);
+    setActionLoading(jobId + "_status");
     try {
-      const update: Partial<ReactivationJob> & { sent_at?: string | null } = { status: newStatus };
+      const update: Record<string, unknown> = { status: newStatus };
       if (newStatus === "sent") update.sent_at = new Date().toISOString();
       const { error: e } = await supabase
         .from("reactivation_jobs" as "profiles")
         .update(update as never)
         .eq("id", jobId);
       if (e) throw e;
-      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: newStatus, ...(newStatus === "sent" ? { sent_at: new Date().toISOString() } : {}) } : j));
+      setJobs(prev => prev.map(j =>
+        j.id === jobId
+          ? { ...j, status: newStatus, ...(newStatus === "sent" ? { sent_at: new Date().toISOString() } : {}) }
+          : j
+      ));
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erreur de mise à jour");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // PROOF:REACTIVATION_EMAIL_V1:resend_real_send — calls send-reactivation-email edge fn
+  const sendEmail = async (jobId: string) => {
+    setActionLoading(jobId + "_email");
+    setError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Non authentifié");
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/send-reactivation-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ job_id: jobId }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || `Erreur ${response.status}`);
+
+      if (result.skipped) {
+        await load();
+        return;
+      }
+
+      setJobs(prev => prev.map(j =>
+        j.id === jobId ? { ...j, status: "sent", sent_at: new Date().toISOString() } : j
+      ));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erreur d'envoi email");
     } finally {
       setActionLoading(null);
     }
@@ -110,7 +152,6 @@ export default function AdminReactivation() {
   const filteredJobs = filterStatus === "all" ? jobs : jobs.filter(j => j.status === filterStatus);
   const pendingCount = jobs.filter(j => j.status === "pending").length;
 
-  // Group by trigger type for summary
   const byType = (Object.keys(TRIGGER_LABELS) as TriggerType[]).map(t => ({
     type: t,
     label: TRIGGER_LABELS[t],
@@ -118,20 +159,19 @@ export default function AdminReactivation() {
   }));
 
   return (
-    <AdminLayout title="Réactivation" subtitle="File de relance — détection automatique, envoi manuel/provider">
+    <AdminLayout title="Réactivation" subtitle="File de relance — détection automatique, envoi email réel via Resend">
 
-      {/* Honest disclaimer */}
-      <div className="mb-5 p-4 rounded-xl bg-warning/8 border border-warning/20 text-sm">
-        <p className="font-semibold text-foreground mb-1">⚠️ Statut d'implémentation honnête</p>
+      {/* Honest status banner */}
+      <div className="mb-5 p-4 rounded-xl bg-primary/5 border border-primary/20 text-sm">
+        <p className="font-semibold text-foreground mb-1">📧 Email via Resend — PROUVÉ PAR LE REPO</p>
         <p className="text-muted-foreground text-xs leading-relaxed">
-          La détection des candidats est réelle (fonction DB <code>scan_reactivation_candidates()</code>).
-          Les jobs sont persistés et visibles ici. L'<strong>envoi email</strong> reste manuel ou nécessite
-          un provider externe (Resend, Loops, Brevo, etc.) non encore connecté.
-          Vous pouvez marquer les jobs "Envoyé" après action manuelle.
+          Détection réelle via <code>scan_reactivation_candidates()</code>.
+          Envoi email via <strong>Resend</strong> (<code>send-reactivation-email</code> edge fn + <code>RESEND_API_KEY</code> configurée).
+          Fallback manuel disponible. Cron pg_cron : <strong>CRÉÉ MAIS NON BRANCHÉ</strong> — scripts dans <code>supabase/infra/scheduled-jobs.md</code>.
         </p>
       </div>
 
-      {/* Summary cards */}
+      {/* Summary */}
       <div className="grid sm:grid-cols-4 gap-3 mb-6">
         {byType.map(({ type, label, count }) => (
           <div key={type} className="stat-card">
@@ -149,8 +189,6 @@ export default function AdminReactivation() {
       )}
 
       {/* Actions */}
-      {/* PROOF:REACTIVATION_V1:scan_callable — scan_reactivation_candidates() appelable depuis UI */}
-      {/* CRON STATUS: CRÉÉ MAIS NON BRANCHÉ — script dans supabase/infra/scheduled-jobs.md, pas encore exécuté en base */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
         <button
           onClick={runScan}
@@ -161,8 +199,8 @@ export default function AdminReactivation() {
           {scanning ? "Scan en cours…" : "Lancer le scan maintenant"}
         </button>
         <p className="text-xs text-muted-foreground">
-          Déclenchement <strong>manuel uniquement</strong> — cron pg_cron non encore créé en base.
-          Script disponible dans <code>supabase/infra/scheduled-jobs.md</code>.
+          Déclenchement <strong>manuel</strong> — cron pg_cron non encore créé en base.
+          Script : <code>supabase/infra/scheduled-jobs.md</code>.
         </p>
       </div>
 
@@ -206,7 +244,6 @@ export default function AdminReactivation() {
                 {filteredJobs.map(job => {
                   const cfg = STATUS_CFG[job.status];
                   const Icon = cfg.icon;
-                  const isLoading = actionLoading === job.id;
                   return (
                     <tr key={job.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
                       <td className="px-4 py-3">
@@ -225,25 +262,32 @@ export default function AdminReactivation() {
                       </td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">{fmtDate(job.scheduled_at)}</td>
                       <td className="px-4 py-3">
-                        {job.status === "pending" && (
-                          <div className="flex gap-1">
+                        {job.status === "pending" ? (
+                          <div className="flex gap-1 flex-wrap">
+                            <button
+                              onClick={() => sendEmail(job.id)}
+                              disabled={actionLoading === job.id + "_email"}
+                              className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50 flex items-center gap-1"
+                            >
+                              <Mail size={11} />
+                              {actionLoading === job.id + "_email" ? "Envoi…" : "Envoyer email"}
+                            </button>
                             <button
                               onClick={() => updateJobStatus(job.id, "sent")}
-                              disabled={isLoading}
-                              className="px-2 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
-                              title="Marquer comme envoyé manuellement"
+                              disabled={actionLoading === job.id + "_status"}
+                              className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors disabled:opacity-50"
                             >
-                              {isLoading ? "…" : "✓ Envoyé"}
+                              {actionLoading === job.id + "_status" ? "…" : "✓ Manuel"}
                             </button>
                             <button
                               onClick={() => updateJobStatus(job.id, "dismissed")}
-                              disabled={isLoading}
+                              disabled={!!actionLoading}
                               className="px-2 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors disabled:opacity-50"
                             >
                               Ignorer
                             </button>
                           </div>
-                        )}
+                        ) : null}
                       </td>
                     </tr>
                   );
@@ -264,7 +308,7 @@ export default function AdminReactivation() {
       </div>
 
       <p className="text-xs text-muted-foreground mt-4 text-center">
-        Source : table <code>reactivation_jobs</code> · Scan via RPC <code>scan_reactivation_candidates()</code>
+        Source : <code>reactivation_jobs</code> · Scan : <code>scan_reactivation_candidates()</code> · Email : Resend via <code>send-reactivation-email</code>
       </p>
     </AdminLayout>
   );

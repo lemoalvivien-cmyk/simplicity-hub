@@ -78,3 +78,7 @@ verify_jwt = true
 
 [functions.openclaw-graph-engine]
 verify_jwt = true
+
+# send-reactivation-email: called by admin only (admin JWT + role check in function)
+[functions.send-reactivation-email]
+verify_jwt = true
