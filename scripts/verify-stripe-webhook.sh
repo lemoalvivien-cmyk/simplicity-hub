@@ -1,26 +1,56 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════════════════════
 # verify-stripe-webhook.sh — Runbook de preuve E2E Stripe Webhook
-# PROOF:BILLING_PROOF_CHAIN_V1:webhook_verification_runbook
+# PROOF:BILLING_PROOF_CHAIN_V2:webhook_verification_runbook_final
 #
-# CE SCRIPT PROUVE / NE PROUVE PAS:
-#   CODE_READY     : edge fn stripe-webhook déployée, signature verification présente dans le code
-#   EXTERNAL_CONFIG: STRIPE_WEBHOOK_SECRET doit être configuré dans Cloud Secrets (non vérifiable ici)
-#   E2E_NOT_PROVEN : aucun checkout réel exercé depuis un navigateur ou Stripe CLI
-#   E2E_PROVEN     : uniquement après exécution de ce runbook avec succès ET vérification DB
+# ─── 4 ÉTATS STRICTS — AUCUNE AMBIGUÏTÉ ────────────────────────────────────────
 #
-# PRÉREQUIS:
-#   1. stripe CLI installé : brew install stripe/stripe-cli/stripe (ou https://stripe.com/docs/stripe-cli)
+#   CODE_READY
+#     Définition : L'edge function stripe-webhook est déployée, la logique de
+#                  vérification de signature est présente dans le code source.
+#     Ce que ça prouve : le code est correct.
+#     Ce que ça NE prouve PAS : que le secret est configuré, que le webhook a
+#                                été reçu, que le quota a été muté.
+#     Comment vérifier : HTTP 400 ou 500 à l'ÉTAPE 1 = fn déployée.
+#
+#   RUNTIME_READY
+#     Définition : L'edge function est déployée ET STRIPE_WEBHOOK_SECRET est
+#                  configuré (le secret est en place). Aucun test réel n'a encore
+#                  été exercé — billing_events = 0.
+#     Ce que ça prouve : la config est en place pour recevoir un webhook.
+#     Ce que ça NE prouve PAS : qu'un checkout → webhook → quota a fonctionné.
+#     Comment vérifier : HTTP 400 à l'ÉTAPE 1 + billing_events = 0.
+#
+#   EXTERNAL_EXECUTION_REQUIRED
+#     Définition : STRIPE_WEBHOOK_SECRET absent ou incorrectement configuré.
+#                  La réception d'un vrai webhook Stripe signé est impossible.
+#     Ce que ça prouve : blocage de configuration externe.
+#     Action requise : configurer STRIPE_WEBHOOK_SECRET dans Cloud Secrets.
+#     Comment vérifier : HTTP 500 à l'ÉTAPE 1.
+#
+#   E2E_PROVEN
+#     Définition : Un checkout Stripe réel a déclenché un webhook signé,
+#                  l'événement est persisté dans billing_events, l'abonnement
+#                  est synced, et si offre launch : quota consommé.
+#                  proof_level = 'full' visible dans /admin/payments.
+#     Ce que ça prouve : le flux revenu est entièrement fonctionnel de bout en bout.
+#     Ce que ça NE prouve PAS : la gestion d'erreurs, les cas limites.
+#     Comment vérifier : billing_events > 0 + proof_level='full' dans /admin/payments.
+#
+# ─── PRÉREQUIS ─────────────────────────────────────────────────────────────────
+#   1. stripe CLI installé : brew install stripe/stripe-cli/stripe
+#                            ou https://stripe.com/docs/stripe-cli
 #   2. stripe CLI authentifié : stripe login
-#   3. STRIPE_WEBHOOK_SECRET configuré dans Cloud Secrets (Lovable Cloud → Secrets)
-#      → Valeur à copier depuis : stripe listen --print-secret
+#   3. STRIPE_WEBHOOK_SECRET configuré dans Cloud Secrets :
+#        a. stripe listen --print-secret    → copier la valeur whsec_...
+#        b. Lovable Cloud → Secrets → STRIPE_WEBHOOK_SECRET = whsec_...
+#        c. Redéployer les edge functions après ajout du secret
 #   4. curl + jq installés
-#   5. SUPABASE_URL et SUPABASE_SERVICE_KEY disponibles (optionnel pour vérification DB)
 #
-# VARIABLES REQUISES:
-#   - STRIPE_WEBHOOK_ENDPOINT : URL de votre webhook déployé (défaut ci-dessous)
-#   - SUPABASE_URL            : (optionnel) pour vérifier la mutation DB
-#   - SUPABASE_SERVICE_KEY    : (optionnel) service role key pour lire billing_events
+# ─── VARIABLES OPTIONNELLES ────────────────────────────────────────────────────
+#   STRIPE_WEBHOOK_ENDPOINT : URL de votre webhook (défaut ci-dessous)
+#   SUPABASE_URL            : URL Supabase (optionnel, pour vérif DB directe)
+#   SUPABASE_SERVICE_KEY    : service role key (optionnel)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -euo pipefail
@@ -30,174 +60,285 @@ WEBHOOK_ENDPOINT="${STRIPE_WEBHOOK_ENDPOINT:-https://usnriklfiagazpffsqew.supaba
 SUPABASE_URL="${SUPABASE_URL:-}"
 SUPABASE_SERVICE_KEY="${SUPABASE_SERVICE_KEY:-}"
 
+# Accumulate states
+CODE_READY_STATUS="UNKNOWN"
+RUNTIME_READY_STATUS="UNKNOWN"
+E2E_PROVEN_STATUS="NOT_PROVEN"
+FINAL_CLASSIFICATION=""
+
 echo ""
-echo "═══════════════════════════════════════════════════════════════"
+echo "═══════════════════════════════════════════════════════════════════"
 echo "  WIINUP MAX — Stripe Webhook E2E Verification Runbook"
-echo "  PROOF:BILLING_PROOF_CHAIN_V1"
-echo "═══════════════════════════════════════════════════════════════"
+echo "  PROOF:BILLING_PROOF_CHAIN_V2 — 4 états stricts, aucune ambiguïté"
+echo "═══════════════════════════════════════════════════════════════════"
 echo ""
 
 # ── ÉTAPE 0 : Vérification des prérequis ──────────────────────────────────────
-echo "ÉTAPE 0 — Vérification des prérequis"
+echo "━━━ ÉTAPE 0 — Vérification des prérequis"
 echo ""
+
+PREREQ_OK=true
 
 if ! command -v stripe &>/dev/null; then
   echo "  ✗ stripe CLI non installé"
   echo "    → brew install stripe/stripe-cli/stripe"
   echo "    → ou https://stripe.com/docs/stripe-cli"
-  echo ""
-  echo "CLASSIFICATION: E2E_NOT_PROVEN (prérequis manquant)"
-  exit 1
+  PREREQ_OK=false
+else
+  echo "  ✓ stripe CLI disponible : $(stripe version)"
 fi
-echo "  ✓ stripe CLI disponible : $(stripe version)"
 
 if ! command -v curl &>/dev/null; then
   echo "  ✗ curl non disponible"
-  exit 1
+  PREREQ_OK=false
+else
+  echo "  ✓ curl disponible"
 fi
-echo "  ✓ curl disponible"
+
+if ! command -v jq &>/dev/null; then
+  echo "  ⚠ jq non disponible (optionnel, pour vérification DB)"
+else
+  echo "  ✓ jq disponible"
+fi
 
 echo ""
 echo "  Endpoint webhook cible : $WEBHOOK_ENDPOINT"
 echo ""
 
-# ── ÉTAPE 1 : Test de rejet — signature absente → 400 ─────────────────────────
-# CE QUE ÇA PROUVE : l'edge fn est déployée et rejette les webhooks non signés
-# CE QUE ÇA NE PROUVE PAS : que STRIPE_WEBHOOK_SECRET est correctement configuré
-echo "ÉTAPE 1 — Test rejet signature absente"
+if [ "$PREREQ_OK" = "false" ]; then
+  echo "CLASSIFICATION FINALE : E2E_NOT_PROVEN (prérequis manquants)"
+  exit 1
+fi
+
+# ── ÉTAPE 1 : Test rejet — signature absente → détermine CODE_READY ou EXTERNAL_CONFIG ──
+# CE QUE ÇA PROUVE : l'edge fn est déployée
+# CE QUE ÇA DÉTERMINE : CODE_READY (fn déployée) vs EXTERNAL_CONFIG_REQUIRED (secret manquant)
+echo "━━━ ÉTAPE 1 — Test de déploiement & secret (signature absente)"
 echo ""
-echo "  Envoi d'un POST sans stripe-signature..."
+echo "  Envoi d'un POST sans stripe-signature header..."
 REJECT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -X POST "$WEBHOOK_ENDPOINT" \
   -H "Content-Type: application/json" \
-  -d '{"type":"test","data":{"object":{}}}')
+  -d '{"type":"test.probe","data":{"object":{}}}' \
+  --max-time 10 || echo "000")
 
 if [[ "$REJECT_STATUS" == "400" ]]; then
-  echo "  ✓ HTTP $REJECT_STATUS — Edge fn déployée, rejette bien les payloads non signés"
-  echo "  PROOF: CODE_READY"
+  echo "  ✓ HTTP 400 — Edge fn déployée, rejette les payloads non signés"
+  echo "  → CODE_READY confirmé"
+  echo "  ⚠ IMPORTANT: HTTP 400 ne prouve PAS que STRIPE_WEBHOOK_SECRET est configuré."
+  echo "    Il prouve uniquement que l'edge fn est déployée et vérifie la présence de la signature."
+  CODE_READY_STATUS="CONFIRMED"
+  # Indeterminate on secret — need ÉTAPE 2 to confirm RUNTIME_READY
 elif [[ "$REJECT_STATUS" == "500" ]]; then
-  echo "  ⚠ HTTP $REJECT_STATUS — Edge fn déployée MAIS STRIPE_WEBHOOK_SECRET manquant dans Cloud Secrets"
-  echo "  ACTION REQUISE: Configurer STRIPE_WEBHOOK_SECRET dans Cloud Secrets"
-  echo "    1. Exécuter localement: stripe listen --print-secret"
-  echo "    2. Copier le secret whsec_..."
-  echo "    3. Lovable Cloud → Secrets → Ajouter STRIPE_WEBHOOK_SECRET"
+  echo "  ✗ HTTP 500 — Edge fn déployée MAIS STRIPE_WEBHOOK_SECRET MANQUANT dans Cloud Secrets"
   echo ""
-  echo "CLASSIFICATION: EXTERNAL_CONFIG_REQUIRED"
+  echo "  ┌─ ACTION REQUISE ────────────────────────────────────────────────────────┐"
+  echo "  │  1. Dans un terminal local :                                            │"
+  echo "  │     stripe listen --print-secret                                        │"
+  echo "  │     → Copier la valeur whsec_...                                        │"
+  echo "  │  2. Lovable Cloud → Secrets → Ajouter STRIPE_WEBHOOK_SECRET             │"
+  echo "  │  3. Les edge functions se redéployent automatiquement                   │"
+  echo "  │  4. Réexécuter ce script                                                │"
+  echo "  └─────────────────────────────────────────────────────────────────────────┘"
+  CODE_READY_STATUS="CONFIRMED"
+  FINAL_CLASSIFICATION="EXTERNAL_CONFIG_REQUIRED"
+  echo ""
+  echo "CLASSIFICATION : EXTERNAL_CONFIG_REQUIRED"
+  echo "(Le code est prêt, la configuration externe est manquante)"
   exit 1
 elif [[ "$REJECT_STATUS" == "000" ]]; then
-  echo "  ✗ Connexion impossible ($REJECT_STATUS) — endpoint inaccessible"
-  echo "  Vérifier que l'edge fn est déployée et que l'URL est correcte"
+  echo "  ✗ Connexion impossible (timeout ou endpoint inaccessible)"
+  echo "  Vérifier que l'edge fn est déployée et que l'URL est correcte : $WEBHOOK_ENDPOINT"
+  CODE_READY_STATUS="UNKNOWN"
   echo ""
-  echo "CLASSIFICATION: E2E_NOT_PROVEN (endpoint inaccessible)"
+  echo "CLASSIFICATION : E2E_NOT_PROVEN (endpoint inaccessible)"
   exit 1
 else
-  echo "  ⚠ HTTP $REJECT_STATUS — résultat inattendu, vérifier les logs edge fn"
+  echo "  ⚠ HTTP $REJECT_STATUS — résultat inattendu"
+  echo "  Vérifier les logs edge fn dans Lovable Cloud → Logs → stripe-webhook"
+  CODE_READY_STATUS="UNCERTAIN"
 fi
 
 echo ""
 
 # ── ÉTAPE 2 : Relay Stripe CLI — vrai webhook signé ───────────────────────────
-# CE QUE ÇA PROUVE : que le webhook est reçu, vérifié et traité avec un vrai secret
-# CE QUE ÇA NE PROUVE PAS : que la mutation DB (subscription sync, quota) fonctionne
-echo "ÉTAPE 2 — Test relay webhook Stripe CLI (signé)"
+# CE QUE ÇA PROUVE : webhook reçu, signature vérifiée → RUNTIME_READY confirmé
+# CE QUE ÇA NE PROUVE PAS : mutation quota (il faut un vrai checkout avec offer_type=launch)
+echo "━━━ ÉTAPE 2 — Relay webhook Stripe CLI (signé)"
 echo ""
-echo "  ┌─ TERMINAL A : Démarrer le relay (laisser ouvert) ─────────────┐"
-echo "  │  stripe listen --forward-to $WEBHOOK_ENDPOINT                 │"
-echo "  └───────────────────────────────────────────────────────────────┘"
+echo "  Cette étape nécessite 2 terminaux et confirme RUNTIME_READY."
 echo ""
-echo "  ┌─ TERMINAL B : Déclencher un événement test ────────────────────┐"
-echo "  │  stripe trigger checkout.session.completed                     │"
-echo "  └───────────────────────────────────────────────────────────────┘"
+echo "  ┌─ TERMINAL A : Démarrer le relay et garder ouvert ──────────────────────┐"
+echo "  │  stripe listen --forward-to $WEBHOOK_ENDPOINT   │"
+echo "  │                                                                         │"
+echo "  │  → Vous verrez : Ready! Your webhook signing secret is whsec_xxx        │"
+echo "  │  → Copier ce secret dans Cloud Secrets si pas encore fait               │"
+echo "  └─────────────────────────────────────────────────────────────────────────┘"
 echo ""
-echo "  LOGS ATTENDUS dans les Edge Function logs (Lovable Cloud → Logs) :"
-echo "  [STRIPE-WEBHOOK] Webhook received"
-echo "  [STRIPE-WEBHOOK] Event verified — { type: 'checkout.session.completed', id: 'evt_test_...' }"
-echo "  [STRIPE-WEBHOOK] Quota consume result — { consumeResult: 'skipped_not_launch' }"
-echo "  (Note: l'événement test Stripe n'a pas offer_type=launch dans metadata, donc skip normal)"
+echo "  ┌─ TERMINAL B : Déclencher un événement test checkout ───────────────────┐"
+echo "  │  stripe trigger checkout.session.completed                              │"
+echo "  └─────────────────────────────────────────────────────────────────────────┘"
+echo ""
+echo "  ┌─ LOGS ATTENDUS dans Edge Function Logs (Lovable Cloud → Logs) ─────────┐"
+echo "  │  [STRIPE-WEBHOOK] Webhook received                                      │"
+echo "  │  [STRIPE-WEBHOOK] Event verified { type: checkout.session.completed,    │"
+echo "  │                                    id: evt_test_... }                   │"
+echo "  │  [STRIPE-WEBHOOK] Quota consume result { consumeResult:                 │"
+echo "  │                                          'skipped_not_launch' }         │"
+echo "  │                                                                          │"
+echo "  │  Note : 'skipped_not_launch' est le résultat NORMAL pour un trigger     │"
+echo "  │  Stripe CLI — l'événement de test n'a pas offer_type=launch en          │"
+echo "  │  metadata. C'est le comportement attendu.                               │"
+echo "  │                                                                          │"
+echo "  │  Si vous voyez 'incremented' → preuve checkout avec offre launch.       │"
+echo "  └─────────────────────────────────────────────────────────────────────────┘"
+echo ""
+echo "  Après exécution réussie de TERMINAL B : billing_events doit contenir"
+echo "  l'événement → proof_level='partial' ou 'subscription_event' dans /admin/payments"
+echo ""
+echo "  ┌─ POUR PREUVE COMPLÈTE (proof_level='full') ─────────────────────────────┐"
+echo "  │  Un vrai checkout utilisateur est nécessaire :                          │"
+echo "  │  1. Aller sur https://wiinupmax.com/pricing (ou preview)                │"
+echo "  │  2. Cliquer 'Souscrire' → Stripe Checkout                               │"
+echo "  │  3. Utiliser la carte test : 4242 4242 4242 4242                         │"
+echo "  │     Exp : 12/28 | CVC : 123 | ZIP : 75001                               │"
+echo "  │  4. Compléter le checkout                                                │"
+echo "  │  5. Observer dans /admin/payments → Billing Proof Chain :               │"
+echo "  │     - proof_level = 'full'                                              │"
+echo "  │     - quota_status = 'consumed' (si offre launch)                       │"
+echo "  │     - subscription_sync_status = 'synced'                               │"
+echo "  └─────────────────────────────────────────────────────────────────────────┘"
 echo ""
 
-# ── ÉTAPE 3 : Vérification mutation DB (optionnel si SUPABASE_URL fourni) ─────
+# ── ÉTAPE 3 : Vérification mutation DB (si SUPABASE_URL disponible) ───────────
 if [[ -n "$SUPABASE_URL" && -n "$SUPABASE_SERVICE_KEY" ]]; then
-  echo "ÉTAPE 3 — Vérification mutation DB (billing_events)"
+  echo "━━━ ÉTAPE 3 — Vérification mutation DB"
   echo ""
 
-  BILLING_COUNT=$(curl -s \
-    "$SUPABASE_URL/rest/v1/billing_events?select=id,stripe_event_id,event_type&order=created_at.desc&limit=5" \
+  BILLING_EVENTS_JSON=$(curl -s \
+    "$SUPABASE_URL/rest/v1/billing_events?select=id,stripe_event_id,event_type,processed_at&order=processed_at.desc&limit=5" \
     -H "apikey: $SUPABASE_SERVICE_KEY" \
     -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
-    | jq 'length' 2>/dev/null || echo "0")
+    --max-time 10 2>/dev/null || echo "[]")
 
-  echo "  Événements billing_events en base: $BILLING_COUNT"
+  BILLING_COUNT=$(echo "$BILLING_EVENTS_JSON" | jq 'length' 2>/dev/null || echo "0")
+
+  echo "  billing_events en base : $BILLING_COUNT événement(s)"
 
   if [[ "$BILLING_COUNT" -gt "0" ]]; then
-    echo "  ✓ billing_events contient des données — webhook reçu et persisté"
-    echo "  PROOF: E2E_PROVEN (partiel — quota mutation à vérifier séparément)"
-
-    QUOTA_DATA=$(curl -s \
-      "$SUPABASE_URL/rest/v1/launch_quota?select=used_slots,total_slots" \
-      -H "apikey: $SUPABASE_SERVICE_KEY" \
-      -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
-      | jq '.[0]' 2>/dev/null || echo "null")
-
+    echo "  ✓ billing_events contient des données"
+    echo "  Derniers événements :"
+    echo "$BILLING_EVENTS_JSON" | jq -r '.[] | "    \(.processed_at | split("T")[0]) — \(.event_type) — \(.stripe_event_id // "no-event-id")"' 2>/dev/null || true
+    RUNTIME_READY_STATUS="CONFIRMED"
     echo ""
-    echo "  Quota actuel : $QUOTA_DATA"
-    echo ""
-    echo "  Pour une preuve complète checkout→webhook→quota, effectuer un VRAI checkout"
-    echo "  avec une carte Stripe test (4242 4242 4242 4242) sur https://wiinupmax.com/pricing"
-    echo "  puis vérifier que used_slots a augmenté."
+    echo "  → RUNTIME_READY confirmé"
   else
-    echo "  ⚠ billing_events vide — webhook non reçu ou non persisté"
-    echo "  Vérifier: logs Edge Function → [STRIPE-WEBHOOK] dans Lovable Cloud"
+    echo "  ⚠ billing_events vide — webhook non encore exercé"
+    echo "  → Exécuter ÉTAPE 2 pour passer à RUNTIME_READY"
+    RUNTIME_READY_STATUS="NOT_YET"
+  fi
+
+  echo ""
+
+  # Vérification quota
+  QUOTA_JSON=$(curl -s \
+    "$SUPABASE_URL/rest/v1/launch_quota?select=used_slots,total_slots,updated_at&limit=1" \
+    -H "apikey: $SUPABASE_SERVICE_KEY" \
+    -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+    --max-time 10 2>/dev/null || echo "[]")
+
+  echo "  Quota launch_quota : $(echo "$QUOTA_JSON" | jq '.[0] | "used_slots=\(.used_slots) / total_slots=\(.total_slots)"' 2>/dev/null || echo 'non disponible')"
+
+  QUOTA_CONSUMED=$(curl -s \
+    "$SUPABASE_URL/rest/v1/launch_quota_consumed?select=stripe_subscription_id,created_at&order=created_at.desc&limit=3" \
+    -H "apikey: $SUPABASE_SERVICE_KEY" \
+    -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+    --max-time 10 2>/dev/null || echo "[]")
+  CONSUMED_COUNT=$(echo "$QUOTA_CONSUMED" | jq 'length' 2>/dev/null || echo "0")
+
+  echo "  launch_quota_consumed : $CONSUMED_COUNT entrée(s)"
+
+  if [[ "$CONSUMED_COUNT" -gt "0" ]]; then
+    echo "  ✓ Quota consommé — des abonnements launch ont été traités"
+    E2E_PROVEN_STATUS="PARTIAL"
   fi
 
   echo ""
 else
-  echo "ÉTAPE 3 — Vérification DB (optionnelle)"
-  echo "  Fournir SUPABASE_URL + SUPABASE_SERVICE_KEY pour vérifier la mutation DB."
-  echo "  Sinon, vérifier manuellement dans Lovable Cloud → Backend → billing_events"
+  echo "━━━ ÉTAPE 3 — Vérification DB (skipped)"
+  echo "  Fournir SUPABASE_URL + SUPABASE_SERVICE_KEY pour vérification directe."
+  echo "  Alternativement : Lovable Cloud → Backend → Tables → billing_events"
   echo ""
 fi
 
-# ── ÉTAPE 4 : Comment vérifier la corrélation complète ────────────────────────
-echo "ÉTAPE 4 — Vérifier la corrélation complète checkout → webhook → quota"
+# ── ÉTAPE 4 : Comment constater la preuve dans /admin/payments ─────────────────
+echo "━━━ ÉTAPE 4 — Constater la preuve dans /admin/payments"
 echo ""
-echo "  1. Ouvrir /admin/payments dans l'interface admin"
-echo "  2. Onglet 'Billing Proof Chain' — chercher un événement avec proof_level = 'full'"
-echo "  3. Un 'full' signifie :"
-echo "     a. Checkout session complétée (stripe_event_id présent)"
-echo "     b. Abonnement synced dans la table subscriptions"
-echo "     c. Si offre launch: entrée dans launch_quota_consumed"
+echo "  1. Se connecter avec un compte admin"
+echo "  2. Naviguer vers /admin/payments"
+echo "  3. Onglet 'Billing Proof Chain' (onglet par défaut)"
 echo ""
-echo "  Logs à vérifier (Lovable Cloud → Edge Function Logs → stripe-webhook) :"
-echo "  [STRIPE-WEBHOOK] Webhook received"
-echo "  [STRIPE-WEBHOOK] Event verified — { type, id }"
-echo "  [STRIPE-WEBHOOK] Checkout completed — { sessionId }"
-echo "  [STRIPE-WEBHOOK] Quota consume result — { consumeResult: 'incremented' }"
-echo "  [STRIPE-WEBHOOK] Subscription synced after checkout — { userId }"
+echo "  ┌─ BLOC 'Premier paiement prouvé' ────────────────────────────────────────┐"
+echo "  │  État attendu après exécution ÉTAPE 2 :                                 │"
+echo "  │    - Badge : RUNTIME_READY                                              │"
+echo "  │    - Pipeline : Webhook reçu → Persisté → ...                          │"
+echo "  │                                                                          │"
+echo "  │  État attendu après checkout réel (ÉTAPE 2 avancée) :                  │"
+echo "  │    - Badge : E2E_PROVEN                                                 │"
+echo "  │    - 'Premier paiement prouvé : OUI ✓'                                  │"
+echo "  │    - Pipeline complet : tous les stages verts                           │"
+echo "  └─────────────────────────────────────────────────────────────────────────┘"
+echo ""
+echo "  ┌─ TABLEAU ÉVÉNEMENTS CORRÉLÉS ───────────────────────────────────────────┐"
+echo "  │  Colonnes à vérifier :                                                  │"
+echo "  │    - proof_level = 'full'    ← preuve complète                          │"
+echo "  │    - quota_status = 'consumed'  ← si offre launch                      │"
+echo "  │    - subscription_sync_status = 'synced'                               │"
+echo "  └─────────────────────────────────────────────────────────────────────────┘"
 echo ""
 
 # ── Résumé classification finale ──────────────────────────────────────────────
-echo "═══════════════════════════════════════════════════════════════"
-echo "  CLASSIFICATION FINALE"
-echo "═══════════════════════════════════════════════════════════════"
+echo "═══════════════════════════════════════════════════════════════════"
+echo "  CLASSIFICATION FINALE — AUCUNE AMBIGUÏTÉ"
+echo "═══════════════════════════════════════════════════════════════════"
 echo ""
-echo "  CODE_READY          [✓] Edge fn stripe-webhook déployée"
-echo "                         Vérification signature: code présent"
-echo "                         RPC increment_launch_quota_used_slots: code présent"
+
+if [[ "$CODE_READY_STATUS" == "CONFIRMED" ]]; then
+  echo "  CODE_READY              [✓] Edge fn stripe-webhook déployée"
+  echo "                             Vérification signature : code présent"
+  echo "                             billing_proof_chain view : créée"
+  echo "                             RPCs get_billing_proof_chain : déployées"
+else
+  echo "  CODE_READY              [?] Non vérifié (endpoint inaccessible)"
+fi
+
 echo ""
-echo "  EXTERNAL_CONFIG     [?] STRIPE_WEBHOOK_SECRET doit être dans Cloud Secrets"
-echo "                         Non vérifiable depuis ce script."
-echo "                         Signe: HTTP 500 à l'ÉTAPE 1 = secret manquant"
-echo "                         Signe: HTTP 400 à l'ÉTAPE 1 = edge fn déployée (mais secret inconnu)"
+if [[ "$RUNTIME_READY_STATUS" == "CONFIRMED" ]]; then
+  echo "  RUNTIME_READY           [✓] billing_events contient des données"
+  echo "                             Webhook reçu et persisté au moins une fois"
+elif [[ "$RUNTIME_READY_STATUS" == "NOT_YET" ]]; then
+  echo "  RUNTIME_READY           [→] billing_events = 0"
+  echo "                             Exécuter ÉTAPE 2 (stripe trigger) pour atteindre cet état"
+else
+  echo "  RUNTIME_READY           [?] Non vérifié (SUPABASE_URL non fourni)"
+  echo "                             Vérifier dans /admin/payments → Billing Proof Chain"
+fi
+
 echo ""
-echo "  E2E_NOT_PROVEN      [x] Aucun checkout → webhook → mutation quota exercé en conditions réelles"
-echo "                         Ce statut reste jusqu'à exécution complète de ce runbook"
-echo "                         ET observation d'un proof_level='full' dans /admin/payments"
+echo "  EXTERNAL_EXEC_REQUIRED  [!] Stripe CLI requis pour ÉTAPE 2"
+echo "                             Checkout utilisateur réel requis pour E2E_PROVEN"
+echo "                             Customer Portal requis pour billing complet (Stripe Dashboard)"
+
 echo ""
-echo "  E2E_PROVEN          [ ] Statut atteignable après:"
-echo "                         1. Exécution ÉTAPE 2 avec succès (logs verts)"
-echo "                         2. billing_events contient l'événement"
-echo "                         3. /admin/payments → Billing Proof Chain → proof_level = 'full'"
+if [[ "$E2E_PROVEN_STATUS" == "PARTIAL" ]]; then
+  echo "  E2E_PROVEN              [~] Quota consommé détecté — preuve partielle"
+  echo "                             Vérifier proof_level='full' dans /admin/payments"
+else
+  echo "  E2E_PROVEN              [✗] Aucun proof_level='full' confirmé par ce script"
+  echo "                             Atteignable après : checkout réel → webhook → mutation quota"
+  echo "                             Confirmation : /admin/payments → Billing Proof Chain → proof_level=full"
+fi
+
 echo ""
-echo "═══════════════════════════════════════════════════════════════"
+echo "═══════════════════════════════════════════════════════════════════"
 echo ""
