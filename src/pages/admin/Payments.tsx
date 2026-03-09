@@ -1,10 +1,12 @@
+// PROOF:BILLING_PROOF_CHAIN_V1:payments_page_wired
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { CheckCircle2, XCircle, Clock, AlertCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, AlertCircle, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { PRICING } from "@/lib/pricingConfig";
+import BillingProofPanel from "@/components/admin/billing/BillingProofPanel";
 
 type PaymentRow = {
   id: string;
