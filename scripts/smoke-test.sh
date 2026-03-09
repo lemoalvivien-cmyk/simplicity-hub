@@ -44,29 +44,32 @@ echo ""
 echo "1. Edge Functions reachability"
 OPTIONS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -X OPTIONS "$SUPABASE_URL/functions/v1/openclaw-healthcheck" \
-  -H "Origin: https://wiinupmax.lovable.app")
+  -H "Origin: https://wiinupmax.com")
 check "openclaw-healthcheck OPTIONS → 204" "[[ '$OPTIONS_STATUS' == '204' ]]"
 
 OPTIONS_STATUS2=$(curl -s -o /dev/null -w "%{http_code}" \
   -X OPTIONS "$SUPABASE_URL/functions/v1/check-subscription" \
-  -H "Origin: https://wiinupmax.lovable.app")
+  -H "Origin: https://wiinupmax.com")
 check "check-subscription OPTIONS → 204" "[[ '$OPTIONS_STATUS2' == '204' ]]"
 
 OPTIONS_STATUS3=$(curl -s -o /dev/null -w "%{http_code}" \
   -X OPTIONS "$SUPABASE_URL/functions/v1/stripe-webhook" \
-  -H "Origin: https://wiinupmax.lovable.app")
+  -H "Origin: https://wiinupmax.com")
 check "stripe-webhook OPTIONS → 204" "[[ '$OPTIONS_STATUS3' == '204' ]]"
 
-# ── 2. stripe-webhook: missing signature → 400 (not 500) ─────────────────────
+# ── 2. stripe-webhook: missing signature → 400 (not 500, not 200) ────────────
+# PROVES: edge fn deployed and guards against unsigned payloads
+# DOES NOT PROVE: E2E billing flow or secret config
 echo ""
 echo "2. stripe-webhook guards"
 WEBHOOK_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -X POST "$SUPABASE_URL/functions/v1/stripe-webhook" \
   -H "Content-Type: application/json" \
   -d '{"test": true}')
-check "stripe-webhook with no sig → 400 or 500 (not 200)" "[[ '$WEBHOOK_STATUS' != '200' ]]"
+check "stripe-webhook with no sig → 400 (strict)" "[[ '$WEBHOOK_STATUS' == '400' ]]"
 
 # ── 3. DB: launch_quota row exists ───────────────────────────────────────────
+# PROVES: quota table accessible and seeded
 echo ""
 echo "3. Database critical rows"
 QUOTA_COUNT=$(curl -s \
@@ -76,6 +79,7 @@ QUOTA_COUNT=$(curl -s \
 check "launch_quota has at least 1 row" "[[ '$QUOTA_COUNT' -ge '1' ]]"
 
 # ── 4. DB: analytics_events table accessible ─────────────────────────────────
+# PROVES: table exists and RLS allows anon read (if configured)
 AE_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   "$SUPABASE_URL/rest/v1/analytics_events?select=id&limit=1" \
   -H "apikey: $ANON_KEY" \
@@ -90,11 +94,13 @@ LAB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
 check "landing_ab_events table accessible" "[[ '$LAB_STATUS' == '200' ]]"
 
 # ── 6. PWA: manifest reachable ─────────────────────────────────────────────────
+# PROVES: frontend deployed and serving assets
+# DOES NOT PROVE: correct PWA config or installability
 echo ""
 echo "4. Frontend assets"
-APP_URL="${APP_URL:-https://wiinupmax.lovable.app}"
+APP_URL="${APP_URL:-https://wiinupmax.com}"
 MANIFEST_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL/manifest.webmanifest" 2>/dev/null || echo "000")
-check "PWA manifest reachable" "[[ '$MANIFEST_STATUS' == '200' || '$MANIFEST_STATUS' == '000' ]]"
+check "PWA manifest reachable (strict 200)" "[[ '$MANIFEST_STATUS' == '200' ]]"
 
 # ── 7. track-click: invalid code → 400 ───────────────────────────────────────
 echo ""

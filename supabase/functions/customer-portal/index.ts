@@ -47,7 +47,7 @@ serve(async (req) => {
     }
 
     const customerId = customers.data[0].id;
-    const origin = req.headers.get("origin") || "https://wiinupmax.lovable.app";
+    const origin = req.headers.get("origin") || "https://wiinupmax.com";
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
