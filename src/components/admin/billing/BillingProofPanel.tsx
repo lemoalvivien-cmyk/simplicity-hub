@@ -110,55 +110,57 @@ function shortId(s: string | null): string {
 }
 
 // ── Pipeline State Machine ─────────────────────────────────────────────────────
-// États exacts, lisibles opérateur, sans ambiguïté :
-//   no_checkout        → aucun event billing reçu (billing_events = 0)
-//   checkout_created   → un checkout a été créé côté Stripe mais webhook absent
-//   webhook_missing    → checkout complété, webhook non reçu / non persisté
-//   webhook_received   → webhook reçu et persisté (au moins un billing_event)
-//   quota_not_mutated  → checkout complété + persisté, quota pas encore muté
-//   quota_mutated      → quota/entitlement muté dans launch_quota_consumed
-//   full_proof         → chaîne complète checkout→webhook→quota corrélée
-//   broken             → événement(s) sans corrélation possible
+// PROOF:BILLING_PROOF_CHAIN_V3:pipeline_state_machine_post_test
+//
+// États observables depuis get_billing_proof_summary (pas de checkbox_created/webhook_missing
+// car ces états pré-completion ne sont pas disponibles sans données checkout côté Stripe).
+//
+//   no_checkout       → billing_events = 0, rien reçu
+//   webhook_received  → billing_events > 0, aucun checkout.session.completed
+//   quota_not_mutated → checkout complété + persisté, quota non muté (launch sans consommation)
+//   quota_mutated     → launch_quota_consumed > 0, pas encore full_proof corrélé
+//   full_proof        → proof_level='full' confirmé dans billing_proof_chain
+//   broken            → broken_events > 0, corrélation impossible
+//
+// NOTE : checkout_created / webhook_missing sont des états Stripe-side non observables
+// depuis la DB seule. Ils sont exclus pour éviter l'ambiguïté.
 type PipelineState =
   | "no_checkout"
-  | "checkout_created"
-  | "webhook_missing"
   | "webhook_received"
   | "quota_not_mutated"
   | "quota_mutated"
   | "full_proof"
   | "broken";
 
-function computePipelineState(summary: BillingProofSummary | null, rows: BillingProofRow[]): PipelineState {
+function computePipelineState(summary: BillingProofSummary | null): PipelineState {
   if (!summary || summary.total_billing_events === 0) return "no_checkout";
-  if (summary.broken_events > 0 && summary.full_proof_events === 0 && summary.checkout_completed_events === 0) return "broken";
+  // Broken: events with no correlation AND no full proof
+  if (summary.broken_events > 0 && summary.full_proof_events === 0) return "broken";
+  // Full proof: the only terminal success state
   if (summary.full_proof_events > 0) return "full_proof";
+  // Quota consumed but not yet full_proof correlated
   if (summary.quota_consumed_count > 0) return "quota_mutated";
-  // checkout complété (webhook reçu) mais quota non muté
+  // Checkout completed but quota not mutated (offer_type issue or not launch)
   if (summary.checkout_completed_events > 0 && summary.quota_consumed_count === 0) return "quota_not_mutated";
-  // billing_events > 0 mais aucun checkout complété → webhooks reçus mais pas de checkout finalisé
-  if (summary.total_billing_events > 0 && summary.checkout_completed_events === 0) return "webhook_received";
-  return "no_checkout";
+  // Events received but no checkout.session.completed yet
+  return "webhook_received";
 }
 
-// Étapes dans l'ordre du pipeline (sans no_checkout qui est l'état initial)
-const PIPELINE_STEPS: { key: PipelineState; label: string; desc: string }[] = [
-  { key: "no_checkout",       label: "Aucun event",       desc: "billing_events = 0" },
-  { key: "webhook_received",  label: "Webhook reçu",      desc: "Persisté, signature OK" },
-  { key: "quota_not_mutated", label: "Quota en attente",  desc: "Checkout OK, quota non muté" },
-  { key: "quota_mutated",     label: "Quota muté",        desc: "Entitlement activé" },
-  { key: "full_proof",        label: "Preuve complète",   desc: "E2E prouvé ✓" },
+const PIPELINE_STEPS: { key: PipelineState; label: string; desc: string; cause?: string; action?: string }[] = [
+  { key: "no_checkout",       label: "Aucun event",       desc: "billing_events = 0",         cause: "Webhook Stripe jamais reçu",             action: "Exécuter scripts/verify-stripe-webhook.sh" },
+  { key: "webhook_received",  label: "Webhook reçu",      desc: "Persisté, pas de checkout",  cause: "Événements reçus, checkout non finalisé", action: "Tester checkout complet sur /pricing" },
+  { key: "quota_not_mutated", label: "Quota en attente",  desc: "Checkout OK, quota non muté", cause: "offer_type≠launch ou quotaEngine skip",  action: "Vérifier offer_type=launch dans metadata Stripe" },
+  { key: "quota_mutated",     label: "Quota muté",        desc: "Entitlement activé",          cause: "Corrélation billing_proof_chain incomplète", action: "Vérifier billing_proof_chain → proof_level" },
+  { key: "full_proof",        label: "Preuve complète",   desc: "E2E prouvé ✓",                cause: "—",                                      action: "—" },
 ];
 
 const PIPELINE_ORDER: Record<PipelineState, number> = {
-  no_checkout: 0,
-  checkout_created: 0,
-  webhook_missing: 1,
-  webhook_received: 1,
+  no_checkout:       0,
+  webhook_received:  1,
   quota_not_mutated: 2,
-  quota_mutated: 3,
-  full_proof: 4,
-  broken: -1,
+  quota_mutated:     3,
+  full_proof:        4,
+  broken:            -1,
 };
 
 // ── Premier Euro Hero Block ────────────────────────────────────────────────────
