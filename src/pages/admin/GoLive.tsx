@@ -69,9 +69,9 @@ const KNOWN_LIMITATIONS = [
   { item: "Scheduler cron reactivation + payout", note: "Crons pg_cron NON créés en base. Scripts disponibles dans supabase/infra/scheduled-jobs.md. Déclenchement = manuel via UI admin jusqu'à création explicite." },
   { item: "NetworkValueMap passive", note: "Requiert CSV bien renseigné (secteur/zone/langue) pour être précis." },
   { item: "WhatsApp / LinkedIn channels", note: "Préparation du message OK — envoi réel nécessite gateway ou API externe." },
-  { item: "Webhook Stripe signature", note: "STRIPE_WEBHOOK_SECRET non configuré → pas de vérification de signature (risque en prod)." },
   { item: "Mobile — vues denses", note: "WarRoom, Operations, DashboardEntreprise : lisibles mais non optimisées tactile." },
-  { item: "Analytics landing (funnel)", note: "Données simulées dans /admin/analytics. Tracking réel à connecter post-lancement." },
+  { item: "Lockfile / Package manager", note: "bun.lock présent dans l'env Lovable, package-lock.json pour CI npm. Ambiguïté non résolvable depuis Lovable — npm est la source de vérité release. Voir .env.example pour procédure externe." },
+  { item: "TypeScript strict mode", note: "strict: false — Phase 1 hardening appliqué (strictFunctionTypes, strictBindCallApply). Phase 2 (strictNullChecks) et Phase 3 (strict: true) requièrent ~150+ corrections dans la base existante." },
 ];
 
 const PRE_LAUNCH_CHECKLIST = [
