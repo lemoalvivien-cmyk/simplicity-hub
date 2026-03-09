@@ -125,9 +125,9 @@ export function handleQuotaRead() {
   sleep(0.05);
 }
 
-// ── Default export (routes scenarios) ─────────────────────────────────────────
+// ── Default export ────────────────────────────────────────────────────────────
+// With exec defined on each scenario, this default is never called.
+// Kept as safety fallback.
 export default function () {
-  // k6 scenarios route to their exec functions via scenario tags.
-  // This default is called for scenarios without exec defined.
   handleTrackClick();
 }

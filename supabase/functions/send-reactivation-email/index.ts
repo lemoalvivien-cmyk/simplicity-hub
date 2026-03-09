@@ -31,6 +31,8 @@ const log = (step: string, detail?: unknown) => {
 };
 
 // ── Email templates by trigger type ───────────────────────────────────────────
+const APP_BASE_URL = Deno.env.get("APP_BASE_URL") || "https://wiinupmax.com";
+
 function buildEmailContent(triggerType: string, metadata: Record<string, unknown>): {
   subject: string;
   html: string;
@@ -41,40 +43,40 @@ function buildEmailContent(triggerType: string, metadata: Record<string, unknown
       subject: "Finalisez votre profil WIINUP MAX",
       html: `<p>Bonjour,</p>
 <p>Votre inscription sur WIINUP MAX est presque complète. Prenez 2 minutes pour finaliser votre profil et commencer à générer des opportunités.</p>
-<p><a href="https://wiinupmax.lovable.app/onboarding">Finaliser mon profil →</a></p>
+<p><a href="${APP_BASE_URL}/onboarding">Finaliser mon profil →</a></p>
 <p>L'équipe WIINUP MAX</p>`,
-      text: "Finalisez votre profil sur https://wiinupmax.lovable.app/onboarding",
+      text: `Finalisez votre profil sur ${APP_BASE_URL}/onboarding`,
     },
     mission_no_intro: {
       subject: "Votre mission attend des introductions",
       html: `<p>Bonjour,</p>
 <p>Une de vos missions est ouverte depuis 3 jours sans introduction reçue. Votre réseau de facilitateurs peut vous aider.</p>
-<p><a href="https://wiinupmax.lovable.app/missions">Voir mes missions →</a></p>
+<p><a href="${APP_BASE_URL}/missions">Voir mes missions →</a></p>
 <p>L'équipe WIINUP MAX</p>`,
-      text: "Consultez vos missions sur https://wiinupmax.lovable.app/missions",
+      text: `Consultez vos missions sur ${APP_BASE_URL}/missions`,
     },
     intro_not_validated: {
       subject: "Une introduction attend votre validation",
       html: `<p>Bonjour,</p>
 <p>Une introduction vous a été soumise il y a plus de 7 jours et attend votre validation. Le facilitateur attend votre retour.</p>
-<p><a href="https://wiinupmax.lovable.app/introductions">Voir les introductions →</a></p>
+<p><a href="${APP_BASE_URL}/introductions">Voir les introductions →</a></p>
 <p>L'équipe WIINUP MAX</p>`,
-      text: "Consultez vos introductions sur https://wiinupmax.lovable.app/introductions",
+      text: `Consultez vos introductions sur ${APP_BASE_URL}/introductions`,
     },
     checkout_abandoned: {
       subject: "Votre accès WIINUP MAX vous attend",
       html: `<p>Bonjour,</p>
 <p>Vous avez commencé une inscription mais ne l'avez pas finalisée. L'offre de lancement à 99 € est encore disponible.</p>
-<p><a href="https://wiinupmax.lovable.app/checkout">Finaliser mon accès →</a></p>
+<p><a href="${APP_BASE_URL}/checkout">Finaliser mon accès →</a></p>
 <p>L'équipe WIINUP MAX</p>`,
-      text: "Finalisez votre accès sur https://wiinupmax.lovable.app/checkout",
+      text: `Finalisez votre accès sur ${APP_BASE_URL}/checkout`,
     },
   };
 
   return templates[triggerType] ?? {
     subject: "Un point sur votre activité WIINUP MAX",
-    html: `<p>Bonjour,</p><p>Un point sur votre activité WIINUP MAX.</p><p><a href="https://wiinupmax.lovable.app">Accéder →</a></p>`,
-    text: "Accédez à votre espace sur https://wiinupmax.lovable.app",
+    html: `<p>Bonjour,</p><p>Un point sur votre activité WIINUP MAX.</p><p><a href="${APP_BASE_URL}">Accéder →</a></p>`,
+    text: `Accédez à votre espace sur ${APP_BASE_URL}`,
   };
 }
 
