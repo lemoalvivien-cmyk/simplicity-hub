@@ -164,6 +164,27 @@ export default function AdminPayoutOps() {
   const totalPending    = pendingPayouts.reduce((s, p) => s + p.amount, 0);
   const totalPaid       = payouts.filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0);
 
+  // ── Generate payouts from validated gains (idempotent RPC) ────────────────
+  const [generating, setGenerating] = useState(false);
+  const generateFromGains = async () => {
+    setGenerating(true);
+    setError(null);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error: rpcErr } = await (supabase.rpc as any)("generate_payouts_from_validated_gains");
+      if (rpcErr) throw rpcErr;
+      const created = data as number;
+      await load();
+      if (created === 0) {
+        setError("0 nouveau payout créé — tous les gains validés ont déjà un payout existant.");
+      }
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Erreur de génération");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <AdminLayout title="Payout Ops" subtitle="Gestion des paiements facilitateurs — données réelles">
 
