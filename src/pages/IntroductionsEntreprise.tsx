@@ -21,6 +21,7 @@ import LeadIntakeStatus from "@/components/leads/LeadIntakeStatus";
 import LeadActionBadge from "@/components/leads/LeadActionBadge";
 import { promoteLeadToOpportunity } from "@/lib/leadPipeline";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
+import { trackEvent } from "@/lib/analytics";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";
 
