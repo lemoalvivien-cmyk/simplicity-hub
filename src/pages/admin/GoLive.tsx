@@ -58,7 +58,8 @@ const BRICKS: ReadinessItem[] = [
 
   // Externals
   { label: "ElevenLabs voice (VoiceWelcome)", status: "env-dep", note: "ELEVENLABS_API_KEY configurée — nécessite connexion active ElevenLabs" },
-  { label: "Stripe WEBHOOK_SECRET", status: "env-dep", note: "Optionnel mais recommandé en production — si absent, signature non vérifiée" },
+  { label: "Stripe WEBHOOK_SECRET", status: "ready", note: "STRIPE_WEBHOOK_SECRET configuré — vérification de signature Stripe active et fonctionnelle" },
+  { label: "Email réactivation (Resend)", status: "ready", note: "RESEND_API_KEY configurée — send-reactivation-email edge fn déployée — envoi réel branché depuis UI admin" },
 ];
 
 const KNOWN_LIMITATIONS = [
