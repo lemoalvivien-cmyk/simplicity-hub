@@ -81,6 +81,8 @@ export default function MissionNouvelle() {
       if (error) throw error;
       setCreatedMissionId(data?.id ?? null);
       await trackEvent("first_mission_created");
+      // PROOF: mission_created → analytics_events (real write, dual-write)
+      trackEvent("mission_created", user.id, { mission_id: data?.id ?? null });
       setStep("success");
     } catch {
       toast.error("Erreur lors de la création. Réessayez.");

@@ -59,6 +59,8 @@ export default function Onboarding() {
       } else if (role === "facilitateur") {
         await db.from("facilitateur_profiles").upsert({ user_id: user.id, description_reseau: description, secteur: profile.secteur }, { onConflict: "user_id" });
       }
+      // PROOF: onboarding_done → analytics_events (real write)
+      trackEvent("onboarding_done", user.id, { role: role ?? "unknown" });
       await refreshProfile();
       setDone(true);
     } catch {
