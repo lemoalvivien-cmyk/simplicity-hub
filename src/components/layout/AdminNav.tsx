@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
   LayoutDashboard, Users, Tag, CreditCard, HelpCircle,
-  BarChart2, Menu, X, LogOut, Shield, Zap, TrendingUp, Rocket
+  BarChart2, Menu, X, LogOut, Shield, Zap, TrendingUp, Rocket, Activity
 } from "lucide-react";
 
 const links = [
@@ -13,9 +13,10 @@ const links = [
   { to: "/admin/payout-ops", label: "Payout Ops", icon: TrendingUp },
   { to: "/admin/reactivation", label: "Réactivation", icon: Rocket },
   { to: "/admin/revenue", label: "Revenu réel", icon: TrendingUp },
+  { to: "/admin/analytics", label: "Analytics", icon: BarChart2 },
+  { to: "/admin/env-check", label: "Env Check", icon: Activity },
   { to: "/admin/go-live", label: "Go-Live", icon: Rocket },
   { to: "/admin/help", label: "Aide", icon: HelpCircle },
-  { to: "/admin/analytics", label: "Analytics", icon: BarChart2 },
 ];
 
 export default function AdminNav() {
