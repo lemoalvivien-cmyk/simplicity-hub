@@ -737,19 +737,21 @@ function ReleaseDecisionBlock({
   let decision: Decision;
 
   if (full >= 1) {
-    // Conditions pour PRIVATE_BETA_READY (si le reste du gate est OK)
+    // BILLING GATE PASSÉ — mais le verdict final dépend aussi du control-plane (capabilities).
+    // Ce bloc ne peut PAS déclarer PRIVATE_BETA_READY de façon autonome.
     decision = {
-      verdict: "PRIVATE_BETA_READY",
+      verdict: "BILLING_GATE_PASSED",
       color: "text-success",
       borderColor: "border-success/30 bg-success/5",
       icon: CheckCircle2,
-      label: "Promotion possible → PRIVATE_BETA_READY",
+      label: "Billing gate passé — vérifier control-plane",
       justification:
         `${full} preuve(s) E2E complète(s) observée(s). ` +
         `Quota: ${summary.quota_used_slots ?? "?"}/${summary.quota_total_slots ?? "?"} slots. ` +
-        `Checkout → Webhook → Quota corrélés.`,
+        `Checkout → Webhook → Quota corrélés. ` +
+        `Le verdict PRIVATE_BETA_READY nécessite aussi 0 bloquant capability critique.`,
       nextAction:
-        "Vérifier les autres capabilities dans le control-plane. Si aucun bloquant critique résiduel, le gate peut passer à PRIVATE_BETA_READY.",
+        "Consulter /admin → Control Plane. Si 0 bloquant critique résiduel → gate passe automatiquement à PRIVATE_BETA_READY.",
     };
   } else if (broken > 0) {
     decision = {
