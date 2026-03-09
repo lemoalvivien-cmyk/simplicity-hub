@@ -132,7 +132,12 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link to="/checkout" className="btn-primary w-full text-center text-base py-4 block">
+              {/* PROOF: cta_click → analytics_events (real write on pricing CTA click) */}
+              <Link
+                to="/checkout"
+                className="btn-primary w-full text-center text-base py-4 block"
+                onClick={() => trackEvent("cta_click", null, { source: "pricing_enterprise", label: launchAvailable ? "launch" : "standard" })}
+              >
                 {launchAvailable ? t("pricing_cta_launch") : t("pricing_cta_standard")}
               </Link>
               <div className="mt-4 p-3 rounded-lg border flex items-center gap-2" style={{ background: "hsl(218 72% 18% / 0.05)", borderColor: "hsl(218 72% 18% / 0.12)" }}>
