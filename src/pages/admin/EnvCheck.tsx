@@ -299,13 +299,14 @@ export default function AdminEnvCheck() {
 
       {/* Verdict */}
       <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border">
-        <p className="font-semibold text-sm text-foreground mb-2">Verdict actuel : BETA PRIVÉE</p>
+        <p className="font-semibold text-sm text-foreground mb-2">Verdict actuel : PRIVATE BETA READY</p>
         <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
           <li>RPCs critiques présentes en DB — appelables depuis UI admin</li>
           <li>Writers analytics présents dans le repo — activité réelle à confirmer</li>
-          <li><strong>STRIPE_WEBHOOK_SECRET</strong> : vérification manuelle requise avant tout billing réel</li>
-          <li>Crons reactivation + payout : scripts dans <code>supabase/infra/scheduled-jobs.md</code> — à exécuter</li>
-          <li>Provider email : ABSENT — réactivation = manuelle</li>
+          <li><strong>STRIPE_WEBHOOK_SECRET</strong> : ✅ configuré — vérification signature active</li>
+          <li><strong>RESEND_API_KEY</strong> : ✅ configurée — email réactivation réel opérationnel</li>
+          <li>Crons reactivation + payout : scripts dans <code>supabase/infra/scheduled-jobs.md</code> — à exécuter en base</li>
+          <li>Gap 3 (Stripe end-to-end) : exercer <code>scripts/verify-stripe-webhook.sh</code> avant billing réel</li>
         </ul>
       </div>
     </AdminLayout>
