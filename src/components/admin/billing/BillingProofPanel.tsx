@@ -1,4 +1,4 @@
-// PROOF:BILLING_PROOF_CHAIN_V1:billing_proof_panel
+// PROOF:BILLING_PROOF_CHAIN_V2:billing_proof_panel_first_euro
 /**
  * BillingProofPanel — Surface admin billing proof chain
  *
@@ -8,13 +8,23 @@
  *
  * Source de vérité : RPC get_billing_proof_chain + get_billing_proof_summary
  * JAMAIS de blob JSON opaque affiché directement.
+ *
+ * ÉTATS BILLING (STATE MACHINE) :
+ *   no_checkout       → aucun événement billing reçu
+ *   checkout_created  → session créée, pas encore complétée
+ *   webhook_received  → webhook reçu
+ *   webhook_verified  → signature Stripe vérifiée
+ *   persisted_only    → persisté en DB, abonnement non synced
+ *   quota_mutated     → quota/entitlement muté
+ *   full_proof        → chaîne complète checkout→webhook→quota
+ *   broken            → chaîne cassée, corrélation impossible
  */
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   CheckCircle2, XCircle, AlertTriangle, Clock, RefreshCw,
   CreditCard, Zap, ExternalLink, Info, ShieldCheck, ShieldX,
-  BarChart2,
+  BarChart2, Trophy, AlertCircle,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -73,17 +83,17 @@ function proofLevelConfig(level: string) {
 
 function quotaStatusConfig(status: string) {
   switch (status) {
-    case "consumed":    return { label: "Slot consommé ✓",      cls: "badge-success" };
-    case "not_consumed": return { label: "Slot NON consommé ⚠",  cls: "bg-warning/10 text-warning inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" };
-    case "not_applicable": return { label: "N/A (standard)",     cls: "badge-muted" };
-    case "no_subscription_id": return { label: "Pas de sub ID",  cls: "badge-muted" };
-    default: return { label: status,                              cls: "badge-muted" };
+    case "consumed":       return { label: "Slot consommé ✓",     cls: "badge-success" };
+    case "not_consumed":   return { label: "Slot NON consommé ⚠",  cls: "bg-warning/10 text-warning inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" };
+    case "not_applicable": return { label: "N/A (standard)",       cls: "badge-muted" };
+    case "no_subscription_id": return { label: "Pas de sub ID",   cls: "badge-muted" };
+    default:               return { label: status,                  cls: "badge-muted" };
   }
 }
 
 function syncStatusConfig(status: string) {
   switch (status) {
-    case "synced":  return { label: "Synced ✓",    cls: "badge-success" };
+    case "synced":  return { label: "Synced ✓",   cls: "badge-success" };
     case "missing": return { label: "Manquant ✗",  cls: "bg-destructive/10 text-destructive inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" };
     default:        return { label: status,         cls: "badge-muted" };
   }
@@ -97,6 +107,189 @@ function fmtDate(s: string): string {
 function shortId(s: string | null): string {
   if (!s) return "—";
   return s.length > 20 ? `${s.slice(0, 8)}…${s.slice(-6)}` : s;
+}
+
+// ── Pipeline State Machine ─────────────────────────────────────────────────────
+type PipelineState =
+  | "no_checkout"
+  | "webhook_received"
+  | "persisted_only"
+  | "quota_mutated"
+  | "full_proof"
+  | "broken";
+
+function computePipelineState(summary: BillingProofSummary | null, rows: BillingProofRow[]): PipelineState {
+  if (!summary || summary.total_billing_events === 0) return "no_checkout";
+  if (summary.broken_events > 0 && summary.full_proof_events === 0) return "broken";
+  if (summary.full_proof_events > 0) return "full_proof";
+  if (summary.quota_consumed_count > 0) return "quota_mutated";
+  if (summary.checkout_completed_events > 0) return "persisted_only";
+  if (summary.total_billing_events > 0) return "webhook_received";
+  return "no_checkout";
+}
+
+const PIPELINE_STEPS: { key: PipelineState; label: string; desc: string }[] = [
+  { key: "no_checkout",      label: "Aucun checkout",    desc: "Aucun événement reçu" },
+  { key: "webhook_received", label: "Webhook reçu",      desc: "Signature vérifiée" },
+  { key: "persisted_only",   label: "Persisté",          desc: "Événement en DB" },
+  { key: "quota_mutated",    label: "Quota muté",        desc: "Entitlement activé" },
+  { key: "full_proof",       label: "Preuve complète",   desc: "E2E prouvé" },
+];
+
+const PIPELINE_ORDER: Record<PipelineState, number> = {
+  no_checkout: 0,
+  webhook_received: 1,
+  persisted_only: 2,
+  quota_mutated: 3,
+  full_proof: 4,
+  broken: -1,
+};
+
+// ── Premier Euro Hero Block ────────────────────────────────────────────────────
+
+function PremierEuroBlock({
+  summary, rows, loading
+}: { summary: BillingProofSummary | null; rows: BillingProofRow[]; loading: boolean }) {
+  const isProven = (summary?.full_proof_events ?? 0) > 0;
+
+  // Find the last full_proof row
+  const lastFullProof = rows.find((r) => r.proof_level === "full");
+  const pipelineState = computePipelineState(summary, rows);
+  const pipelineIdx = pipelineState === "broken" ? -1 : PIPELINE_ORDER[pipelineState];
+
+  if (loading) {
+    return (
+      <div className="p-5 rounded-2xl border border-border bg-muted/20 animate-pulse">
+        <div className="h-6 w-64 bg-muted rounded mb-3" />
+        <div className="h-4 w-48 bg-muted rounded" />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`rounded-2xl border-2 p-5 ${
+      isProven
+        ? "border-success/40 bg-success/5"
+        : "border-destructive/30 bg-destructive/5"
+    }`}>
+      {/* Status line */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-3">
+          {isProven ? (
+            <Trophy size={22} className="text-success shrink-0" />
+          ) : (
+            <AlertCircle size={22} className="text-destructive shrink-0" />
+          )}
+          <div>
+            <p className="text-base font-bold text-foreground">
+              Premier paiement prouvé :{" "}
+              <span className={isProven ? "text-success" : "text-destructive"}>
+                {isProven ? "OUI ✓" : "NON ✗"}
+              </span>
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {isProven
+                ? "Chaîne checkout → webhook → quota entièrement tracée."
+                : "Aucun full_proof_event en base. Exécuter le runbook Stripe."}
+            </p>
+          </div>
+        </div>
+        {/* Overall classification badge */}
+        <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-lg border shrink-0 ${
+          isProven
+            ? "bg-success/10 text-success border-success/30"
+            : summary && summary.total_billing_events > 0
+            ? "bg-warning/10 text-warning border-warning/30"
+            : "bg-muted text-muted-foreground border-border"
+        }`}>
+          {isProven ? "E2E_PROVEN" : summary && summary.total_billing_events > 0 ? "RUNTIME_READY" : "CODE_READY"}
+        </span>
+      </div>
+
+      {/* Details grid when proven */}
+      {isProven && lastFullProof && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-xs">
+          <div className="rounded-lg bg-background border border-border p-2.5">
+            <p className="text-muted-foreground mb-0.5">Stripe Event ID</p>
+            <p className="font-mono font-semibold text-foreground truncate">{shortId(lastFullProof.stripe_event_id)}</p>
+          </div>
+          <div className="rounded-lg bg-background border border-border p-2.5">
+            <p className="text-muted-foreground mb-0.5">User impacté</p>
+            <p className="font-mono font-semibold text-foreground">{shortId(lastFullProof.user_id)}</p>
+          </div>
+          <div className="rounded-lg bg-background border border-border p-2.5">
+            <p className="text-muted-foreground mb-0.5">Montant</p>
+            <p className="font-semibold text-foreground">
+              {lastFullProof.amount_eur != null ? `${lastFullProof.amount_eur.toLocaleString("fr")} €` : "—"}
+            </p>
+          </div>
+          <div className="rounded-lg bg-background border border-border p-2.5">
+            <p className="text-muted-foreground mb-0.5">Mutation quota</p>
+            <p className="font-semibold text-success">{lastFullProof.quota_status === "consumed" ? "Consommé ✓" : lastFullProof.quota_status}</p>
+          </div>
+          <div className="col-span-2 rounded-lg bg-background border border-border p-2.5">
+            <p className="text-muted-foreground mb-0.5">Date preuve</p>
+            <p className="font-semibold text-foreground">{fmtDate(lastFullProof.occurred_at)}</p>
+          </div>
+          <div className="col-span-2 rounded-lg bg-background border border-border p-2.5">
+            <p className="text-muted-foreground mb-0.5">Corrélation</p>
+            <p className="font-semibold text-success">checkout → webhook → quota ✓</p>
+          </div>
+        </div>
+      )}
+
+      {/* Pipeline state machine */}
+      <div className="border-t border-border/60 pt-3">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+          État du pipeline billing
+        </p>
+        {pipelineState === "broken" ? (
+          <div className="flex items-center gap-2 text-xs text-destructive">
+            <XCircle size={12} /> Chaîne cassée — {summary?.broken_events ?? 0} événement(s) non corrélés
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 flex-wrap">
+            {PIPELINE_STEPS.filter((s) => s.key !== "no_checkout" || pipelineIdx === 0).map((step, idx, arr) => {
+              const stepOrder = PIPELINE_ORDER[step.key];
+              const isActive = stepOrder === pipelineIdx;
+              const isPast = stepOrder < pipelineIdx;
+              const isFuture = stepOrder > pipelineIdx;
+              return (
+                <div key={step.key} className="flex items-center gap-1">
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border ${
+                    isPast ? "bg-success/10 border-success/20 text-success" :
+                    isActive ? "bg-primary/10 border-primary/30 text-primary font-bold" :
+                    "bg-muted border-border text-muted-foreground opacity-50"
+                  }`}>
+                    {isPast ? <CheckCircle2 size={9} /> : isActive ? <Zap size={9} /> : <Clock size={9} />}
+                    {step.label}
+                  </div>
+                  {idx < arr.length - 1 && (
+                    <span className={`text-xs font-bold ${isPast ? "text-success" : "text-muted-foreground/40"}`}>→</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Next action when not proven */}
+      {!isProven && (
+        <div className="mt-3 pt-3 border-t border-border/60">
+          <p className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-1">
+            <Zap size={11} className="text-primary" />
+            Action requise pour passer à E2E_PROVEN
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {summary && summary.total_billing_events === 0
+              ? "1. Configurer STRIPE_WEBHOOK_SECRET dans Cloud Secrets → 2. stripe listen → 3. Déclencher checkout test sur /pricing avec carte 4242 4242 4242 4242"
+              : "Webhook reçu mais chaîne incomplète. Vérifier logs Edge Function stripe-webhook → chercher 'Quota consume result: incremented'"}
+          </p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ── BillingProofBanner ─────────────────────────────────────────────────────────
@@ -128,7 +321,7 @@ function BillingProofBanner({ summary, loading }: { summary: BillingProofSummary
     bannerCls += " bg-muted/40 border-border";
     Icon = AlertTriangle;
     msg = "Aucun événement billing reçu — webhook Stripe non exercé. Flux revenu non prouvé.";
-  } else if (hasBroken) {
+  } else if (hasBroken && !hasFullProof) {
     bannerCls += " bg-destructive/5 border-destructive/20";
     Icon = ShieldX;
     msg = `${summary.broken_events} événement(s) cassé(s) dans la chaîne. Corrélation incomplète.`;
@@ -259,7 +452,7 @@ function BillingFailurePanel({ rows }: { rows: BillingProofRow[] }) {
             <XCircle size={12} /> {broken.length} événement(s) cassé(s)
           </p>
           <p className="text-xs text-muted-foreground">
-            Ces événements n'ont pas de stripe_event_id ou sont des webhooks sans corrélation.
+            Sans stripe_event_id ou webhooks sans corrélation.
             Cause probable : webhook réexpédié, signature invalide, ou event non traité.
           </p>
         </div>
@@ -298,15 +491,66 @@ function BillingRunbookPanel({ summary }: { summary: BillingProofSummary | null 
   const noFullProof = !summary || summary.full_proof_events === 0;
   const portalUnknown = true; // Customer Portal activation is external-only
 
+  // Determine classification
+  const hasEvents = summary && summary.total_billing_events > 0;
+  const classification = summary && summary.full_proof_events > 0
+    ? "E2E_PROVEN"
+    : hasEvents
+    ? "RUNTIME_READY"
+    : "CODE_READY";
+
+  const classificationColor =
+    classification === "E2E_PROVEN" ? "text-success" :
+    classification === "RUNTIME_READY" ? "text-warning" :
+    "text-primary";
+
   return (
     <div className="space-y-3">
+      {/* Classification courante */}
+      <div className="p-3 rounded-xl border border-border bg-muted/20">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Niveau de preuve actuel</p>
+          <span className={`text-xs font-mono font-bold ${classificationColor}`}>{classification}</span>
+        </div>
+        <div className="space-y-1 text-xs mt-2">
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${classification !== "E2E_PROVEN" ? "bg-success" : "bg-success"}`} />
+            <span className="text-muted-foreground">CODE_READY</span>
+            <span className="text-success font-mono text-xs ml-auto">✓</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${hasEvents ? "bg-success" : "bg-muted"}`} />
+            <span className="text-muted-foreground">RUNTIME_READY</span>
+            <span className={`font-mono text-xs ml-auto ${hasEvents ? "text-success" : "text-muted-foreground"}`}>
+              {hasEvents ? "✓" : "— webhook non exercé"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-warning" />
+            <span className="text-muted-foreground">EXTERNAL_EXECUTION_REQUIRED</span>
+            <span className="font-mono text-xs ml-auto text-warning">⚠ Stripe CLI</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${summary && summary.full_proof_events > 0 ? "bg-success" : "bg-muted"}`} />
+            <span className="text-muted-foreground">E2E_PROVEN</span>
+            <span className={`font-mono text-xs ml-auto ${summary && summary.full_proof_events > 0 ? "text-success" : "text-destructive"}`}>
+              {summary && summary.full_proof_events > 0 ? "✓" : "✗ NON PROUVÉ"}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Action 1: Prioritaire */}
       <div className="p-3 rounded-xl border border-primary/20 bg-primary/5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <p className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-1">
               <Zap size={12} className="text-primary" />
-              {noEvents ? "ACTION CRITIQUE : Exercer le webhook Stripe" : noFullProof ? "ACTION : Tester un checkout complet" : "Monitoring : Surveiller les preuves complètes"}
+              {noEvents
+                ? "ACTION CRITIQUE : Exercer le webhook Stripe"
+                : noFullProof
+                ? "ACTION : Tester un checkout complet"
+                : "Monitoring : Surveiller les preuves complètes"}
             </p>
             <p className="text-xs text-muted-foreground">
               {noEvents
@@ -348,10 +592,10 @@ function BillingRunbookPanel({ summary }: { summary: BillingProofSummary | null 
         </div>
       )}
 
-      {/* Classification */}
+      {/* Classification matrix */}
       <div className="p-3 rounded-xl border border-border bg-muted/20">
         <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-          <BarChart2 size={12} /> Classification des preuves billing
+          <BarChart2 size={12} /> Matrice de preuves billing
         </p>
         <div className="space-y-1 text-xs">
           <div className="flex justify-between">
@@ -360,6 +604,10 @@ function BillingRunbookPanel({ summary }: { summary: BillingProofSummary | null 
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Edge fn stripe-webhook</span>
+            <span className="font-mono text-primary">PROUVÉ PAR LE CODE</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">billing_proof_chain view</span>
             <span className="font-mono text-primary">PROUVÉ PAR LE CODE</span>
           </div>
           <div className="flex justify-between">
@@ -423,7 +671,7 @@ export default function BillingProofPanel() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -456,7 +704,10 @@ export default function BillingProofPanel() {
         </div>
       )}
 
-      {/* Banner */}
+      {/* ── PREMIER EURO PROUVÉ — Hero Block (impossible à manquer) ── */}
+      <PremierEuroBlock summary={summary} rows={rows} loading={loading} />
+
+      {/* Banner secondary */}
       <BillingProofBanner summary={summary} loading={loading} />
 
       {/* 2-col layout */}
