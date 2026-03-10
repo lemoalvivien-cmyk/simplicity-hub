@@ -91,6 +91,34 @@ export default function Contacts() {
     // Load sequence info for contacts
     if (data && data.length > 0) {
       const contactIds = data.map((c: Contact) => c.id);
+
+      // Load AI scores from lead_intakes (matched by email)
+      const emails = data.filter((c: Contact) => c.email).map((c: Contact) => c.email as string);
+      if (emails.length > 0) {
+        const { data: intakes } = await supabase
+          .from("lead_intakes")
+          .select("person_email, ai_score, ai_label")
+          .eq("user_id", user.id)
+          .in("person_email", emails)
+          .not("ai_score", "is", null);
+
+        if (intakes && intakes.length > 0) {
+          const newAiMap: Record<string, AIScore> = {};
+          for (const contact of data as Contact[]) {
+            const intake = (intakes as { person_email: string | null; ai_score: number | null; ai_label: string | null }[])
+              .find(i => i.person_email?.toLowerCase() === contact.email?.toLowerCase());
+            if (intake) {
+              newAiMap[contact.id] = {
+                contact_id: contact.id,
+                ai_score: intake.ai_score,
+                ai_label: intake.ai_label,
+              };
+            }
+          }
+          setAiScoreMap(newAiMap);
+        }
+      }
+
       const { data: execs } = await supabase
         .from("prospection_executions")
         .select("contact_id, status, current_step, sequence_id")
