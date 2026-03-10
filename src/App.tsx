@@ -139,6 +139,7 @@ const App = () => (
           <Sonner />
           <InstallBanner />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <PageTracker />
             <Routes>
               {/* ── Public ───────────────────────────────── */}
               <Route path="/" element={<Index />} />
