@@ -19,7 +19,7 @@ export default function MentionsLegales() {
               <li><strong>Statut juridique :</strong> Auto-entrepreneur (entreprise individuelle)</li>
               <li><strong>SIRET :</strong> 83512508900028</li>
               <li><strong>Adresse du siège :</strong> 295 rue Verte, 59170 Croix, France</li>
-              <li><strong>Email :</strong> <a href="mailto:contact@vlmconsulting.fr" className="text-primary underline">contact@vlmconsulting.fr</a></li>
+              <li><strong>Email :</strong> <a href="mailto:contact@wiinupmax.com" className="text-primary underline">contact@wiinupmax.com</a></li>
               <li><strong>Directeur de publication :</strong> Vivien Le Moal</li>
             </ul>
           </div>
@@ -72,7 +72,7 @@ export default function MentionsLegales() {
               Le traitement des données personnelles des utilisateurs est décrit dans notre{" "}
               <Link to="/confidentialite" className="text-primary underline">Politique de Confidentialité</Link>.
               Conformément au RGPD et à la loi Informatique et Libertés, vous pouvez exercer vos droits en contactant :{" "}
-              <a href="mailto:contact@vlmconsulting.fr" className="text-primary underline">contact@vlmconsulting.fr</a>.
+              <a href="mailto:contact@wiinupmax.com" className="text-primary underline">contact@wiinupmax.com</a>.
             </p>
           </div>
 

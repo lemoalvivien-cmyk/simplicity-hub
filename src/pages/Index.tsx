@@ -80,7 +80,7 @@ export default function LandingPage() {
             <Link to="/cgu" className="hover:text-foreground transition-colors">CGU</Link>
             <Link to="/confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
             <Link to="/mentions-legales" className="hover:text-foreground transition-colors">Mentions légales</Link>
-            <a href="mailto:contact@vlmconsulting.fr" className="hover:text-foreground transition-colors">Contact</a>
+            <a href="mailto:contact@wiinupmax.com" className="hover:text-foreground transition-colors">Contact</a>
           </div>
         </div>
       </footer>

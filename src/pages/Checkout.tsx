@@ -29,7 +29,30 @@ export default function Checkout() {
   const [successType, setSuccessType] = useState<SuccessType>("promo");
 
   const [localLaunchAvailable, setLocalLaunchAvailable] = useState(true);
-  const [localSlotsRemaining, setLocalSlotsRemaining] = useState(100);
+  const [localSlotsRemaining, setLocalSlotsRemaining] = useState<number | null>(null);
+  const [quotaLoading, setQuotaLoading] = useState(true);
+  const [quotaError, setQuotaError] = useState(false);
+
+  const fetchQuota = async (attempt = 0) => {
+    try {
+      setQuotaLoading(true);
+      setQuotaError(false);
+      const { data, error } = await supabase.from("launch_quota").select("total_slots, used_slots").single();
+      if (error || !data) throw new Error("quota fetch failed");
+      const remaining = Math.max(0, data.total_slots - data.used_slots);
+      setLocalLaunchAvailable(remaining > 0);
+      setLocalSlotsRemaining(remaining);
+    } catch {
+      if (attempt < 2) {
+        setTimeout(() => fetchQuota(attempt + 1), 1500 * (attempt + 1));
+      } else {
+        setQuotaError(true);
+        setLocalSlotsRemaining(null);
+      }
+    } finally {
+      setQuotaLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -40,17 +63,12 @@ export default function Checkout() {
       trackEvent("checkout_success", user?.id, { offer_type: sType });
       refresh();
     }
-    supabase.from("launch_quota").select("total_slots, used_slots").single().then(({ data }) => {
-      if (data) {
-        const remaining = Math.max(0, data.total_slots - data.used_slots);
-        setLocalLaunchAvailable(remaining > 0);
-        setLocalSlotsRemaining(remaining);
-      }
-    });
+    fetchQuota();
   }, [searchParams, refresh, user?.id]);
 
   const effectiveLaunchAvailable = user ? launchAvailable : localLaunchAvailable;
-  const effectiveSlotsRemaining = user ? launchSlotsRemaining : localSlotsRemaining;
+  const effectiveSlotsRemaining: number | null = user ? launchSlotsRemaining : localSlotsRemaining;
+  const showSlotCounter = !quotaLoading && !quotaError && effectiveSlotsRemaining !== null && effectiveLaunchAvailable;
 
   const checkPromo = async () => {
     if (!promoCode.trim()) return;
@@ -271,10 +289,13 @@ export default function Checkout() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">Accès complet — introductions illimitées, ROI Dashboard, support prioritaire</p>
-                    {effectiveLaunchAvailable && (
+                    {quotaLoading && (
+                      <div className="mt-1 h-3.5 w-40 animate-pulse rounded bg-muted" />
+                    )}
+                    {showSlotCounter && (
                       <p className="text-xs text-accent font-medium mt-1 flex items-center gap-1">
                         <Clock size={10} />
-                        Plus que {effectiveSlotsRemaining} place{effectiveSlotsRemaining > 1 ? "s" : ""} au tarif fondateur
+                        Plus que {effectiveSlotsRemaining} place{(effectiveSlotsRemaining ?? 0) > 1 ? "s" : ""} au tarif fondateur
                       </p>
                     )}
                   </div>

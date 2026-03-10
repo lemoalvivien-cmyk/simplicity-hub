@@ -47,7 +47,7 @@ export default function FAQSection() {
           </h2>
           <p className="text-muted-foreground text-sm">
             Une autre question ?{" "}
-            <a href="mailto:contact@vlmconsulting.fr" className="text-primary hover:underline font-medium">
+            <a href="mailto:contact@wiinupmax.com" className="text-primary hover:underline font-medium">
               Écrivez-nous directement
             </a>
           </p>
