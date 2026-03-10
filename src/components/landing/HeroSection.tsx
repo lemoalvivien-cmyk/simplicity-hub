@@ -80,7 +80,7 @@ export default function HeroSection() {
           </div>
 
           {/* Trust bar */}
-          <div className="flex flex-wrap items-center justify-center gap-5 text-white/50 text-xs">
+          <div className="flex flex-wrap items-center justify-center gap-5 text-white/60 text-xs">
             {trustItems.map(({ icon: Icon, label }) => (
               <span key={label} className="flex items-center gap-1.5">
                 <Icon size={10} aria-hidden="true" /> {label}
