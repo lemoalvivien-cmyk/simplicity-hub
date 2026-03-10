@@ -104,7 +104,7 @@ interface ControlPanelProps {
   heartbeats: SchedulerHeartbeat[];
   recentExecutions: JobExecution[];
   schedulerTriggering: boolean;
-  triggerScheduler: (body?: Record<string, unknown>) => Promise<{ ok: boolean; completed: number; claimed: number; error?: string }>;
+  triggerScheduler: (dryRun?: boolean) => Promise<{ ok: boolean; claimed: number; completed: number; failed: number; error?: string }>;
   healthcheckResult: Record<string, unknown> | null;
   healthcheckLoading: boolean;
   setHealthcheckResult: (r: Record<string, unknown> | null) => void;
