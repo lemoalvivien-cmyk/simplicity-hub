@@ -4767,6 +4767,10 @@ export type Database = {
         Returns: undefined
       }
       seed_openclaw_jobs: { Args: { p_user_id: string }; Returns: undefined }
+      seed_openclaw_jobs_for_user: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       update_lead_action_status:
         | {
             Args: {
