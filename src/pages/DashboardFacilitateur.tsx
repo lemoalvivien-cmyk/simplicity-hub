@@ -1,11 +1,5 @@
 /**
  * Dashboard Facilitateur — Passive-First OS + Double Moteur
- * PROOF:EXECUTION_V1:facilitateur_dashboard_actions → LeadActionsQueue rendered here
- * PROOF:PREMIUM_V1:dashboard_actionability → pipeline metrics always shown, actions linkable
- * PROOF:PREMIUM_PROOF_V1:dashboard_actionability → metrics strip + LeadActionsQueue with priority rings
- * PROOF:PREMIUM_PROOF_V1:premium_loading_states → counters show "…" while loading, LeadActionsQueue skeleton
- * PROOF:PREMIUM_EXPORT_V1:dashboard_actionability → metrics strip + LeadActionsQueue priority rings, this file
- * PROOF:PREMIUM_EXPORT_V1:premium_loading_states → "…" counter placeholders + LeadActionsQueue skeleton, this file
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -27,13 +21,8 @@ import BestOfferToPush from "@/components/passive/BestOfferToPush";
 import NetworkValueMap from "@/components/passive/NetworkValueMap";
 import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
-// PROOF:EXECUTION_V1:facilitateur_dashboard_actions — imports real action queue component
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
-// PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics displayed
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
-import { useTranslation } from "react-i18next";
-import { formatNumber } from "@/lib/formatLocale";
-import i18n from "@/lib/i18n";
 
 interface ShareLink {
   id: string; tracking_code: string; clicks_count: number;
@@ -45,8 +34,6 @@ interface Request {
 interface Gain { id: string; montant: number | null; statut: string; }
 
 export default function DashboardFacilitateur() {
-  const { t } = useTranslation();
-  const lang = i18n.language || "fr";
   const { user, profile } = useAuth();
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
@@ -60,7 +47,6 @@ export default function DashboardFacilitateur() {
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("facilitateur");
   const isLaunchMode = introsCount === 0 && shareLinks.length === 0;
-  // PROOF:INTEGRITY_V1:dashboard_action_context — real pipeline metrics
   const metrics = usePipelineMetrics();
 
   useEffect(() => {
@@ -123,21 +109,21 @@ export default function DashboardFacilitateur() {
                 <Moon size={20} className="text-white" />
               </div>
               <div>
-                <p className="font-bold text-white text-sm">{t("dash_hello", { prenom })}</p>
-                <p className="text-white/50 text-xs mt-0.5">{t("dash_network_works")}</p>
+                <p className="font-bold text-white text-sm">Bonjour, {prenom} 👋</p>
+                <p className="text-white/50 text-xs mt-0.5">Votre réseau travaille pour vous</p>
               </div>
             </div>
             {requests.length > 0 && (
               <span className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full shrink-0" style={{ background: "hsl(24 100% 52% / 0.2)", color: "hsl(24 100% 65%)" }}>
-                <Bell size={10} /> {requests.length} {t("dash_fac_pending")}
+                <Bell size={10} /> {requests.length} en attente
               </span>
             )}
           </div>
           <div className="relative z-10 mt-4 grid grid-cols-3 gap-2">
             {[
-              { label: t("dash_available_missions"), value: loading ? "…" : formatNumber(missionsCount, lang), icon: Briefcase },
-              { label: t("dash_clicks"), value: loading ? "…" : formatNumber(totalClicks, lang), icon: Link2 },
-              { label: t("dash_intros"), value: loading ? "…" : formatNumber(introsCount, lang), icon: Send },
+              { label: "Missions actives", value: loading ? "…" : missionsCount, icon: Briefcase },
+              { label: "Clics total", value: loading ? "…" : totalClicks, icon: Link2 },
+              { label: "Introductions", value: loading ? "…" : introsCount, icon: Send },
             ].map(({ label, value, icon: Icon }) => (
               <div key={label} className="text-center py-2.5 px-2 rounded-xl" style={{ background: "hsl(218 40% 16% / 0.6)" }}>
                 <Icon size={12} className="mx-auto mb-1 text-white/40" />
@@ -157,13 +143,13 @@ export default function DashboardFacilitateur() {
                 <Star size={15} className="text-white" />
               </div>
               <div>
-                <p className="font-bold text-white text-sm">{t("dash_fac_launch_title")}</p>
-                <p className="text-white/50 text-xs mt-0.5">{t("dash_fac_launch_sub")}</p>
+                <p className="font-bold text-white text-sm">Démarrez votre première introduction</p>
+                <p className="text-white/50 text-xs mt-0.5">3 étapes simples pour commencer à gagner</p>
               </div>
             </div>
             {topMission && (
               <div className="p-3 rounded-xl mb-4" style={{ background: "hsl(218 40% 14% / 0.8)" }}>
-                <p className="text-xs text-white/50 mb-1">{t("dash_fac_recommended_mission")}</p>
+                <p className="text-xs text-white/50 mb-1">Mission recommandée</p>
                 <p className="text-sm font-semibold text-white">{topMission.titre}</p>
                 {topMission.recompense && (
                   <p className="text-xs font-bold mt-1" style={{ color: "hsl(var(--accent))" }}>{topMission.recompense}</p>
@@ -171,7 +157,11 @@ export default function DashboardFacilitateur() {
               </div>
             )}
             <div className="space-y-2 mb-4">
-              {[t("dash_fac_launch_step1"), t("dash_fac_launch_step2"), t("dash_fac_launch_step3")].map((text, i) => (
+              {[
+                "Consultez les missions disponibles",
+                "Proposez une introduction à une entreprise",
+                "Recevez votre commission à la validation",
+              ].map((text, i) => (
                 <div key={i} className="flex items-center gap-2.5">
                   <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white" style={{ background: "hsl(var(--accent) / 0.6)" }}>
                     {i + 1}
@@ -181,7 +171,7 @@ export default function DashboardFacilitateur() {
               ))}
             </div>
             <Link to="/missions" className="btn-cta w-full text-center block py-3 text-sm">
-              {t("dash_fac_see_missions")} <ArrowRight size={14} className="inline ml-1" />
+              Voir les missions <ArrowRight size={14} className="inline ml-1" />
             </Link>
           </div>
         )}
@@ -189,7 +179,7 @@ export default function DashboardFacilitateur() {
         <PassiveCoachBanner />
         <OpenClawBrainWidget variant="facilitateur" />
         {!isLaunchMode && <BestOfferToPush compact />}
-        {!isLaunchMode && <BestAccessPanel title={t("best_path_title")} context={{ limit: 3 }} compact showAlternatives={false} />}
+        {!isLaunchMode && <BestAccessPanel title="Meilleur accès réseau" context={{ limit: 3 }} compact showAlternatives={false} />}
         {!isLaunchMode && <NetworkValueMap />}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
@@ -198,7 +188,7 @@ export default function DashboardFacilitateur() {
           <div className="rounded-xl border-2 p-5" style={{ borderColor: "hsl(var(--primary))", background: "hsl(var(--secondary))" }}>
             <div className="flex items-center gap-2 mb-3">
               <Bell size={14} className="text-primary" />
-              <p className="text-sm font-semibold text-foreground">{t("dash_fac_validation_title")}</p>
+              <p className="text-sm font-semibold text-foreground">Demandes de mise en relation</p>
               <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: "hsl(var(--primary))" }}>
                 {requests.length}
               </span>
@@ -206,7 +196,7 @@ export default function DashboardFacilitateur() {
             <div className="space-y-3">
               {requests.map(req => (
                 <div key={req.id} className="bg-background rounded-xl p-4 space-y-3 border border-border">
-                  <p className="text-sm font-medium text-foreground">{t("dash_fac_company_requests")}</p>
+                  <p className="text-sm font-medium text-foreground">Une entreprise vous sollicite</p>
                   {req.openclaw_note && (
                     <div className="flex items-start gap-2 px-3 py-2 rounded-lg" style={{ background: "hsl(218 65% 10%)" }}>
                       <Sparkles size={11} className="text-white/60 shrink-0 mt-0.5" />
@@ -221,13 +211,13 @@ export default function DashboardFacilitateur() {
                       className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-60"
                       style={{ background: "var(--gradient-primary)" }}
                     >
-                      {acceptingId === req.id ? "…" : t("dash_fac_accept")}
+                      {acceptingId === req.id ? "…" : "Accepter"}
                     </button>
                     <button
                       onClick={() => declineRequest(req.id)}
                       className="flex-1 py-2.5 rounded-xl text-xs font-semibold border border-border text-muted-foreground hover:bg-muted transition-colors"
                     >
-                      {t("dash_fac_decline")}
+                      Décliner
                     </button>
                   </div>
                 </div>
@@ -246,9 +236,9 @@ export default function DashboardFacilitateur() {
               <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--gradient-accent)" }}>
                 <Send size={15} className="text-white" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(24 100% 65%)" }}>{t("dash_fac_network_label")}</p>
-              <p className="font-semibold text-white text-sm">{t("dash_fac_network_title")}</p>
-              <p className="text-white/45 text-xs mt-1">{t("dash_fac_network_sub")}</p>
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(24 100% 65%)" }}>Réseau</p>
+              <p className="font-semibold text-white text-sm">Mes introductions</p>
+              <p className="text-white/45 text-xs mt-1">Recommandations qualifiées</p>
             </Link>
             <Link to="/agents" className="rounded-2xl p-4 hover:opacity-90 transition-all" style={{
               background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
@@ -257,15 +247,15 @@ export default function DashboardFacilitateur() {
               <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--gradient-primary)" }}>
                 <Brain size={15} className="text-white" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(218 72% 65%)" }}>{t("dash_fac_ia_label")}</p>
-              <p className="font-semibold text-white text-sm">{t("dash_fac_ia_title")}</p>
-              <p className="text-white/45 text-xs mt-1">{t("dash_fac_ia_sub")}</p>
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(218 72% 65%)" }}>IA</p>
+              <p className="font-semibold text-white text-sm">Agents OpenClaw</p>
+              <p className="text-white/45 text-xs mt-1">Automatisation intelligente</p>
             </Link>
           </div>
         )}
 
         {/* ── HEATING ──────────────────────────────────────── */}
-        <Link to="/chaud" className="rounded-xl border-2 p-5 flex items-center justify-between gap-4 hover:opacity-90 transition-all" style={{
+        <Link to="/actions" className="rounded-xl border-2 p-5 flex items-center justify-between gap-4 hover:opacity-90 transition-all" style={{
           borderColor: "hsl(24 100% 52% / 0.4)",
           background: "linear-gradient(135deg, hsl(24 80% 8%), hsl(38 70% 11%))"
         }}>
@@ -274,8 +264,8 @@ export default function DashboardFacilitateur() {
               <Zap size={18} className="text-white" />
             </div>
             <div>
-              <p className="font-bold text-white text-sm">{t("dash_fac_heating_title")}</p>
-              <p className="text-white/50 text-xs mt-0.5">{t("dash_fac_heating_sub")}</p>
+              <p className="font-bold text-white text-sm">Mes actions à faire</p>
+              <p className="text-white/50 text-xs mt-0.5">Ce qui nécessite votre attention aujourd'hui</p>
             </div>
           </div>
           <ArrowRight size={16} className="text-white/50 shrink-0" />
@@ -286,15 +276,15 @@ export default function DashboardFacilitateur() {
           <div className="card-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
-                <Link2 size={14} className="text-primary" /> {t("dash_fac_links_title")}
+                <Link2 size={14} className="text-primary" /> Liens actifs
               </h2>
-              <Link to="/offres" className="text-xs text-primary font-medium hover:underline">{t("dash_fac_manage")}</Link>
+              <Link to="/offres" className="text-xs text-primary font-medium hover:underline">Gérer</Link>
             </div>
             <div className="grid grid-cols-3 gap-2 mb-3">
               {[
-                { label: t("dash_fac_active_links"), value: shareLinks.length },
-                { label: t("dash_fac_total_clicks"), value: formatNumber(totalClicks, lang) },
-                { label: t("dash_fac_converted"), value: shareLinks.filter(l => l.converted).length },
+                { label: "Liens actifs", value: shareLinks.length },
+                { label: "Clics total", value: totalClicks },
+                { label: "Convertis", value: shareLinks.filter(l => l.converted).length },
               ].map(({ label, value }) => (
                 <div key={label} className="text-center py-2.5 rounded-xl bg-muted">
                   <p className="font-bold text-lg text-foreground">{value}</p>
@@ -315,7 +305,7 @@ export default function DashboardFacilitateur() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-mono text-muted-foreground truncate">/r/{link.tracking_code}</p>
-                    <p className="text-xs text-foreground mt-0.5">{formatNumber(link.clicks_count, lang)} clics</p>
+                    <p className="text-xs text-foreground mt-0.5">{link.clicks_count} clics</p>
                   </div>
                   {link.converted && (
                     <span className="text-xs font-semibold shrink-0" style={{ color: "hsl(var(--success))" }}>✓</span>
@@ -327,7 +317,6 @@ export default function DashboardFacilitateur() {
         )}
 
         {/* ── PIPELINE METRICS STRIP ───────────────────────── */}
-        {/* PROOF:INTEGRITY_V1:dashboard_action_context */}
         {!isLaunchMode && !metrics.loading && metrics.openActions > 0 && (
           <div className="rounded-xl p-3 flex items-center gap-4 flex-wrap" style={{ background: "hsl(var(--secondary))" }}>
             <div className="flex items-center gap-1.5">
@@ -344,12 +333,9 @@ export default function DashboardFacilitateur() {
         )}
 
         {/* ── LEADS PIPELINE (facilitateur view) ───────────── */}
-        {/* PROOF:PIPELINE_V2:facilitateur_dashboard_pipeline */}
-        {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
         {!isLaunchMode && <UnifiedLeadsBlock asEntreprise={false} linkTo="/introductions" />}
 
         {/* ── PIPELINE METRICS STRIP (facilitateur) ─────────── */}
-        {/* PROOF:PREMIUM_V1:dashboard_actionability — always visible, clickable */}
         {!isLaunchMode && !metrics.loading && (
           <div className="rounded-xl p-3 flex items-center gap-3 flex-wrap" style={{ background: "hsl(var(--secondary))" }}>
             {metrics.openActions > 0 ? (
@@ -374,9 +360,7 @@ export default function DashboardFacilitateur() {
           </div>
         )}
 
-        {/* ── FACILITATEUR ACTION QUEUE (real lead_actions) ─── */}
-        {/* PROOF:EXECUTION_V1:facilitateur_dashboard_actions */}
-        {/* PROOF:INTEGRITY_V1:dashboard_action_context — with context UI from LeadActionsQueue */}
+        {/* ── FACILITATEUR ACTION QUEUE ─── */}
         {!isLaunchMode && (
           <LeadActionsQueue
             title="Mes actions à faire"
@@ -390,21 +374,21 @@ export default function DashboardFacilitateur() {
           <div className="card-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-                <Trophy size={14} className="text-primary" /> {t("dash_fac_gains_title")}
+                <Trophy size={14} className="text-primary" /> Mes gains
               </h2>
-              <Link to="/gains" className="text-xs text-primary font-medium hover:underline">{t("dash_fac_see_all_gains")}</Link>
+              <Link to="/gains" className="text-xs text-primary font-medium hover:underline">Voir tout</Link>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {totalValide > 0 && (
                 <div className="p-3 rounded-xl text-center" style={{ background: "hsl(152 62% 10%)", border: "1px solid hsl(152 62% 25% / 0.3)" }}>
-                  <p className="font-bold text-lg" style={{ color: "hsl(152 62% 55%)" }}>{formatNumber(totalValide, lang)} €</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t("dash_fac_gains_confirmed")}</p>
+                  <p className="font-bold text-lg" style={{ color: "hsl(152 62% 55%)" }}>{totalValide} €</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Gains validés</p>
                 </div>
               )}
               {totalAttendu > 0 && (
                 <div className="p-3 rounded-xl text-center bg-muted">
-                  <p className="font-bold text-lg text-foreground">{formatNumber(totalAttendu, lang)} €</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t("dash_fac_gains_pending_label")}</p>
+                  <p className="font-bold text-lg text-foreground">{totalAttendu} €</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">En attente</p>
                 </div>
               )}
             </div>

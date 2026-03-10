@@ -8,23 +8,17 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useTranslation } from "react-i18next";
-import { formatAmount } from "@/lib/formatLocale";
-import i18n from "@/lib/i18n";
 import { trackEvent } from "@/lib/analytics";
 
 type Step = "choose" | "promo" | "payment" | "success";
 type SuccessType = "promo" | "stripe_launch" | "stripe_standard";
 
 export default function Checkout() {
-  const { t } = useTranslation();
-  const lang = i18n.language || "fr";
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { redeemPromo, startCheckout, status, launchAvailable, launchSlotsRemaining, refresh } = useSubscription();
 
-  // ONE PRICE 99 HARD LOCK: default to payment step directly — skip choose screen
   const [step, setStep] = useState<Step>("payment");
   const [promoCode, setPromoCode] = useState("");
   const [promoStatus, setPromoStatus] = useState<"idle" | "valid" | "invalid">("idle");
@@ -37,16 +31,13 @@ export default function Checkout() {
   const [localLaunchAvailable, setLocalLaunchAvailable] = useState(true);
   const [localSlotsRemaining, setLocalSlotsRemaining] = useState(100);
 
-  // PASSE E: refresh subscription immediately when Stripe redirects back with ?success=true
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       const offerParam = searchParams.get("offer");
       const sType = offerParam === "launch" ? "stripe_launch" : offerParam === "standard" ? "stripe_standard" : "promo";
       setSuccessType(sType);
       setStep("success");
-      // PROOF: checkout_success → analytics_events (real write)
       trackEvent("checkout_success", user?.id, { offer_type: sType });
-      // Trigger immediate subscription refresh — don't wait for the 5-min interval
       refresh();
     }
     supabase.from("launch_quota").select("total_slots, used_slots").single().then(({ data }) => {
@@ -74,7 +65,6 @@ export default function Checkout() {
       if (result.valid) {
         setPromoStatus("valid");
         setPromoMessage(result.message);
-        // PROOF: promo_redeemed → analytics_events (real write on successful promo)
         trackEvent("promo_redeemed", user?.id, { code: promoCode.trim() });
         await refresh();
       } else {
@@ -83,7 +73,7 @@ export default function Checkout() {
       }
     } catch {
       setPromoStatus("invalid");
-      setPromoMessage(t("error"));
+      setPromoMessage("Une erreur est survenue. Réessayez.");
     } finally {
       setPromoLoading(false);
     }
@@ -94,11 +84,9 @@ export default function Checkout() {
       window.location.href = "/signup?redirect=/checkout";
       return;
     }
-    // PASSE E: mutex — prevents double-click spawning 2 Stripe sessions
     if (checkoutLoading) return;
     setCheckoutLoading(true);
     setCheckoutError("");
-    // PROOF: checkout_start → analytics_events (real write)
     trackEvent("checkout_start", user.id, { source: "checkout_page" });
     try {
       const result = await startCheckout();
@@ -126,16 +114,16 @@ export default function Checkout() {
               </div>
 
               <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-                {isPromo ? t("checkout_success_promo_title") : t("checkout_success_paid_title")}
+                {isPromo ? "Accès activé avec succès !" : "Bienvenue dans WiinupMax !"}
               </h1>
 
               {isPromo ? (
                 <div className="space-y-3 mb-6">
-                  <p className="text-sm text-muted-foreground leading-relaxed">{t("checkout_success_promo_desc")}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Votre code a été validé. Votre accès est maintenant actif.</p>
                   <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-xl text-sm">
                     <ShieldCheck size={16} className="text-accent shrink-0" />
                     <p className="text-left text-muted-foreground">
-                      <strong className="text-foreground">{t("checkout_success_promo_shield")}</strong>
+                      <strong className="text-foreground">Accès garanti — sans carte bancaire requise.</strong>
                     </p>
                   </div>
                 </div>
@@ -143,35 +131,34 @@ export default function Checkout() {
                 <div className="mb-6 space-y-4">
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold">
                     <Zap size={14} />
-                    {successType === "stripe_launch" ? t("checkout_success_launch_badge") : t("checkout_success_standard_badge")}
+                    {successType === "stripe_launch" ? "🎉 Offre Fondateur activée" : "Accès Standard activé"}
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-left">
                     <div className="p-3.5 rounded-xl border" style={{ background: "linear-gradient(135deg, hsl(218 65% 8%), hsl(218 55% 11%))", borderColor: "hsl(218 40% 22% / 0.6)" }}>
                       <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(218 72% 65%)" }}>Moteur 1</p>
-                      <p className="font-semibold text-white text-sm">{t("checkout_success_moteur1_title")}</p>
-                      <p className="text-white/50 text-xs mt-1">{t("checkout_success_moteur1_sub")}</p>
+                      <p className="font-semibold text-white text-sm">Prospection IA</p>
+                      <p className="text-white/50 text-xs mt-1">Agents OpenClaw actifs</p>
                     </div>
                     <div className="p-3.5 rounded-xl border" style={{ background: "linear-gradient(135deg, hsl(24 60% 8%), hsl(38 50% 11%))", borderColor: "hsl(24 50% 22% / 0.6)" }}>
                       <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(24 100% 65%)" }}>Moteur 2</p>
-                      <p className="font-semibold text-white text-sm">{t("checkout_success_moteur2_title")}</p>
-                      <p className="text-white/50 text-xs mt-1">{t("checkout_success_moteur2_sub")}</p>
+                      <p className="font-semibold text-white text-sm">Réseau Facilitateurs</p>
+                      <p className="text-white/50 text-xs mt-1">Introductions qualifiées</p>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">{t("checkout_success_double_engine")}</p>
+                  <p className="text-xs text-muted-foreground">Les deux moteurs travaillent ensemble pour accélérer votre acquisition.</p>
                 </div>
               )}
 
-              {/* ONE PRICE 99 HARD LOCK: route by onboarding_done — paying users already onboarded go straight to dashboard */}
               {user ? (
                 <Link
                   to={profile?.onboarding_done ? "/dashboard" : "/onboarding"}
                   className="btn-cta text-sm px-8 py-4 block text-center"
                 >
-                  {profile?.onboarding_done ? "Accéder à mon espace" : t("checkout_configure")}
+                  {profile?.onboarding_done ? "Accéder à mon espace" : "Configurer mon compte"}
                 </Link>
               ) : (
                 <Link to="/signup" className="btn-cta text-sm px-8 py-4 block text-center">
-                  {t("checkout_create_account")}
+                  Créer mon compte gratuitement
                 </Link>
               )}
             </div>
@@ -187,67 +174,6 @@ export default function Checkout() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-lg w-full space-y-4">
 
-          {step === "choose" && (
-            <div className="text-center mb-2">
-              <h1 className="font-display text-2xl font-bold text-foreground mb-1">{t("checkout_title")}</h1>
-              <p className="text-muted-foreground text-sm">{t("checkout_subtitle")}</p>
-            </div>
-          )}
-
-          {/* ── CHOOSE ──────────────────────────────────────────── */}
-          {step === "choose" && (
-            <div className="space-y-3">
-              <button
-                onClick={() => setStep("promo")}
-                className="w-full card-surface p-5 border-2 border-accent/30 hover:border-accent hover:bg-accent/5 transition-all text-left group"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0 group-hover:bg-accent/25 transition-colors">
-                    <Gift size={20} className="text-accent" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="font-semibold text-foreground text-sm">{t("checkout_promo_title")}</p>
-                      <span className="px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-semibold">{t("checkout_promo_badge")}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{t("checkout_promo_desc")}</p>
-                  </div>
-                  <ArrowRight size={16} className="text-muted-foreground shrink-0 mt-1 group-hover:text-accent transition-colors" />
-                </div>
-              </button>
-
-              <button
-                onClick={() => setStep("payment")}
-                className="w-full card-surface p-5 border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left group"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                    <CreditCard size={20} className="text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="font-semibold text-foreground text-sm">{t("checkout_payment_title")}</p>
-                      {effectiveLaunchAvailable && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-semibold">
-                          <Zap size={9} /> {t("checkout_launch_badge")}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {`${formatAmount(99, lang)} / an · ${t("checkout_launch_slots", { slots: effectiveSlotsRemaining })}`}
-                    </p>
-                  </div>
-                  <ArrowRight size={16} className="text-muted-foreground shrink-0 mt-1 group-hover:text-primary transition-colors" />
-                </div>
-              </button>
-
-              <p className="text-xs text-muted-foreground text-center pt-1">
-                {t("checkout_facilitator_link")}{" "}
-                <Link to="/signup" className="text-primary hover:underline font-medium">{t("checkout_facilitator_free")}</Link>
-              </p>
-            </div>
-          )}
-
           {/* ── PROMO ──────────────────────────────────────────── */}
           {step === "promo" && (
             <div className="card-surface p-6">
@@ -256,18 +182,18 @@ export default function Checkout() {
                   <Gift size={18} className="text-accent" />
                 </div>
                 <div>
-                  <h2 className="font-semibold text-foreground text-sm">{t("checkout_promo_title")}</h2>
-                  <p className="text-xs text-muted-foreground">{t("checkout_promo_sub")}</p>
+                  <h2 className="font-semibold text-foreground text-sm">Code d'accès gratuit</h2>
+                  <p className="text-xs text-muted-foreground">Entrez votre code pour activer votre accès</p>
                 </div>
               </div>
 
               <div className="p-3 bg-accent/8 rounded-xl border border-accent/20 mb-5">
-                <p className="text-xs text-muted-foreground leading-relaxed">{t("checkout_promo_info")}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">Les codes d'accès offrent un accès complet sans frais. Réservés aux partenaires et participants aux événements.</p>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">{t("checkout_promo_label")}</label>
+                  <label className="text-sm font-medium text-foreground block mb-1.5">Votre code</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -282,7 +208,7 @@ export default function Checkout() {
                       disabled={!promoCode || promoLoading}
                       className="btn-primary px-5 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
                     >
-                      {promoLoading ? <Loader2 size={14} className="animate-spin" /> : t("checkout_promo_activate")}
+                      {promoLoading ? <Loader2 size={14} className="animate-spin" /> : "Activer"}
                     </button>
                   </div>
                 </div>
@@ -291,7 +217,7 @@ export default function Checkout() {
                   <div className="flex items-start gap-2.5 p-3.5 bg-success-light rounded-xl border border-success/20">
                     <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-success">{t("checkout_promo_success")}</p>
+                      <p className="text-sm font-semibold text-success">Code valide ✓</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{promoMessage}</p>
                     </div>
                   </div>
@@ -305,14 +231,14 @@ export default function Checkout() {
 
                 <div className="flex gap-3 pt-1">
                   <button
-                    onClick={() => { setStep("choose"); setPromoStatus("idle"); setPromoCode(""); }}
+                    onClick={() => { setStep("payment"); setPromoStatus("idle"); setPromoCode(""); }}
                     className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   >
-                    {t("checkout_back")}
+                    Retour
                   </button>
                   {promoStatus === "valid" && (
                     <Link to={user ? "/dashboard" : "/signup"} className="flex-1 btn-cta text-sm text-center py-3">
-                      {user ? t("checkout_go_space") : t("checkout_create_account")}
+                      {user ? "Accéder à mon espace" : "Créer mon compte"}
                     </Link>
                   )}
                 </div>
@@ -328,8 +254,8 @@ export default function Checkout() {
                   <CreditCard size={18} className="text-primary" />
                 </div>
                 <div>
-                  <h2 className="font-semibold text-foreground text-sm">{t("checkout_payment_title")}</h2>
-                  <p className="text-xs text-muted-foreground">{t("checkout_payment_sub")}</p>
+                  <h2 className="font-semibold text-foreground text-sm">Activer votre accès</h2>
+                  <p className="text-xs text-muted-foreground">Paiement sécurisé par Stripe</p>
                 </div>
               </div>
 
@@ -340,33 +266,37 @@ export default function Checkout() {
                       <p className="font-semibold text-foreground text-sm">WIINUP MAX — Entreprise</p>
                       {effectiveLaunchAvailable && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-semibold">
-                          <Zap size={9} /> {t("checkout_launch_badge")}
+                          <Zap size={9} /> Offre Fondateur
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">{t("checkout_full_access")}</p>
+                    <p className="text-xs text-muted-foreground">Accès complet — introductions illimitées, ROI Dashboard, support prioritaire</p>
                     {effectiveLaunchAvailable && (
                       <p className="text-xs text-accent font-medium mt-1 flex items-center gap-1">
                         <Clock size={10} />
-                        {t("checkout_launch_slots", { slots: effectiveSlotsRemaining })}
+                        Plus que {effectiveSlotsRemaining} place{effectiveSlotsRemaining > 1 ? "s" : ""} au tarif fondateur
                       </p>
                     )}
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-display text-2xl font-bold text-foreground">{formatAmount(99, lang)}</p>
+                    <p className="font-display text-2xl font-bold text-foreground">99 €</p>
                     <p className="text-xs text-muted-foreground">/ an TTC</p>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-1.5 mb-5">
-                {([
-                  "checkout_features_1","checkout_features_2","checkout_features_3",
-                  "checkout_features_4","checkout_features_5","checkout_features_6"
-                ] as const).map((key) => (
-                  <div key={key} className="flex items-center gap-2 text-xs text-muted-foreground">
+                {[
+                  "Introductions qualifiées illimitées",
+                  "Agents IA OpenClaw 24h/24",
+                  "ROI Dashboard complet",
+                  "Accès à La Mêlée (événements)",
+                  "Support prioritaire",
+                  "Réseau de Facilitateurs qualifiés",
+                ].map((feature) => (
+                  <div key={feature} className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle2 size={13} className="text-success shrink-0" />
-                    {t(key)}
+                    {feature}
                   </div>
                 ))}
               </div>
@@ -385,7 +315,7 @@ export default function Checkout() {
                   className="w-full btn-cta text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {checkoutLoading ? (
-                    <><Loader2 size={14} className="animate-spin" /> {t("loading")}</>
+                    <><Loader2 size={14} className="animate-spin" /> Chargement…</>
                   ) : (
                     <>Activer mon accès — 99 € / an <ArrowRight size={14} /></>
                   )}
@@ -394,8 +324,13 @@ export default function Checkout() {
 
               <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-3">
                 <Lock size={11} />
-                {t("checkout_secure_stripe")}
+                Paiement 100% sécurisé par Stripe
               </div>
+
+              <p className="text-xs text-muted-foreground text-center mt-3">
+                Vous avez un code d'accès ?{" "}
+                <button onClick={() => setStep("promo")} className="text-primary hover:underline font-medium">Activer mon code</button>
+              </p>
             </div>
           )}
         </div>
