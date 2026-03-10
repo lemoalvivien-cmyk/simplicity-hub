@@ -89,7 +89,7 @@ export default function Contacts() {
           .select("id, name, steps")
           .in("id", seqIds);
 
-        const seqById = Object.fromEntries((seqs ?? []).map((s: { id: string; name: string; steps: unknown[] }) => [s.id, s]));
+        const seqById = Object.fromEntries((seqs ?? []).map((s: { id: string; name: string; steps: unknown }) => [s.id, s]));
         const newMap: Record<string, ContactSequenceInfo> = {};
 
         for (const ex of execs as { contact_id: string; status: string; current_step: number; sequence_id: string }[]) {
