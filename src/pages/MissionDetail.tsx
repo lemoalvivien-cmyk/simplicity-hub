@@ -227,6 +227,30 @@ export default function MissionDetail() {
   const [introCount, setIntroCount] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [matches, setMatches] = useState<MissionMatch[]>([]);
+  const [inviting, setInviting] = useState<string | null>(null);
+
+  const loadMatches = async (missionId: string) => {
+    const { data } = await supabase
+      .from("mission_matches")
+      .select("*")
+      .eq("mission_id", missionId)
+      .order("compatibility_score", { ascending: false })
+      .limit(5);
+    if (!data || data.length === 0) return;
+
+    // Fetch names
+    const ids = data.map((m: MissionMatch) => m.facilitateur_id);
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, prenom, email")
+      .in("id", ids);
+    const nameMap: Record<string, string> = {};
+    (profiles ?? []).forEach((p: { id: string; prenom: string | null; email: string }) => {
+      nameMap[p.id] = p.prenom ?? p.email?.split("@")[0] ?? "Apporteur";
+    });
+    setMatches(data.map((m: MissionMatch) => ({ ...m, facilitateur_name: nameMap[m.facilitateur_id] ?? "Apporteur" })));
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -236,12 +260,26 @@ export default function MissionDetail() {
         db.from("missions").select("*").eq("id", id).single(),
         db.from("introductions").select("id", { count: "exact", head: true }).eq("mission_id", id),
       ]);
-      if (missionRes.data) setMission(missionRes.data);
+      if (missionRes.data) {
+        setMission(missionRes.data);
+        if (profile?.role === "entreprise") loadMatches(id);
+      }
       setIntroCount(introsRes.count || 0);
       setLoading(false);
     };
     load();
-  }, [id]);
+  }, [id, profile?.role]);
+
+  const handleInvite = async (match: MissionMatch) => {
+    setInviting(match.facilitateur_id);
+    await supabase
+      .from("mission_matches")
+      .update({ status: "acceptee" })
+      .eq("id", match.id);
+    setMatches(prev => prev.map(m => m.id === match.id ? { ...m, status: "acceptee" } : m));
+    toast.success(`Invitation envoyée à ${match.facilitateur_name} !`);
+    setInviting(null);
+  };
 
   if (loading) return (
     <UserLayout role={role}>
