@@ -355,6 +355,11 @@ export default function DashboardEntreprise() {
         {/* ── ALERTS — removed (passive_alerts table not in schema) ── */}
 
 
+        {/* ── ROI WIDGET ───────────────────────────────────── */}
+        {!isLaunchMode && (
+          <ROIWidget userId={user?.id} />
+        )}
+
         {/* ── DOUBLE ENGINE ────────────────────────────────── */}
         {!isLaunchMode && (
           <div className="grid grid-cols-2 gap-3">
