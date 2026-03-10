@@ -157,6 +157,6 @@ export function getOfferLabel(offerType: OfferType, accessType: AccessType): str
   if (accessType === "free") return "Gratuit — Apporteur d'affaires";
   if (accessType === "promo") return "Code d'invitation — 12 mois offerts";
   if (offerType === "launch") return "Offre de lancement — 99 € TTC / an";
-  if (offerType === "standard") return "Abonnement annuel — 490 € TTC / an";
+  if (offerType === "standard") return "Abonnement annuel — 99 € TTC / an";
   return "Aucun abonnement";
 }

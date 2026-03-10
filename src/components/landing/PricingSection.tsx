@@ -30,13 +30,13 @@ const PRICING_FRAME = {
     badge: "Offre lancement",
     headline: "Simple, honnête, transparent.",
     sub: "L'offre entreprise est payante. L'accès facilitateur est gratuit. Il n'y a rien de caché.",
-    ctaLabel: (isLaunch: boolean) => isLaunch ? "Lancer ma première mission — 99 €" : "Lancer ma première mission — 490 €",
+    ctaLabel: (_isLaunch: boolean) => "Lancer ma première mission — 99 €",
   },
   v2_investissement: {
-    badge: "Investissement acquisition",
+    badge: "",
     headline: "Moins qu'un commercial junior. Pour tout un système.",
-    sub: "99 € pour activer prospection IA + réseau humain structuré + cockpit de suivi. Pour la première année.",
-    ctaLabel: (isLaunch: boolean) => isLaunch ? "Activer mon acquisition — 99 €" : "Activer mon acquisition — 490 €",
+    sub: "99 € pour activer prospection IA + réseau humain structuré + cockpit de suivi.",
+    ctaLabel: (_isLaunch: boolean) => "Activer mon acquisition — 99 €",
   },
 };
 
@@ -90,13 +90,10 @@ export default function PricingSection() {
               <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
               <div className="flex items-end gap-2 mb-1">
                 <span className="font-display font-bold text-5xl text-white">
-                  {launchAvailable ? "99 €" : "490 €"}
+                  99 €
                 </span>
                 <div className="pb-1">
                   <p className="text-white/60 text-sm">TTC / an</p>
-                  {launchAvailable && (
-                    <p className="text-white/35 text-xs line-through">490 € / an</p>
-                  )}
                 </div>
               </div>
               <p className="text-white/45 text-xs">

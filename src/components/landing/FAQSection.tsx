@@ -16,7 +16,7 @@ const faqs = [
   },
   {
     q: "Combien ça coûte pour une entreprise ?",
-    a: "L'offre de lancement est à 99 € TTC pour la première année complète (au lieu de 490 €). Réservée aux 100 premières entreprises. Après, le tarif standard est de 490 € / an. Annulation libre à tout moment.",
+    a: "WiinupMax est proposé au tarif unique de 99 € TTC par an. Annulation libre à tout moment.",
   },
   {
     q: "L'accès facilitateur est vraiment gratuit ?",

@@ -201,7 +201,7 @@ export default function AdminPromoCodes() {
         <p className="text-xs text-muted-foreground mt-2">
           {launchRemaining > 0
             ? `L'offre à 99 € / an est disponible pour encore ${launchRemaining} entreprise${launchRemaining > 1 ? "s" : ""}.`
-            : "L'offre de lancement est épuisée. Le tarif standard à 490 € / an s'applique."}
+            : "Toutes les places sont attribuées. WiinupMax reste au tarif unique de 99 € TTC / an."}
         </p>
       </div>
 

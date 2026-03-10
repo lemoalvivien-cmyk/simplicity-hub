@@ -5,25 +5,19 @@ import { CheckCircle2, Tag, Building2, Users, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
-import { formatAmount } from "@/lib/formatLocale";
 import { trackEvent } from "@/lib/analytics";
 
 export default function Pricing() {
-  const { t, i18n } = useTranslation();
-  const lang = i18n.language;
+  const { t } = useTranslation();
 
-  const [launchAvailable, setLaunchAvailable] = useState(true);
   const [slotsRemaining, setSlotsRemaining] = useState(100);
 
   useEffect(() => {
-    // PROOF: pricing_view → analytics_events (real write)
     trackEvent("pricing_view", null, { source: "direct" });
 
     supabase.from("launch_quota").select("total_slots, used_slots").single().then(({ data }) => {
       if (data) {
-        const remaining = Math.max(0, data.total_slots - data.used_slots);
-        setLaunchAvailable(remaining > 0);
-        setSlotsRemaining(remaining);
+        setSlotsRemaining(Math.max(0, data.total_slots - data.used_slots));
       }
     });
   }, []);
@@ -33,7 +27,7 @@ export default function Pricing() {
   const freeKeys    = ["pricing_free_1","pricing_free_2","pricing_free_3","pricing_free_4","pricing_free_5","pricing_free_6"] as const;
 
   const faqItems = [
-    { q: t("pricing_faq_q1"), a: launchAvailable ? t("pricing_faq_a1_available", { slots: slotsRemaining }) : t("pricing_faq_a1_sold") },
+    { q: t("pricing_faq_q1"), a: t("pricing_faq_a1_available", { slots: slotsRemaining }) },
     { q: t("pricing_faq_q2"), a: t("pricing_faq_a2") },
     { q: t("pricing_faq_q3"), a: t("pricing_faq_a3") },
     { q: t("pricing_faq_q4"), a: t("pricing_faq_a4") },
@@ -55,7 +49,7 @@ export default function Pricing() {
         </p>
       </section>
 
-      {/* Compteur de places */}
+      {/* Compteur de places (urgence marketing) */}
       <div className="container max-w-2xl mb-2">
         <LaunchQuotaBanner variant="pricing" />
       </div>
@@ -64,7 +58,7 @@ export default function Pricing() {
       <div className="container max-w-4xl pb-16">
         <div className="grid md:grid-cols-2 gap-6">
 
-          {/* Entreprise */}
+          {/* Entreprise — Prix unique 99 € TTC/an */}
           <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-primary">
             <div className="p-7 border-b border-border" style={{ background: "var(--gradient-primary)" }}>
               <div className="flex items-center gap-3 mb-4">
@@ -76,36 +70,24 @@ export default function Pricing() {
                 </p>
               </div>
 
-              {launchAvailable ? (
-                <>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/20 text-white text-xs font-bold">
-                      <Zap size={10} />
-                      {t("pricing_launch_badge", { slots: slotsRemaining })}
-                    </span>
-                  </div>
-                  <div className="flex items-end gap-2 mt-2">
-                    <span className="font-display font-bold text-5xl text-white">
-                      {formatAmount(99, lang)}
-                    </span>
-                    <div className="pb-1">
-                      <span className="text-white/60 text-sm">{t("pricing_per_year")}</span>
-                      <p className="text-white/40 text-xs line-through">{formatAmount(490, lang)}</p>
-                    </div>
-                  </div>
-                  <p className="text-white/50 text-xs mt-2">{t("pricing_launch_note")}</p>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-end gap-1.5 mt-2">
-                    <span className="font-display font-bold text-5xl text-white">
-                      {formatAmount(490, lang)}
-                    </span>
-                    <span className="text-white/60 text-sm pb-1">{t("pricing_per_year")}</span>
-                  </div>
-                  <p className="text-white/50 text-xs mt-2">{t("pricing_standard_note")}</p>
-                </>
+              {/* Badge places restantes */}
+              {slotsRemaining > 0 && (
+                <div className="mb-2">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/20 text-white text-xs font-bold">
+                    <Zap size={10} />
+                    {t("pricing_launch_badge", { slots: slotsRemaining })}
+                  </span>
+                </div>
               )}
+
+              {/* Prix unique */}
+              <div className="flex items-end gap-2 mt-2">
+                <span className="font-display font-bold text-5xl text-white">99 €</span>
+                <div className="pb-1">
+                  <span className="text-white/60 text-sm">{t("pricing_per_year")}</span>
+                </div>
+              </div>
+              <p className="text-white/50 text-xs mt-2">{t("pricing_launch_note")}</p>
             </div>
             <div className="p-7">
               {/* Moteur 1 */}
@@ -132,13 +114,12 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              {/* PROOF: cta_click → analytics_events (real write on pricing CTA click) */}
               <Link
                 to="/checkout"
                 className="btn-primary w-full text-center text-base py-4 block"
-                onClick={() => trackEvent("cta_click", null, { source: "pricing_enterprise", label: launchAvailable ? "launch" : "standard" })}
+                onClick={() => trackEvent("cta_click", null, { source: "pricing_enterprise", label: "launch" })}
               >
-                {launchAvailable ? t("pricing_cta_launch") : t("pricing_cta_standard")}
+                Démarrer maintenant — 99 €/an
               </Link>
               <div className="mt-4 p-3 rounded-lg border flex items-center gap-2" style={{ background: "hsl(218 72% 18% / 0.05)", borderColor: "hsl(218 72% 18% / 0.12)" }}>
                 <Tag size={14} style={{ color: "hsl(var(--primary))" }} className="shrink-0" />
@@ -149,7 +130,7 @@ export default function Pricing() {
             </div>
           </div>
 
-          {/* Apporteur */}
+          {/* Apporteur — Gratuit */}
           <div className="bg-card rounded-2xl overflow-hidden border-2 border-accent">
             <div className="p-7 border-b border-border" style={{ background: "var(--gradient-accent)" }}>
               <div className="flex items-center gap-3 mb-4">
