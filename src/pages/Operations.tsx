@@ -1613,6 +1613,24 @@ export default function Operations() {
           </div>
         )}
 
+        {/* ══════════════════════════════════════════════════════════════════
+            TAB: CONTROL — OpenClaw pg_cron Control Panel
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeTab === "control" && (
+          <ControlPanel
+            latestHeartbeat={latestHeartbeat}
+            engineHealthy={engineHealthy}
+            heartbeats={heartbeats}
+            recentExecutions={recentExecutions}
+            schedulerTriggering={schedulerTriggering}
+            triggerScheduler={triggerScheduler}
+            healthcheckResult={healthcheckResult}
+            healthcheckLoading={healthcheckLoading}
+            setHealthcheckResult={setHealthcheckResult}
+            setHealthcheckLoading={setHealthcheckLoading}
+          />
+        )}
+
       </div>
     </UserLayout>
   );
