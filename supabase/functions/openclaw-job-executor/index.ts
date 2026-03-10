@@ -484,6 +484,17 @@ Génère le brief matinal.`;
             `Brief du ${briefDate} — ${priorityItems.length} point(s) à traiter`,
             { type: "daily_brief", date: briefDate, priority_count: priorityItems.length, missions_actives: missions.length, ai_generated: !!aiSummary },
           );
+
+          // Mirror to user_actions: brief quotidien → type analyser
+          await svc.from("user_actions").insert({
+            user_id:     userId,
+            type:        "analyser",
+            title:       `Brief du ${briefDate}`,
+            description: aiSummary ?? `${priorityItems.length} point(s) à traiter aujourd'hui.`,
+            priority:    pendingV > 0 || pendingI > 0 ? "haute" : "normale",
+            source:      "openclaw",
+            status:      "a_faire",
+          });
         }
 
         if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(7) }).eq("id", job_id);
