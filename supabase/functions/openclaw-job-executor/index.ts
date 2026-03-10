@@ -339,7 +339,7 @@ ${dossier ? `- Profil entreprise : ${dossier.secteur_activite ?? ""}, cible idé
                 .eq("id", lead_intake_id);
 
               // Write recommendation
-              await svc.from("openclaw_recommendations").insert({
+              const { data: recData } = await svc.from("openclaw_recommendations").insert({
                 user_id:            userId,
                 type:               "nba_ai",
                 title:              `Action IA recommandée : ${actionType.replace(/_/g, " ")}`,
@@ -352,6 +352,26 @@ ${dossier ? `- Profil entreprise : ${dossier.secteur_activite ?? ""}, cible idé
                 execution_id:       executionId,
                 recommended_action: actionType,
                 ai_generated:       true,
+              }).select("id").single();
+
+              // Mirror to user_actions
+              const nbaTypeMap: Record<string, string> = {
+                contact_email_draft:              "envoyer",
+                contact_manual_call:              "appeler",
+                promote_to_opportunity:           "valider",
+                enrich_lead:                      "verifier",
+                review_lead:                      "analyser",
+                request_facilitator_precision:    "verifier",
+              };
+              await svc.from("user_actions").insert({
+                user_id:        userId,
+                type:           nbaTypeMap[actionType] ?? "analyser",
+                title:          `Action IA : ${actionType.replace(/_/g, " ")}`,
+                description:    reason,
+                priority:       priority === "high" ? "haute" : "normale",
+                source:         "openclaw",
+                source_ref_id:  recData?.id ?? null,
+                status:         "a_faire",
               });
 
               result.actions_created          = 1;
