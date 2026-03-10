@@ -81,9 +81,11 @@ function StatusDot({ ok, pulse }: { ok: boolean; pulse?: boolean }) {
 export default function Operations() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
-  const [activeTab, setActiveTab] = useState<TabId>("runtime");
+  const [activeTab, setActiveTab] = useState<TabId>("control");
   const [probingChannel, setProbingChannel] = useState<string | null>(null);
   const [triggeringJob, setTriggeringJob] = useState<string | null>(null);
+  const [healthcheckResult, setHealthcheckResult] = useState<Record<string, unknown> | null>(null);
+  const [healthcheckLoading, setHealthcheckLoading] = useState(false);
 
   const {
     actions: channelActions,
