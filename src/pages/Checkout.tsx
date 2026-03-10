@@ -289,10 +289,13 @@ export default function Checkout() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">Accès complet — introductions illimitées, ROI Dashboard, support prioritaire</p>
-                    {effectiveLaunchAvailable && (
+                    {quotaLoading && (
+                      <div className="mt-1 h-3.5 w-40 animate-pulse rounded bg-muted" />
+                    )}
+                    {showSlotCounter && (
                       <p className="text-xs text-accent font-medium mt-1 flex items-center gap-1">
                         <Clock size={10} />
-                        Plus que {effectiveSlotsRemaining} place{effectiveSlotsRemaining > 1 ? "s" : ""} au tarif fondateur
+                        Plus que {effectiveSlotsRemaining} place{(effectiveSlotsRemaining ?? 0) > 1 ? "s" : ""} au tarif fondateur
                       </p>
                     )}
                   </div>
