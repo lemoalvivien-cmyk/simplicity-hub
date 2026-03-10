@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
+import ListPagination from "@/components/ui/ListPagination";
 import {
   Users, Star, MapPin, Briefcase, TrendingUp, CheckCircle2,
   Search, ArrowRight, Shield, Heart, Zap, Loader2, Sparkles,
