@@ -9,7 +9,7 @@ import {
   Sparkles, ArrowRight, Shield, TrendingUp, Globe, Zap,
   Loader2, ChevronRight, Star, Users
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
+
 
 interface Props {
   context?: PathContext;
