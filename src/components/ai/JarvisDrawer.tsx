@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react";
-import { X, Sparkles, Send, ChevronRight, Loader2, RotateCcw, Zap } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { X, Sparkles, Send, ChevronRight, Loader2, RotateCcw, Zap, Mic, Volume2, VolumeX } from "lucide-react";
 import { askAI, AiResponse, JARVIS_QUICK_QUESTIONS, CopilotContext, ChatHistoryMessage } from "@/lib/aiService";
 import { useNavigate } from "react-router-dom";
+import JarvisVoice from "./JarvisVoice";
 
 interface Message {
   id: number;
@@ -30,7 +31,11 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // last jarvis text for TTS
+  const lastJarvisText = messages.filter((m) => m.role === "jarvis").at(-1)?.text;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -231,12 +236,33 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
 
         {/* Input */}
         <div className="border-t border-border px-4 py-3 shrink-0">
+          {/* Voice mode toggle + JarvisVoice */}
+          <div className="flex items-center justify-between mb-2.5">
+            <JarvisVoice
+              onTranscript={(text) => send(text)}
+              lastJarvisText={voiceMode ? lastJarvisText : undefined}
+              autoSpeak={voiceMode}
+            />
+            <button
+              onClick={() => setVoiceMode((v) => !v)}
+              title={voiceMode ? "Passer en mode texte" : "Activer le mode vocal"}
+              className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-xl transition-all"
+              style={{
+                background: voiceMode ? "hsl(var(--secondary))" : "hsl(var(--muted))",
+                color: voiceMode ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                border: `1px solid ${voiceMode ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border))"}`,
+              }}
+            >
+              {voiceMode ? <Volume2 size={12} /> : <VolumeX size={12} />}
+              {voiceMode ? "Vocal actif" : "Vocal"}
+            </button>
+          </div>
           <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="flex gap-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Posez votre question…"
+              placeholder={voiceMode ? "Ou tapez votre question…" : "Posez votre question…"}
               className="flex-1 px-3.5 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 transition-shadow"
             />
             <button

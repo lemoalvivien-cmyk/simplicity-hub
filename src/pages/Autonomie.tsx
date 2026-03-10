@@ -126,13 +126,20 @@ export default function Autonomie() {
     toast.success(next ? "Kill Switch activé — tous les agents sont stoppés." : "Agents réactivés.");
   };
 
-  const handleVoiceChange = (pref: VoicePreference) => {
+  const handleVoiceChange = async (pref: VoicePreference) => {
     setVoicePreference(pref);
     localStorage.setItem("wiinup_voice_preference", pref);
+    // Also persist to openclaw_config for cross-device sync
+    if (user) {
+      await db.from("openclaw_config").upsert(
+        { user_id: user.id, autonomie_level: autonomieLevel, voice_preference: pref },
+        { onConflict: "user_id" }
+      );
+    }
     toast.success("Préférence vocale enregistrée.");
   };
 
-  const handleTestVoice = () => {
+  const handleTestVoiceBrowser = () => {
     if (!("speechSynthesis" in window)) return;
     setTestingVoice(true);
     window.speechSynthesis.cancel();
@@ -145,6 +152,41 @@ export default function Autonomie() {
     utter.onend = () => setTestingVoice(false);
     utter.onerror = () => setTestingVoice(false);
     window.speechSynthesis.speak(utter);
+  };
+
+  const handleTestElevenLabs = async () => {
+    setTestingVoice(true);
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+      const res = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-tts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify({
+          text: "Bonjour. JARVIS est prêt. Vos agents travaillent pour vous.",
+          voiceId: "nPczCjzI2devNBz1zQrb",
+        }),
+      });
+      if (!res.ok) {
+        toast.error("ElevenLabs non configuré. Utilisez la voix navigateur.");
+        setTestingVoice(false);
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.play();
+      audio.onended = () => { URL.revokeObjectURL(url); setTestingVoice(false); };
+      audio.onerror = () => setTestingVoice(false);
+      toast.success("Voix ElevenLabs active !");
+    } catch {
+      toast.error("Erreur ElevenLabs — vérifiez la configuration.");
+      setTestingVoice(false);
+    }
   };
 
   if (loading) {
@@ -341,7 +383,7 @@ export default function Autonomie() {
 
           {voicePreference === "browser" && (
             <button
-              onClick={handleTestVoice}
+              onClick={handleTestVoiceBrowser}
               disabled={testingVoice}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border border-border hover:bg-muted transition-colors"
             >
@@ -351,15 +393,25 @@ export default function Autonomie() {
           )}
 
           {voicePreference === "premium" && (
-            <div
-              className="flex items-start gap-2 p-3 rounded-xl text-xs"
-              style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}
-            >
-              <Info size={13} className="shrink-0 mt-0.5" />
-              <p>
-                La voix premium utilise ElevenLabs. Un administrateur doit configurer l'agent vocal
-                depuis la page <strong>/agents → Connexion</strong>. En attendant, la voix navigateur est utilisée.
-              </p>
+            <div className="space-y-2">
+              <div
+                className="flex items-start gap-2 p-3 rounded-xl text-xs"
+                style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}
+              >
+                <Info size={13} className="shrink-0 mt-0.5" />
+                <p>
+                  La voix premium utilise ElevenLabs TTS. La clé API doit être configurée dans les secrets du projet.
+                  En attendant, la voix navigateur est utilisée en fallback automatique.
+                </p>
+              </div>
+              <button
+                onClick={handleTestElevenLabs}
+                disabled={testingVoice}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border border-border hover:bg-muted transition-colors"
+              >
+                {testingVoice ? <RefreshCw size={14} className="animate-spin" /> : <Mic size={14} />}
+                {testingVoice ? "Lecture ElevenLabs…" : "Tester la voix ElevenLabs"}
+              </button>
             </div>
           )}
         </div>

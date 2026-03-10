@@ -9,15 +9,31 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { agentId } = await req.json();
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
 
+    // ── Config check — no key configured ─────────────────────────────────────
     if (!ELEVENLABS_API_KEY) {
       return new Response(
-        JSON.stringify({ error: "ELEVENLABS_API_KEY non configuré" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          error: "elevenlabs_not_configured",
+          fallback: "browser",
+          message: "Configurez ELEVENLABS_API_KEY dans les secrets du projet.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const body = await req.json().catch(() => ({}));
+
+    // ── Health check probe (no agentId needed) ────────────────────────────────
+    if (body?.check === true) {
+      return new Response(
+        JSON.stringify({ ok: true, configured: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { agentId } = body;
 
     if (!agentId) {
       return new Response(
@@ -34,19 +50,19 @@ Deno.serve(async (req: Request) => {
     if (!response.ok) {
       const err = await response.text();
       return new Response(
-        JSON.stringify({ error: "Erreur ElevenLabs", detail: err }),
+        JSON.stringify({ error: "Erreur ElevenLabs", detail: err, fallback: "browser" }),
         { status: response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const { token } = await response.json();
     return new Response(
-      JSON.stringify({ token }),
+      JSON.stringify({ token, configured: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     return new Response(
-      JSON.stringify({ error: "Erreur interne", detail: String(err) }),
+      JSON.stringify({ error: "Erreur interne", detail: String(err), fallback: "browser" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
