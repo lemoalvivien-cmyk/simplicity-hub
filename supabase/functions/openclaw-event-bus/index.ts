@@ -93,6 +93,7 @@ const EVENT_JOB_MAP: Record<string, Array<{
 const BROADCAST_EVENTS = new Set(["daily_sweep", "weekly_sweep"]);
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

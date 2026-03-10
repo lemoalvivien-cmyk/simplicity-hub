@@ -60,6 +60,7 @@ const CHANNEL_CAPABILITIES: Record<string, {
 };
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const respond = (body: unknown, status = 200) =>

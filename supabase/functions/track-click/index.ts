@@ -42,6 +42,7 @@ const log = (level: "info" | "warn" | "error", step: string, detail?: unknown) =
 const QUALIFIED_INTEREST_THRESHOLD = 3;
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";

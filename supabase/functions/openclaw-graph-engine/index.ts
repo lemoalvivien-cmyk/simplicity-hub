@@ -24,6 +24,7 @@ const CHANNEL_MATRIX: Record<string, { can_send: boolean; mode: string }> = {
 void CHANNEL_MATRIX;
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
