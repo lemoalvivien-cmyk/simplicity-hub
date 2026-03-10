@@ -274,6 +274,19 @@ export default function Contacts() {
             </select>
             <Filter size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>
+          <button
+            onClick={() => setSortByScore(v => !v)}
+            title="Trier par score IA"
+            className={`px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              sortByScore
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <Flame size={13} />
+            <span className="hidden sm:inline">Score IA</span>
+            <ArrowUpDown size={11} />
+          </button>
         </div>
 
         {/* Liste */}
