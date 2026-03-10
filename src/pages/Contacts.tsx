@@ -306,6 +306,7 @@ export default function Contacts() {
         ) : (
           <div className="space-y-2">
             {filtered.map((c) => {
+              const aiInfo = aiScoreMap[c.id];
               const cfg = statusConfig[c.statut];
               const src = sourceConfig[c.origine];
               const seqInfo = seqMap[c.id];
