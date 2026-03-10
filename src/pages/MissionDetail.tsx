@@ -38,7 +38,9 @@ interface MissionMatch {
   compatibility_score: number;
   reasoning: string | null;
   status: string;
+  ai_generated?: boolean;
   facilitateur_name?: string;
+  trust_score?: number;
 }
 
 const statusConfig = {
