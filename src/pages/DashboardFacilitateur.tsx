@@ -17,9 +17,6 @@ import ActivationProgressBar from "@/components/activation/ActivationProgressBar
 import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
-import BestOfferToPush from "@/components/passive/BestOfferToPush";
-import NetworkValueMap from "@/components/passive/NetworkValueMap";
-import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
