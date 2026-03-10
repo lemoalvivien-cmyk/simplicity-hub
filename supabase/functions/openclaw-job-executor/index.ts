@@ -339,7 +339,7 @@ ${dossier ? `- Profil entreprise : ${dossier.secteur_activite ?? ""}, cible idé
                 .eq("id", lead_intake_id);
 
               // Write recommendation
-              await svc.from("openclaw_recommendations").insert({
+              const { data: recData } = await svc.from("openclaw_recommendations").insert({
                 user_id:            userId,
                 type:               "nba_ai",
                 title:              `Action IA recommandée : ${actionType.replace(/_/g, " ")}`,
@@ -352,6 +352,26 @@ ${dossier ? `- Profil entreprise : ${dossier.secteur_activite ?? ""}, cible idé
                 execution_id:       executionId,
                 recommended_action: actionType,
                 ai_generated:       true,
+              }).select("id").single();
+
+              // Mirror to user_actions
+              const nbaTypeMap: Record<string, string> = {
+                contact_email_draft:              "envoyer",
+                contact_manual_call:              "appeler",
+                promote_to_opportunity:           "valider",
+                enrich_lead:                      "verifier",
+                review_lead:                      "analyser",
+                request_facilitator_precision:    "verifier",
+              };
+              await svc.from("user_actions").insert({
+                user_id:        userId,
+                type:           nbaTypeMap[actionType] ?? "analyser",
+                title:          `Action IA : ${actionType.replace(/_/g, " ")}`,
+                description:    reason,
+                priority:       priority === "high" ? "haute" : "normale",
+                source:         "openclaw",
+                source_ref_id:  recData?.id ?? null,
+                status:         "a_faire",
               });
 
               result.actions_created          = 1;
@@ -464,6 +484,17 @@ Génère le brief matinal.`;
             `Brief du ${briefDate} — ${priorityItems.length} point(s) à traiter`,
             { type: "daily_brief", date: briefDate, priority_count: priorityItems.length, missions_actives: missions.length, ai_generated: !!aiSummary },
           );
+
+          // Mirror to user_actions: brief quotidien → type analyser
+          await svc.from("user_actions").insert({
+            user_id:     userId,
+            type:        "analyser",
+            title:       `Brief du ${briefDate}`,
+            description: aiSummary ?? `${priorityItems.length} point(s) à traiter aujourd'hui.`,
+            priority:    pendingV > 0 || pendingI > 0 ? "haute" : "normale",
+            source:      "openclaw",
+            status:      "a_faire",
+          });
         }
 
         if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(7) }).eq("id", job_id);
