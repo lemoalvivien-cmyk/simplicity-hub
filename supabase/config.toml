@@ -12,89 +12,83 @@ verify_jwt = false
 # ── AUTHENTICATED ENDPOINTS — verify_jwt = true ──────────────────────────────
 # All other functions require a valid JWT (user or service-role) at the proxy level.
 
+# ── Lovable Cloud uses ES256 JWT signing — verify_jwt must be false for all
+# ── authenticated functions; JWT is validated in-code via getUser(token). ──────
+
 [functions.create-checkout]
-verify_jwt = true
+verify_jwt = false
 
 [functions.check-subscription]
-verify_jwt = true
+verify_jwt = false
 
 [functions.customer-portal]
-verify_jwt = true
+verify_jwt = false
 
 [functions.redeem-promo]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-healthcheck]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-gateway]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-dossier-sync]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-kill-switch]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-validate]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-generate]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-status]
-verify_jwt = true
+verify_jwt = false
 
 [functions.elevenlabs-voice-token]
-verify_jwt = true
+verify_jwt = false
 
 [functions.deal-radar-score]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-generate-packs]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-channel-probe]
-verify_jwt = true
+verify_jwt = false
 
-# openclaw-job-executor: called by scheduler (service-role Bearer) or user JWT.
-# verify_jwt = true — Supabase proxy accepts both user JWTs and the service-role key.
 [functions.openclaw-job-executor]
-verify_jwt = true
+verify_jwt = false
 
-# openclaw-scheduler: invoked by pg_cron (service-role Bearer) or manual user trigger.
-# verify_jwt = true — Supabase proxy accepts both user JWTs and the service-role key.
 [functions.openclaw-scheduler]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-event-bus]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-smoke-test]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-channel-dispatch]
-verify_jwt = true
+verify_jwt = false
 
 [functions.openclaw-graph-engine]
-verify_jwt = true
+verify_jwt = false
 
-# send-reactivation-email: called by admin only (admin JWT + role check in function)
 [functions.send-reactivation-email]
-verify_jwt = true
+verify_jwt = false
 
-# ai-prospection: generates 3 personalized B2B prospection messages using Gemini
 [functions.ai-prospection]
-verify_jwt = true
+verify_jwt = false
 
-# ai-lead-scoring: scores a lead 1-10 using Gemini and persists to lead_intakes
 [functions.ai-lead-scoring]
-verify_jwt = true
+verify_jwt = false
 
-# ai-matching: matches an enterprise profile with top 3 active facilitateurs using Gemini
 [functions.ai-matching]
-verify_jwt = true
+verify_jwt = false
 
-# ai-opportunity-analysis: scores and analyzes a business opportunity using Gemini
 [functions.ai-opportunity-analysis]
-verify_jwt = true
+verify_jwt = false
