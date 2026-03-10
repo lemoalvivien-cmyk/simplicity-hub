@@ -126,14 +126,23 @@ function ControlPanel({
 
   const handleTrigger = async (tickType: string) => {
     setTriggeringType(tickType);
-    const result = await triggerScheduler({ tick_type: tickType });
-    setTriggeringType(null);
-    if (result.ok) {
-      toast.success(tickType === "manual_scan" ? "Scan lancé." : "Brief généré.", {
-        description: result.completed > 0 ? `${result.completed} job(s) terminé(s)` : "Aucun job en attente.",
+    try {
+      const { data, error } = await supabase.functions.invoke("openclaw-scheduler", {
+        body: { tick_type: tickType, source: "manual_ui" },
       });
-    } else {
-      toast.error("Erreur scheduler.", { description: result.error });
+      if (error) throw error;
+      const result = data as { ok?: boolean; jobs_completed?: number; jobs_claimed?: number; error?: string };
+      if (result.ok !== false) {
+        toast.success(tickType === "manual_scan" ? "Scan lancé." : "Brief généré.", {
+          description: (result.jobs_completed ?? 0) > 0 ? `${result.jobs_completed} job(s) terminé(s)` : "Aucun job en attente.",
+        });
+      } else {
+        toast.error("Erreur scheduler.", { description: result.error });
+      }
+    } catch (e: unknown) {
+      toast.error("Erreur scheduler.", { description: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setTriggeringType(null);
     }
   };
 
