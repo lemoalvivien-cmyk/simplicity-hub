@@ -97,8 +97,7 @@ async function ingestPassiveThreshold(
 }
 
 export default function PassiveOS() {
-  const { t } = useTranslation();
-  const lang = i18n.language || "fr";
+  const lang = "fr";
   const { user } = useAuth();
   const { toast } = useToast();
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
