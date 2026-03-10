@@ -8,7 +8,7 @@
  *   - daily_sweep / weekly_sweep broadcast only allowed for service_role
  */
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
