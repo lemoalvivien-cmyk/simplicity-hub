@@ -562,7 +562,17 @@ Génère le brief matinal.`;
           }
         }
 
-        if (recs.length > 0) await svc.from("openclaw_recommendations").insert(recs);
+        if (recs.length > 0) {
+          await svc.from("openclaw_recommendations").insert(recs);
+          // 🔔 Notification: radar signals detected
+          await svc.from("notifications").insert({
+            user_id: userId,
+            type: "radar_signal",
+            title: `Radar — ${recs.length} nouveau(x) signal(s) détecté(s)`,
+            body: `Le moteur de prospection a analysé ${missions.slice(0, 5).length} mission(s) et trouvé de nouvelles opportunités.`,
+            href: "/pilotage",
+          });
+        }
         if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(8) }).eq("id", job_id);
 
         result.recommendations_created = recs.length;
