@@ -7,7 +7,7 @@ import {
   MessageSquare, Smartphone, Radar, Flag, Network,
   Moon, Share2, Upload, ChevronDown, Lock, Swords, Cpu
 } from "lucide-react";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/supabase";
 import NotificationBell from "@/components/NotificationBell";
