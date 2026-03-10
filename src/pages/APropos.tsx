@@ -535,9 +535,9 @@ export default function APropos() {
               name="Vivien Le Moal"
               role="Président & Co-fondateur"
               tagline="Entrepreneur serial · Community Builder · 20 ans terrain"
-              description='"Ancien marchand de biens, ex-président de CCI, consultant en transformation commerciale pendant 15 ans. Vivien a accompagné des centaines d'entreprises dans leur développement. Il n'a pas créé WiinupMax depuis un bureau. Il l'a créé parce qu'il a vécu le problème : trouver des clients, faire confiance aux bonnes personnes, faire tourner une boîte pour de vrai.'
+              description={"\"Ancien marchand de biens, ex-président de CCI, consultant en transformation commerciale pendant 15 ans. Vivien a accompagné des centaines d\u2019entreprises dans leur développement. Il n\u2019a pas créé WiinupMax depuis un bureau. Il l\u2019a créé parce qu\u2019il a vécu le problème : trouver des clients, faire confiance aux bonnes personnes, faire tourner une boîte pour de vrai."}
               tags={["Community Builder", "+20 ans terrain", "Ex-Président CCI", "Transformation commerciale"]}
-              quote='"J'ai passé 20 ans à aider des entreprises à grandir. WiinupMax, c'est tout ce que j'aurais voulu avoir dès le premier jour."'
+              quote={"\"J\u2019ai passé 20 ans à aider des entreprises à grandir. WiinupMax, c\u2019est tout ce que j\u2019aurais voulu avoir dès le premier jour.\""}
               badgeLabel="Président & Co-fondateur"
             />
             <FounderCard
@@ -545,9 +545,9 @@ export default function APropos() {
               name="Émilie Varnier"
               role="CEO Associée & Co-fondatrice"
               tagline="Architecte de l'expérience humaine · DRH · Thérapeute"
-              description='"Ancienne DRH d'un groupe de plus de 500 personnes, thérapeute certifiée, entrepreneuse depuis 2016. Émilie a passé sa carrière à comprendre les gens — leurs peurs, leurs ambitions, leurs blocages. Elle apporte à WiinupMax ce qui manque à toutes les plateformes : la dimension humaine, et la conviction profonde que chacun peut s'en sortir.'
+              description={"\"Ancienne DRH d\u2019un groupe de plus de 500 personnes, thérapeute certifiée, entrepreneuse depuis 2016. Émilie a passé sa carrière à comprendre les gens — leurs peurs, leurs ambitions, leurs blocages. Elle apporte à WiinupMax ce qui manque à toutes les plateformes : la dimension humaine, et la conviction profonde que chacun peut s\u2019en sortir."}
               tags={["Architecte RH", "Thérapeute certifiée", "Ex-DRH 500 personnes", "Entrepreneuse depuis 2016"]}
-              quote='"Les gens ont les compétences. Ce qui leur manque, c'est le système qui valorise ce qu'ils savent déjà faire."'
+              quote={"\"Les gens ont les compétences. Ce qui leur manque, c\u2019est le système qui valorise ce qu\u2019ils savent déjà faire.\""}
               badgeLabel="CEO Associée & Co-fondatrice"
             />
           </div>
