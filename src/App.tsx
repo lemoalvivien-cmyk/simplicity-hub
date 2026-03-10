@@ -62,6 +62,7 @@ import ProfilFacilitateur from "./pages/ProfilFacilitateur";
 // Apport d'affaires — entreprise
 import IntroductionsEntreprise from "./pages/IntroductionsEntreprise";
 import ProfilEntreprise from "./pages/ProfilEntreprise";
+import OpportuniteNouvelle from "./pages/OpportuniteNouvelle";
 
 // OpenClaw — Cerveau central agentique
 import Agents from "./pages/Agents";
