@@ -8,10 +8,11 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   ArrowLeft, Send, Info, AlertCircle, ChevronRight, CheckCircle2,
-  Clock, MapPin, Euro, Briefcase, Users, Loader2
+  Clock, MapPin, Euro, Briefcase, Users, Loader2, Sparkles, Star, UserCheck
 } from "lucide-react";
 import CopilotPanel from "@/components/ai/CopilotPanel";
 import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
