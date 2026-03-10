@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
+import { LegalFooter } from "@/components/layout/PublicNav";
 
 export default function CGU() {
   return (
