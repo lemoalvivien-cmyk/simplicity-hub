@@ -109,7 +109,7 @@ export default function CampagneDetail() {
       setCampagne(campRes.data as Campagne);
 
       if (seqRes.data) {
-        const seq = seqRes.data as ProspectionSequence;
+        const seq = seqRes.data as unknown as ProspectionSequence;
         setSequence(seq);
 
         // Load execution stats

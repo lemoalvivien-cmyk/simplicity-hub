@@ -99,7 +99,7 @@ export default function Contacts() {
               contact_id: ex.contact_id,
               sequence_name: seq.name,
               current_step: ex.current_step,
-              total_steps: Array.isArray(seq.steps) ? seq.steps.length : 0,
+              total_steps: Array.isArray(seq.steps) ? (seq.steps as unknown[]).length : 0,
               status: ex.status,
             };
           }
