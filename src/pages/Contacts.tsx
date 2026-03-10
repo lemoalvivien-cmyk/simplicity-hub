@@ -163,6 +163,11 @@ export default function Contacts() {
       (c.email || "").toLowerCase().includes(q);
     const matchStatus = filterStatus === "tous" || c.statut === filterStatus;
     return matchSearch && matchStatus;
+  }).sort((a, b) => {
+    if (!sortByScore) return 0;
+    const scoreA = aiScoreMap[a.id]?.ai_score ?? -1;
+    const scoreB = aiScoreMap[b.id]?.ai_score ?? -1;
+    return scoreB - scoreA;
   });
 
   const aContacter = contacts.filter(c => c.statut === "a_contacter").length;
