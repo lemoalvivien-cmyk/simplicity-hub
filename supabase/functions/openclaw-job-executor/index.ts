@@ -754,6 +754,14 @@ Génère le brief matinal.`;
             agent_name: "matchmaker", priority: "normale", status: "nouvelle",
             execution_id: executionId, recommended_action: "Explorer les facilitateurs disponibles",
           });
+          // 🔔 Notification: facilitator match
+          await svc.from("notifications").insert({
+            user_id: userId,
+            type: "facilitateur_match",
+            title: `Matching facilitateur — ${missionsWithNoRequests.length} mission(s) à pourvoir`,
+            body: `L'IA a identifié des facilitateurs compatibles pour : ${missionsWithNoRequests.slice(0, 2).join(", ")}${missionsWithNoRequests.length > 2 ? "…" : ""}.`,
+            href: "/missions",
+          });
           recsCreated = 1;
         }
         if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(10) }).eq("id", job_id);
