@@ -14,7 +14,7 @@ import { fr } from "date-fns/locale";
 interface Mission {
   id: string;
   titre: string;
-  statut: string;
+  statut: string | null;
   created_at: string;
 }
 

@@ -156,7 +156,7 @@ export function track(event: TrackEvent, payload?: TrackPayload) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any;
     w.dataLayer = w.dataLayer || [];
-    w.dataLayer.push({ event: `wiinup_${event}`, ...data });
+    w.dataLayer.push({ event: `wiinup_${event}`, ...data, _event_type: event });
   }
 
   // Persist to DB only if event is in the accepted set
