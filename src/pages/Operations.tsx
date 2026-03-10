@@ -103,8 +103,6 @@ interface ControlPanelProps {
   engineHealthy: boolean;
   heartbeats: SchedulerHeartbeat[];
   recentExecutions: JobExecution[];
-  schedulerTriggering: boolean;
-  triggerScheduler: (dryRun?: boolean) => Promise<{ ok: boolean; claimed: number; completed: number; failed: number; error?: string }>;
   healthcheckResult: Record<string, unknown> | null;
   healthcheckLoading: boolean;
   setHealthcheckResult: (r: Record<string, unknown> | null) => void;
@@ -113,7 +111,6 @@ interface ControlPanelProps {
 
 function ControlPanel({
   latestHeartbeat, engineHealthy, heartbeats, recentExecutions,
-  schedulerTriggering, triggerScheduler,
   healthcheckResult, healthcheckLoading, setHealthcheckResult, setHealthcheckLoading,
 }: ControlPanelProps) {
   const [triggeringType, setTriggeringType] = useState<string | null>(null);
