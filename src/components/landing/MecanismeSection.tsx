@@ -146,7 +146,7 @@ export default function MecanismeSection() {
             </div>
             <p className="font-display font-bold text-white text-base">Cockpit central</p>
           </div>
-          <p className="text-white/75 text-sm max-w-md mx-auto leading-relaxed">
+          <p className="text-white/80 text-sm max-w-md mx-auto leading-relaxed">
             Les deux moteurs remontent dans le même tableau de bord.
             Validation, suivi, gains, priorités — tout est visible. JARVIS vous dit toujours quoi faire ensuite.
           </p>

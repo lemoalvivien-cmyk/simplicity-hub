@@ -49,13 +49,13 @@ export default function FinalCTASection() {
             Démarrer ma première mission — 99 €/an
             <ArrowRight size={17} />
           </Link>
-          <span className="flex items-center gap-1.5 text-white/45 text-xs">
+          <span className="flex items-center gap-1.5 text-white/60 text-xs">
             <ShieldCheck size={12} aria-hidden="true" />
             Satisfait ou remboursé 30 jours
           </span>
         </div>
 
-        <p className="mt-5 text-white/22 text-xs">
+        <p className="mt-5 text-white/50 text-xs">
           Sans engagement · Annulation libre · Support inclus à chaque étape
         </p>
       </div>

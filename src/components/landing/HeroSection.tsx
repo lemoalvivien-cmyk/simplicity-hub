@@ -144,7 +144,7 @@ export default function HeroSection() {
                       aria-hidden="true"
                     />
                   )}
-                  <span className="text-[10px] font-medium text-white/50 leading-tight">{label}</span>
+                  <span className="text-[10px] font-medium text-white/65 leading-tight">{label}</span>
                 </div>
                 <p className="font-display font-bold text-lg md:text-xl leading-none" style={{ color }}>
                   {value}
