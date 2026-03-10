@@ -81,9 +81,11 @@ type DbEvent =
 export type TrackEvent =
   | DbEvent
   | "cta_howitworks"
+  | "cta_hero_facilitateur"
   | "cta_facilitateur_section"
   | "faq_open"
   | "objection_open"
+  | "qa_open"
   | "scroll_25"
   | "scroll_75"
   | "scroll_100";
