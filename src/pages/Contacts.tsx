@@ -6,6 +6,7 @@ import { db } from "@/lib/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import ListPagination from "@/components/ui/ListPagination";
 
 type ContactStatus = "a_contacter" | "contacte" | "en_discussion" | "converti" | "pas_interesse";
 type ContactSource = "import" | "manuel" | "introduction" | "prospection" | "telephone";
