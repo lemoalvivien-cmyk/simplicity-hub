@@ -299,7 +299,7 @@ const resources = {
       checkout_features_5: "Pilotage & rapports",
       checkout_features_6: "Support prioritaire",
       checkout_pay_launch: "Payer 99 € / an",
-      checkout_pay_standard: "Payer 490 € / an",
+      checkout_pay_standard: "Démarrer maintenant — 99 € / an",
       checkout_secure_stripe: "Paiement sécurisé par Stripe · Facture incluse",
       checkout_facilitator_link: "Apporteur d'affaires ?",
       checkout_facilitator_free: "Accès gratuit ici →",
