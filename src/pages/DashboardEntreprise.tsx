@@ -28,6 +28,7 @@ import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 import ProspectionModal from "@/components/ai/ProspectionModal";
+import ROIWidget from "@/components/roi/ROIWidget";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
