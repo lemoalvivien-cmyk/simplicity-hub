@@ -495,6 +495,13 @@ export default function Facilitateurs() {
           </div>
         )}
 
+        <ListPagination
+          page={page}
+          pageSize={PAGE_SIZE}
+          total={filtered.length}
+          onPage={setPage}
+        />
+
         {/* Revenue insight */}
         {!loading && facilitateurs.length > 0 && (
           <div className="card-surface p-4 flex items-start gap-3"
