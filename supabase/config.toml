@@ -86,3 +86,7 @@ verify_jwt = true
 # ai-prospection: generates 3 personalized B2B prospection messages using Gemini
 [functions.ai-prospection]
 verify_jwt = true
+
+# ai-lead-scoring: scores a lead 1-10 using Gemini and persists to lead_intakes
+[functions.ai-lead-scoring]
+verify_jwt = true
