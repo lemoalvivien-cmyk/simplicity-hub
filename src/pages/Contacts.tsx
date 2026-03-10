@@ -310,6 +310,8 @@ export default function Contacts() {
               const cfg = statusConfig[c.statut];
               const src = sourceConfig[c.origine];
               const seqInfo = seqMap[c.id];
+              const aiInfo = aiScoreMap[c.id];
+              const aiCfg = aiInfo?.ai_label ? (aiScoreConfig[aiInfo.ai_label] ?? null) : null;
               return (
                 <Link key={c.id} to={`/contacts/${c.id}`}
                   className="card-surface p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
