@@ -3,7 +3,7 @@
  * Generates multi-format diffusion packs for a shared_offer or offer
  * using AI (LOVABLE_API_KEY / Gemini) and stores them in offer_packs
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

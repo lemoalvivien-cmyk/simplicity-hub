@@ -9,7 +9,7 @@
  *  - No sensitive data leaked in error responses
  *  - Structured logs on all paths
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
