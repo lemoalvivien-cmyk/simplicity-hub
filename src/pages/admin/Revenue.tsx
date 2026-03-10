@@ -199,9 +199,9 @@ export default function AdminRevenue() {
                 icon={CreditCard}
               />
               <MetricCard
-                label="Offre standard 490 €"
+                label="Abonnement annuel 99 €"
                 value={metrics.standardSubscribers}
-                sub={`= ${(metrics.standardSubscribers * PRICING.standard.amount).toLocaleString("fr")} € revenu`}
+                sub={`= ${(metrics.standardSubscribers * 99).toLocaleString("fr")} € revenu`}
                 icon={CreditCard}
               />
             </div>

@@ -234,9 +234,7 @@ export default function Checkout() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {effectiveLaunchAvailable
-                        ? `${formatAmount(99, lang)} / an · ${t("checkout_launch_slots", { slots: effectiveSlotsRemaining })}`
-                        : `${formatAmount(490, lang)} / an`}
+                      {`${formatAmount(99, lang)} / an · ${t("checkout_launch_slots", { slots: effectiveSlotsRemaining })}`}
                     </p>
                   </div>
                   <ArrowRight size={16} className="text-muted-foreground shrink-0 mt-1 group-hover:text-primary transition-colors" />

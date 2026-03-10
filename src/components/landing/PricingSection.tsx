@@ -90,13 +90,10 @@ export default function PricingSection() {
               <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
               <div className="flex items-end gap-2 mb-1">
                 <span className="font-display font-bold text-5xl text-white">
-                  {launchAvailable ? "99 €" : "490 €"}
+                  99 €
                 </span>
                 <div className="pb-1">
                   <p className="text-white/60 text-sm">TTC / an</p>
-                  {launchAvailable && (
-                    <p className="text-white/35 text-xs line-through">490 € / an</p>
-                  )}
                 </div>
               </div>
               <p className="text-white/45 text-xs">
