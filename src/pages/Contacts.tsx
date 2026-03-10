@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import { Search, Plus, Upload, ChevronRight, Phone, Mail, User, Clock, CheckCircle2, AlertCircle, Filter, Loader2, Zap } from "lucide-react";
+import { Search, Plus, Upload, ChevronRight, Phone, Mail, User, Clock, CheckCircle2, AlertCircle, Filter, Loader2, Zap, Flame, ArrowUpDown } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
