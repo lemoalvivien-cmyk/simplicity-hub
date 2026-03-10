@@ -187,9 +187,6 @@ export default function Pilotage() {
           </div>
         )}
 
-        {/* ── BRIEF OPENCLAW ─────────────────────────────────────── */}
-        <MorningBrief compact />
-
         {/* ── DEAL RADAR CALLOUT ─────────────────────────────────── */}
         <Link
           to="/radar"
