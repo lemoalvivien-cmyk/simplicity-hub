@@ -124,6 +124,12 @@ function DashboardRouter() {
   return <DashboardFacilitateur />;
 }
 
+// Auto page-view tracking wrapper (inside BrowserRouter context)
+function PageTracker() {
+  usePageTracking();
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
