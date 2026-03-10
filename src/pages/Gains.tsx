@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
+import PageTitle from "@/components/ui/PageTitle";
 import { CheckCircle2, Clock, ArrowDownCircle, XCircle, Euro, Info, TrendingUp, ChevronRight, Loader2, Link2, Share2, Flame, Target } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -87,6 +88,7 @@ export default function Gains() {
 
   return (
     <UserLayout>
+      <PageTitle title="Mes gains" />
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
           <h1 className="font-display text-2xl font-bold text-foreground mb-1">Mes gains</h1>

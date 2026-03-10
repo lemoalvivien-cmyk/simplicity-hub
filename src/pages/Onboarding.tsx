@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle2, ChevronRight, Building2, Users, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { trackEvent } from "@/lib/analytics";
@@ -62,6 +63,10 @@ export default function Onboarding() {
       // PROOF: onboarding_done → analytics_events (real write)
       trackEvent("onboarding_done", user.id, { role: role ?? "unknown" });
       await refreshProfile();
+      // Trigger welcome_scan — fire & forget, non-blocking
+      supabase.functions.invoke("openclaw-scheduler", {
+        body: { tick_type: "welcome_scan", user_id: user.id },
+      }).catch(() => {});
       setDone(true);
     } catch {
       toast.error(t("onboarding_saving_error"));
