@@ -171,7 +171,8 @@ export default function Contacts() {
     }
   };
 
-  useEffect(() => { load(); }, [user]);
+  useEffect(() => { setPage(0); }, [search, filterStatus]);
+  useEffect(() => { load(page); }, [user, page, search, filterStatus]);
 
   const filtered = contacts.filter((c) => {
     const q = search.toLowerCase();
