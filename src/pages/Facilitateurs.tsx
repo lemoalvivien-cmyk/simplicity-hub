@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
+import ListPagination from "@/components/ui/ListPagination";
 import {
   Users, Star, MapPin, Briefcase, TrendingUp, CheckCircle2,
   Search, ArrowRight, Shield, Heart, Zap, Loader2, Sparkles,
@@ -193,8 +194,16 @@ export default function Facilitateurs() {
     return matchSearch && matchSector && matchZone && matchCorridor;
   });
 
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(0);
+
   const hasFilters = sectorFilter || zoneFilter || corridorFilter;
   const favorisOnly = filtered.filter(f => f.isFavorite);
+
+  // Reset page on filter/sort/search change
+  useEffect(() => { setPage(0); }, [search, sectorFilter, zoneFilter, corridorFilter, sortMode]);
+
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
     <UserLayout role="entreprise" jarvisContext="dashboard">
@@ -365,7 +374,7 @@ export default function Facilitateurs() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map((f, idx) => {
+            {paginated.map((f, idx) => {
               const tauxConv = f.intros_count > 0 ? Math.round((f.intros_validees / f.intros_count) * 100) : 0;
               const rating = f.average_rating && f.average_rating > 0 ? f.average_rating : null;
               const isTopMatch = idx === 0 && sortMode === "match" && f.match_score >= 60;
@@ -485,6 +494,13 @@ export default function Facilitateurs() {
             })}
           </div>
         )}
+
+        <ListPagination
+          page={page}
+          pageSize={PAGE_SIZE}
+          total={filtered.length}
+          onPage={setPage}
+        />
 
         {/* Revenue insight */}
         {!loading && facilitateurs.length > 0 && (
