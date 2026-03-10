@@ -16,6 +16,7 @@ import {
   Layers, Cpu, Lock, Wifi, WifiOff, AlertCircle,
   Target, Settings2, Eye, BarChart3, XCircle, ListChecks,
   Send, CheckCheck, Package, MessageCircle, TrendingUp,
+  Timer, CalendarClock, Stethoscope,
 } from "lucide-react";
 import { useOpenClawRuntime, CHANNEL_STATUS_META, JOB_STATUS_META, JOB_TYPE_META, TOOL_ACCESS_META } from "@/hooks/useOpenClawRuntime";
 import { useOpenClawRuns, RUN_TYPE_LABELS, BRAIN_AGENTS } from "@/hooks/useOpenClawRuns";
