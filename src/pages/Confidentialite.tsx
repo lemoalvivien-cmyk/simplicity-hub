@@ -21,7 +21,7 @@ export default function Confidentialite() {
               <li><strong>SIRET :</strong> 83512508900028</li>
               <li><strong>Adresse :</strong> 295 rue Verte, 59170 Croix, France</li>
               <li><strong>Contact DPO / exercice des droits :</strong>{" "}
-                <a href="mailto:contact@vlmconsulting.fr" className="text-primary underline">contact@vlmconsulting.fr</a>
+                <a href="mailto:contact@wiinupmax.com" className="text-primary underline">contact@wiinupmax.com</a>
               </li>
             </ul>
           </div>
