@@ -1470,6 +1470,10 @@ export type Database = {
       lead_intakes: {
         Row: {
           action_status: string
+          ai_label: string | null
+          ai_reasoning: string | null
+          ai_score: number | null
+          ai_scored_at: string | null
           company_name: string | null
           created_at: string
           dedup_match_id: string | null
@@ -1498,6 +1502,10 @@ export type Database = {
         }
         Insert: {
           action_status?: string
+          ai_label?: string | null
+          ai_reasoning?: string | null
+          ai_score?: number | null
+          ai_scored_at?: string | null
           company_name?: string | null
           created_at?: string
           dedup_match_id?: string | null
@@ -1526,6 +1534,10 @@ export type Database = {
         }
         Update: {
           action_status?: string
+          ai_label?: string | null
+          ai_reasoning?: string | null
+          ai_score?: number | null
+          ai_scored_at?: string | null
           company_name?: string | null
           created_at?: string
           dedup_match_id?: string | null
