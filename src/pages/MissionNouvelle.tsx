@@ -8,6 +8,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import MissionTemplates, { MissionTemplate, MISSION_TEMPLATES } from "@/components/activation/MissionTemplates";
 import CopilotPanel from "@/components/ai/CopilotPanel";
 import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActivation } from "@/hooks/useActivation";
 import { toast } from "sonner";
