@@ -15,7 +15,6 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
-};
 
 const MAX_JOBS_PER_TICK = 5;
 const LOCK_OWNER = "scheduler-v1";
