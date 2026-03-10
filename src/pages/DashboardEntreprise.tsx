@@ -115,7 +115,7 @@ export default function DashboardEntreprise() {
             (m: { id: string }) => m.id
           ) || [];
 
-        const [missionsRes, introsRes, briefRes, aiRecoRes, gainsRes] = await Promise.all([
+        const [missionsRes, introsRes, briefRes, aiRecoRes, gainsRes, leadsRes] = await Promise.all([
           // 3 dernières missions
           db.from("missions")
             .select("id, titre, statut")
@@ -151,6 +151,13 @@ export default function DashboardEntreprise() {
             .select("id", { count: "exact", head: true })
             .eq("facilitateur_id", user.id)
             .in("statut", ["valide", "recu"]),
+
+          // Leads à traiter (lead_intakes non dupliqués, non traités)
+          db.from("lead_intakes")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .neq("dedup_status", "confirmed_duplicate")
+            .in("qualification_status", ["pending_review", "ready_for_action"]),
         ]);
 
         setMissions(missionsRes.data || []);
@@ -158,6 +165,7 @@ export default function DashboardEntreprise() {
         setLatestBrief((briefRes.data as OpenClawBrief[] | null)?.[0] ?? null);
         setAiRecoCount(aiRecoRes.count ?? 0);
         setGainsCount(gainsRes.count ?? 0);
+        setLeadsCount(leadsRes.count ?? 0);
       } catch {
         // silent fail — dashboard must always render
       } finally {
