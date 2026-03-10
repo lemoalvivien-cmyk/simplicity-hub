@@ -1,19 +1,12 @@
 /**
  * Dashboard Entreprise — Launch Mode + Double Moteur
- * PROOF:EXECUTION_V1:enterprise_dashboard_actions → LeadActionsQueue rendered here
- * PROOF:PREMIUM_V1:dashboard_actionability → pipeline metrics strip always visible, clickable
- * PROOF:PREMIUM_V1:premium_loading_states → loading skeletons on metric counters
- * PROOF:PREMIUM_PROOF_V1:dashboard_actionability → pipeline metrics strip lines ~171-199, clickable to /actions + /opportunites
- * PROOF:PREMIUM_PROOF_V1:premium_loading_states → metric counters show "…" while loading, LeadActionsQueue has skeleton
- * PROOF:PREMIUM_EXPORT_V1:dashboard_actionability → pipeline metrics strip with clickable Links + urgency pulse, this file
- * PROOF:PREMIUM_EXPORT_V1:premium_loading_states → "…" counter placeholders + LeadActionsQueue skeleton, this file
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
-  Flame, Bell, Plus, Briefcase, Star, Users, Sparkles, Rocket
+  Bell, Plus, Briefcase, Star, Users, Sparkles, Rocket
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,7 +16,6 @@ import ActivationProgressBar from "@/components/activation/ActivationProgressBar
 import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import BestAccessPanel from "@/components/graph/BestAccessPanel";
-import { useTranslation } from "react-i18next";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
@@ -34,14 +26,12 @@ interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
 
 export default function DashboardEntreprise() {
-  const { t } = useTranslation();
   const { user, profile } = useAuth();
   const [missions, setMissions] = useState<Mission[]>([]);
   const [introductions, setIntroductions] = useState<Introduction[]>([]);
   const [loading, setLoading] = useState(true);
   const [validationsCount, setValidationsCount] = useState(0);
   const [hotOpps, setHotOpps] = useState(0);
-  const [passiveAlerts, setPassiveAlerts] = useState<{ id: string; title: string; message: string; type: string; read: boolean }[]>([]);
   const [prospectionOpen, setProspectionOpen] = useState(false);
 
   const prenom = profile?.prenom || "vous";
@@ -49,7 +39,6 @@ export default function DashboardEntreprise() {
   const isLaunchMode = missions.length === 0;
   const metrics = usePipelineMetrics();
 
-  // AI recommendations badge
   const [aiRecoCount, setAiRecoCount] = useState(0);
 
   useEffect(() => {
@@ -78,7 +67,6 @@ export default function DashboardEntreprise() {
         setValidationsCount(pendingIntros.length);
         setHotOpps(hotOppsRes.count || 0);
         setAiRecoCount(aiRecoRes.count || 0);
-        setPassiveAlerts([]);
       } catch {
         // silent fail
       } finally {
@@ -109,8 +97,8 @@ export default function DashboardEntreprise() {
                 <Brain size={20} className="text-white" />
               </div>
               <div>
-                <p className="font-bold text-white text-sm">{t("dash_hello", { prenom })}</p>
-                <p className="text-white/50 text-xs mt-0.5">{t("dash_acquisition")}</p>
+                <p className="font-bold text-white text-sm">Bonjour, {prenom} 👋</p>
+                <p className="text-white/50 text-xs mt-0.5">Votre acquisition client est en marche</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -130,12 +118,12 @@ export default function DashboardEntreprise() {
                 </Link>
               )}
               {validationsCount > 0 && (
-                <Link to="/validations" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{
+                <Link to="/entreprise/introductions" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold" style={{
                   background: "hsl(38 90% 55% / 0.2)",
                   border: "1px solid hsl(38 90% 55% / 0.3)",
                   color: "hsl(38 90% 65%)"
                 }}>
-                  <ShieldAlert size={12} /> {validationsCount} {validationsCount > 1 ? t("dash_validations_plural") : t("dash_validations")}
+                  <ShieldAlert size={12} /> {validationsCount} validation{validationsCount > 1 ? "s" : ""}
                 </Link>
               )}
             </div>
@@ -143,9 +131,9 @@ export default function DashboardEntreprise() {
 
           <div className="relative z-10 mt-4 grid grid-cols-3 gap-2">
             {[
-              { label: t("dash_missions_active"), value: loading ? "…" : missions.length, icon: Briefcase },
-              { label: t("dash_intros"), value: loading ? "…" : introductions.length, icon: Send },
-              { label: t("dash_hot_opps"), value: loading ? "…" : hotOpps, icon: Target },
+              { label: "Missions actives", value: loading ? "…" : missions.length, icon: Briefcase },
+              { label: "Introductions", value: loading ? "…" : introductions.length, icon: Send },
+              { label: "Actions chaudes", value: loading ? "…" : hotOpps, icon: Target },
             ].map(({ label, value, icon: Icon }) => (
               <div key={label} className="text-center py-2.5 px-2 rounded-xl" style={{ background: "hsl(218 40% 16% / 0.6)" }}>
                 <Icon size={12} className="mx-auto mb-1 text-white/40" />
@@ -158,7 +146,7 @@ export default function DashboardEntreprise() {
           <ActivationProgressBar stepsCompleted={stepsCompleted} nextStep={nextStep} />
         </div>
 
-        {/* ── 🚀 PROSPECTION IA ─────────────────────────────── */}
+        {/* ── PROSPECTION IA ─────────────────────────────── */}
         <button
           onClick={() => setProspectionOpen(true)}
           className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98]"
@@ -181,15 +169,15 @@ export default function DashboardEntreprise() {
                 <Star size={18} className="text-white" />
               </div>
               <div>
-                <p className="font-bold text-foreground text-sm">{t("dash_ent_launch_title")}</p>
-                <p className="text-muted-foreground text-xs mt-0.5">{t("dash_ent_launch_sub")}</p>
+                <p className="font-bold text-foreground text-sm">Publiez votre première mission</p>
+                <p className="text-muted-foreground text-xs mt-0.5">En 3 minutes, des Facilitateurs peuvent vous apporter des clients</p>
               </div>
             </div>
             <div className="space-y-2 mb-5">
               {[
-                t("dash_ent_launch_step1"),
-                t("dash_ent_launch_step2"),
-                t("dash_ent_launch_step3"),
+                "Décrivez le type de client que vous cherchez",
+                "Définissez votre commission pour les Facilitateurs",
+                "Les introductions arrivent automatiquement",
               ].map((text, i) => (
                 <div key={i} className="flex items-center gap-2.5">
                   <div className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-primary-foreground" style={{ background: "hsl(var(--primary))" }}>
@@ -201,19 +189,17 @@ export default function DashboardEntreprise() {
             </div>
             <Link to="/missions/nouvelle" className="btn-primary w-full text-center block py-3.5 text-sm">
               <Plus size={14} className="inline mr-1" />
-              {t("dash_ent_create_mission")}
+              Créer ma première mission
             </Link>
-            <p className="text-center text-xs text-muted-foreground mt-3">{t("dash_ent_launch_note")}</p>
+            <p className="text-center text-xs text-muted-foreground mt-3">Prend moins de 3 minutes · Modifiable à tout moment</p>
           </div>
         )}
 
         <OpenClawBrainWidget variant="entreprise" />
-        {!isLaunchMode && <BestAccessPanel title={t("best_path_title")} context={{ limit: 3 }} compact showAlternatives={false} />}
+        {!isLaunchMode && <BestAccessPanel title="Meilleur accès réseau" context={{ limit: 3 }} compact showAlternatives={false} />}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
         {/* ── PIPELINE METRICS ─────────────────────────────── */}
-        {/* PROOF:INTEGRITY_V1:dashboard_action_context */}
-        {/* PROOF:PREMIUM_V1:dashboard_actionability — always visible metrics strip with urgency */}
         {!isLaunchMode && !metrics.loading && (
           <div className="rounded-xl p-3 flex items-center gap-3 flex-wrap" style={{ background: "hsl(var(--secondary))" }}>
             {metrics.openActions > 0 ? (
@@ -244,14 +230,8 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
-        {/* ── UNIFIED LEADS PIPELINE ────────────────────────── */}
-        {/* PROOF:PIPELINE_V2:enterprise_dashboard_pipeline */}
-        {/* PROOF:EXECUTION_V1:enterprise_dashboard_actions */}
         {!isLaunchMode && <UnifiedLeadsBlock asEntreprise linkTo="/entreprise/introductions" />}
 
-        {/* ── ENTERPRISE ACTION QUEUE (reads real lead_actions table) ── */}
-        {/* PROOF:EXECUTION_V1:enterprise_dashboard_actions */}
-        {/* PROOF:INTEGRITY_V1:dashboard_action_context — with context UI from LeadActionsQueue */}
         {!isLaunchMode && (
           <LeadActionsQueue
             title="Actions commerciales"
@@ -265,14 +245,14 @@ export default function DashboardEntreprise() {
           <div className="rounded-xl border-2 p-5" style={{ borderColor: "hsl(var(--accent))", background: "hsl(var(--accent-light))" }}>
             <div className="flex items-center gap-2 mb-2">
               <Zap size={14} style={{ color: "hsl(var(--accent))" }} />
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(38 80% 30%)" }}>{t("dash_ent_priority_action")}</p>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(38 80% 30%)" }}>Action prioritaire</p>
             </div>
-            <h2 className="font-display text-lg font-bold text-foreground mb-1">{t("dash_ent_intro_waiting")}</h2>
+            <h2 className="font-display text-lg font-bold text-foreground mb-1">Une introduction vous attend</h2>
             <p className="text-sm text-muted-foreground mb-4">
               <strong>{nextIntro.contact_nom}</strong>
             </p>
             <Link to="/entreprise/introductions" className="btn-cta text-sm py-2.5 px-5 inline-flex gap-2">
-              {t("dash_ent_validate_intro")} <ArrowRight size={14} />
+              Valider l'introduction <ArrowRight size={14} />
             </Link>
           </div>
         )}
@@ -282,10 +262,10 @@ export default function DashboardEntreprise() {
           <div className="card-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-                <Briefcase size={14} className="text-primary" /> {t("dash_ent_my_missions")}
+                <Briefcase size={14} className="text-primary" /> Mes missions
               </h2>
               <Link to="/missions/nouvelle" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
-                <Plus size={11} /> {t("dash_ent_new")}
+                <Plus size={11} /> Nouvelle
               </Link>
             </div>
             {loading ? (
@@ -301,7 +281,7 @@ export default function DashboardEntreprise() {
                       <p className="text-sm font-medium text-foreground truncate">{m.titre}</p>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${m.statut === "active" ? "bg-success/10 text-success" : "bg-muted-foreground/10 text-muted-foreground"}`}>
-                      {m.statut === "active" ? t("status_active") : m.statut}
+                      {m.statut === "active" ? "Active" : m.statut}
                     </span>
                   </Link>
                 ))}
@@ -317,8 +297,8 @@ export default function DashboardEntreprise() {
               <Users size={16} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground">{t("dash_ent_invite_facilitator")}</p>
-              <p className="text-xs text-muted-foreground">{t("dash_ent_find_profiles")}</p>
+              <p className="text-sm font-semibold text-foreground">Inviter des Facilitateurs</p>
+              <p className="text-xs text-muted-foreground">Parcourir les profils disponibles</p>
             </div>
             <ArrowRight size={14} className="text-muted-foreground shrink-0" />
           </Link>
@@ -329,9 +309,9 @@ export default function DashboardEntreprise() {
           <div className="card-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
-                <Send size={14} className="text-primary" /> {t("dash_ent_intros_received")}
+                <Send size={14} className="text-primary" /> Introductions reçues
               </h2>
-              <Link to="/entreprise/introductions" className="text-xs text-primary font-medium hover:underline">{t("dash_ent_see_all")}</Link>
+              <Link to="/entreprise/introductions" className="text-xs text-primary font-medium hover:underline">Voir tout</Link>
             </div>
             <div className="space-y-2">
               {introductions.map((i) => (
@@ -345,16 +325,13 @@ export default function DashboardEntreprise() {
                     : i.statut === "en_attente" ? "bg-primary/10 text-primary"
                     : "bg-muted-foreground/10 text-muted-foreground"
                   }`}>
-                    {i.statut === "validee" ? t("status_validated") : i.statut === "en_attente" ? t("status_pending") : i.statut}
+                    {i.statut === "validee" ? "Validée" : i.statut === "en_attente" ? "En attente" : i.statut}
                   </span>
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        {/* ── ALERTS — removed (passive_alerts table not in schema) ── */}
-
 
         {/* ── ROI WIDGET ───────────────────────────────────── */}
         {!isLaunchMode && (
@@ -371,12 +348,12 @@ export default function DashboardEntreprise() {
               <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--gradient-primary)" }}>
                 <Brain size={15} className="text-white" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(218 72% 65%)" }}>{t("dash_ent_moteur1_label")}</p>
-              <p className="font-semibold text-white text-sm">{t("dash_ent_moteur1_title")}</p>
-              <p className="text-white/45 text-xs mt-1">{t("dash_ent_moteur1_sub")}</p>
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(218 72% 65%)" }}>IA</p>
+              <p className="font-semibold text-white text-sm">Agents OpenClaw</p>
+              <p className="text-white/45 text-xs mt-1">Prospection automatisée</p>
               <div className="flex items-center gap-1 mt-2.5">
                 <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--success))" }} />
-                <span className="text-xs text-white/35">{t("dash_ent_moteur1_active")}</span>
+                <span className="text-xs text-white/35">Actif</span>
               </div>
             </Link>
             <Link to="/facilitateurs" className="rounded-2xl p-4 hover:opacity-90 transition-all" style={{
@@ -386,9 +363,9 @@ export default function DashboardEntreprise() {
               <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3" style={{ background: "var(--gradient-accent)" }}>
                 <Users size={15} className="text-white" />
               </div>
-              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(24 100% 65%)" }}>{t("dash_ent_moteur2_label")}</p>
-              <p className="font-semibold text-white text-sm">{t("dash_ent_moteur2_title")}</p>
-              <p className="text-white/45 text-xs mt-1">{t("dash_ent_moteur2_sub")}</p>
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "hsl(24 100% 65%)" }}>Réseau</p>
+              <p className="font-semibold text-white text-sm">Facilitateurs</p>
+              <p className="text-white/45 text-xs mt-1">Introductions qualifiées</p>
             </Link>
           </div>
         )}

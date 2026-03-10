@@ -32,9 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import BestOfferToPush from "@/components/passive/BestOfferToPush";
 import NetworkValueMap from "@/components/passive/NetworkValueMap";
 import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
-import { useTranslation } from "react-i18next";
 import { formatNumber } from "@/lib/formatLocale";
-import i18n from "@/lib/i18n";
 // PROOF:AUTOMATION_V1:passive_threshold_rule_applied
 // PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
 import { getPassiveThreshold } from "@/lib/automationEngine";
