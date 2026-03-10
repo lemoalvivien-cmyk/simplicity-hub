@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import InstallBanner from "@/components/pwa/InstallBanner";
+import { usePageTracking } from "@/lib/analytics";
 
 import Pilotage from "./pages/Pilotage";
 
@@ -123,6 +124,12 @@ function DashboardRouter() {
   return <DashboardFacilitateur />;
 }
 
+// Auto page-view tracking wrapper (inside BrowserRouter context)
+function PageTracker() {
+  usePageTracking();
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -132,6 +139,7 @@ const App = () => (
           <Sonner />
           <InstallBanner />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <PageTracker />
             <Routes>
               {/* ── Public ───────────────────────────────── */}
               <Route path="/" element={<Index />} />
