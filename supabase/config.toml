@@ -82,3 +82,7 @@ verify_jwt = true
 # send-reactivation-email: called by admin only (admin JWT + role check in function)
 [functions.send-reactivation-email]
 verify_jwt = true
+
+# ai-prospection: generates 3 personalized B2B prospection messages using Gemini
+[functions.ai-prospection]
+verify_jwt = true

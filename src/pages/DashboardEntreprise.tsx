@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
-  Flame, Bell, Plus, Briefcase, Star, Users, Sparkles
+  Flame, Bell, Plus, Briefcase, Star, Users, Sparkles, Rocket
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,6 +27,7 @@ import { useTranslation } from "react-i18next";
 import UnifiedLeadsBlock from "@/components/leads/UnifiedLeadsBlock";
 import LeadActionsQueue from "@/components/leads/LeadActionsQueue";
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
+import ProspectionModal from "@/components/ai/ProspectionModal";
 
 interface Mission { id: string; titre: string; statut: string; }
 interface Introduction { id: string; contact_nom: string; statut: string; }
@@ -40,6 +41,7 @@ export default function DashboardEntreprise() {
   const [validationsCount, setValidationsCount] = useState(0);
   const [hotOpps, setHotOpps] = useState(0);
   const [passiveAlerts, setPassiveAlerts] = useState<{ id: string; title: string; message: string; type: string; read: boolean }[]>([]);
+  const [prospectionOpen, setProspectionOpen] = useState(false);
 
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
@@ -154,6 +156,21 @@ export default function DashboardEntreprise() {
 
           <ActivationProgressBar stepsCompleted={stepsCompleted} nextStep={nextStep} />
         </div>
+
+        {/* ── 🚀 PROSPECTION IA ─────────────────────────────── */}
+        <button
+          onClick={() => setProspectionOpen(true)}
+          className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98]"
+          style={{
+            background: "linear-gradient(135deg, hsl(260 80% 50%), hsl(218 80% 55%))",
+            boxShadow: "0 4px 20px hsl(260 80% 50% / 0.35)",
+            color: "white",
+          }}
+        >
+          <Rocket size={16} />
+          🚀 Lancer la Prospection IA
+          <Sparkles size={14} className="opacity-70" />
+        </button>
 
         {/* ── LAUNCH MODE ─────────────────────────────────── */}
         {isLaunchMode && !loading && (
@@ -370,6 +387,12 @@ export default function DashboardEntreprise() {
           </div>
         )}
       </div>
+
+      <ProspectionModal
+        open={prospectionOpen}
+        onClose={() => setProspectionOpen(false)}
+        defaultCompanyName={profile?.prenom ? "" : ""}
+      />
     </UserLayout>
   );
 }
