@@ -78,6 +78,287 @@ function StatusDot({ ok, pulse }: { ok: boolean; pulse?: boolean }) {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   CONTROL PANEL — pg_cron status + manual triggers + healthcheck + recent runs
+───────────────────────────────────────────────────────────────────────────── */
+import { supabase } from "@/integrations/supabase/client";
+import type { SchedulerHeartbeat } from "@/hooks/useOpenClawScheduler";
+import type { JobExecution } from "@/hooks/useOpenClawExecutions";
+
+const CRON_JOBS_LIVE = [
+  { name: "openclaw-scheduler-tick", schedule: "*/5 * * * *",  desc: "Tick rapide — jobs urgents & normaux",  jobid: 4 },
+  { name: "openclaw-daily-sweep",    schedule: "0 7 * * *",    desc: "Sweep quotidien — brief + relances",     jobid: 5 },
+  { name: "openclaw-weekly-sweep",   schedule: "0 6 * * 1",    desc: "Sweep hebdomadaire — trust + matching",  jobid: 6 },
+];
+
+function HeartbeatDot({ lastBeat }: { lastBeat: string | null }) {
+  if (!lastBeat) return <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: "hsl(var(--muted-foreground))" }} />;
+  const ageMin = (Date.now() - new Date(lastBeat).getTime()) / 60000;
+  const color = ageMin < 10 ? "hsl(var(--success))" : ageMin < 60 ? "hsl(38 80% 50%)" : "hsl(0 65% 45%)";
+  return <span className={`inline-block w-2.5 h-2.5 rounded-full ${ageMin < 10 ? "animate-pulse" : ""}`} style={{ background: color }} />;
+}
+
+interface ControlPanelProps {
+  latestHeartbeat: SchedulerHeartbeat | null;
+  engineHealthy: boolean;
+  heartbeats: SchedulerHeartbeat[];
+  recentExecutions: JobExecution[];
+  schedulerTriggering: boolean;
+  triggerScheduler: (body?: Record<string, unknown>) => Promise<{ ok: boolean; completed: number; claimed: number; error?: string }>;
+  healthcheckResult: Record<string, unknown> | null;
+  healthcheckLoading: boolean;
+  setHealthcheckResult: (r: Record<string, unknown> | null) => void;
+  setHealthcheckLoading: (v: boolean) => void;
+}
+
+function ControlPanel({
+  latestHeartbeat, engineHealthy, heartbeats, recentExecutions,
+  schedulerTriggering, triggerScheduler,
+  healthcheckResult, healthcheckLoading, setHealthcheckResult, setHealthcheckLoading,
+}: ControlPanelProps) {
+  const [triggeringType, setTriggeringType] = useState<string | null>(null);
+
+  const lastBeatAt = latestHeartbeat?.beat_at ?? null;
+  const ageMin = lastBeatAt ? (Date.now() - new Date(lastBeatAt).getTime()) / 60000 : null;
+  const heartbeatStatus = ageMin === null ? "unknown" : ageMin < 10 ? "ok" : ageMin < 60 ? "degraded" : "critical";
+  const heartbeatColor = heartbeatStatus === "ok" ? "hsl(var(--success))" : heartbeatStatus === "degraded" ? "hsl(38 80% 50%)" : "hsl(0 65% 45%)";
+  const heartbeatLabel = heartbeatStatus === "ok" ? "Actif" : heartbeatStatus === "degraded" ? "Dégradé" : heartbeatStatus === "critical" ? "Inactif" : "Inconnu";
+
+  const handleTrigger = async (tickType: string) => {
+    setTriggeringType(tickType);
+    const result = await triggerScheduler({ tick_type: tickType });
+    setTriggeringType(null);
+    if (result.ok) {
+      toast.success(tickType === "manual_scan" ? "Scan lancé." : "Brief généré.", {
+        description: result.completed > 0 ? `${result.completed} job(s) terminé(s)` : "Aucun job en attente.",
+      });
+    } else {
+      toast.error("Erreur scheduler.", { description: result.error });
+    }
+  };
+
+  const handleHealthcheck = async () => {
+    setHealthcheckLoading(true);
+    setHealthcheckResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("openclaw-healthcheck", { body: {} });
+      if (error) throw error;
+      setHealthcheckResult(data as Record<string, unknown>);
+      toast.success("Healthcheck OK");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Erreur inconnue";
+      setHealthcheckResult({ error: msg });
+      toast.error("Healthcheck échoué", { description: msg });
+    } finally {
+      setHealthcheckLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+
+      {/* ── Heartbeat indicator ─────────────────────────────────────────── */}
+      <div className="rounded-2xl p-4 relative overflow-hidden"
+        style={{
+          background: engineHealthy
+            ? "linear-gradient(135deg, hsl(218 65% 8%), hsl(218 55% 11%))"
+            : "linear-gradient(135deg, hsl(0 40% 9%), hsl(0 35% 12%))",
+          border: `1px solid ${engineHealthy ? "hsl(218 40% 22% / 0.5)" : "hsl(0 40% 28% / 0.5)"}`,
+        }}>
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <HeartbeatDot lastBeat={lastBeatAt} />
+              <p className="text-white font-bold text-sm">
+                Heartbeat pg_cron — {heartbeatLabel}
+              </p>
+            </div>
+            <p className="text-white/40 text-xs">
+              {lastBeatAt
+                ? `Dernier cycle : ${new Date(lastBeatAt).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })}` +
+                  ` · ${ageMin !== null ? Math.round(ageMin) : "?"}min ago` +
+                  (latestHeartbeat ? ` · ${latestHeartbeat.jobs_completed} terminé(s)` : "")
+                : "Aucun heartbeat enregistré. Le scheduler tourne toutes les 5 min via pg_cron."}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: `${heartbeatColor}22`, color: heartbeatColor }}>
+              {heartbeatLabel}
+            </span>
+          </div>
+        </div>
+
+        {/* Cron jobs status */}
+        <div className="mt-4 space-y-2">
+          {CRON_JOBS_LIVE.map((job) => (
+            <div key={job.name} className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{ background: "hsl(218 40% 14% / 0.7)" }}>
+              <Timer size={12} className="text-white/40 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-white truncate">{job.name}</p>
+                <p className="text-xs text-white/40">{job.desc}</p>
+              </div>
+              <div className="text-right shrink-0">
+                <span className="text-xs text-white/60 font-mono">{job.schedule}</span>
+                <div className="flex items-center gap-1 justify-end mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--success))" }} />
+                  <span className="text-xs" style={{ color: "hsl(var(--success))" }}>Actif · job#{job.jobid}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Manual controls ─────────────────────────────────────────────── */}
+      <div className="card-surface p-4">
+        <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
+          <Zap size={12} className="text-primary" /> Déclenchement manuel
+        </p>
+        <div className="grid grid-cols-1 gap-2">
+          {[
+            {
+              id: "manual_scan",
+              label: "Lancer un scan maintenant",
+              desc: "Exécute un cycle complet : radar, opportunités, actions",
+              icon: "📡",
+            },
+            {
+              id: "daily_brief",
+              label: "Générer le brief du jour",
+              desc: "Produit le résumé quotidien immédiatement",
+              icon: "📋",
+            },
+          ].map(({ id, label, desc, icon }) => (
+            <button
+              key={id}
+              onClick={() => handleTrigger(id)}
+              disabled={!!triggeringType || schedulerTriggering}
+              className="flex items-center gap-3 p-3 rounded-xl text-left transition-all disabled:opacity-50"
+              style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
+              <span className="text-xl shrink-0">{icon}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{label}</p>
+                <p className="text-xs text-muted-foreground">{desc}</p>
+              </div>
+              {triggeringType === id
+                ? <RefreshCw size={14} className="animate-spin text-primary shrink-0" />
+                : <Play size={14} className="text-primary shrink-0" />}
+            </button>
+          ))}
+
+          {/* Healthcheck */}
+          <button
+            onClick={handleHealthcheck}
+            disabled={healthcheckLoading}
+            className="flex items-center gap-3 p-3 rounded-xl text-left transition-all disabled:opacity-50"
+            style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
+            <span className="text-xl shrink-0">🩺</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">Vérifier le heartbeat</p>
+              <p className="text-xs text-muted-foreground">Appelle openclaw-healthcheck et affiche le résultat</p>
+            </div>
+            {healthcheckLoading
+              ? <RefreshCw size={14} className="animate-spin text-primary shrink-0" />
+              : <Stethoscope size={14} className="text-primary shrink-0" />}
+          </button>
+        </div>
+
+        {/* Healthcheck result */}
+        {healthcheckResult && (
+          <div className="mt-3 rounded-xl p-3 font-mono text-xs overflow-auto max-h-40"
+            style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
+            {Object.entries(healthcheckResult).map(([k, v]) => (
+              <div key={k} className="flex gap-2">
+                <span className="text-muted-foreground">{k}:</span>
+                <span className="text-foreground">{JSON.stringify(v)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── 10 derniers runs ────────────────────────────────────────────── */}
+      <div className="card-surface p-4">
+        <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
+          <BarChart3 size={12} className="text-primary" /> 10 derniers runs
+        </p>
+        {recentExecutions.length === 0 ? (
+          <p className="text-xs text-muted-foreground text-center py-4">Aucun run enregistré.</p>
+        ) : (
+          <div className="space-y-2">
+            {recentExecutions.slice(0, 10).map((ex) => {
+              const meta = JOB_TYPE_LIBRARY[ex.job_type];
+              const statusColor = ex.status === "termine" ? "hsl(var(--success))"
+                : ex.status === "en_cours" ? "hsl(218 72% 55%)"
+                : ex.status === "erreur" ? "hsl(0 65% 45%)"
+                : "hsl(var(--muted-foreground))";
+              const statusLabel = ex.status === "termine" ? "Terminé"
+                : ex.status === "en_cours" ? "En cours"
+                : ex.status === "erreur" ? "Erreur"
+                : ex.status === "planifie" ? "Planifié" : ex.status;
+              const durationLabel = ex.duration_ms
+                ? ex.duration_ms < 1000 ? `${ex.duration_ms}ms` : `${(ex.duration_ms / 1000).toFixed(1)}s`
+                : "—";
+
+              return (
+                <div key={ex.id} className="flex items-center gap-2.5 p-2.5 rounded-xl"
+                  style={{ background: "hsl(var(--muted))" }}>
+                  <span className="text-base shrink-0">{meta?.icon ?? "⚙️"}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">
+                      {meta?.label ?? ex.job_type}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {ex.output_summary ?? ex.last_error ?? "—"}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0 space-y-0.5">
+                    <p className="text-xs font-bold" style={{ color: statusColor }}>{statusLabel}</p>
+                    <p className="text-xs text-muted-foreground">{durationLabel}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Derniers heartbeats ─────────────────────────────────────────── */}
+      {heartbeats.length > 0 && (
+        <div className="card-surface p-4">
+          <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
+            <Activity size={11} className="text-primary" /> Heartbeats récents
+          </p>
+          <div className="space-y-1.5">
+            {heartbeats.slice(0, 8).map((hb) => {
+              const hbColor = hb.engine_status === "ok" ? "hsl(var(--success))"
+                : hb.engine_status === "idle" ? "hsl(var(--muted-foreground))"
+                : "hsl(38 80% 40%)";
+              const hbAgeMin = (Date.now() - new Date(hb.beat_at).getTime()) / 60000;
+              return (
+                <div key={hb.id} className="flex items-center gap-2 text-xs">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: hbColor }} />
+                  <span className="text-muted-foreground w-12 shrink-0">
+                    {Math.round(hbAgeMin) < 1 ? "< 1min" : `${Math.round(hbAgeMin)}min`}
+                  </span>
+                  <span className="flex-1 text-foreground">
+                    {hb.engine_status === "idle" ? "Inactif (aucun job)" : `${hb.jobs_completed} terminé(s)`}
+                    {hb.jobs_failed > 0 && ` · ⚠️ ${hb.jobs_failed} échoué(s)`}
+                    {hb.jobs_claimed > 0 && ` · ${hb.jobs_claimed} traité(s)`}
+                  </span>
+                  <span className="text-muted-foreground/60 shrink-0">
+                    {new Date(hb.beat_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Operations() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
