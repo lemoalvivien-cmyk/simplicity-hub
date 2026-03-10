@@ -178,7 +178,8 @@ export default function CampagneNouvelle() {
     // 2. Create sequence if AI mode with steps
     if (sequenceMode === "ai" && generatedSteps.length > 0) {
       const finalSteps = generatedSteps.map(s => getStepData(s));
-      const { data: seq, error: seqErr } = await supabase.from("prospection_sequences").insert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: seq, error: seqErr } = await (supabase.from("prospection_sequences") as any).insert({
         user_id: user.id,
         campaign_id: camp.id,
         name: sequenceName || `Séquence ${nom}`,
