@@ -2,13 +2,15 @@
  * MissionDetail — Page de détail d'une mission + formulaire d'introduction.
  * FULLY WIRED: lit les données réelles depuis Supabase, insère les introductions en DB,
  * et crée une entrée gain + intro_escrow au moment de l'envoi.
+ * Affiche les facilitateurs recommandés par l'IA (mission-based matching).
  */
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   ArrowLeft, Send, Info, AlertCircle, ChevronRight, CheckCircle2,
-  Clock, MapPin, Euro, Briefcase, Users, Loader2, Sparkles, Star, UserCheck
+  Clock, MapPin, Euro, Briefcase, Users, Loader2, Sparkles, Star, UserCheck,
+  ShieldCheck, Zap
 } from "lucide-react";
 import CopilotPanel from "@/components/ai/CopilotPanel";
 import { db } from "@/lib/supabase";
