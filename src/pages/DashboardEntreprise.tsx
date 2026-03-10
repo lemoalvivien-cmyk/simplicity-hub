@@ -82,6 +82,7 @@ export default function DashboardEntreprise() {
   const [latestBrief, setLatestBrief]   = useState<OpenClawBrief | null>(null);
   const [aiRecoCount, setAiRecoCount]   = useState(0);
   const [gainsCount, setGainsCount]     = useState(0);
+  const [leadsCount, setLeadsCount]     = useState(0);
   const [loading, setLoading]           = useState(true);
 
   const prenom = profile?.prenom || "vous";
