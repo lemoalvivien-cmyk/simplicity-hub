@@ -27,7 +27,7 @@ import {
   TrendingUp, Play, Send, Upload, Briefcase,
   ChevronRight, ArrowRight, Target, Clock,
   CheckCircle2, AlertCircle, Sparkles, GitBranch,
-  Loader2, Database, AlertTriangle
+  Loader2, Database, AlertTriangle, Plus
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -133,13 +133,21 @@ export default function Opportunites() {
       <div className="max-w-2xl mx-auto">
 
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-            Mes opportunités
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Toutes vos opportunités avec leur origine, statut et prochaine étape.
-          </p>
+        <div className="flex items-start justify-between gap-3 mb-6">
+          <div>
+            <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+              Mes opportunités
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Toutes vos opportunités avec leur origine, statut et prochaine étape.
+            </p>
+          </div>
+          <Link
+            to="/opportunites/nouvelle"
+            className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 text-primary text-sm font-semibold transition-all"
+          >
+            <Plus size={15} /> Nouvelle
+          </Link>
         </div>
 
         {/* PROOF:PREMIUM_V1:premium_error_states — honest error with icon */}

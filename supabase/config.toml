@@ -94,3 +94,7 @@ verify_jwt = true
 # ai-matching: matches an enterprise profile with top 3 active facilitateurs using Gemini
 [functions.ai-matching]
 verify_jwt = true
+
+# ai-opportunity-analysis: scores and analyzes a business opportunity using Gemini
+[functions.ai-opportunity-analysis]
+verify_jwt = true

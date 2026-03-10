@@ -62,6 +62,7 @@ import ProfilFacilitateur from "./pages/ProfilFacilitateur";
 // Apport d'affaires — entreprise
 import IntroductionsEntreprise from "./pages/IntroductionsEntreprise";
 import ProfilEntreprise from "./pages/ProfilEntreprise";
+import OpportuniteNouvelle from "./pages/OpportuniteNouvelle";
 
 // OpenClaw — Cerveau central agentique
 import Agents from "./pages/Agents";
@@ -162,6 +163,7 @@ const App = () => (
               <Route path="/regles" element={<ProtectedRoute><Regles /></ProtectedRoute>} />
               <Route path="/canaux" element={<ProtectedRoute><Canaux /></ProtectedRoute>} />
               <Route path="/opportunites" element={<ProtectedRoute><Opportunites /></ProtectedRoute>} />
+              <Route path="/opportunites/nouvelle" element={<ProtectedRoute><OpportuniteNouvelle /></ProtectedRoute>} />
 
               {/* ── Dashboards ───────────────────────────── */}
               <Route path="/dashboard/entreprise" element={<ProtectedRoute><DashboardEntreprise /></ProtectedRoute>} />
