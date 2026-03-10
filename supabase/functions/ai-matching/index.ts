@@ -26,7 +26,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { enterprise_profile } = await req.json();
+    const body = await req.json();
+    const { enterprise_profile, mission_id, company_user_id } = body;
 
     if (!enterprise_profile) {
       return new Response(
@@ -231,6 +232,41 @@ Réponds UNIQUEMENT en JSON valide avec ce format exact :
         ? m.points_forts.slice(0, 3).map((p) => String(p))
         : [],
     }));
+
+    // ── Persist matches + send notifications if mission_id provided ──
+    if (mission_id && matches.length > 0) {
+      // Upsert into mission_matches
+      for (const m of matches) {
+        if (!m.apporteur_id) continue;
+        await adminClient.from("mission_matches").upsert({
+          mission_id,
+          facilitateur_id: m.apporteur_id,
+          compatibility_score: m.score,
+          reasoning: m.raison,
+          status: "suggeree",
+        }, { onConflict: "mission_id,facilitateur_id", ignoreDuplicates: false });
+
+        // Notify each matched facilitator
+        await adminClient.from("notifications").insert({
+          user_id: m.apporteur_id,
+          type: "match_suggere",
+          title: "Nouvelle mission compatible avec votre profil",
+          body: `Compatibilité ${m.score}% — ${m.raison ?? ""}`.slice(0, 160),
+          href: `/missions/${mission_id}`,
+        });
+      }
+
+      // Notify the company that matching is done
+      if (company_user_id) {
+        await adminClient.from("notifications").insert({
+          user_id: company_user_id,
+          type: "match_suggere",
+          title: `${matches.length} facilitateurs recommandés pour votre mission`,
+          body: "L'IA a identifié les meilleurs profils. Consultez les matchs dans le détail de la mission.",
+          href: `/missions/${mission_id}`,
+        });
+      }
+    }
 
     return new Response(JSON.stringify({ matches }), {
       status: 200,
