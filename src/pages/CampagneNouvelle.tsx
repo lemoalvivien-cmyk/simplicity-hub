@@ -179,12 +179,11 @@ export default function CampagneNouvelle() {
     if (sequenceMode === "ai" && generatedSteps.length > 0) {
       const finalSteps = generatedSteps.map(s => getStepData(s));
       const { data: seq, error: seqErr } = await supabase.from("prospection_sequences").insert({
-        user_id: user.id,
         campaign_id: camp.id,
         name: sequenceName || `Séquence ${nom}`,
         status: "brouillon",
         steps: finalSteps,
-      }).select("id").single();
+      } as Parameters<ReturnType<typeof supabase.from<"prospection_sequences">>["insert"]>[0]).select("id").single();
 
       if (seqErr) {
         console.error("Sequence insert error:", seqErr.message);
