@@ -8,6 +8,12 @@ const logStep = (step: string, details?: unknown) => {
 };
 
 Deno.serve(async (req) => {
+  // stripe-webhook is server-to-server (Stripe → edge function).
+  // CORS is not needed. Reject browser preflight to reduce attack surface.
+  if (req.method === "OPTIONS") {
+    return new Response("Method Not Allowed", { status: 405 });
+  }
+
   try {
     logStep("Webhook received");
 
