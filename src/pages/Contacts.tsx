@@ -325,6 +325,12 @@ export default function Contacts() {
                         style={{ color: cfg.color, background: cfg.bg }}>
                         {cfg.icon} {cfg.label}
                       </span>
+                      {aiCfg && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                          style={{ color: aiCfg.color, background: aiCfg.bg }}>
+                          <Flame size={9} /> {aiCfg.label}
+                        </span>
+                      )}
                       {/* Sequence badge */}
                       {seqInfo && (
                         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
