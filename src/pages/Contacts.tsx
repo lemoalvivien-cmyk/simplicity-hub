@@ -72,6 +72,9 @@ const seqStatusColors: Record<string, string> = {
 export default function Contacts() {
   const { user } = useAuth();
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [totalContacts, setTotalContacts] = useState(0);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 20;
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<ContactStatus | "tous">("tous");
@@ -82,11 +85,26 @@ export default function Contacts() {
   const [seqMap, setSeqMap] = useState<Record<string, ContactSequenceInfo>>({});
   const [aiScoreMap, setAiScoreMap] = useState<Record<string, AIScore>>({});
 
-  const load = async () => {
+  const load = async (p = page) => {
     if (!user) return;
     setLoading(true);
-    const { data } = await db.from("contacts").select("*").eq("owner_user_id", user.id).order("created_at", { ascending: false });
+    let q = db
+      .from("contacts")
+      .select("*", { count: "exact" })
+      .eq("owner_user_id", user.id)
+      .order("created_at", { ascending: false })
+      .range(p * PAGE_SIZE, (p + 1) * PAGE_SIZE - 1);
+
+    if (filterStatus !== "tous") q = q.eq("statut", filterStatus);
+    if (search.trim()) {
+      q = q.or(
+        `prenom_nom.ilike.%${search}%,entreprise.ilike.%${search}%,email.ilike.%${search}%`
+      );
+    }
+
+    const { data, count } = await q;
     setContacts(data || []);
+    setTotalContacts(count ?? 0);
     setLoading(false);
 
     // Load sequence info for contacts
