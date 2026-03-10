@@ -1,7 +1,8 @@
 import { useState } from "react";
 import UserLayout from "@/components/layout/UserLayout";
-import { Building2, CheckCircle2, Save, Edit3 } from "lucide-react";
+import { Building2, CheckCircle2, Save, Sparkles } from "lucide-react";
 import CopilotPanel from "@/components/ai/CopilotPanel";
+import MatchingModal from "@/components/ai/MatchingModal";
 
 const secteurs = ["SaaS / Tech", "Immobilier", "Finance / Assurance", "Formation", "Commerce", "Industrie", "Autre"];
 const tailles = ["Indépendant", "2–10 personnes", "10–50 personnes", "50–200 personnes", "Plus de 200 personnes"];
@@ -9,6 +10,7 @@ const zones = ["France entière", "Île-de-France", "Grand Ouest", "Grand Sud", 
 
 export default function ProfilEntreprise() {
   const [saved, setSaved] = useState(false);
+  const [matchingOpen, setMatchingOpen] = useState(false);
   const [form, setForm] = useState({
     nom: "Acme SaaS",
     description: "Nous proposons un logiciel de facturation simple pour les TPE. Notre outil s'adresse aux artisans, commerçants et prestataires qui veulent arrêter de gérer leur facturation sur Excel.",
@@ -22,6 +24,14 @@ export default function ProfilEntreprise() {
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  };
+
+  const enterpriseProfileForMatching = {
+    sector: form.secteur,
+    offer_description: form.description,
+    needs: form.cible,
+    zone: form.zone,
+    target: form.cible,
   };
 
   return (
@@ -155,6 +165,15 @@ export default function ProfilEntreprise() {
             />
           </div>
 
+          {/* IA Matching CTA */}
+          <button
+            onClick={() => setMatchingOpen(true)}
+            className="w-full py-4 rounded-xl border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all flex items-center justify-center gap-2 font-semibold text-primary text-sm"
+          >
+            <Sparkles size={16} />
+            ✨ Trouver mes Apporteurs IA
+          </button>
+
           {/* Copilot IA */}
           <CopilotPanel
             context="profil_entreprise"
@@ -168,6 +187,12 @@ export default function ProfilEntreprise() {
           </button>
         </div>
       </div>
+
+      <MatchingModal
+        open={matchingOpen}
+        onClose={() => setMatchingOpen(false)}
+        enterpriseProfile={enterpriseProfileForMatching}
+      />
     </UserLayout>
   );
 }
