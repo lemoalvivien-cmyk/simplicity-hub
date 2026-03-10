@@ -165,6 +165,7 @@ export default function UserNav({ role = "facilitateur", introCount: introCountP
             {role === "entreprise" ? "Entreprise" : "Apporteur"}
           </span>
           <LanguageSwitcher compact />
+          <NotificationBell />
           <Link to="/help" className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
             <HelpCircle size={15} />
           </Link>
