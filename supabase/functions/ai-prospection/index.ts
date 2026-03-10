@@ -1,119 +1,206 @@
-// Allowed origins — browser clients only; Stripe-style server calls don't use CORS
-const ALLOWED_ORIGINS = [
-  "https://wiinupmax.com",
-  "https://wiinupmax.lovable.app",
-  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
-];
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get("origin") ?? "";
-  const isLocal = origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1");
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) || isLocal ? origin : "";
-  return {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-  };
+const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const AI_MODEL = "google/gemini-2.5-flash";
+
+interface Dossier {
+  secteur_activite: string | null;
+  cible_ideale: string | null;
+  proposition_valeur: string | null;
+  zone_geographique: string | null;
+  points_forts: string | null;
+}
+
+// ── Load OpenClaw dossier for the authenticated user ──────────
+async function loadDossier(
+  supabaseUrl: string,
+  serviceKey: string,
+  userId: string,
+): Promise<Dossier | null> {
+  const admin = createClient(supabaseUrl, serviceKey);
+  const { data, error } = await admin
+    .from("openclaw_dossier" as never)
+    .select("secteur_activite, cible_ideale, proposition_valeur, zone_geographique, points_forts")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as Dossier;
+}
+
+// ── Compute personalization score ────────────────────────────
+function computePersonalizationScore(
+  dossier: Dossier | null,
+  target_description: string,
+): number {
+  let score = 20; // base: company_name + sector + target always provided
+
+  if (target_description.length > 80) score += 10;
+
+  if (dossier) {
+    if (dossier.proposition_valeur) score += 20;
+    if (dossier.cible_ideale) score += 15;
+    if (dossier.points_forts) score += 15;
+    if (dossier.zone_geographique) score += 10;
+    if (dossier.secteur_activite) score += 10;
+  }
+
+  return Math.min(100, score);
 }
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { company_name, sector, target_description } = await req.json();
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+    if (!LOVABLE_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ── Auth (optional — if no auth, skip dossier load) ──────
+    let userId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user } } = await userClient.auth.getUser();
+      userId = user?.id ?? null;
+    }
+
+    const body = await req.json();
+    const { company_name, sector, target_description } = body;
 
     if (!company_name || !sector || !target_description) {
       return new Response(
         JSON.stringify({ error: "company_name, sector et target_description sont requis." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    // ── Load dossier in parallel with auth ───────────────────
+    const dossier = userId ? await loadDossier(supabaseUrl, serviceKey, userId) : null;
 
-    const systemPrompt = `Tu es un expert en prospection B2B pour WiinupMax. Tu génères des messages de prospection personnalisés, percutants et professionnels en français.`;
+    const personalization_score = computePersonalizationScore(dossier, target_description);
 
-    const userPrompt = `Génère exactement 3 messages de prospection B2B distincts pour :
-- Entreprise qui prospecte : ${company_name}
-- Secteur : ${sector}
-- Cible / Description : ${target_description}
+    // ── Build enriched context block ─────────────────────────
+    const dossierBlock = dossier
+      ? `
+PROFIL DE L'ENTREPRISE (depuis le dossier stratégique) :
+- Secteur d'activité : ${dossier.secteur_activite ?? sector}
+- Proposition de valeur : ${dossier.proposition_valeur ?? "Non renseignée"}
+- Points forts : ${dossier.points_forts ?? "Non renseignés"}
+- Zone géographique : ${dossier.zone_geographique ?? "Non renseignée"}
+- Cible idéale : ${dossier.cible_ideale ?? "Non renseignée"}`
+      : `
+PROFIL DE L'ENTREPRISE :
+- Secteur d'activité : ${sector}`;
 
-Chaque message doit :
-- Être court (5-8 lignes max)
-- Commencer par une accroche personnalisée et percutante
-- Mettre en valeur la proposition de valeur
-- Inclure un call-to-action clair
-- Avoir un ton professionnel mais direct
+    const systemPrompt = `Tu es un expert senior en prospection B2B. Tu génères des messages de prospection ultra-personnalisés, percutants et professionnels en français. Ton objectif est d'obtenir une réponse, pas de vendre immédiatement.`;
+
+    const userPrompt = `Génère 4 messages de prospection B2B distincts pour :
+
+ENTREPRISE : ${company_name}
+${dossierBlock}
+DESCRIPTION DE LA CIBLE SPÉCIFIQUE : ${target_description}
+
+Instructions pour les 3 premiers messages (email/LinkedIn message) :
+- Mentionner UN problème spécifique et douloureux du secteur cible (basé sur la réalité du secteur)
+- Utiliser la proposition de valeur comme solution directe à ce problème
+- Inclure un CTA concret avec une offre sans risque (audit gratuit, démo 20min, benchmark offert)
+- Maximum 5 lignes chacun
+- Ton direct et professionnel — JAMAIS "Cher Monsieur/Madame"
+- Commencer par le problème ou un fait frappant, pas par une présentation
+
+Le 4ème message doit être une DEMANDE DE CONNEXION LINKEDIN :
+- 2-3 lignes maximum
+- Expliquer pourquoi la connexion est pertinente
+- Mentionner un point commun ou un intérêt partagé
+- Pas de pitch commercial direct
 
 Réponds en JSON avec ce format exact :
 {
   "messages": [
-    { "id": 1, "subject": "Objet du message", "body": "Corps du message" },
-    { "id": 2, "subject": "Objet du message", "body": "Corps du message" },
-    { "id": 3, "subject": "Objet du message", "body": "Corps du message" }
+    { "id": 1, "type": "email", "subject": "Objet du message", "body": "Corps du message" },
+    { "id": 2, "type": "email", "subject": "Objet du message", "body": "Corps du message" },
+    { "id": 3, "type": "linkedin_message", "subject": null, "body": "Corps du message" },
+    { "id": 4, "type": "linkedin_connection", "subject": null, "body": "Note de connexion courte 2-3 lignes" }
   ]
 }`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // ── Call AI ──────────────────────────────────────────────
+    const aiRes = await fetch(LOVABLE_AI_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(25000),
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: AI_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.8,
+        temperature: 0.75,
+        max_tokens: 1500,
       }),
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!aiRes.ok) {
+      if (aiRes.status === 429) {
         return new Response(
           JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques instants." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      if (response.status === 402) {
+      if (aiRes.status === 402) {
         return new Response(
           JSON.stringify({ error: "Crédits IA insuffisants. Contactez le support." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      throw new Error(`AI gateway error ${response.status}`);
+      const errText = await aiRes.text().catch(() => "");
+      console.error("[ai-prospection] AI gateway error:", aiRes.status, errText);
+      throw new Error(`AI gateway error ${aiRes.status}`);
     }
 
-    const aiData = await response.json();
+    const aiData = await aiRes.json();
     const rawContent: string = aiData.choices?.[0]?.message?.content ?? "";
 
-    const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+    // Extract JSON from response
+    const jsonMatch =
+      rawContent.match(/```json\s*([\s\S]*?)```/) ??
+      rawContent.match(/(\{[\s\S]*\})/);
+
     if (!jsonMatch) {
       throw new Error("Impossible d'extraire le JSON de la réponse IA.");
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    const parsed = JSON.parse(jsonMatch[1] ?? jsonMatch[0]);
 
-    return new Response(JSON.stringify(parsed), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        ...parsed,
+        personalization_score,
+        dossier_used: dossier !== null,
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (err) {
-    console.error("ai-prospection error:", err);
+    console.error("[ai-prospection] error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Erreur inconnue" }),
-      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });
