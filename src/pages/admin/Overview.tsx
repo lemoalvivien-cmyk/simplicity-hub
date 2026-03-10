@@ -1,23 +1,10 @@
-// PROOF:CONTROL_PLANE_V2:admin_overview_unified
-/**
- * Admin Overview — Unified Control Plane
- * Single source of truth: useControlPlane hook.
- * No mock data. No static statuses.
- */
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import ReleaseGateBanner from "@/modules/control-plane/components/ReleaseGateBanner";
-import NextBestActionPanel from "@/modules/control-plane/components/NextBestActionPanel";
-import RevenueLeakRadar from "@/modules/control-plane/components/RevenueLeakRadar";
-import CapabilitySection from "@/modules/control-plane/components/CapabilitySection";
-import EvidenceTable from "@/modules/control-plane/components/EvidenceTable";
-import { useControlPlane } from "@/modules/control-plane/hooks/useControlPlane";
 import {
-  Users, Tag, CreditCard, TrendingUp, ArrowUpRight, Loader2,
-  Activity, Shield, Database, AlertTriangle, DollarSign,
+  Users, Tag, CreditCard, TrendingUp, ArrowUpRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OverviewStats {
   totalUsers: number;
@@ -36,37 +23,51 @@ function timeAgo(dateStr: string): string {
   return `Il y a ${Math.floor(hrs / 24)}j`;
 }
 
-type OverviewTab = "cockpit" | "matrix" | "evidence";
+type RecentUser = {
+  id: string;
+  email: string | null;
+  prenom: string | null;
+  role: string | null;
+  created_at: string;
+  source: string;
+};
 
 export default function AdminOverview() {
   const [stats, setStats] = useState<OverviewStats | null>(null);
-  const [recentUsers, setRecentUsers] = useState<{ id: string; email: string; prenom: string | null; role: string | null; created_at: string; source: string }[]>([]);
+  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [tab, setTab] = useState<OverviewTab>("cockpit");
-
-  const cp = useControlPlane();
 
   useEffect(() => {
     const load = async () => {
       setStatsLoading(true);
       try {
-        const [usersRes, missionsRes, introsRes, codesRes, revenueRes, recentUsersRes] =
+        const [usersRes, missionsRes, introsRes, recentUsersRes] =
           await Promise.all([
-            db.from("profiles").select("id", { count: "exact", head: true }),
-            db.from("missions").select("id", { count: "exact", head: true }),
-            db.from("introductions").select("id", { count: "exact", head: true }),
-            db.from("promo_codes").select("id", { count: "exact", head: true }).eq("is_used", true),
-            db.from("billing_events").select("payload").eq("event_type", "checkout.session.completed"),
-            db.from("profiles").select("id, email, prenom, role, created_at").order("created_at", { ascending: false }).limit(8),
+            supabase.from("profiles").select("id", { count: "exact", head: true }),
+            supabase.from("missions").select("id", { count: "exact", head: true }),
+            supabase.from("introductions").select("id", { count: "exact", head: true }),
+            supabase.from("profiles").select("id, email, prenom, role, created_at").order("created_at", { ascending: false }).limit(8),
           ]);
 
+        // Revenue from billing_events
+        const revenueRes = await supabase
+          .from("billing_events")
+          .select("payload")
+          .eq("event_type", "checkout.session.completed");
+
         let totalRevenue = 0;
-        (revenueRes.data || []).forEach((evt: { payload: unknown }) => {
+        (revenueRes.data || []).forEach((evt) => {
           if (evt.payload && typeof evt.payload === "object") {
             const amount = (evt.payload as Record<string, unknown>)["amount_total"];
             if (typeof amount === "number") totalRevenue += amount / 100;
           }
         });
+
+        // Promo codes count
+        const codesRes = await supabase
+          .from("promo_codes")
+          .select("id", { count: "exact", head: true })
+          .eq("is_used", true);
 
         setStats({
           totalUsers: usersRes.count || 0,
@@ -76,16 +77,10 @@ export default function AdminOverview() {
           totalRevenue,
         });
 
-        const userIds = (recentUsersRes.data || []).map((u: { id: string }) => u.id);
-        const promoRes = userIds.length > 0
-          ? await db.from("promo_code_uses").select("user_id").in("user_id", userIds)
-          : { data: [] };
-        const promoSet = new Set((promoRes.data || []).map((r: { user_id: string }) => r.user_id));
-
         setRecentUsers(
-          (recentUsersRes.data || []).map((u: { id: string; email: string; prenom: string | null; role: string | null; created_at: string }) => ({
+          (recentUsersRes.data || []).map((u) => ({
             ...u,
-            source: promoSet.has(u.id) ? "promo" : "paiement",
+            source: "paiement",
           }))
         );
       } catch { /* graceful degradation */ }
@@ -98,87 +93,14 @@ export default function AdminOverview() {
     { label: "Utilisateurs", value: stats.totalUsers.toString(), sub: `${stats.totalMissions} mission${stats.totalMissions !== 1 ? "s" : ""}`, icon: Users, to: "/admin/users", color: "text-primary" },
     { label: "Codes activés", value: stats.activatedCodes.toString(), sub: "Codes promo utilisés", icon: Tag, to: "/admin/promo-codes", color: "text-accent" },
     { label: "Revenu total", value: stats.totalRevenue > 0 ? `${stats.totalRevenue.toLocaleString("fr-FR")} €` : "—", sub: "Stripe checkout.session", icon: CreditCard, to: "/admin/payments", color: "text-success" },
-    { label: "Introductions", value: stats.totalIntroductions.toString(), sub: "Total soumises", icon: TrendingUp, to: "/admin/analytics", color: "text-primary" },
+    { label: "Introductions", value: stats.totalIntroductions.toString(), sub: "Total soumises", icon: TrendingUp, to: "/admin/users", color: "text-primary" },
   ] : [];
-
-  const groups = Object.keys(cp.capabilitiesByGroup);
 
   return (
     <AdminLayout
-      title="Control Plane"
-      subtitle="Vérité runtime calculée — données réelles, preuves horodatées, actions prioritaires."
+      title="Vue d'ensemble"
+      subtitle="Statistiques en temps réel — données directes depuis la base."
     >
-      {/* Release Gate Banner */}
-      <ReleaseGateBanner
-        gate={cp.releaseGate}
-        summary={cp.summary}
-        loading={cp.loading}
-        onRefresh={() => cp.refetch()}
-      />
-
-      {/* ── BILLING RUNTIME MINI-BLOC ─────────────────────────────────────────────
-          PROOF:CONTROL_PLANE_V4:overview_billing_verdict_colocated
-          Même source de vérité que Payments : cp.billingProof (via get_billing_proof_summary).
-          Verdict cp.releaseGate.verdict co-localisé — une seule ligne suffit à piloter la décision.
-          RÈGLE : PRIVATE_BETA_READY n'apparaît que si full_proof_events > 0 (garanti par computeReleaseGate).
-      ─────────────────────────────────────────────────────────────────────── */}
-      {!cp.loading && (
-        <div className={`flex items-center justify-between px-4 py-2.5 rounded-xl border text-xs mb-4 ${
-          cp.billingProof && cp.billingProof.fullProofEvents > 0
-            ? "border-success/30 bg-success/5"
-            : cp.billingProof && cp.billingProof.totalBillingEvents > 0
-            ? "border-warning/20 bg-warning/5"
-            : "border-border bg-muted/20"
-        }`}>
-          <div className="flex items-center gap-3 flex-wrap">
-            <DollarSign size={12} className={
-              cp.billingProof && cp.billingProof.fullProofEvents > 0 ? "text-success" :
-              cp.billingProof && cp.billingProof.totalBillingEvents > 0 ? "text-warning" :
-              "text-muted-foreground"
-            } />
-            <span className="font-semibold text-foreground">Premier paiement prouvé :</span>
-            <span className={`font-bold font-mono ${
-              cp.billingProof && cp.billingProof.fullProofEvents > 0 ? "text-success" : "text-destructive"
-            }`}>
-              {cp.billingProof && cp.billingProof.fullProofEvents > 0 ? "OUI ✓" : "NON ✗"}
-            </span>
-            {cp.billingProof && (
-              <span className="text-muted-foreground">
-                · {cp.billingProof.fullProofEvents} full_proof · {cp.billingProof.totalBillingEvents} events
-                {cp.billingProof.quotaUsedSlots != null && ` · quota ${cp.billingProof.quotaUsedSlots}/${cp.billingProof.quotaTotalSlots ?? "?"}`}
-                {/* dernier proofLevel dérivé : full > 0 → full | broken > 0 → broken | partial > 0 → partial | total > 0 → partial | sinon → none */}
-                {" · niveau: "}
-                <span className={`font-mono font-bold ${
-                  cp.billingProof.fullProofEvents > 0 ? "text-success" :
-                  cp.billingProof.brokenEvents > 0 ? "text-destructive" :
-                  cp.billingProof.totalBillingEvents > 0 ? "text-warning" :
-                  "text-muted-foreground"
-                }`}>
-                  {cp.billingProof.fullProofEvents > 0 ? "full" :
-                   cp.billingProof.brokenEvents > 0 ? "broken" :
-                   cp.billingProof.partialProofEvents > 0 ? "partial" :
-                   cp.billingProof.totalBillingEvents > 0 ? "webhook_only" :
-                   "none"}
-                </span>
-              </span>
-            )}
-            {/* Décision release co-localisée — même vérité que ReleaseGateBanner */}
-            <span className={`font-mono font-bold text-xs px-2 py-0.5 rounded border ${
-              cp.releaseGate.verdict === "PRIVATE_BETA_READY"
-                ? "text-success border-success/30 bg-success/10"
-                : cp.releaseGate.verdict === "PRIVATE_BETA_POSSIBLE"
-                ? "text-warning border-warning/30 bg-warning/10"
-                : "text-destructive border-destructive/30 bg-destructive/10"
-            }`}>
-              {cp.releaseGate.verdict.replace(/_/g, " ")}
-            </span>
-          </div>
-          <Link to="/admin/payments" className="text-xs text-primary hover:underline font-medium flex items-center gap-1 shrink-0">
-            Détail billing <ArrowUpRight size={10} />
-          </Link>
-        </div>
-      )}
-
       {/* Metrics */}
       {statsLoading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
@@ -211,114 +133,34 @@ export default function AdminOverview() {
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-5 p-1 bg-muted rounded-xl w-fit">
-        {([
-          { key: "cockpit"  as const, label: "NBA + Revenue",        icon: <Activity size={13} /> },
-          { key: "matrix"   as const, label: "Capability Matrix",    icon: <Shield size={13} /> },
-          { key: "evidence" as const, label: `Evidence (${cp.evidence.length})`, icon: <Database size={13} /> },
-        ]).map(({ key, label, icon }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              tab === key ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {icon}{label}
-          </button>
-        ))}
-      </div>
-
-      {tab === "cockpit" && (
-        <div className="grid lg:grid-cols-2 gap-6">
-          <NextBestActionPanel capabilities={cp.capabilities} />
-          <div className="space-y-6">
-            <RevenueLeakRadar />
-            {/* Recent users */}
-            <div className="card-surface overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                <h2 className="font-semibold text-sm text-foreground">Dernières inscriptions</h2>
-                <Link to="/admin/users" className="text-xs text-primary hover:underline">Voir tous →</Link>
+      {/* Recent users */}
+      <div className="card-surface overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <h2 className="font-semibold text-sm text-foreground">Dernières inscriptions</h2>
+          <Link to="/admin/users" className="text-xs text-primary hover:underline">Voir tous →</Link>
+        </div>
+        {recentUsers.length === 0 ? (
+          <div className="p-6 text-center">
+            <Users size={24} className="text-muted-foreground mx-auto mb-2 opacity-40" />
+            <p className="text-sm text-muted-foreground">Aucun utilisateur encore inscrit.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {recentUsers.map((u) => (
+              <div key={u.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/30 transition-colors">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{u.prenom || "—"}</p>
+                  <p className="text-xs text-muted-foreground truncate max-w-[200px]">{u.email || "—"}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="badge-muted text-xs">Inscrit</span>
+                  <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(u.created_at)}</p>
+                </div>
               </div>
-              {recentUsers.length === 0 ? (
-                <div className="p-6 text-center">
-                  <Users size={24} className="text-muted-foreground mx-auto mb-2 opacity-40" />
-                  <p className="text-sm text-muted-foreground">Aucun utilisateur encore inscrit.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-border">
-                  {recentUsers.slice(0, 5).map((u) => (
-                    <div key={u.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/30 transition-colors">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{u.prenom || "—"}</p>
-                        <p className="text-xs text-muted-foreground truncate max-w-[160px]">{u.email}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <span className={`badge-${u.source === "promo" ? "warning" : "muted"} text-xs`}>
-                          {u.source === "promo" ? "Promo" : "Payant"}
-                        </span>
-                        <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(u.created_at)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            ))}
           </div>
-        </div>
-      )}
-
-      {tab === "matrix" && (
-        <div className="space-y-4">
-          {cp.releaseGate.warnings.length > 0 && (
-            <div className="flex items-start gap-2 p-3 rounded-xl border border-warning/20 text-xs" style={{ background: "hsl(var(--level-medium-bg))" }}>
-              <AlertTriangle size={13} className="text-warning shrink-0 mt-0.5" />
-              <span className="text-muted-foreground">
-                <span className="font-semibold text-foreground">Warnings:</span>{" "}
-                {cp.releaseGate.warnings.join(", ")}
-              </span>
-            </div>
-          )}
-          {cp.loading ? (
-            <div className="space-y-3">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-16 rounded-xl bg-muted/40 animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            groups.map((group) => (
-              <CapabilitySection
-                key={group}
-                group={group}
-                capabilities={cp.capabilitiesByGroup[group]}
-                evidence={cp.evidence}
-              />
-            ))
-          )}
-          <div className="p-4 rounded-xl bg-muted/40 border border-border text-xs text-muted-foreground">
-            <p className="font-semibold text-foreground mb-2">Légende des preuves</p>
-            <div className="flex flex-wrap gap-2">
-              <span className="evidence-code">CODE</span>
-              <span className="evidence-runtime">RUNTIME</span>
-              <span className="evidence-external">EXTERNAL-CFG</span>
-              <span className="evidence-manual">MANUAL STEP</span>
-              <span className="evidence-unknown">UNKNOWN</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {tab === "evidence" && (
-        <EvidenceTable records={cp.evidence} loading={cp.loading} />
-      )}
-
-      {cp.lastRefreshedAt && (
-        <p className="text-xs text-muted-foreground text-center mt-6">
-          Dernière mise à jour: {new Date(cp.lastRefreshedAt).toLocaleTimeString("fr")}
-          {cp.releaseGate.confidenceScore > 0 && ` · Confiance: ${cp.releaseGate.confidenceScore}%`}
-        </p>
-      )}
+        )}
+      </div>
     </AdminLayout>
   );
 }

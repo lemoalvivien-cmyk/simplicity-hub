@@ -1,13 +1,16 @@
-/**
- * LeadIntakeStatus — Small reusable component to show unified lead pipeline status.
- * Used in IntroductionsEntreprise, ContactDetail, DashboardEntreprise.
- * PROOF:PIPELINE_V2:introduction_pipeline_ui → this file + src/pages/IntroductionsEntreprise.tsx
- * PROOF:PIPELINE_V2:lead_rls_shared_visibility → reads lead_intakes via entreprise_id RLS policy
- */
 import { CircleDot, CheckCircle2, AlertCircle, Copy, Ban, Zap, RefreshCw } from "lucide-react";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
 import { QUALIFICATION_LABELS, QUALIFICATION_COLORS, NBA_LABELS } from "@/lib/leadPipeline";
-import { NBA_CONFIG } from "@/lib/policyEngine";
+
+// Inline NBA config (extracted from deleted policyEngine.ts)
+const NBA_CONFIG: Partial<Record<NextBestAction, { description: string; urgency: "high" | "medium" | "low" }>> = {
+  review_lead:                    { description: "Examiner ce lead manuellement.", urgency: "low" },
+  enrich_lead:                    { description: "Compléter les informations manquantes.", urgency: "medium" },
+  contact_email_draft:            { description: "Rédiger un premier email de contact.", urgency: "high" },
+  promote_to_opportunity:         { description: "Créer une opportunité depuis ce lead.", urgency: "high" },
+  contact_manual_call:            { description: "Appeler ce contact directement.", urgency: "medium" },
+  request_facilitator_precision:  { description: "Demander des précisions au facilitateur.", urgency: "medium" },
+};
 
 interface LeadIntakeStatusProps {
   qualificationStatus: QualificationStatus;
