@@ -21,7 +21,7 @@ export default function CGU() {
               <li><strong>Statut :</strong> Auto-entrepreneur</li>
               <li><strong>SIRET :</strong> 83512508900028</li>
               <li><strong>Adresse :</strong> 295 rue Verte, 59170 Croix, France</li>
-              <li><strong>Contact :</strong> <a href="mailto:contact@vlmconsulting.fr" className="text-primary underline">contact@vlmconsulting.fr</a></li>
+              <li><strong>Contact :</strong> <a href="mailto:contact@wiinupmax.com" className="text-primary underline">contact@wiinupmax.com</a></li>
               <li><strong>Directeur de publication :</strong> Vivien Le Moal</li>
             </ul>
           </div>
