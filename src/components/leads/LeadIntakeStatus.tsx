@@ -2,15 +2,14 @@ import { CircleDot, CheckCircle2, AlertCircle, Copy, Ban, Zap, RefreshCw } from 
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
 import { QUALIFICATION_LABELS, QUALIFICATION_COLORS, NBA_LABELS } from "@/lib/leadPipeline";
 
-// Inline NBA config (previously from policyEngine.ts)
-const NBA_CONFIG: Record<NextBestAction, { description: string; urgency: "high" | "medium" | "low" }> = {
-  review_lead:              { description: "Examiner ce lead manuellement.", urgency: "low" },
-  enrich_lead:              { description: "Compléter les informations manquantes.", urgency: "medium" },
-  contact_email_draft:      { description: "Rédiger un premier email de contact.", urgency: "high" },
-  promote_to_opportunity:   { description: "Créer une opportunité depuis ce lead.", urgency: "high" },
-  promote_to_contact:       { description: "Créer un contact CRM depuis ce lead.", urgency: "medium" },
-  schedule_followup:        { description: "Planifier un suivi.", urgency: "medium" },
-  no_action:                { description: "Aucune action requise.", urgency: "low" },
+// Inline NBA config (extracted from deleted policyEngine.ts)
+const NBA_CONFIG: Partial<Record<NextBestAction, { description: string; urgency: "high" | "medium" | "low" }>> = {
+  review_lead:                    { description: "Examiner ce lead manuellement.", urgency: "low" },
+  enrich_lead:                    { description: "Compléter les informations manquantes.", urgency: "medium" },
+  contact_email_draft:            { description: "Rédiger un premier email de contact.", urgency: "high" },
+  promote_to_opportunity:         { description: "Créer une opportunité depuis ce lead.", urgency: "high" },
+  contact_manual_call:            { description: "Appeler ce contact directement.", urgency: "medium" },
+  request_facilitator_precision:  { description: "Demander des précisions au facilitateur.", urgency: "medium" },
 };
 
 interface LeadIntakeStatusProps {

@@ -23,32 +23,51 @@ function timeAgo(dateStr: string): string {
   return `Il y a ${Math.floor(hrs / 24)}j`;
 }
 
+type RecentUser = {
+  id: string;
+  email: string | null;
+  prenom: string | null;
+  role: string | null;
+  created_at: string;
+  source: string;
+};
+
 export default function AdminOverview() {
   const [stats, setStats] = useState<OverviewStats | null>(null);
-  const [recentUsers, setRecentUsers] = useState<{ id: string; email: string; prenom: string | null; role: string | null; created_at: string; source: string }[]>([]);
+  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       setStatsLoading(true);
       try {
-        const [usersRes, missionsRes, introsRes, codesRes, revenueRes, recentUsersRes] =
+        const [usersRes, missionsRes, introsRes, recentUsersRes] =
           await Promise.all([
             supabase.from("profiles").select("id", { count: "exact", head: true }),
             supabase.from("missions").select("id", { count: "exact", head: true }),
             supabase.from("introductions").select("id", { count: "exact", head: true }),
-            supabase.from("promo_codes").select("id", { count: "exact", head: true }).eq("is_used", true),
-            supabase.from("billing_events").select("payload").eq("event_type", "checkout.session.completed"),
             supabase.from("profiles").select("id, email, prenom, role, created_at").order("created_at", { ascending: false }).limit(8),
           ]);
 
+        // Revenue from billing_events
+        const revenueRes = await supabase
+          .from("billing_events")
+          .select("payload")
+          .eq("event_type", "checkout.session.completed");
+
         let totalRevenue = 0;
-        (revenueRes.data || []).forEach((evt: { payload: unknown }) => {
+        (revenueRes.data || []).forEach((evt) => {
           if (evt.payload && typeof evt.payload === "object") {
             const amount = (evt.payload as Record<string, unknown>)["amount_total"];
             if (typeof amount === "number") totalRevenue += amount / 100;
           }
         });
+
+        // Promo codes count
+        const codesRes = await supabase
+          .from("promo_codes")
+          .select("id", { count: "exact", head: true })
+          .eq("is_used", true);
 
         setStats({
           totalUsers: usersRes.count || 0,
@@ -58,16 +77,10 @@ export default function AdminOverview() {
           totalRevenue,
         });
 
-        const userIds = (recentUsersRes.data || []).map((u: { id: string }) => u.id);
-        const promoRes = userIds.length > 0
-          ? await supabase.from("promo_code_uses").select("user_id").in("user_id", userIds)
-          : { data: [] };
-        const promoSet = new Set((promoRes.data || []).map((r: { user_id: string }) => r.user_id));
-
         setRecentUsers(
-          (recentUsersRes.data || []).map((u: { id: string; email: string; prenom: string | null; role: string | null; created_at: string }) => ({
+          (recentUsersRes.data || []).map((u) => ({
             ...u,
-            source: promoSet.has(u.id) ? "promo" : "paiement",
+            source: "paiement",
           }))
         );
       } catch { /* graceful degradation */ }
@@ -133,16 +146,14 @@ export default function AdminOverview() {
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {recentUsers.slice(0, 8).map((u) => (
+            {recentUsers.map((u) => (
               <div key={u.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-muted/30 transition-colors">
                 <div>
                   <p className="text-sm font-medium text-foreground">{u.prenom || "—"}</p>
-                  <p className="text-xs text-muted-foreground truncate max-w-[200px]">{u.email}</p>
+                  <p className="text-xs text-muted-foreground truncate max-w-[200px]">{u.email || "—"}</p>
                 </div>
                 <div className="text-right shrink-0">
-                  <span className={`badge-${u.source === "promo" ? "warning" : "muted"} text-xs`}>
-                    {u.source === "promo" ? "Promo" : "Payant"}
-                  </span>
+                  <span className="badge-muted text-xs">Inscrit</span>
                   <p className="text-xs text-muted-foreground mt-0.5">{timeAgo(u.created_at)}</p>
                 </div>
               </div>
