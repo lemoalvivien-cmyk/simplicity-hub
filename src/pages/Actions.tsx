@@ -1,335 +1,391 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  Phone, Mail, ChevronRight, Send, CheckCircle2,
-  Clock, AlertCircle, Zap, PhoneCall, PhoneMissed,
-  PhoneOff, RefreshCw, Filter
+  Phone, Mail, Send, CheckCircle2, Clock, AlertCircle,
+  Zap, Filter, Plus, Search, RefreshCw, BarChart3,
+  X, Loader2,
 } from "lucide-react";
+import {
+  useUserActions, useMarkActionDone, useCreateUserAction,
+  UserAction, UserActionType, UserActionPriority, UserActionStatus,
+  CreateUserActionInput,
+} from "@/hooks/useUserActions";
 
-/* ─── TYPES ────────────────────────────────────────────────── */
-type ActionType = "appeler" | "envoyer" | "relancer" | "valider" | "verifier";
-type PhoneStatus = "a_appeler" | "appele" | "a_rappeler" | "sans_reponse" | "qualifie";
-type ActionSection = "urgent" | "aujourd_hui" | "cette_semaine" | "terminee";
-type SourceType = "introduction" | "prospection" | "campagne" | "mission" | "import";
-
-interface Action {
-  id: number;
-  type: ActionType;
-  contact: string;
-  entreprise: string;
-  description: string;
-  lien: string;
-  lienLabel: string;
-  section: ActionSection;
-  source: SourceType;
-  canal?: "email" | "telephone" | "autre";
-  phoneStatus?: PhoneStatus;
-  telephone?: string;
-}
-
-/* ─── DONNÉES MOCK ─────────────────────────────────────────── */
-const actionsData: Action[] = [
-  {
-    id: 1, type: "valider", contact: "Jean-Pierre Duval", entreprise: "Boulangerie Duval",
-    description: "Une introduction reçue attend votre validation. Validez ou refusez ce contact en 1 clic.",
-    lien: "/entreprise/introductions", lienLabel: "Voir l'introduction",
-    section: "urgent", source: "introduction", canal: "autre",
-  },
-  {
-    id: 2, type: "relancer", contact: "Antoine Leblanc", entreprise: "Tech Solutions",
-    description: "Antoine a ouvert votre email mais n'a pas répondu. C'est le bon moment pour relancer.",
-    lien: "/contacts/5", lienLabel: "Voir le contact",
-    section: "urgent", source: "campagne", canal: "email",
-  },
-  {
-    id: 3, type: "appeler", contact: "Malik Diouf", entreprise: "Diouf Transport",
-    description: "Ce contact a été importé depuis un fichier. Il attend votre premier appel.",
-    lien: "/contacts/4", lienLabel: "Voir le contact",
-    section: "aujourd_hui", source: "import", canal: "telephone",
-    phoneStatus: "a_appeler", telephone: "+33 6 12 34 56 78",
-  },
-  {
-    id: 4, type: "envoyer", contact: "Sophie Martin", entreprise: "RH Conseil",
-    description: "Sophie attend votre premier message depuis son import. Prenez contact dès aujourd'hui.",
-    lien: "/contacts/4", lienLabel: "Voir le contact",
-    section: "aujourd_hui", source: "prospection", canal: "email",
-  },
-  {
-    id: 5, type: "appeler", contact: "Éric Fontaine", entreprise: "Fontaine Immobilier",
-    description: "Éric n'a pas décroché lors du premier appel. Essayez à nouveau cette semaine.",
-    lien: "/contacts/6", lienLabel: "Voir le contact",
-    section: "cette_semaine", source: "import", canal: "telephone",
-    phoneStatus: "sans_reponse", telephone: "+33 6 98 76 54 32",
-  },
-  {
-    id: 6, type: "verifier", contact: "Clara Petit", entreprise: "Petit & Associés",
-    description: "Ce contact n'a pas d'email renseigné. Vérifiez ses coordonnées avant de le contacter.",
-    lien: "/contacts/7", lienLabel: "Compléter le contact",
-    section: "cette_semaine", source: "prospection", canal: "autre",
-  },
-];
-
-/* ─── CONFIGS ──────────────────────────────────────────────── */
-const typeConfig: Record<ActionType, { label: string; color: string; bg: string; icon: JSX.Element }> = {
-  appeler: { label: "Appeler", color: "hsl(var(--primary))", bg: "hsl(var(--secondary))", icon: <Phone size={13} /> },
-  envoyer: { label: "Contacter", color: "hsl(220 80% 45%)", bg: "hsl(220 80% 95%)", icon: <Mail size={13} /> },
-  relancer: { label: "Relancer", color: "hsl(38 80% 30%)", bg: "hsl(var(--accent-light))", icon: <Send size={13} /> },
-  valider: { label: "Valider", color: "hsl(var(--success))", bg: "hsl(var(--success-light))", icon: <CheckCircle2 size={13} /> },
-  verifier: { label: "Vérifier", color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))", icon: <AlertCircle size={13} /> },
+/* ─── TYPE CONFIG ──────────────────────────────────────────────── */
+const typeConfig: Record<UserActionType, { label: string; colorClass: string; bgClass: string; icon: React.ReactNode }> = {
+  appeler:  { label: "Appeler",   colorClass: "text-blue-700",   bgClass: "bg-blue-100",   icon: <Phone      size={12} /> },
+  envoyer:  { label: "Contacter", colorClass: "text-green-700",  bgClass: "bg-green-100",  icon: <Mail       size={12} /> },
+  relancer: { label: "Relancer",  colorClass: "text-orange-700", bgClass: "bg-orange-100", icon: <Send       size={12} /> },
+  valider:  { label: "Valider",   colorClass: "text-violet-700", bgClass: "bg-violet-100", icon: <CheckCircle2 size={12} /> },
+  verifier: { label: "Vérifier",  colorClass: "text-slate-600",  bgClass: "bg-slate-100",  icon: <AlertCircle  size={12} /> },
+  analyser: { label: "Analyser",  colorClass: "text-indigo-700", bgClass: "bg-indigo-100", icon: <BarChart3   size={12} /> },
 };
 
-const phoneStatusConfig: Record<PhoneStatus, { label: string; color: string; bg: string; icon: JSX.Element }> = {
-  a_appeler: { label: "À appeler", color: "hsl(var(--primary))", bg: "hsl(var(--secondary))", icon: <PhoneCall size={12} /> },
-  appele: { label: "Appelé", color: "hsl(var(--success))", bg: "hsl(var(--success-light))", icon: <CheckCircle2 size={12} /> },
-  a_rappeler: { label: "À rappeler", color: "hsl(38 80% 30%)", bg: "hsl(var(--accent-light))", icon: <RefreshCw size={12} /> },
-  sans_reponse: { label: "Sans réponse", color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))", icon: <PhoneMissed size={12} /> },
-  qualifie: { label: "Qualifié", color: "hsl(var(--success))", bg: "hsl(var(--success-light))", icon: <CheckCircle2 size={12} /> },
+const priorityConfig: Record<UserActionPriority, { label: string; dotClass: string; sectionIcon: React.ReactNode; borderStyle?: React.CSSProperties }> = {
+  urgente: { label: "Urgentes",       dotClass: "bg-red-500",    sectionIcon: <Zap size={14} className="text-red-500" />,            borderStyle: { borderLeft: "3px solid hsl(var(--destructive))" } },
+  haute:   { label: "Priorité haute", dotClass: "bg-orange-400", sectionIcon: <Zap size={14} className="text-orange-400" />,         borderStyle: { borderLeft: "3px solid hsl(var(--accent))" } },
+  normale: { label: "Aujourd'hui",    dotClass: "bg-primary",    sectionIcon: <Clock size={14} className="text-muted-foreground" />, borderStyle: undefined },
+  basse:   { label: "Cette semaine",  dotClass: "bg-muted",      sectionIcon: <Clock size={14} className="text-muted-foreground" />, borderStyle: undefined },
 };
 
-const sourceConfig: Record<SourceType, { label: string; color: string; bg: string }> = {
-  introduction: { label: "Introduction", color: "hsl(var(--primary))", bg: "hsl(var(--secondary))" },
-  prospection: { label: "Prospection", color: "hsl(220 80% 45%)", bg: "hsl(220 80% 95%)" },
-  campagne: { label: "Campagne", color: "hsl(38 80% 30%)", bg: "hsl(var(--accent-light))" },
-  mission: { label: "Mission", color: "hsl(var(--success))", bg: "hsl(var(--success-light))" },
-  import: { label: "Import", color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
-};
+const PRIORITY_ORDER: UserActionPriority[] = ["urgente", "haute", "normale", "basse"];
 
-const canalIcon: Record<string, JSX.Element> = {
-  email: <Mail size={11} />,
-  telephone: <Phone size={11} />,
-  autre: <Send size={11} />,
-};
+/* ─── NEW ACTION FORM ──────────────────────────────────────────── */
+function NewActionModal({ onClose }: { onClose: () => void }) {
+  const createAction = useCreateUserAction();
+  const [form, setForm] = useState<CreateUserActionInput>({
+    type: "envoyer",
+    title: "",
+    description: "",
+    priority: "normale",
+    source: "manual",
+  });
 
-/* ─── COMPOSANT PRINCIPAL ──────────────────────────────────── */
-export default function Actions() {
-  const [done, setDone] = useState<number[]>([]);
-  const [filtreCanal, setFiltreCanal] = useState<"tous" | "email" | "telephone">("tous");
-
-  const restantes = actionsData.filter((a) => !done.includes(a.id));
-  const filtrees = filtreCanal === "tous" ? restantes : restantes.filter((a) => a.canal === filtreCanal);
-
-  const urgentes = filtrees.filter((a) => a.section === "urgent");
-  const aujourd_hui = filtrees.filter((a) => a.section === "aujourd_hui");
-  const cette_semaine = filtrees.filter((a) => a.section === "cette_semaine");
-  const terminees = done.length;
-
-  const totalRestantes = filtrees.length;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.title.trim()) return;
+    await createAction.mutateAsync(form);
+    onClose();
+  };
 
   return (
-    <UserLayout jarvisContext="contact">
-      <div className="max-w-xl mx-auto">
-
-        {/* Header */}
-        <div className="mb-5">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-            À faire
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {totalRestantes === 0
-              ? "Tout est traité. Bravo !"
-              : `${totalRestantes} action${totalRestantes > 1 ? "s" : ""} vous attend${totalRestantes > 1 ? "ent" : ""}${urgentes.length > 0 ? `, dont ${urgentes.length} urgente${urgentes.length > 1 ? "s" : ""}` : ""}.`
-            }
-          </p>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-background rounded-2xl border border-border shadow-xl w-full max-w-md p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-display text-lg font-bold text-foreground">Nouvelle action</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+            <X size={16} className="text-muted-foreground" />
+          </button>
         </div>
 
-        {/* Résumé rapide */}
-        <div className="grid grid-cols-4 gap-2 mb-5">
-          {[
-            { label: "Urgent", value: actionsData.filter((a) => !done.includes(a.id) && a.section === "urgent").length, color: "hsl(var(--accent))", bg: "hsl(var(--accent-light))" },
-            { label: "Aujourd'hui", value: actionsData.filter((a) => !done.includes(a.id) && a.section === "aujourd_hui").length, color: "hsl(var(--primary))", bg: "hsl(var(--secondary))" },
-            { label: "Cette sem.", value: actionsData.filter((a) => !done.includes(a.id) && a.section === "cette_semaine").length, color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
-            { label: "Faites", value: terminees, color: "hsl(var(--success))", bg: "hsl(var(--success-light))" },
-          ].map(({ label, value, color, bg }) => (
-            <div key={label} className="rounded-xl p-2.5 text-center" style={{ background: bg }}>
-              <p className="font-display text-lg font-bold" style={{ color }}>{value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{label}</p>
-            </div>
-          ))}
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Title */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Titre *</label>
+            <input
+              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Ex: Appeler Jean Martin"
+              value={form.title}
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              required
+            />
+          </div>
 
-        {/* Filtres canal */}
-        <div className="flex items-center gap-2 mb-5">
-          <Filter size={13} className="text-muted-foreground shrink-0" />
-          <div className="flex gap-2 flex-wrap">
-            {(["tous", "email", "telephone"] as const).map((c) => (
-              <button
-                key={c}
-                onClick={() => setFiltreCanal(c)}
-                className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-all"
-                style={{
-                  borderColor: filtreCanal === c ? "hsl(var(--primary))" : "hsl(var(--border))",
-                  background: filtreCanal === c ? "hsl(var(--primary))" : "transparent",
-                  color: filtreCanal === c ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
-                }}
+          {/* Type + Priority row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Type</label>
+              <select
+                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                value={form.type}
+                onChange={e => setForm(f => ({ ...f, type: e.target.value as UserActionType }))}
               >
-                {c === "tous" ? "Tous" : c === "email" ? <><Mail size={11} /> Email</> : <><Phone size={11} /> Téléphone</>}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tout fait */}
-        {totalRestantes === 0 && (
-          <div className="card-surface p-10 text-center">
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-              style={{ background: "hsl(var(--success-light))" }}
-            >
-              <CheckCircle2 size={32} style={{ color: "hsl(var(--success))" }} />
+                {(Object.keys(typeConfig) as UserActionType[]).map(t => (
+                  <option key={t} value={t}>{typeConfig[t].label}</option>
+                ))}
+              </select>
             </div>
-            <h2 className="font-display text-xl font-bold text-foreground mb-2">
-              Rien à faire pour l'instant !
-            </h2>
-            <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
-              Toutes vos actions sont à jour. Profitez-en pour explorer de nouvelles missions ou lancer une campagne.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link to="/missions" className="btn-cta text-sm py-2.5 px-5">Voir les missions</Link>
-              <Link to="/campagnes" className="px-5 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                Mes campagnes
-              </Link>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Priorité</label>
+              <select
+                className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                value={form.priority}
+                onChange={e => setForm(f => ({ ...f, priority: e.target.value as UserActionPriority }))}
+              >
+                <option value="urgente">🔴 Urgente</option>
+                <option value="haute">🟠 Haute</option>
+                <option value="normale">🔵 Normale</option>
+                <option value="basse">⚪ Basse</option>
+              </select>
             </div>
           </div>
-        )}
 
-        {/* Section Urgentes */}
-        {urgentes.length > 0 && (
-          <Section
-            icon={<Zap size={15} style={{ color: "hsl(var(--accent))" }} />}
-            titre={`${urgentes.length} action${urgentes.length > 1 ? "s" : ""} urgente${urgentes.length > 1 ? "s" : ""} maintenant`}
-            actions={urgentes}
-            onDone={(id) => setDone((p) => [...p, id])}
-          />
-        )}
+          {/* Description */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Description</label>
+            <textarea
+              className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+              rows={3}
+              placeholder="Contexte, notes…"
+              value={form.description ?? ""}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            />
+          </div>
 
-        {/* Section Aujourd'hui */}
-        {aujourd_hui.length > 0 && (
-          <Section
-            icon={<Zap size={15} className="text-primary" />}
-            titre="Aujourd'hui"
-            actions={aujourd_hui}
-            onDone={(id) => setDone((p) => [...p, id])}
-          />
-        )}
-
-        {/* Section Cette semaine */}
-        {cette_semaine.length > 0 && (
-          <Section
-            icon={<Clock size={15} className="text-muted-foreground" />}
-            titre="Cette semaine"
-            actions={cette_semaine}
-            onDone={(id) => setDone((p) => [...p, id])}
-          />
-        )}
-      </div>
-    </UserLayout>
-  );
-}
-
-/* ─── SECTION ──────────────────────────────────────────────── */
-function Section({ icon, titre, actions, onDone }: {
-  icon: JSX.Element;
-  titre: string;
-  actions: Action[];
-  onDone: (id: number) => void;
-}) {
-  return (
-    <div className="mb-5">
-      <div className="flex items-center gap-2 mb-3">
-        {icon}
-        <p className="text-sm font-semibold text-foreground">{titre}</p>
-      </div>
-      <div className="space-y-3">
-        {actions.map((a) => <ActionCard key={a.id} action={a} onDone={() => onDone(a.id)} />)}
+          <button
+            type="submit"
+            disabled={createAction.isPending || !form.title.trim()}
+            className="btn-cta w-full py-2.5 text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {createAction.isPending ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+            Créer l'action
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
-/* ─── CARTE ACTION ─────────────────────────────────────────── */
-function ActionCard({ action, onDone }: { action: Action; onDone: () => void }) {
+/* ─── ACTION CARD ──────────────────────────────────────────────── */
+function ActionCard({ action, onDone }: { action: UserAction; onDone: () => void }) {
   const cfg = typeConfig[action.type];
-  const src = sourceConfig[action.source];
+  const pCfg = priorityConfig[action.priority];
 
   return (
     <div
-      className="card-surface p-5"
-      style={action.section === "urgent" ? { borderLeft: "3px solid hsl(var(--accent))" } : undefined}
+      className="card-surface p-4 group"
+      style={pCfg.borderStyle}
     >
-      {/* Ligne du haut */}
+      {/* Top badges */}
       <div className="flex items-center gap-2 mb-2 flex-wrap">
-        <span
-          className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-          style={{ color: cfg.color, background: cfg.bg }}
-        >
+        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.colorClass} ${cfg.bgClass}`}>
           {cfg.icon} {cfg.label}
         </span>
-        <span
-          className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-          style={{ color: src.color, background: src.bg }}
-        >
-          {src.label}
-        </span>
-        {action.canal && (
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            {canalIcon[action.canal]}
-            <span className="capitalize">{action.canal === "telephone" ? "Téléphone" : action.canal === "email" ? "Email" : "Autre"}</span>
+        {action.source === "openclaw" && (
+          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full text-violet-700 bg-violet-100">
+            <Zap size={10} /> OpenClaw
+          </span>
+        )}
+        {action.source === "ai_recommendation" && (
+          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full text-indigo-700 bg-indigo-100">
+            <BarChart3 size={10} /> IA
           </span>
         )}
       </div>
 
-      {/* Contact */}
-      <p className="text-sm font-semibold text-foreground mb-0.5">
-        {action.contact}
-        <span className="font-normal text-muted-foreground ml-1.5">· {action.entreprise}</span>
-      </p>
-
-      {/* Téléphone si dispo */}
-      {action.telephone && (
-        <div className="flex items-center gap-2 mb-1">
-          <Phone size={11} className="text-muted-foreground" />
-          <span className="text-xs text-foreground font-medium">{action.telephone}</span>
-          {action.phoneStatus && (() => {
-            const ps = phoneStatusConfig[action.phoneStatus];
-            return (
-              <span
-                className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                style={{ color: ps.color, background: ps.bg }}
-              >
-                {ps.icon} {ps.label}
-              </span>
-            );
-          })()}
-        </div>
+      {/* Title + contact */}
+      <p className="text-sm font-semibold text-foreground mb-0.5 leading-snug">{action.title}</p>
+      {action.contact_name && (
+        <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+          <Phone size={10} /> {action.contact_name}
+        </p>
       )}
 
-      <p className="text-xs text-muted-foreground leading-relaxed mb-4">{action.description}</p>
+      {/* Description */}
+      {action.description && (
+        <p className="text-xs text-muted-foreground leading-relaxed mb-3">{action.description}</p>
+      )}
 
-      {/* CTAs */}
-      <div className="flex gap-2.5">
-        <Link
-          to={action.lien}
-          className="btn-cta text-sm py-2 px-4 flex-1 justify-center"
-        >
-          {action.lienLabel} <ChevronRight size={12} />
-        </Link>
-        <button
-          onClick={onDone}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        >
-          <CheckCircle2 size={12} /> Fait
-        </button>
-        {action.canal === "telephone" && (
-          <a
-            href={`tel:${action.telephone}`}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium transition-colors"
-            style={{ borderColor: "hsl(var(--primary) / 0.4)", color: "hsl(var(--primary))" }}
+      {/* Footer */}
+      <div className="flex items-center gap-2 mt-3">
+        {action.status !== "terminee" && (
+          <button
+            onClick={onDone}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            <Phone size={12} /> Appeler
-          </a>
+            <CheckCircle2 size={12} /> Marquer terminé
+          </button>
+        )}
+        {action.due_date && (
+          <span className="text-xs text-muted-foreground ml-auto flex items-center gap-1">
+            <Clock size={10} />
+            {new Date(action.due_date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+          </span>
         )}
       </div>
     </div>
+  );
+}
+
+/* ─── SECTION ──────────────────────────────────────────────────── */
+function PrioritySection({ priority, actions, onDone }: {
+  priority: UserActionPriority;
+  actions: UserAction[];
+  onDone: (id: string) => void;
+}) {
+  const { label, sectionIcon } = priorityConfig[priority];
+  if (actions.length === 0) return null;
+  return (
+    <div className="mb-5">
+      <div className="flex items-center gap-2 mb-3">
+        {sectionIcon}
+        <p className="text-sm font-semibold text-foreground">{label}</p>
+        <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{actions.length}</span>
+      </div>
+      <div className="space-y-3">
+        {actions.map(a => <ActionCard key={a.id} action={a} onDone={() => onDone(a.id)} />)}
+      </div>
+    </div>
+  );
+}
+
+/* ─── MAIN PAGE ────────────────────────────────────────────────── */
+export default function Actions() {
+  const [statusFilter, setStatusFilter] = useState<UserActionStatus[]>(["a_faire", "en_cours"]);
+  const [typeFilter, setTypeFilter] = useState<UserActionType | "tous">("tous");
+  const [search, setSearch] = useState("");
+  const [showNewModal, setShowNewModal] = useState(false);
+
+  const { data: actions = [], isLoading, refetch } = useUserActions(statusFilter);
+  const markDone = useMarkActionDone();
+
+  const filtered = actions.filter(a => {
+    if (typeFilter !== "tous" && a.type !== typeFilter) return false;
+    if (search && !a.title.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const grouped = PRIORITY_ORDER.reduce((acc, p) => {
+    acc[p] = filtered.filter(a => a.priority === p);
+    return acc;
+  }, {} as Record<UserActionPriority, UserAction[]>);
+
+  const totalRestantes = filtered.length;
+  const urgentes = grouped["urgente"].length;
+
+  const summaryStats = [
+    { label: "Urgentes",      value: grouped["urgente"].length, dotClass: "bg-red-500" },
+    { label: "Priorité haute",value: grouped["haute"].length,   dotClass: "bg-orange-400" },
+    { label: "Normales",      value: grouped["normale"].length, dotClass: "bg-primary" },
+    { label: "Basses",        value: grouped["basse"].length,   dotClass: "bg-muted-foreground" },
+  ];
+
+  return (
+    <UserLayout jarvisContext="contact">
+      {showNewModal && <NewActionModal onClose={() => setShowNewModal(false)} />}
+
+      <div className="max-w-xl mx-auto">
+
+        {/* Header */}
+        <div className="flex items-start justify-between mb-5">
+          <div>
+            <h1 className="font-display text-2xl font-bold text-foreground mb-1">À faire</h1>
+            <p className="text-sm text-muted-foreground">
+              {isLoading
+                ? "Chargement…"
+                : totalRestantes === 0
+                  ? "Tout est traité. Bravo !"
+                  : `${totalRestantes} action${totalRestantes > 1 ? "s" : ""}${urgentes > 0 ? `, dont ${urgentes} urgente${urgentes > 1 ? "s" : ""}` : ""}`
+              }
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => refetch()}
+              className="p-2 rounded-xl border border-border text-muted-foreground hover:bg-muted transition-colors"
+              title="Rafraîchir"
+            >
+              <RefreshCw size={14} />
+            </button>
+            <button
+              onClick={() => setShowNewModal(true)}
+              className="btn-cta text-sm py-2 px-4 flex items-center gap-1.5"
+            >
+              <Plus size={14} /> Nouvelle action
+            </button>
+          </div>
+        </div>
+
+        {/* Summary chips */}
+        {!isLoading && (
+          <div className="grid grid-cols-4 gap-2 mb-5">
+            {summaryStats.map(({ label, value, dotClass }) => (
+              <div key={label} className="card-surface p-2.5 text-center">
+                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${dotClass}`} />
+                <p className="font-display text-lg font-bold text-foreground">{value}</p>
+                <p className="text-xs text-muted-foreground leading-tight">{label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Status filter tabs */}
+        <div className="flex items-center gap-2 mb-4">
+          {([
+            { label: "À faire", filter: ["a_faire", "en_cours"] as UserActionStatus[] },
+            { label: "Terminées", filter: ["terminee"] as UserActionStatus[] },
+            { label: "Toutes",  filter: ["a_faire", "en_cours", "terminee", "annulee"] as UserActionStatus[] },
+          ]).map(({ label, filter }) => {
+            const active = filter.join() === statusFilter.join();
+            return (
+              <button
+                key={label}
+                onClick={() => setStatusFilter(filter)}
+                className="text-xs font-medium px-3 py-1.5 rounded-full border transition-all"
+                style={{
+                  borderColor: active ? "hsl(var(--primary))" : "hsl(var(--border))",
+                  background:  active ? "hsl(var(--primary))" : "transparent",
+                  color: active ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filters row */}
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          <div className="relative flex-1 min-w-[160px]">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              className="w-full pl-8 pr-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              placeholder="Rechercher…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Filter size={12} className="text-muted-foreground" />
+            {(["tous", ...Object.keys(typeConfig)] as Array<UserActionType | "tous">).map(t => {
+              const active = typeFilter === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => setTypeFilter(t)}
+                  className="text-xs font-medium px-2.5 py-1 rounded-full border transition-all"
+                  style={{
+                    borderColor: active ? "hsl(var(--primary))" : "hsl(var(--border))",
+                    background:  active ? "hsl(var(--primary))" : "transparent",
+                    color: active ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                  }}
+                >
+                  {t === "tous" ? "Tous" : typeConfig[t].label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground">
+            <Loader2 size={18} className="animate-spin" />
+            <span className="text-sm">Chargement des actions…</span>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!isLoading && totalRestantes === 0 && (
+          <div className="card-surface p-10 text-center">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: "hsl(var(--success-light))" }}>
+              <CheckCircle2 size={28} style={{ color: "hsl(var(--success))" }} />
+            </div>
+            <h2 className="font-display text-xl font-bold text-foreground mb-2">
+              {search || typeFilter !== "tous" ? "Aucun résultat" : "Rien à faire !"}
+            </h2>
+            <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
+              {search || typeFilter !== "tous"
+                ? "Essayez d'autres filtres."
+                : "Toutes vos actions sont à jour. Créez-en une ou laissez OpenClaw en suggérer."}
+            </p>
+            <button onClick={() => setShowNewModal(true)} className="btn-cta text-sm py-2.5 px-5 flex items-center gap-2 mx-auto">
+              <Plus size={14} /> Nouvelle action
+            </button>
+          </div>
+        )}
+
+        {/* Grouped sections */}
+        {!isLoading && PRIORITY_ORDER.map(p => (
+          <PrioritySection
+            key={p}
+            priority={p}
+            actions={grouped[p]}
+            onDone={(id) => markDone.mutate(id)}
+          />
+        ))}
+      </div>
+    </UserLayout>
   );
 }
