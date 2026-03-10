@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
   LayoutDashboard, Users, Tag, CreditCard, HelpCircle,
-  BarChart2, Menu, X, LogOut, Shield, Zap, TrendingUp, Rocket, Activity
+  BarChart2, Menu, X, LogOut, Shield, Zap, TrendingUp, Rocket, Activity, Brain,
 } from "lucide-react";
 
 const links = [
@@ -16,6 +16,7 @@ const links = [
   { to: "/admin/analytics", label: "Analytics", icon: BarChart2 },
   { to: "/admin/env-check", label: "Env Check", icon: Activity },
   { to: "/admin/go-live", label: "Go-Live", icon: Rocket },
+  { to: "/operations", label: "Operations", icon: Brain },
   { to: "/admin/help", label: "Aide", icon: HelpCircle },
 ];
 
