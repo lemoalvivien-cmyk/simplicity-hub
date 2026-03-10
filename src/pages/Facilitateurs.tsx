@@ -374,7 +374,7 @@ export default function Facilitateurs() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map((f, idx) => {
+            {paginated.map((f, idx) => {
               const tauxConv = f.intros_count > 0 ? Math.round((f.intros_validees / f.intros_count) * 100) : 0;
               const rating = f.average_rating && f.average_rating > 0 ? f.average_rating : null;
               const isTopMatch = idx === 0 && sortMode === "match" && f.match_score >= 60;
