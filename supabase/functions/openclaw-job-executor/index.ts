@@ -717,6 +717,14 @@ Génère le brief matinal.`;
             agent_name: "validator", priority: "haute", status: "nouvelle",
             execution_id: executionId, recommended_action: "Vérifier et relancer ces introductions",
           });
+          // 🔔 Notification: pipeline alert
+          await svc.from("notifications").insert({
+            user_id: userId,
+            type: "alerte_pipeline",
+            title: `Pipeline bloqué — ${stuckOld.length} introduction(s) sans réponse`,
+            body: `${stuckOld.length} introduction(s) sont en attente depuis plus de 7 jours. Pensez à relancer.`,
+            href: "/introductions",
+          });
           recs = 1;
           prepareChannelAction("whatsapp", "relance", `${stuckOld.length} pipeline(s) bloqué(s) — relance préparée`, { stuck_count: stuckOld.length, type: "stuck_pipeline" });
         }
