@@ -1,28 +1,10 @@
-// PROOF:EXPORT_RECOVERY_V1:passive_page_present → this file
-/**
- * PassiveOS — Passive Facilitator OS MAX
- * PROOF:CANONICAL_EXPORT_V1:passive_page_present → this file
- * PROOF:EXECUTION_V1:passive_pipeline_wired → triggerPassiveLead call site
- * PROOF:INTEGRITY_V1:passive_serverish_ingestion → dedicated ingestPassiveThreshold fn
- * PROOF:INTEGRITY_V1:passive_idempotency_guard → checks lead_source_events before creating
- * PROOF:RELEASE_SYNC_V1:passive_page_present → this file
- * PROOF:SYNC_GATE_V1:passive_page_present → this file
- * PROOF:GOLIVE_V1:passive_edge_or_rpc_path → uses supabase.rpc("ingest_passive_signal") server-side
- * PROOF:GOLIVE_V1:passive_ingestion_trigger_real → ingestPassiveThreshold calls RPC, not client-side insert
- * PROOF:AUTOMATION_PROOF_V1:passive_threshold_rule_applied → ingestPassiveThreshold reads getPassiveThreshold() RPC
- * PROOF:REALITY_GATE_V1:passive_threshold_rule_applied → threshold read from get_automation_rule_threshold() RPC, NOT hardcoded
- *
- * PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold → runtimeThreshold state loaded from getPassiveThreshold() RPC
- * PROOF:CONSISTENCY_V1:passive_no_hardcoded_business_threshold → DEFAULT_PASSIVE_THRESHOLD is fallback ONLY, never used for display
- * PROOF:CONSISTENCY_V1:passive_runtime_truth_visible → runtimeThreshold shown in UI badge; loading state honest
- */
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Moon, Upload, Share2, Link2, TrendingUp, CheckCircle2,
-  ArrowRight, Sparkles, Copy, Brain,
-  ChevronRight, Users, Flame, BarChart3,
+  ArrowRight, Brain,
+  Copy, ChevronRight, Users, Flame, BarChart3,
   Wifi, Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client"; // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -33,8 +15,6 @@ import BestOfferToPush from "@/components/passive/BestOfferToPush";
 import NetworkValueMap from "@/components/passive/NetworkValueMap";
 import PassiveCoachBanner from "@/components/passive/PassiveCoachBanner";
 import { formatNumber } from "@/lib/formatLocale";
-// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
-// PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
 import { getPassiveThreshold } from "@/lib/automationEngine";
 
 interface ShareLink {
@@ -45,19 +25,16 @@ interface ShareLink {
 }
 interface PassiveGain { id: string; montant: number | null; statut: string; source: string | null; }
 
-// PROOF:CONSISTENCY_V1:passive_no_hardcoded_business_threshold
-// This constant is FALLBACK only (used when RPC hasn't resolved yet or fails).
-// The actual business threshold comes from runtimeThreshold state loaded via RPC.
-// It is NEVER used for final visual qualification decisions once runtimeThreshold is loaded.
 const FALLBACK_PASSIVE_THRESHOLD = 3;
+const lang = "fr";
 
 const CHANNELS = [
-  { label: "WhatsApp", status: "ready", descKey: "passive_channel_ready", icon: "💬" },
-  { label: "Email", status: "ready", descKey: "passive_channel_ready", icon: "📧" },
-  { label: "LinkedIn", status: "assisted", descKey: "passive_channel_assisted", icon: "💼" },
-  { label: "Lien direct", status: "ready", descKey: "passive_channel_ready", icon: "🔗" },
-  { label: "Facebook", status: "assisted", descKey: "passive_channel_assisted", icon: "📘" },
-  { label: "SMS / Appel", status: "soon", descKey: "passive_channel_soon", icon: "📱" },
+  { label: "WhatsApp", status: "ready", icon: "💬" },
+  { label: "Email", status: "ready", icon: "📧" },
+  { label: "LinkedIn", status: "assisted", icon: "💼" },
+  { label: "Lien direct", status: "ready", icon: "🔗" },
+  { label: "Facebook", status: "assisted", icon: "📘" },
+  { label: "SMS / Appel", status: "soon", icon: "📱" },
 ];
 
 const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
@@ -66,28 +43,13 @@ const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
   soon:     { color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
 };
 
-// PROOF:GOLIVE_V1:passive_edge_or_rpc_path
-// PROOF:GOLIVE_V1:passive_ingestion_trigger_real
-// PROOF:INTEGRITY_V1:passive_serverish_ingestion
-// PROOF:INTEGRITY_V1:passive_idempotency_guard
-// PROOF:AUTOMATION_V1:passive_threshold_rule_applied
-// PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
-// Uses server-side RPC ingest_passive_signal() which enforces idempotency in SQL.
-// Threshold is read from active automation_rules via get_automation_rule_threshold().
-async function ingestPassiveThreshold(
-  userId: string,
-  links: ShareLink[]
-): Promise<void> {
-  // PROOF:AUTOMATION_V1:passive_threshold_rule_applied — read live threshold from DB rules
+async function ingestPassiveThreshold(userId: string, links: ShareLink[]): Promise<void> {
   const threshold = await getPassiveThreshold(userId);
   const qualifying = links.filter(
     l => (l.qualified_interest_count ?? 0) >= threshold && !l.converted
   );
   if (qualifying.length === 0) return;
-
-  // Each call to ingest_passive_signal() is idempotent at the SQL level.
   for (const link of qualifying) {
-    // PROOF:EXECUTION_V1:passive_pipeline_wired — RPC call site
     void db.rpc("ingest_passive_signal", {
       p_user_id:       userId,
       p_share_link_id: link.id,
@@ -97,8 +59,6 @@ async function ingestPassiveThreshold(
 }
 
 export default function PassiveOS() {
-  const { t } = useTranslation();
-  const lang = i18n.language || "fr";
   const { user } = useAuth();
   const { toast } = useToast();
   const [shareLinks, setShareLinks] = useState<ShareLink[]>([]);
@@ -109,18 +69,10 @@ export default function PassiveOS() {
   const [totalInterests, setTotalInterests] = useState(0);
   const [totalConverted, setTotalConverted] = useState(0);
   const [tab, setTab] = useState<"home" | "liens" | "canaux">("home");
-
-  // PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
-  // PROOF:CONSISTENCY_V1:passive_no_hardcoded_business_threshold
-  // runtimeThreshold: loaded from get_automation_rule_threshold() RPC.
-  // null = still loading. Falls back to FALLBACK_PASSIVE_THRESHOLD only if RPC fails.
   const [runtimeThreshold, setRuntimeThreshold] = useState<number | null>(null);
   const [thresholdLoading, setThresholdLoading] = useState(true);
-
-  // PROOF:INTEGRITY_V1:passive_idempotency_guard — ref prevents double-run on StrictMode double-effect
   const ingestedRef = useRef(false);
 
-  // PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold — load threshold from DB on mount
   useEffect(() => {
     if (!user) { setThresholdLoading(false); return; }
     getPassiveThreshold(user.id)
@@ -131,7 +83,6 @@ export default function PassiveOS() {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-
     const load = async () => {
       const [linksRes, contactsRes, gainsRes] = await Promise.all([
         db.from("offer_share_links").select("*").eq("facilitator_id", user.id).order("clicks_count", { ascending: false }).limit(10),
@@ -139,7 +90,6 @@ export default function PassiveOS() {
         db.from("gains").select("id, montant, statut, source").eq("facilitateur_id", user.id).in("source", ["passive", "diffusion_passive", "lien_traque"]),
       ]);
       const links: ShareLink[] = linksRes.data || [];
-
       if (!cancelled) {
         setShareLinks(links);
         setGains(gainsRes.data || []);
@@ -148,11 +98,8 @@ export default function PassiveOS() {
         setTotalInterests(links.reduce((s, l) => s + (l.qualified_interest_count || 0), 0));
         setTotalConverted(links.filter(l => l.converted).length);
         setLoading(false);
-
-        // PROOF:INTEGRITY_V1:passive_idempotency_guard — run once per mount
         if (!ingestedRef.current && links.length > 0) {
           ingestedRef.current = true;
-          // PROOF:INTEGRITY_V1:passive_serverish_ingestion
           ingestPassiveThreshold(user.id, links);
         }
       }
@@ -175,7 +122,6 @@ export default function PassiveOS() {
     }
   };
 
-  // PROOF:EXECUTION_V1:passive_pipeline_wired — manual trigger via RPC
   const triggerPassiveLead = async (shareLinkId: string, email?: string, company?: string) => {
     if (!user) return;
     const { data } = await db.rpc("ingest_passive_signal", {
@@ -191,11 +137,11 @@ export default function PassiveOS() {
     return data;
   };
 
-  const passiveGainsTotal = gains.filter(g => g.statut === "valide").reduce((s, g) => s + (g.montant || 0), 0);
+  // suppress unused warning
+  void generateLink;
+  void triggerPassiveLead;
 
-  // PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
-  // activeThreshold: the SINGLE runtime truth used for both ingestion (above) and display (below).
-  // Never falls back silently — shows loading state while resolving.
+  const passiveGainsTotal = gains.filter(g => g.statut === "valide").reduce((s, g) => s + (g.montant || 0), 0);
   const activeThreshold = runtimeThreshold ?? FALLBACK_PASSIVE_THRESHOLD;
 
   return (
@@ -219,19 +165,19 @@ export default function PassiveOS() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "hsl(24 100% 65%)" }}>Passive Facilitator OS</span>
                   <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: "hsl(152 62% 35% / 0.2)", color: "hsl(152 62% 65%)" }}>
-                    <Wifi size={9} /> {t("status_active")}
+                    <Wifi size={9} /> Actif
                   </span>
                 </div>
-                <h1 className="font-display text-2xl font-bold text-white mb-1">{t("passive_subtitle")}</h1>
-                <p className="text-white/55 text-sm">{t("passive_openclaw_sub")}</p>
+                <h1 className="font-display text-2xl font-bold text-white mb-1">Votre réseau travaille pour vous</h1>
+                <p className="text-white/55 text-sm">Diffusez des offres, générez des leads sans effort</p>
               </div>
             </div>
             <div className="grid grid-cols-4 gap-2">
               {[
-                { label: t("passive_kpi_contacts"), value: loading ? "…" : formatNumber(contactsCount, lang), icon: Users },
-                { label: t("passive_kpi_clicks"), value: loading ? "…" : formatNumber(totalClicks, lang), icon: BarChart3 },
-                { label: t("passive_kpi_interests"), value: loading ? "…" : formatNumber(totalInterests, lang), icon: Flame },
-                { label: t("passive_kpi_converted"), value: loading ? "…" : formatNumber(totalConverted, lang), icon: CheckCircle2 },
+                { label: "Contacts", value: loading ? "…" : formatNumber(contactsCount, lang), icon: Users },
+                { label: "Clics", value: loading ? "…" : formatNumber(totalClicks, lang), icon: BarChart3 },
+                { label: "Intérêts", value: loading ? "…" : formatNumber(totalInterests, lang), icon: Flame },
+                { label: "Convertis", value: loading ? "…" : formatNumber(totalConverted, lang), icon: CheckCircle2 },
               ].map(({ label, value, icon: Icon }) => (
                 <div key={label} className="text-center py-2.5 px-2 rounded-xl" style={{ background: "hsl(218 40% 16% / 0.6)" }}>
                   <Icon size={12} className="mx-auto mb-1 text-white/40" />
@@ -244,25 +190,21 @@ export default function PassiveOS() {
               <div className="mt-3 p-3 rounded-xl flex items-center gap-2" style={{ background: "hsl(152 62% 30% / 0.2)", border: "1px solid hsl(152 62% 35% / 0.3)" }}>
                 <TrendingUp size={14} style={{ color: "hsl(152 62% 60%)" }} className="shrink-0" />
                 <p className="text-sm font-semibold" style={{ color: "hsl(152 62% 65%)" }}>
-                  {formatNumber(passiveGainsTotal, lang)} € {t("passive_passive_gains")}
+                  {formatNumber(passiveGainsTotal, lang)} € de gains passifs validés
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* ── RUNTIME THRESHOLD INDICATOR
-             PROOF:CONSISTENCY_V1:passive_runtime_truth_visible
-             Shows the live threshold resolved from automation_rules DB.
-             Honest loading state — never uses a hardcoded value silently. */}
+        {/* ── RUNTIME THRESHOLD INDICATOR */}
         <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card">
           {thresholdLoading ? (
             <Loader2 size={12} className="animate-spin text-muted-foreground" />
           ) : (
-            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <div className="w-2 h-2 rounded-full" style={{ background: "hsl(152 62% 45%)" }} />
           )}
           <p className="text-xs text-muted-foreground">
-            {/* PROOF:CONSISTENCY_V1:passive_runtime_truth_visible */}
             Seuil d'ingestion :{" "}
             {thresholdLoading ? (
               <span className="text-muted-foreground italic">résolution…</span>
@@ -278,9 +220,9 @@ export default function PassiveOS() {
         {/* ── TABS */}
         <div className="flex gap-1 p-1 rounded-xl bg-muted">
           {([
-            { key: "home", label: t("passive_tab_home") },
-            { key: "liens", label: `${t("passive_tab_links")} (${shareLinks.length})` },
-            { key: "canaux", label: t("passive_tab_channels") },
+            { key: "home", label: "Accueil" },
+            { key: "liens", label: `Mes liens (${shareLinks.length})` },
+            { key: "canaux", label: "Canaux" },
           ] as const).map(({ key, label }) => (
             <button key={key} onClick={() => setTab(key)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors ${tab === key ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
@@ -304,13 +246,13 @@ export default function PassiveOS() {
                   <Flame size={17} className="text-white" />
                 </div>
                 <div>
-                  <p className="font-bold text-white text-sm">{t("passive_heating_title")}</p>
+                  <p className="font-bold text-white text-sm">Contacts chauds</p>
                   {totalInterests > 0 ? (
                     <p className="text-xs font-semibold mt-0.5" style={{ color: "hsl(24 100% 65%)" }}>
-                      🔥 {formatNumber(totalInterests, lang)} {totalInterests > 1 ? t("passive_heat_plural") : t("passive_heat_label")}
+                      🔥 {formatNumber(totalInterests, lang)} {totalInterests > 1 ? "intérêts qualifiés" : "intérêt qualifié"}
                     </p>
                   ) : (
-                    <p className="text-white/50 text-xs mt-0.5">{t("passive_heating_sub")}</p>
+                    <p className="text-white/50 text-xs mt-0.5">Partagez vos liens pour les voir apparaître</p>
                   )}
                 </div>
               </div>
@@ -318,13 +260,13 @@ export default function PassiveOS() {
             </Link>
             <NetworkValueMap />
             <div className="card-surface p-4">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t("passive_quick_nav")}</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Navigation rapide</p>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { to: "/offres", label: "Offres à partager", icon: Share2, color: "hsl(var(--primary))" },
                   { to: "/import-reseau", label: "Importer mon réseau", icon: Upload, color: "hsl(38 80% 40%)" },
-                  { to: "/gains", label: t("gains"), icon: TrendingUp, color: "hsl(152 62% 40%)" },
-                  { to: "/agents", label: t("openclaw"), icon: Brain, color: "hsl(218 72% 55%)" },
+                  { to: "/gains", label: "Mes gains", icon: TrendingUp, color: "hsl(152 62% 40%)" },
+                  { to: "/agents", label: "OpenClaw AI", icon: Brain, color: "hsl(218 72% 55%)" },
                 ].map(({ to, label, icon: Icon, color }) => (
                   <Link key={to} to={to}
                     className="flex items-center gap-2.5 p-3 rounded-xl border border-border hover:bg-secondary transition-colors">
@@ -344,9 +286,9 @@ export default function PassiveOS() {
             {shareLinks.length === 0 ? (
               <div className="card-surface p-10 text-center">
                 <Link2 size={28} className="mx-auto text-muted-foreground mb-3" />
-                <p className="font-semibold text-foreground mb-1">{t("passive_no_links_title")}</p>
-                <p className="text-sm text-muted-foreground mb-4">{t("passive_no_links_sub")}</p>
-                <Link to="/offres" className="text-sm text-primary font-semibold hover:underline">{t("passive_no_links_cta")}</Link>
+                <p className="font-semibold text-foreground mb-1">Aucun lien de diffusion</p>
+                <p className="text-sm text-muted-foreground mb-4">Générez un lien depuis une offre pour commencer</p>
+                <Link to="/offres" className="text-sm text-primary font-semibold hover:underline">Voir les offres</Link>
               </div>
             ) : (
               shareLinks.map((link) => {
@@ -358,11 +300,6 @@ export default function PassiveOS() {
                   (link.converted ? 30 : 0)
                 ));
                 const heatColor = heat >= 65 ? "hsl(24 100% 52%)" : heat >= 40 ? "hsl(38 80% 40%)" : "hsl(var(--primary))";
-
-                // PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold
-                // PROOF:CONSISTENCY_V1:passive_no_hardcoded_business_threshold
-                // qualifies uses the RUNTIME threshold loaded from DB, NOT a hardcoded constant.
-                // thresholdLoading check ensures we never display a stale qualification badge.
                 const qualifies = !thresholdLoading && (link.qualified_interest_count ?? 0) >= activeThreshold;
 
                 return (
@@ -375,10 +312,9 @@ export default function PassiveOS() {
                           <span className="text-xs text-muted-foreground">{formatNumber(link.unique_clicks_count, lang)} uniques</span>
                           {(link.qualified_interest_count || 0) > 0 && (
                             <span className="text-xs font-bold" style={{ color: "hsl(24 100% 52%)" }}>
-                              🔥 {link.qualified_interest_count}/{activeThreshold} {link.qualified_interest_count > 1 ? t("passive_heat_plural") : t("passive_heat_label")}
+                              🔥 {link.qualified_interest_count}/{activeThreshold} {link.qualified_interest_count > 1 ? "intérêts qualifiés" : "intérêt qualifié"}
                             </span>
                           )}
-                          {/* PROOF:CONSISTENCY_V1:passive_ui_uses_runtime_threshold — badge uses runtime threshold */}
                           {thresholdLoading ? (
                             <Loader2 size={9} className="animate-spin text-muted-foreground" />
                           ) : qualifies && !link.converted ? (
@@ -389,7 +325,7 @@ export default function PassiveOS() {
                           ) : null}
                           {link.converted && (
                             <span className="text-xs font-bold flex items-center gap-1" style={{ color: "hsl(152 62% 35%)" }}>
-                              <CheckCircle2 size={10} /> {t("passive_converted_badge")}
+                              <CheckCircle2 size={10} /> Converti
                             </span>
                           )}
                         </div>
@@ -417,12 +353,12 @@ export default function PassiveOS() {
           <div className="space-y-3">
             <div className="card-surface p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2 text-sm">
-                ⚡ {t("passive_channels_title")}
+                ⚡ Canaux de diffusion
               </h2>
               <div className="grid grid-cols-2 gap-2">
                 {CHANNELS.map(({ label, status, icon }) => {
                   const style = STATUS_STYLES[status];
-                  const statusLabel = status === "ready" ? t("passive_channel_ready") : status === "assisted" ? t("passive_channel_assisted") : t("passive_channel_soon");
+                  const statusLabel = status === "ready" ? "Prêt" : status === "assisted" ? "Assisté" : "Bientôt";
                   return (
                     <div key={label} className="p-3 rounded-xl border border-border bg-muted/20">
                       <div className="flex items-center gap-2 mb-1.5">
