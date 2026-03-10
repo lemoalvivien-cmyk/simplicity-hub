@@ -11,7 +11,7 @@ import {
   BarChart2, Users, ChevronRight, Activity, Radar, Brain,
   AlertTriangle, Loader2, WifiOff,
 } from "lucide-react";
-import { MorningBrief } from "@/components/openclaw/MorningBrief";
+
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
@@ -186,9 +186,6 @@ export default function Pilotage() {
             </Link>
           </div>
         )}
-
-        {/* ── BRIEF OPENCLAW ─────────────────────────────────────── */}
-        <MorningBrief compact />
 
         {/* ── DEAL RADAR CALLOUT ─────────────────────────────────── */}
         <Link
