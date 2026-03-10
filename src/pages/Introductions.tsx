@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
+import PageTitle from "@/components/ui/PageTitle";
 import { Send, CheckCircle2, Clock, XCircle, ChevronRight, Plus, Euro, Loader2 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";

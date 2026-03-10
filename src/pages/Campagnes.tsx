@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
+import PageTitle from "@/components/ui/PageTitle";
 import { Play, Plus, Users, ChevronRight, CheckCircle2, Clock, PauseCircle, BarChart2, Search, Loader2 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";

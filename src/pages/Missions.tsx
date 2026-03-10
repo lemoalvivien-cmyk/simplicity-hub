@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import { Euro, MapPin, ChevronRight, Plus, Search, Send, Loader2, Briefcase } from "lucide-react";
+import PageTitle from "@/components/ui/PageTitle";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
