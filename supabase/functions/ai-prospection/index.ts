@@ -1,12 +1,24 @@
+// Allowed origins — browser clients only; Stripe-style server calls don't use CORS
+const ALLOWED_ORIGINS = [
+  "https://wiinupmax.com",
+  "https://wiinupmax.lovable.app",
+  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
+];
 
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const isLocal = origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1");
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) || isLocal ? origin : "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -84,9 +96,8 @@ Réponds en JSON avec ce format exact :
     }
 
     const aiData = await response.json();
-    const rawContent = aiData.choices?.[0]?.message?.content ?? "";
+    const rawContent: string = aiData.choices?.[0]?.message?.content ?? "";
 
-    // Extract JSON from the response (handle markdown code blocks)
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("Impossible d'extraire le JSON de la réponse IA.");
@@ -102,7 +113,7 @@ Réponds en JSON avec ce format exact :
     console.error("ai-prospection error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Erreur inconnue" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

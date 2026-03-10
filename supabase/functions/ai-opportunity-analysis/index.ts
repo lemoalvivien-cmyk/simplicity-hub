@@ -1,12 +1,24 @@
+// Allowed origins — browser clients only
+const ALLOWED_ORIGINS = [
+  "https://wiinupmax.com",
+  "https://wiinupmax.lovable.app",
+  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
+];
 
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const isLocal = origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1");
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) || isLocal ? origin : "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -35,9 +47,9 @@ Réponds en JSON, en français.`;
 
     const userPrompt = `Analyse cette opportunité business :
 
-Entreprise cible : ${target_company || "Non précisée"}
+Entreprise cible : ${target_company ?? "Non précisée"}
 Description : ${opportunity_description}
-Valeur estimée du deal : ${estimated_value ? estimated_value + " €" : "Non précisée"}
+Valeur estimée du deal : ${estimated_value != null ? estimated_value + " €" : "Non précisée"}
 
 Réponds UNIQUEMENT en JSON valide avec ce format exact :
 {
@@ -83,9 +95,8 @@ Réponds UNIQUEMENT en JSON valide avec ce format exact :
     }
 
     const aiData = await response.json();
-    const rawContent = aiData.choices?.[0]?.message?.content ?? "";
+    const rawContent: string = aiData.choices?.[0]?.message?.content ?? "";
 
-    // Extract JSON from the response (handle markdown code blocks)
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Impossible d'extraire le JSON de la réponse IA.");
 
@@ -93,14 +104,14 @@ Réponds UNIQUEMENT en JSON valide avec ce format exact :
 
     const result = {
       potential_score: Math.min(10, Math.max(1, Math.round(Number(parsed.potential_score) || 5))),
-      estimated_commission: String(parsed.estimated_commission || "N/A"),
+      estimated_commission: String(parsed.estimated_commission ?? "N/A"),
       success_factors: Array.isArray(parsed.success_factors)
         ? parsed.success_factors.slice(0, 3).map((s: unknown) => String(s))
         : [],
       risks: Array.isArray(parsed.risks)
         ? parsed.risks.slice(0, 2).map((r: unknown) => String(r))
         : [],
-      recommended_approach: String(parsed.recommended_approach || "").slice(0, 400),
+      recommended_approach: String(parsed.recommended_approach ?? "").slice(0, 400),
     };
 
     return new Response(JSON.stringify(result), {
@@ -111,7 +122,7 @@ Réponds UNIQUEMENT en JSON valide avec ce format exact :
     console.error("ai-opportunity-analysis error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Erreur inconnue" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

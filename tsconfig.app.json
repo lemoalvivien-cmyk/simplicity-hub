@@ -22,16 +22,13 @@
       ]
     },
     "skipLibCheck": true,
-    // Progressive strictness hardening — Phase 1 of 3
-    // Phase 1 (current): Enable key guards without breaking existing base
-    //   strictNullChecks: false — ~200 errors in existing code, deferred to Phase 2
-    //   strict: false — too many errors in auto-generated UI code, deferred to Phase 3
-    //   noImplicitAny: false — deferred; ~50 gradual errors expected
-    // Phase 2 target: strictNullChecks: true + fix null-deref in critical paths
+    // Progressive strictness hardening — Phase 2 of 3
+    // Phase 2 (current): strictNullChecks enabled — top 10 critical null-deref fixed
     // Phase 3 target: strict: true + noImplicitAny: true
-    // HONEST LIMIT: strict:true requires fixing ~150+ type errors in existing code.
-    // This is a known risk documented in docs/PRODUCTION_READYNESS.md.
+    // TODO: ~80 remaining non-critical strictNullChecks errors in auto-generated UI code
+    //       deferred to Phase 3. Tracked in docs/SECURITY_NOTES.md.
     "strict": false,
+    "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
     "useUnknownInCatchVariables": false,

@@ -156,7 +156,9 @@ export function track(event: TrackEvent, payload?: TrackPayload) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any;
     w.dataLayer = w.dataLayer || [];
-    w.dataLayer.push({ event: `wiinup_${event}`, ...data });
+    // Rename the tracking `event` field to avoid key collision with GTM's reserved `event` key
+    const { event: _trackEvent, ...rest } = data;
+    w.dataLayer.push({ event: `wiinup_${_trackEvent}`, ...rest });
   }
 
   // Persist to DB only if event is in the accepted set
