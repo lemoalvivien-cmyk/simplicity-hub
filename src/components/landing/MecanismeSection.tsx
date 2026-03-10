@@ -2,7 +2,7 @@ import { Brain, Users, BarChart3, ArrowDown } from "lucide-react";
 
 export default function MecanismeSection() {
   return (
-    <section className="py-20 md:py-24 bg-background">
+    <section className="py-20 md:py-24 bg-muted">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">Comment ça fonctionne</p>
@@ -46,7 +46,7 @@ export default function MecanismeSection() {
                   </p>
                 </div>
               </div>
-              <p className="text-white/55 text-sm leading-relaxed">
+              <p className="text-white/75 text-sm leading-relaxed">
                 OpenClaw prospecte pendant que vous dormez. Il détecte les signaux d'intention,
                 rédige les messages, pilote vos campagnes — sans intervention manuelle.
               </p>
@@ -65,7 +65,7 @@ export default function MecanismeSection() {
                     style={{ background: "hsl(218 72% 55%)" }}
                     aria-hidden="true"
                   />
-                  <span className="text-sm text-white/68">{item}</span>
+                  <span className="text-sm text-white/80">{item}</span>
                 </li>
               ))}
             </ul>
@@ -97,7 +97,7 @@ export default function MecanismeSection() {
                   </p>
                 </div>
               </div>
-              <p className="text-white/55 text-sm leading-relaxed">
+              <p className="text-white/75 text-sm leading-relaxed">
                 Un réseau de facilitateurs actifs recommande votre offre à leurs contacts qualifiés.
                 Chaque introduction est tracée, vérifiée, et prouvable.
               </p>
@@ -116,7 +116,7 @@ export default function MecanismeSection() {
                     style={{ background: "hsl(24 100% 60%)" }}
                     aria-hidden="true"
                   />
-                  <span className="text-sm text-white/68">{item}</span>
+                  <span className="text-sm text-white/80">{item}</span>
                 </li>
               ))}
             </ul>
@@ -146,7 +146,7 @@ export default function MecanismeSection() {
             </div>
             <p className="font-display font-bold text-white text-base">Cockpit central</p>
           </div>
-          <p className="text-white/50 text-sm max-w-md mx-auto leading-relaxed">
+          <p className="text-white/75 text-sm max-w-md mx-auto leading-relaxed">
             Les deux moteurs remontent dans le même tableau de bord.
             Validation, suivi, gains, priorités — tout est visible. JARVIS vous dit toujours quoi faire ensuite.
           </p>

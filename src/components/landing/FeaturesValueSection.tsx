@@ -1,4 +1,4 @@
-import { Send, Brain, Zap, LayoutDashboard, TrendingUp, ShieldCheck } from "lucide-react";
+import { Send, Brain, Zap, LayoutDashboard, TrendingUp, ShieldCheck, MessageSquare, Bell } from "lucide-react";
 
 const features = [
   {
@@ -55,6 +55,24 @@ const features = [
     impact: "Les meilleurs facilitateurs se démarquent. La confiance est mesurable.",
     color: "hsl(152 62% 42%)",
   },
+  {
+    icon: MessageSquare,
+    name: "Assistant JARVIS",
+    badge: "Les deux",
+    what: "Copilote IA contextuel qui connaît votre pipeline",
+    problem: "Vous ne savez pas toujours quelle action prioriser parmi toutes les tâches.",
+    impact: "JARVIS analyse votre pipeline et vous dit exactement quoi faire ensuite.",
+    color: "hsl(262 72% 60%)",
+  },
+  {
+    icon: Bell,
+    name: "Notifications temps réel",
+    badge: "Les deux",
+    what: "Alertes instantanées quand quelque chose bouge",
+    problem: "Vous ratez des signaux critiques parce qu'ils se noient dans le bruit.",
+    impact: "Chaque événement important remonte immédiatement. Zéro opportunité manquée.",
+    color: "hsl(218 72% 62%)",
+  },
 ];
 
 const badgeStyle: Record<string, string> = {
@@ -65,12 +83,12 @@ const badgeStyle: Record<string, string> = {
 
 export default function FeaturesValueSection() {
   return (
-    <section className="py-20 md:py-24 bg-muted">
+    <section className="py-20 md:py-24 bg-background">
       <div className="container max-w-5xl">
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">Ce que vous obtenez</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Chaque fonctionnalité règle un vrai problème.
+            Tout ce dont vous avez besoin. Rien de superflu.
           </h2>
           <p className="text-muted-foreground text-base max-w-lg mx-auto">
             Pas de gadgets. Pas de fonctionnalités décoratives.{" "}
@@ -78,7 +96,7 @@ export default function FeaturesValueSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {features.map(({ icon: Icon, name, badge, what, problem, impact, color }) => {
             const bgAlpha = color.replace(")", " / 0.07)");
             const borderAlpha = color.replace(")", " / 0.16)");
@@ -124,13 +142,13 @@ export default function FeaturesValueSection() {
                     <p className="text-muted-foreground/65 font-bold uppercase tracking-wide text-[9px] mb-1">
                       Sans ça
                     </p>
-                    <p className="text-foreground/72 leading-relaxed">{problem}</p>
+                    <p className="text-foreground/80 leading-relaxed">{problem}</p>
                   </div>
                   <div
                     className="rounded-xl px-3 py-2.5"
                     style={{ background: bgAlpha }}
                   >
-                    <p className="font-bold uppercase tracking-wide text-[9px] mb-1" style={{ color: color.replace(")", " / 0.65)") }}>
+                    <p className="font-bold uppercase tracking-wide text-[9px] mb-1" style={{ color: color.replace(")", " / 0.75)") }}>
                       Avec Wiinup Max
                     </p>
                     <p className="font-semibold leading-relaxed" style={{ color }}>{impact}</p>

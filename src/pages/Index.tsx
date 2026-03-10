@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Zap, ArrowRight } from "lucide-react";
+import { Zap } from "lucide-react";
 import PublicNav from "@/components/layout/PublicNav";
 import HeroSection from "@/components/landing/HeroSection";
 import ProblemSection from "@/components/landing/ProblemSection";
+import FacilitateurPainSection from "@/components/landing/FacilitateurPainSection";
 import MecanismeSection from "@/components/landing/MecanismeSection";
 import FeaturesValueSection from "@/components/landing/FeaturesValueSection";
 import HowItWorksEntrepriseSection from "@/components/landing/HowItWorksEntrepriseSection";
@@ -11,14 +12,13 @@ import FacilitateurSection from "@/components/landing/FacilitateurSection";
 import ProofSection from "@/components/landing/ProofSection";
 import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
 import PricingSection from "@/components/landing/PricingSection";
-import FAQSection from "@/components/landing/FAQSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import { initScrollTracking, track } from "@/lib/landingTracking";
 import { trackEvent } from "@/lib/analytics";
+import { ArrowRight } from "lucide-react";
 
 export default function LandingPage() {
   useEffect(() => {
-    // PROOF:ANALYTICS_RUNTIME_V1:landing_view_tracked
     trackEvent("landing_view", null, { source: "direct" });
     const cleanup = initScrollTracking();
     return cleanup;
@@ -28,37 +28,37 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <PublicNav />
 
-      {/* 1 — HERO — Domination, promesse immédiate */}
+      {/* 1 — HERO */}
       <HeroSection />
 
-      {/* 2 — PROBLÈMES — Identification de la douleur */}
+      {/* 2 — DOULEURS ENTREPRISES */}
       <ProblemSection />
 
-      {/* 3 — MÉCANISME — Double moteur, positionnement unique */}
+      {/* 3 — DOULEURS FACILITATEURS */}
+      <FacilitateurPainSection />
+
+      {/* 4 — MÉCANISME DOUBLE MOTEUR */}
       <MecanismeSection />
 
-      {/* 4 — FONCTIONNALITÉS = VALEUR BUSINESS */}
+      {/* 5 — FONCTIONNALITÉS COMPLÈTES */}
       <FeaturesValueSection />
 
-      {/* 5 — COMMENT ÇA MARCHE (ENTREPRISE) — Flow simple */}
+      {/* 6 — COMMENT ÇA MARCHE ENTREPRISE */}
       <HowItWorksEntrepriseSection />
 
-      {/* 6 — FACILITATEUR — Parcours secondaire, clair et distinct */}
+      {/* 7 — FACILITATEUR */}
       <FacilitateurSection />
 
-      {/* 7 — PREUVES DE SÉRIEUX — Crédibilité & traçabilité */}
+      {/* 8 — PREUVES */}
       <ProofSection />
 
-      {/* 8 — ANTI-BULLSHIT / OBJECTIONS — Lever les freins */}
+      {/* 9 — QUESTIONS & RÉPONSES (objections + FAQ fusionnées) */}
       <AntiBullshitSection />
 
-      {/* 9 — PRICING — Offre claire, hiérarchie nette */}
+      {/* 10 — PRICING */}
       <PricingSection />
 
-      {/* 10 — FAQ — Derniers doutes */}
-      <FAQSection />
-
-      {/* 11 — CTA FINAL — Décision */}
+      {/* 11 — CTA FINAL */}
       <FinalCTASection />
 
       {/* FOOTER */}
@@ -77,6 +77,7 @@ export default function LandingPage() {
           </div>
           <span className="text-xs">© {new Date().getFullYear()} VLM Consulting. Tous droits réservés.</span>
           <div className="flex gap-5 text-xs">
+            <Link to="/a-propos" className="hover:text-foreground transition-colors">À propos</Link>
             <Link to="/cgu" className="hover:text-foreground transition-colors">CGU</Link>
             <Link to="/confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
             <Link to="/mentions-legales" className="hover:text-foreground transition-colors">Mentions légales</Link>
@@ -107,7 +108,7 @@ export default function LandingPage() {
           </Link>
           <Link
             to="/login"
-            className="px-4 py-3.5 rounded-xl text-sm font-medium border border-white/15 text-white/55 hover:text-white/75 transition-colors flex items-center"
+            className="px-4 py-3.5 rounded-xl text-sm font-medium border border-white/15 text-white/70 hover:text-white/90 transition-colors flex items-center"
             onClick={() => track("cta_sticky_mobile", { label: "login" })}
           >
             Connexion
