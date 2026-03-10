@@ -59,7 +59,6 @@ const DIMENSION_COLORS: Record<string, string> = {
 export default function BestAccessPanel({ context = {}, title, showAlternatives = true, compact = false, onSelectPath }: Props) {
   const { loading, paths, findBestPaths } = useGraphEngine();
   const [expanded, setExpanded] = useState<string | null>(null);
-  const { t } = useTranslation();
 
   useEffect(() => {
     findBestPaths({ ...context, limit: compact ? 3 : 5 });
