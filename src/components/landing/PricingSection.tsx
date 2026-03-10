@@ -33,6 +33,7 @@ const PRICING_FRAME = {
     ctaLabel: (_isLaunch: boolean) => "Lancer ma première mission — 99 €",
   },
   v2_investissement: {
+    badge: "",
     headline: "Moins qu'un commercial junior. Pour tout un système.",
     sub: "99 € pour activer prospection IA + réseau humain structuré + cockpit de suivi.",
     ctaLabel: (_isLaunch: boolean) => "Activer mon acquisition — 99 €",
