@@ -308,7 +308,7 @@ const resources = {
       checkout_success_promo_desc: "Votre accès gratuit de 12 mois est activé. Aucun paiement n'est nécessaire avec ce code.",
       checkout_success_promo_shield: "Accès complet à toutes les fonctionnalités pendant 12 mois, sans engagement.",
       checkout_success_launch_badge: "Offre de lancement — 99 € TTC / an",
-      checkout_success_standard_badge: "Abonnement annuel — 490 € TTC / an",
+      checkout_success_standard_badge: "Abonnement annuel — 99 € TTC / an",
       checkout_success_moteur1_title: "Prospection automatisée",
       checkout_success_moteur1_sub: "OpenClaw est prêt.",
       checkout_success_moteur2_title: "Apport d'affaires",
