@@ -1,12 +1,26 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+// Allowed origins — browser clients only
+const ALLOWED_ORIGINS = [
+  "https://wiinupmax.com",
+  "https://wiinupmax.lovable.app",
+  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
+];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const isLocal = origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1");
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) || isLocal ? origin : "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -31,7 +45,6 @@ Deno.serve(async (req) => {
       throw new Error("Supabase configuration is missing");
     }
 
-    // Query active facilitateur profiles
     const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { data: facilitateurs, error: dbError } = await adminClient
@@ -56,7 +69,6 @@ Deno.serve(async (req) => {
       throw new Error("Impossible de récupérer les apporteurs.");
     }
 
-    // Also fetch profile names
     let profileNames: Record<string, string> = {};
     if (facilitateurs && facilitateurs.length > 0) {
       const userIds = facilitateurs.map((f: { user_id: string }) => f.user_id);
@@ -67,13 +79,13 @@ Deno.serve(async (req) => {
 
       if (profiles) {
         profileNames = profiles.reduce((acc: Record<string, string>, p: { id: string; prenom: string | null; email: string }) => {
-          acc[p.id] = p.prenom || p.email?.split("@")[0] || "Apporteur";
+          acc[p.id] = p.prenom ?? p.email?.split("@")[0] ?? "Apporteur";
           return acc;
         }, {});
       }
     }
 
-    const enrichedFacilitateurs = (facilitateurs || []).map((f: {
+    const enrichedFacilitateurs = (facilitateurs ?? []).map((f: {
       user_id: string;
       secteur: string | null;
       zone: string | null;
@@ -85,15 +97,15 @@ Deno.serve(async (req) => {
       total_reviews: number | null;
     }) => ({
       id: f.user_id,
-      nom: profileNames[f.user_id] || "Apporteur",
-      secteur: f.secteur || "Non précisé",
-      zone: f.zone || "Non précisée",
-      description: f.description_reseau || "",
-      types_contacts: f.types_contacts || "",
-      langues: f.languages?.join(", ") || "Français",
-      taux_reponse: f.response_rate || 0,
-      note_moyenne: f.average_rating || 0,
-      nb_avis: f.total_reviews || 0,
+      nom: profileNames[f.user_id] ?? "Apporteur",
+      secteur: f.secteur ?? "Non précisé",
+      zone: f.zone ?? "Non précisée",
+      description: f.description_reseau ?? "",
+      types_contacts: f.types_contacts ?? "",
+      langues: f.languages?.join(", ") ?? "Français",
+      taux_reponse: f.response_rate ?? 0,
+      note_moyenne: f.average_rating ?? 0,
+      nb_avis: f.total_reviews ?? 0,
     }));
 
     if (enrichedFacilitateurs.length === 0) {
@@ -114,11 +126,11 @@ et une explication courte en français.`;
 
     const userPrompt = `Voici le profil de l'entreprise à mettre en relation :
 
-Secteur : ${enterprise_profile.sector || "Non précisé"}
-Offre : ${enterprise_profile.offer_description || "Non précisée"}
-Besoins : ${enterprise_profile.needs || "Non précisés"}
-Zone cible : ${enterprise_profile.zone || "France entière"}
-Cible clients : ${enterprise_profile.target || "Non précisée"}
+Secteur : ${enterprise_profile.sector ?? "Non précisé"}
+Offre : ${enterprise_profile.offer_description ?? "Non précisée"}
+Besoins : ${enterprise_profile.needs ?? "Non précisés"}
+Zone cible : ${enterprise_profile.zone ?? "France entière"}
+Cible clients : ${enterprise_profile.target ?? "Non précisée"}
 
 Voici les apporteurs d'affaires disponibles :
 
@@ -197,26 +209,24 @@ Réponds UNIQUEMENT en JSON valide avec ce format exact :
     }
 
     const aiData = await response.json();
-    const rawContent = aiData.choices?.[0]?.message?.content ?? "";
+    const rawContent: string = aiData.choices?.[0]?.message?.content ?? "";
 
-    // Extract JSON from the response (handle markdown code blocks)
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Impossible d'extraire le JSON de la réponse IA.");
 
     const result = JSON.parse(jsonMatch[0]);
 
-    // Validate and clamp scores
-    const matches = (result.matches || []).slice(0, 3).map((m: {
+    const matches = (result.matches ?? []).slice(0, 3).map((m: {
       apporteur_id: string;
       nom: string;
       score: unknown;
       raison: string;
       points_forts?: unknown[];
     }) => ({
-      apporteur_id: String(m.apporteur_id || ""),
-      nom: String(m.nom || "Apporteur"),
+      apporteur_id: String(m.apporteur_id ?? ""),
+      nom: String(m.nom ?? "Apporteur"),
       score: Math.min(100, Math.max(0, Math.round(Number(m.score) || 0))),
-      raison: String(m.raison || "").slice(0, 200),
+      raison: String(m.raison ?? "").slice(0, 200),
       points_forts: Array.isArray(m.points_forts)
         ? m.points_forts.slice(0, 3).map((p) => String(p))
         : [],
@@ -230,7 +240,7 @@ Réponds UNIQUEMENT en JSON valide avec ce format exact :
     console.error("ai-matching error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Erreur inconnue" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

@@ -1,12 +1,26 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+// Allowed origins — browser clients only
+const ALLOWED_ORIGINS = [
+  "https://wiinupmax.com",
+  "https://wiinupmax.lovable.app",
+  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
+];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const isLocal = origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1");
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) || isLocal ? origin : "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  };
+}
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -31,10 +45,10 @@ Deno.serve(async (req) => {
 
     const userPrompt = `Analyse et score ce lead B2B :
 
-Nom : ${lead_data.name || "Inconnu"}
-Entreprise : ${lead_data.company || "Non précisée"}
-Message/Contexte : ${lead_data.message || "Aucun contexte"}
-Source : ${lead_data.source || "Inconnue"}
+Nom : ${lead_data.name ?? "Inconnu"}
+Entreprise : ${lead_data.company ?? "Non précisée"}
+Message/Contexte : ${lead_data.message ?? "Aucun contexte"}
+Source : ${lead_data.source ?? "Inconnue"}
 
 Réponds uniquement en JSON valide avec ce format exact :
 {
@@ -79,15 +93,13 @@ Réponds uniquement en JSON valide avec ce format exact :
     }
 
     const aiData = await response.json();
-    const rawContent = aiData.choices?.[0]?.message?.content ?? "";
+    const rawContent: string = aiData.choices?.[0]?.message?.content ?? "";
 
-    // Extract JSON from the response (handle markdown code blocks)
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("Impossible d'extraire le JSON de la réponse IA.");
 
     const scoring = JSON.parse(jsonMatch[0]);
 
-    // Validate the score value
     const score = Math.min(10, Math.max(1, Math.round(Number(scoring.score) || 1)));
     const label = ["Froid", "Tiède", "Chaud", "Brûlant"].includes(scoring.label)
       ? scoring.label
@@ -96,8 +108,8 @@ Réponds uniquement en JSON valide avec ce format exact :
     const result = {
       score,
       label,
-      reasoning: String(scoring.reasoning || "").slice(0, 300),
-      recommended_action: String(scoring.recommended_action || ""),
+      reasoning: String(scoring.reasoning ?? "").slice(0, 300),
+      recommended_action: String(scoring.recommended_action ?? ""),
     };
 
     // If intake_id is provided, persist the score back to lead_intakes via service role
@@ -127,7 +139,7 @@ Réponds uniquement en JSON valide avec ce format exact :
     console.error("ai-lead-scoring error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Erreur inconnue" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });
