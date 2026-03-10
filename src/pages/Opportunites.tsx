@@ -27,7 +27,7 @@ import {
   TrendingUp, Play, Send, Upload, Briefcase,
   ChevronRight, ArrowRight, Target, Clock,
   CheckCircle2, AlertCircle, Sparkles, GitBranch,
-  Loader2, Database, AlertTriangle
+  Loader2, Database, AlertTriangle, Plus
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
