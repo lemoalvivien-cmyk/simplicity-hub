@@ -168,6 +168,7 @@ export default function Operations() {
   };
 
   const tabs: { id: TabId; label: string; icon: React.ElementType; badge?: number }[] = [
+    { id: "control",    label: "Control",    icon: CalendarClock },
     { id: "runtime",    label: "Runtime",    icon: Brain },
     { id: "queue",      label: "File",       icon: ListChecks, badge: (pendingJobs.length + overdueJobs.length) || undefined },
     { id: "canal",      label: "Canal",      icon: Radio,      badge: (chPendingApprovals.length + preparedActions.length) || undefined },
