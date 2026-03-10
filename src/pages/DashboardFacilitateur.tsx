@@ -202,7 +202,7 @@ export default function DashboardFacilitateur() {
               </Link>
 
               {/* Score de confiance */}
-              <Link to="/profil"
+              <Link to="/profil/facilitateur"
                 className="rounded-xl p-3 hover:opacity-90 transition-opacity cursor-pointer"
                 style={{ background: "hsl(218 40% 14% / 0.7)", border: "1px solid hsl(218 40% 28% / 0.4)" }}>
                 <div className="flex items-center gap-1.5 mb-1">
