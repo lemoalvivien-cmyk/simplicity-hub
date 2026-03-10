@@ -59,8 +59,8 @@ export function trackEvent(
   const sessionId = getSessionId();
   const page = typeof window !== "undefined" ? window.location.pathname : "/";
 
-  supabase
-    .from("analytics_events")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (supabase.from("analytics_events") as any)
     .insert({
       event_type: eventType,
       session_id: sessionId,
