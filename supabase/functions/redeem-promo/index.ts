@@ -1,4 +1,3 @@
-
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
@@ -7,14 +6,27 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[REDEEM-PROMO] ${step}${detailsStr}`);
 };
 
+/** Always returns 200 with { valid, message } — NEVER trusts client for validation */
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status,
+    });
+
   try {
     logStep("Function started");
+
+    // ── 1. Authenticate — JWT validated server-side, never trust client body ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return json({ valid: false, message: "Non authentifié." }, 401);
+    }
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -22,17 +34,16 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
-
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
-    if (userError || !userData.user) throw new Error("User not authenticated");
+    if (userError || !userData.user) {
+      return json({ valid: false, message: "Session invalide. Reconnectez-vous." }, 401);
+    }
 
     const user = userData.user;
     logStep("User authenticated", { userId: user.id });
 
-    // Check role — only entreprise role can redeem promo codes for platform access
+    // ── 2. Role guard — facilitateurs have permanent free access ──
     const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("role")
@@ -40,121 +51,148 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (profile?.role === "facilitateur") {
-      return new Response(
-        JSON.stringify({ valid: false, message: "Les apporteurs d'affaires ont un accès gratuit permanent. Ce code n'est pas nécessaire." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
+      return json({
+        valid: false,
+        message: "Les apporteurs d'affaires ont un accès gratuit permanent. Ce code n'est pas nécessaire.",
+      });
     }
 
-    const body = await req.json();
-    const { code } = body;
-    if (!code || typeof code !== "string") {
-      throw new Error("Code manquant");
+    // ── 3. Parse & sanitize body — code comes from DB, never from client logic ──
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return json({ valid: false, message: "Requête invalide." }, 400);
     }
 
-    const codeUpper = code.trim().toUpperCase();
+    const rawCode = body?.code;
+    if (!rawCode || typeof rawCode !== "string" || rawCode.trim().length === 0) {
+      return json({ valid: false, message: "Code manquant." }, 400);
+    }
+
+    const codeUpper = rawCode.trim().toUpperCase().slice(0, 100); // cap length — no injection surface
     logStep("Looking up code", { code: codeUpper });
 
-    // Fetch promo code
+    // ── 4. Fetch promo code — single source of truth is the DB ──
     const { data: promoCode, error: promoError } = await supabaseAdmin
       .from("promo_codes")
-      .select("*")
+      .select("id, code, status, expires_at, usage_unique, max_uses, duration_months")
       .eq("code", codeUpper)
       .maybeSingle();
 
-    if (promoError || !promoCode) {
-      logStep("Code not found", { code: codeUpper });
-      return new Response(
-        JSON.stringify({ valid: false, message: "Ce code n'existe pas." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
+    if (promoError) {
+      logStep("DB error fetching code", promoError);
+      throw promoError;
     }
 
-    // Status checks
+    if (!promoCode) {
+      logStep("Code not found", { code: codeUpper });
+      return json({ valid: false, message: "Ce code n'existe pas ou n'est plus valide." });
+    }
+
+    // ── 5. Status checks — server owns all validation logic ──
     if (promoCode.status === "utilisé") {
-      logStep("Code already used", { code: codeUpper });
-      return new Response(
-        JSON.stringify({ valid: false, message: "Ce code a déjà été utilisé." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
+      logStep("Code already fully used", { code: codeUpper });
+      return json({ valid: false, message: "Ce code a déjà été utilisé." });
     }
     if (promoCode.status === "désactivé") {
       logStep("Code disabled", { code: codeUpper });
-      return new Response(
-        JSON.stringify({ valid: false, message: "Ce code n'est plus actif." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
+      return json({ valid: false, message: "Ce code n'est plus actif." });
     }
     if (promoCode.status === "expiré") {
-      logStep("Code expired (status)", { code: codeUpper });
-      return new Response(
-        JSON.stringify({ valid: false, message: "Ce code a expiré." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
+      logStep("Code expired (status field)", { code: codeUpper });
+      return json({ valid: false, message: "Ce code a expiré." });
     }
+
+    // ── 6. Date expiry check ──
     if (promoCode.expires_at && new Date(promoCode.expires_at) < new Date()) {
-      // Mark as expired
       await supabaseAdmin
         .from("promo_codes")
         .update({ status: "expiré" })
         .eq("id", promoCode.id);
       logStep("Code expired (date)", { code: codeUpper, expires_at: promoCode.expires_at });
-      return new Response(
-        JSON.stringify({ valid: false, message: "Ce code a expiré." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
+      return json({ valid: false, message: "Ce code a expiré." });
     }
 
-    // Check if user already redeemed a code
-    const { data: existingRedemption } = await supabaseAdmin
+    // ── 7. Max-uses cap (for multi-use codes) ──
+    if (promoCode.max_uses !== null && promoCode.max_uses !== undefined) {
+      const { count: usageCount, error: countError } = await supabaseAdmin
+        .from("promo_code_redemptions")
+        .select("id", { count: "exact", head: true })
+        .eq("promo_code_id", promoCode.id);
+
+      if (countError) {
+        logStep("DB error counting redemptions", countError);
+        throw countError;
+      }
+
+      if ((usageCount ?? 0) >= promoCode.max_uses) {
+        logStep("Code max_uses reached", { code: codeUpper, max_uses: promoCode.max_uses, usageCount });
+        return json({ valid: false, message: "Ce code a atteint sa limite d'utilisation." });
+      }
+    }
+
+    // ── 8. Check this user already used THIS specific code ──
+    const { data: thisCodeRedemption } = await supabaseAdmin
+      .from("promo_code_redemptions")
+      .select("id, end_at")
+      .eq("promo_code_id", promoCode.id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (thisCodeRedemption) {
+      const endDate = new Date(thisCodeRedemption.end_at).toLocaleDateString("fr-FR", {
+        day: "numeric", month: "long", year: "numeric",
+      });
+      logStep("User already used this code", { userId: user.id, code: codeUpper });
+      return json({ valid: false, message: `Vous avez déjà utilisé ce code. Accès valable jusqu'au ${endDate}.` });
+    }
+
+    // ── 9. Check user already has ANY active promo redemption ──
+    const { data: activeRedemption } = await supabaseAdmin
       .from("promo_code_redemptions")
       .select("id, end_at")
       .eq("user_id", user.id)
       .eq("status", "active")
       .maybeSingle();
 
-    if (existingRedemption) {
-      const endDate = new Date(existingRedemption.end_at).toLocaleDateString("fr-FR", {
-        day: "numeric", month: "long", year: "numeric"
+    if (activeRedemption) {
+      const endDate = new Date(activeRedemption.end_at).toLocaleDateString("fr-FR", {
+        day: "numeric", month: "long", year: "numeric",
       });
-      return new Response(
-        JSON.stringify({ valid: false, message: `Vous avez déjà un accès gratuit actif jusqu'au ${endDate}.` }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-      );
+      logStep("User already has active promo", { userId: user.id });
+      return json({ valid: false, message: `Vous avez déjà un accès gratuit actif jusqu'au ${endDate}.` });
     }
 
-    // All good — redeem
+    // ── 10. All checks passed — write redemption atomically ──
     const now = new Date();
     const endAt = new Date(now);
-    endAt.setMonth(endAt.getMonth() + (promoCode.duration_months || 12));
+    endAt.setMonth(endAt.getMonth() + (promoCode.duration_months ?? 12));
 
-    // Create redemption record
-    const { error: redemptionError } = await supabaseAdmin.from("promo_code_redemptions").insert({
-      promo_code_id: promoCode.id,
-      user_id: user.id,
-      start_at: now.toISOString(),
-      end_at: endAt.toISOString(),
-      status: "active",
-    });
+    const { error: redemptionError } = await supabaseAdmin
+      .from("promo_code_redemptions")
+      .insert({
+        promo_code_id: promoCode.id,
+        user_id: user.id,
+        start_at: now.toISOString(),
+        end_at: endAt.toISOString(),
+        status: "active",
+      });
 
     if (redemptionError) {
       logStep("Redemption insert error", redemptionError);
       throw redemptionError;
     }
 
-    // Mark promo code as used if usage_unique
+    // ── 11. Mark code as used if usage_unique ──
     if (promoCode.usage_unique) {
       await supabaseAdmin
         .from("promo_codes")
-        .update({
-          status: "utilisé",
-          used_by: user.id,
-          used_at: now.toISOString(),
-        })
+        .update({ status: "utilisé", used_by: user.id, used_at: now.toISOString() })
         .eq("id", promoCode.id);
     }
 
-    // Sync to subscriptions table — NO Stripe involvement
+    // ── 12. Sync subscriptions table — no Stripe involvement ──
     await supabaseAdmin.from("subscriptions").upsert(
       {
         user_id: user.id,
@@ -163,7 +201,6 @@ Deno.serve(async (req) => {
         current_period_end: endAt.toISOString(),
         updated_at: now.toISOString(),
         offer_type: "promo",
-        // Explicitly clear any Stripe refs so it's clean
         stripe_customer_id: null,
         stripe_subscription_id: null,
         stripe_price_id: null,
@@ -175,29 +212,28 @@ Deno.serve(async (req) => {
     logStep("Promo redeemed successfully", {
       userId: user.id,
       code: codeUpper,
-      endAt: endAt.toISOString()
+      endAt: endAt.toISOString(),
     });
 
     const endDateFormatted = endAt.toLocaleDateString("fr-FR", {
-      day: "numeric", month: "long", year: "numeric"
+      day: "numeric", month: "long", year: "numeric",
     });
 
-    return new Response(
-      JSON.stringify({
-        valid: true,
-        message: `Votre accès gratuit de 12 mois est activé. Il est valable jusqu'au ${endDateFormatted}.`,
-        end_at: endAt.toISOString(),
-        duration_months: promoCode.duration_months,
-        access_type: "promo",
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
-    );
+    return json({
+      valid: true,
+      message: `Votre accès gratuit de ${promoCode.duration_months ?? 12} mois est activé. Il est valable jusqu'au ${endDateFormatted}.`,
+      end_at: endAt.toISOString(),
+      duration_months: promoCode.duration_months ?? 12,
+      access_type: "promo",
+    });
+
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message });
-    return new Response(JSON.stringify({ error: message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    logStep("UNHANDLED ERROR", { message });
+    // Return a safe generic message — never expose internal error details to client
+    return new Response(
+      JSON.stringify({ valid: false, message: "Une erreur serveur est survenue. Réessayez." }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+    );
   }
 });
