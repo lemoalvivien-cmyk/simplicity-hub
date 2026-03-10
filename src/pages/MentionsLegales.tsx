@@ -100,6 +100,7 @@ export default function MentionsLegales() {
           <Link to="/" className="hover:text-foreground transition-colors">Accueil</Link>
         </div>
       </main>
+      <LegalFooter />
     </div>
   );
 }

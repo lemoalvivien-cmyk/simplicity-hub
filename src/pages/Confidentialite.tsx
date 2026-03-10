@@ -159,6 +159,7 @@ export default function Confidentialite() {
           <Link to="/" className="hover:text-foreground transition-colors">Accueil</Link>
         </div>
       </main>
+      <LegalFooter />
     </div>
   );
 }

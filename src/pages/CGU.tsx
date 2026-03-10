@@ -168,6 +168,7 @@ export default function CGU() {
           <Link to="/" className="hover:text-foreground transition-colors">Accueil</Link>
         </div>
       </main>
+      <LegalFooter />
     </div>
   );
 }
