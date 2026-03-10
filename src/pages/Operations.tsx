@@ -238,7 +238,7 @@ function ControlPanel({
             <button
               key={id}
               onClick={() => handleTrigger(id)}
-              disabled={!!triggeringType || schedulerTriggering}
+              disabled={!!triggeringType}
               className="flex items-center gap-3 p-3 rounded-xl text-left transition-all disabled:opacity-50"
               style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
               <span className="text-xl shrink-0">{icon}</span>
