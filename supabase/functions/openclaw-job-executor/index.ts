@@ -611,7 +611,17 @@ Génère le brief matinal.`;
           const recentRes = await svc.from("openclaw_recommendations").select("linked_entity_id").eq("user_id", userId).eq("type", "opportunite_chaude").gte("created_at", new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString());
           const recentIds = new Set((recentRes.data || []).map((r: { linked_entity_id: string }) => r.linked_entity_id));
           const newRecs = hotRecs.filter(r => !recentIds.has(r.linked_entity_id as string));
-          if (newRecs.length > 0) await svc.from("openclaw_recommendations").insert(newRecs);
+          if (newRecs.length > 0) {
+            await svc.from("openclaw_recommendations").insert(newRecs);
+            // 🔔 Notification: hot opportunities detected
+            await svc.from("notifications").insert({
+              user_id: userId,
+              type: "alerte_pipeline",
+              title: `${newRecs.length} opportunité(s) chaude(s) détectée(s)`,
+              body: `Le moteur a identifié des opportunités à relancer en priorité.`,
+              href: "/pilotage",
+            });
+          }
           rescored = newRecs.length;
         }
 
