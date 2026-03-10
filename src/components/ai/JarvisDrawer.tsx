@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from "react";
-import { X, Sparkles, Send, ChevronRight, Loader2, RotateCcw, Zap } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { X, Sparkles, Send, ChevronRight, Loader2, RotateCcw, Zap, Mic, Volume2, VolumeX } from "lucide-react";
 import { askAI, AiResponse, JARVIS_QUICK_QUESTIONS, CopilotContext, ChatHistoryMessage } from "@/lib/aiService";
 import { useNavigate } from "react-router-dom";
+import JarvisVoice from "./JarvisVoice";
 
 interface Message {
   id: number;
