@@ -157,6 +157,21 @@ export default function DashboardEntreprise() {
           <ActivationProgressBar stepsCompleted={stepsCompleted} nextStep={nextStep} />
         </div>
 
+        {/* ── 🚀 PROSPECTION IA ─────────────────────────────── */}
+        <button
+          onClick={() => setProspectionOpen(true)}
+          className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-sm font-bold transition-all hover:opacity-90 active:scale-[0.98]"
+          style={{
+            background: "linear-gradient(135deg, hsl(260 80% 50%), hsl(218 80% 55%))",
+            boxShadow: "0 4px 20px hsl(260 80% 50% / 0.35)",
+            color: "white",
+          }}
+        >
+          <Rocket size={16} />
+          🚀 Lancer la Prospection IA
+          <Sparkles size={14} className="opacity-70" />
+        </button>
+
         {/* ── LAUNCH MODE ─────────────────────────────────── */}
         {isLaunchMode && !loading && (
           <div className="rounded-2xl p-6 border-2" style={{ borderColor: "hsl(var(--primary) / 0.6)", background: "hsl(var(--secondary))" }}>
