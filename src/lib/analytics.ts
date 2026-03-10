@@ -28,6 +28,7 @@ export const ANALYTICS_EVENTS = [
   "campaign_launched",
   "ai_used",
   "sequence_started",
+  "apropos_view",
 ] as const;
 
 export type AnalyticsEventType = typeof ANALYTICS_EVENTS[number];

@@ -24,6 +24,7 @@ import Checkout from "./pages/Checkout";
 import CGU from "./pages/CGU";
 import Confidentialite from "./pages/Confidentialite";
 import MentionsLegales from "./pages/MentionsLegales";
+import APropos from "./pages/APropos";
 
 // ── Lazy: dashboards ─────────────────────────────────────────────────────────
 const DashboardEntreprise = lazy(() => import("./pages/DashboardEntreprise"));
