@@ -113,13 +113,14 @@ export default function OpportuniteNouvelle() {
     }
     setSaving(true);
     try {
-      const { error } = await db.from("opportunities").insert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (db as any).from("opportunities").insert({
         user_id: user.id,
         company_name: form.company_name.trim(),
         summary: form.summary.trim() || form.opportunity_description.slice(0, 200),
         origin: "manual",
         status: "nouveau",
-      } as Parameters<typeof db.from<"opportunities">>[0] extends never ? never : { user_id: string; company_name: string; summary: string; origin: string; status: string });
+      });
 
       if (error) throw error;
       toast.success("Opportunité créée !");
