@@ -46,7 +46,7 @@ export default function MecanismeSection() {
                   </p>
                 </div>
               </div>
-              <p className="text-white/75 text-sm leading-relaxed">
+              <p className="text-white/80 text-sm leading-relaxed">
                 OpenClaw prospecte pendant que vous dormez. Il détecte les signaux d'intention,
                 rédige les messages, pilote vos campagnes — sans intervention manuelle.
               </p>
