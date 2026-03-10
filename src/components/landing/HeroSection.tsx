@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Shield, TrendingUp } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, TrendingUp, Users } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
-import { AB, track } from "@/lib/landingTracking";
+import { track } from "@/lib/landingTracking";
 
 const trustItems = [
   { icon: CheckCircle2, label: "Introductions traçées" },
@@ -9,28 +9,7 @@ const trustItems = [
   { icon: TrendingUp, label: "Résultats mesurables" },
 ];
 
-const HEADLINE_VARIANTS = {
-  v1_clients: {
-    top: "Trouvez vos prochains clients.",
-    sub: ["Via votre réseau. Via l'IA.", "Dans un seul cockpit."],
-  },
-  v2_cockpit: {
-    top: "Un cockpit. Deux moteurs. Des clients.",
-    sub: ["Prospection IA + réseau humain structuré.", "Tout dans le même système."],
-  },
-};
-
-const CTA_VARIANTS = {
-  v1_demarrer: "Démarrer ma première mission — 99 €/an",
-  v2_activer: "Activer mon acquisition — 99 €/an",
-};
-
 export default function HeroSection() {
-  const headlineVariant = AB.heroHeadline();
-  const ctaVariant = AB.heroCTA();
-  const copy = HEADLINE_VARIANTS[headlineVariant];
-  const ctaLabel = CTA_VARIANTS[ctaVariant];
-
   return (
     <section className="hero-bg pt-20 pb-16 md:pt-32 md:pb-28 relative overflow-hidden">
       {/* Atmospheric glow */}
@@ -61,39 +40,47 @@ export default function HeroSection() {
                 backgroundClip: "text",
               }}
             >
-              {copy.top}
+              Trouvez vos prochains clients.
             </span>
             <span className="block text-[clamp(1.55rem,4.5vw,2.6rem)] text-white/85 mt-3 font-semibold">
-              {copy.sub[0]}
+              Via votre réseau. Via l'IA.
               <br className="hidden sm:block" />
-              {" "}{copy.sub[1]}
+              {" "}Dans un seul cockpit.
             </span>
           </h1>
 
-          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/52 mb-9 max-w-lg mx-auto leading-[1.75] font-light px-2">
+          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/70 mb-9 max-w-lg mx-auto leading-[1.75] font-light px-2">
             Wiinup Max combine{" "}
-            <span className="text-white/80 font-medium">prospection pilotée par IA</span> et{" "}
-            <span className="text-white/80 font-medium">apport d'affaires structuré</span>.
+            <span className="text-white/90 font-medium">prospection pilotée par IA</span> et{" "}
+            <span className="text-white/90 font-medium">apport d'affaires structuré</span>.
             Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
 
           {/* CTAs — clear hierarchy */}
-          <div className="flex flex-col items-center gap-2 mb-9 px-2">
+          <div className="flex flex-col items-center gap-3 mb-9 px-2">
             <Link
-              to="/pricing"
+              to="/signup"
               className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
-              onClick={() => track("cta_hero_enterprise", { label: ctaLabel, variant: ctaVariant })}
+              onClick={() => track("cta_hero_enterprise")}
             >
-              {ctaLabel}
+              Démarrer ma première mission — 99 €/an
               <ArrowRight size={17} />
             </Link>
-            <p className="text-white/38 text-xs mt-1">
+            <Link
+              to="/signup"
+              className="flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-semibold border border-white/20 text-white/80 hover:text-white hover:border-white/35 transition-all duration-200 w-full sm:w-auto justify-center"
+              onClick={() => track("cta_hero_facilitateur")}
+            >
+              <Users size={15} />
+              Devenir facilitateur — Gratuit
+            </Link>
+            <p className="text-white/50 text-xs mt-1">
               Premières recommandations IA sous 5 minutes
             </p>
           </div>
 
           {/* Trust bar */}
-          <div className="flex flex-wrap items-center justify-center gap-5 text-white/28 text-xs">
+          <div className="flex flex-wrap items-center justify-center gap-5 text-white/50 text-xs">
             {trustItems.map(({ icon: Icon, label }) => (
               <span key={label} className="flex items-center gap-1.5">
                 <Icon size={10} aria-hidden="true" /> {label}
@@ -102,7 +89,7 @@ export default function HeroSection() {
           </div>
         </div>
 
-          {/* Dashboard preview mockup */}
+        {/* Dashboard preview mockup */}
         <div
           className="rounded-2xl overflow-hidden"
           style={{
@@ -139,7 +126,7 @@ export default function HeroSection() {
               { label: "Missions actives", value: "3", color: "hsl(218 72% 58%)", live: true },
               { label: "Intros reçues", value: "12", color: "hsl(152 62% 48%)", live: true },
               { label: "En validation", value: "4", color: "hsl(38 95% 52%)", live: false },
-              { label: "Gains traçés", value: "2 800 €", color: "hsl(24 100% 62%)", live: false },
+              { label: "Gains tracés", value: "2 800 €", color: "hsl(24 100% 62%)", live: false },
             ].map(({ label, value, color, live }) => (
               <div
                 key={label}
@@ -157,7 +144,7 @@ export default function HeroSection() {
                       aria-hidden="true"
                     />
                   )}
-                  <span className="text-[10px] font-medium text-white/38 leading-tight">{label}</span>
+                  <span className="text-[10px] font-medium text-white/50 leading-tight">{label}</span>
                 </div>
                 <p className="font-display font-bold text-lg md:text-xl leading-none" style={{ color }}>
                   {value}
@@ -166,7 +153,7 @@ export default function HeroSection() {
             ))}
           </div>
           {/* Legal — illustrative disclaimer */}
-          <p className="text-center text-white/18 text-[9px] px-4 pb-3 pt-1">
+          <p className="text-center text-white/20 text-[9px] px-4 pb-3 pt-1">
             Interface illustrative — données de démonstration
           </p>
         </div>

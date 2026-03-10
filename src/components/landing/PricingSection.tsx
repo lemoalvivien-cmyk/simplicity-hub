@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, ArrowRight, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AB, track } from "@/lib/landingTracking";
+import { track } from "@/lib/landingTracking";
 
 const entrepriseFeatures = [
   "Missions illimitées",
@@ -25,26 +25,9 @@ const facilitateurFeatures = [
   "Aucune commission prélevée par la plateforme",
 ];
 
-const PRICING_FRAME = {
-  v1_offre: {
-    badge: "Offre lancement",
-    headline: "Simple, honnête, transparent.",
-    sub: "L'offre entreprise est payante. L'accès facilitateur est gratuit. Il n'y a rien de caché.",
-    ctaLabel: (_isLaunch: boolean) => "Lancer ma première mission — 99 €",
-  },
-  v2_investissement: {
-    badge: "",
-    headline: "Moins qu'un commercial junior. Pour tout un système.",
-    sub: "99 € pour activer prospection IA + réseau humain structuré + cockpit de suivi.",
-    ctaLabel: (_isLaunch: boolean) => "Activer mon acquisition — 99 €",
-  },
-};
-
 export default function PricingSection() {
   const [launchAvailable, setLaunchAvailable] = useState(true);
   const [slotsRemaining, setSlotsRemaining] = useState(100);
-  const pricingVariant = AB.pricingFrame();
-  const frame = PRICING_FRAME[pricingVariant];
 
   useEffect(() => {
     supabase
@@ -64,12 +47,12 @@ export default function PricingSection() {
     <section className="py-20 bg-background" id="pricing">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
-          <p className="pill-tag mb-4 mx-auto w-fit">{frame.badge}</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">Offre lancement</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
-            {frame.headline}
+            Simple, honnête, transparent.
           </h2>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
-            {frame.sub}
+            L'offre entreprise est payante. L'accès facilitateur est gratuit. Il n'y a rien de caché.
           </p>
         </div>
 
@@ -87,20 +70,20 @@ export default function PricingSection() {
                   {slotsRemaining} place{slotsRemaining > 1 ? "s" : ""} restante{slotsRemaining > 1 ? "s" : ""} — Offre lancement
                 </div>
               )}
-              <p className="text-white/60 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
+              <p className="text-white/70 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
               <div className="flex items-end gap-2 mb-1">
                 <span className="font-display font-bold text-5xl text-white leading-none">
                   8,25 €
                 </span>
                 <div className="pb-1.5">
-                  <p className="text-white/60 text-sm">/mois</p>
+                  <p className="text-white/70 text-sm">/mois</p>
                 </div>
               </div>
-              <p className="text-white/55 text-sm font-medium mb-1">99 € facturé annuellement</p>
-              <p className="text-white/38 text-xs italic">
+              <p className="text-white/70 text-sm font-medium mb-1">99 € facturé annuellement</p>
+              <p className="text-white/50 text-xs italic">
                 Le prix d'un café par semaine. Pour une machine d'acquisition complète.
               </p>
-              <p className="text-white/35 text-xs mt-2">
+              <p className="text-white/45 text-xs mt-2">
                 {launchAvailable
                   ? "Réservée aux 100 premières entreprises — accès complet immédiat"
                   : "Abonnement annuel — accès complet, support inclus"}
@@ -120,9 +103,9 @@ export default function PricingSection() {
               <Link
                 to="/pricing"
                 className="btn-cta w-full text-center flex items-center justify-center gap-2 py-4"
-                onClick={() => track("cta_pricing_enterprise", { variant: pricingVariant })}
+                onClick={() => track("cta_pricing_enterprise")}
               >
-                {frame.ctaLabel(launchAvailable)}
+                Lancer ma première mission — 99 €
                 <ArrowRight size={16} />
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
@@ -138,11 +121,11 @@ export default function PricingSection() {
               className="px-7 pt-7 pb-5"
               style={{ background: "var(--gradient-accent)" }}
             >
-              <p className="text-white/80 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur / Apporteur</p>
+              <p className="text-white/85 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur / Apporteur</p>
               <div className="flex items-baseline gap-3 mb-1">
                 <span className="font-display font-bold text-5xl text-white">Gratuit</span>
               </div>
-              <p className="text-white/65 text-xs mt-1">Pour toujours · Sans carte bancaire · Zéro frais caché</p>
+              <p className="text-white/75 text-xs mt-1">Pour toujours · Sans carte bancaire · Zéro frais caché</p>
             </div>
 
             {/* Features */}
