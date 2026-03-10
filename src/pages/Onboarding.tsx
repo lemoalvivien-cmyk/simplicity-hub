@@ -63,10 +63,40 @@ export default function Onboarding() {
       // PROOF: onboarding_done → analytics_events (real write)
       trackEvent("onboarding_done", user.id, { role: role ?? "unknown" });
       await refreshProfile();
-      // Trigger welcome_scan — fire & forget, non-blocking
-      supabase.functions.invoke("openclaw-scheduler", {
-        body: { tick_type: "welcome_scan", user_id: user.id },
-      }).catch(() => {});
+
+      // ── OPENCLAW ACTIVATION (fire & forget) ────────────────
+      if (role === "entreprise") {
+        // Check if user already has missions
+        const { count: missionCount } = await db
+          .from("missions")
+          .select("id", { count: "exact", head: true })
+          .eq("entreprise_id", user.id);
+
+        const activationCalls: Promise<unknown>[] = [
+          // 1. Sync entreprise profile into OpenClaw dossier
+          supabase.functions.invoke("openclaw-dossier-sync", { body: { force: true } }),
+          // 2. Generate first AI welcome brief
+          supabase.functions.invoke("openclaw-job-executor", { body: { job_type: "daily_brief_generate" } }),
+          // Legacy welcome scan
+          supabase.functions.invoke("openclaw-scheduler", { body: { tick_type: "welcome_scan", user_id: user.id } }),
+        ];
+
+        // 3. If missions exist, also trigger radar scan
+        if ((missionCount ?? 0) > 0) {
+          activationCalls.push(
+            supabase.functions.invoke("openclaw-job-executor", { body: { job_type: "radar_scan" } })
+          );
+        }
+
+        Promise.allSettled(activationCalls).catch(() => {});
+        toast.success("Le cerveau WiinupMax analyse votre profil. Vos premières recommandations arrivent...");
+      } else {
+        // Facilitateur — keep existing welcome scan only
+        supabase.functions.invoke("openclaw-scheduler", {
+          body: { tick_type: "welcome_scan", user_id: user.id },
+        }).catch(() => {});
+      }
+
       setDone(true);
     } catch {
       toast.error(t("onboarding_saving_error"));
