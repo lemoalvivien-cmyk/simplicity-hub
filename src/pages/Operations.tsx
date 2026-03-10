@@ -29,7 +29,7 @@ import { useOpenClawCronDiagnostic } from "@/hooks/useOpenClawCronDiagnostic";
 import { useOpenClawDeliveries, DELIVERY_STATUS_META, CHANNEL_CAPABILITY_MATRIX, getChannelCapability, getDispatchLabel } from "@/hooks/useOpenClawDeliveries";
 import { formatDateRelative } from "@/lib/formatLocale";
 
-type TabId = "runtime" | "channels" | "queue" | "jobs" | "executions" | "canal" | "sessions" | "tools" | "boundary";
+type TabId = "runtime" | "channels" | "queue" | "jobs" | "executions" | "canal" | "sessions" | "tools" | "boundary" | "control";
 
 function formatFuture(iso: string | null, lang: string) {
   if (!iso) return "—";
