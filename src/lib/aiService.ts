@@ -53,17 +53,10 @@ export interface AiResponse {
 }
 
 // ── FAQ / Réponses statiques ──────────────────────────────────────────────────
+// RÈGLE : seules les questions GÉNÉRIQUES (non-contextuelles) sont en FAQ cache.
+// Les questions contextuelles ("résume ma situation", "que dois-je faire", "mes priorités")
+// DOIVENT aller à l'IA pour une réponse basée sur les données réelles de l'utilisateur.
 const FAQ_CACHE: Record<string, AiResponse> = {
-  "que dois-je faire maintenant": {
-    text: "Regardez vos actions prioritaires en haut de votre dashboard. S'il y a une introduction à valider ou une mission ouverte, commencez par là.",
-    action: { label: "Voir mes priorités", href: "/actions" },
-    source: "faq",
-  },
-  "résume ma situation": {
-    text: "Vous avez des missions ouvertes, quelques introductions en cours, et des contacts à relancer. Votre prochaine étape : examiner vos introductions.",
-    action: { label: "Voir mes introductions", href: "/introductions" },
-    source: "faq",
-  },
   "aide-moi à démarrer": {
     text: "Commencez par compléter votre profil, puis regardez les missions disponibles. Si vous connaissez quelqu'un qui correspond, envoyez une introduction !",
     action: { label: "Voir les missions", href: "/missions" },
@@ -75,11 +68,6 @@ const FAQ_CACHE: Record<string, AiResponse> = {
   },
   "que signifient ces statuts": {
     text: "• Envoyée = votre introduction est partie. • En cours = l'entreprise l'examine. • Validée = bravo, le gain est confirmé ! • Refusée = ce contact ne correspondait pas, mais ça arrive.",
-    source: "faq",
-  },
-  "montre-moi mes priorités": {
-    text: "Vos priorités du moment : 1) Valider les introductions en attente. 2) Regarder les nouvelles missions. 3) Relancer les contacts non répondus.",
-    action: { label: "À faire", href: "/actions" },
     source: "faq",
   },
   "que fait openclaw": {
