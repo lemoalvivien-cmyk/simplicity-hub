@@ -71,7 +71,7 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
     return (
       <div className="card-surface p-5 flex items-center gap-3">
         <Loader2 size={16} className="animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">{t("best_path_loading")}</p>
+        <p className="text-sm text-muted-foreground">Calcul du meilleur accès…</p>
       </div>
     );
   }
