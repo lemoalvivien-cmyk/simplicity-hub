@@ -10,6 +10,7 @@ import {
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/supabase";
+import NotificationBell from "@/components/NotificationBell";
 
 type UserRole = "entreprise" | "facilitateur";
 

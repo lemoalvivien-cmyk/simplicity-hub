@@ -495,6 +495,17 @@ Génère le brief matinal.`;
             source:      "openclaw",
             status:      "a_faire",
           });
+
+          // 🔔 Notification: brief disponible
+          await svc.from("notifications").insert({
+            user_id: userId,
+            type: "brief_disponible",
+            title: `Brief du ${briefDate} disponible`,
+            body: aiSummary
+              ? aiSummary.slice(0, 120)
+              : `${priorityItems.length} point(s) prioritaire(s) à traiter aujourd'hui.`,
+            href: "/agents",
+          });
         }
 
         if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(7) }).eq("id", job_id);
