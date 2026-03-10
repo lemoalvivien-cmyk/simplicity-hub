@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, CheckCircle2, Shield, TrendingUp } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, TrendingUp } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import { AB, track } from "@/lib/landingTracking";
 
