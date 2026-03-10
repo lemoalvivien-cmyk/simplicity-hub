@@ -1796,6 +1796,7 @@ export type Database = {
       }
       mission_matches: {
         Row: {
+          ai_generated: boolean
           compatibility_score: number
           created_at: string
           facilitateur_id: string
@@ -1806,6 +1807,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_generated?: boolean
           compatibility_score?: number
           created_at?: string
           facilitateur_id: string
@@ -1816,6 +1818,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_generated?: boolean
           compatibility_score?: number
           created_at?: string
           facilitateur_id?: string
