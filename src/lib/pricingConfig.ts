@@ -14,6 +14,8 @@ export const PRICING = {
     slots: 100,
   },
   standard: {
+    price_id: "price_1T8GR0EG497aCUFxNS9BV3ko",
+    product_id: "prod_U6TNDHPiFFt1LM",
     amount: 99,
     label: "99 € TTC",
     description: "Abonnement annuel — prix unique",

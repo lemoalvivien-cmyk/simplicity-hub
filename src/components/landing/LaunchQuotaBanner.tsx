@@ -70,7 +70,7 @@ function LaunchQuotaBanner({ variant = "inline" }: LaunchQuotaBannerProps) {
           />
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Après les {total} premières entreprises, le tarif passe à 490 € / an.
+          WiinupMax est au tarif unique de 99 € TTC / an.
         </p>
       </div>
     );

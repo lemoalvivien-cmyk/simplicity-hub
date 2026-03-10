@@ -18,7 +18,7 @@ export default function Dashboard() {
   const accessActive = isAccessActive(status);
   const offerLabel =
     offerType === "launch" ? "Offre de lancement — 99 € TTC / an"
-    : offerType === "standard" ? "Abonnement annuel — 490 € TTC / an"
+    : offerType === "standard" ? "Abonnement annuel — 99 € TTC / an"
     : offerType === "promo" ? "Code d'invitation — Accès offert"
     : status === "active" ? "Accès actif"
     : null;
