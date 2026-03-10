@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
-import { Search, Plus, Upload, ChevronRight, Phone, Mail, User, Clock, CheckCircle2, AlertCircle, Filter, Loader2, Zap } from "lucide-react";
+import { Search, Plus, Upload, ChevronRight, Phone, Mail, User, Clock, CheckCircle2, AlertCircle, Filter, Loader2, Zap, Flame, ArrowUpDown } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +32,19 @@ interface ContactSequenceInfo {
   status: string;
 }
 
+interface AIScore {
+  contact_id: string;
+  ai_score: number | null;
+  ai_label: string | null;
+}
+
+const aiScoreConfig: Record<string, { label: string; color: string; bg: string }> = {
+  "Froid":   { label: "Froid",    color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
+  "Tiède":   { label: "Tiède",    color: "hsl(38 80% 40%)",              bg: "hsl(38 80% 96%)" },
+  "Chaud":   { label: "Chaud",    color: "hsl(24 100% 45%)",             bg: "hsl(24 100% 96%)" },
+  "Brûlant": { label: "Brûlant",  color: "hsl(0 72% 42%)",               bg: "hsl(0 72% 97%)" },
+};
+
 const statusConfig: Record<ContactStatus, { label: string; color: string; bg: string; icon: JSX.Element }> = {
   a_contacter:   { label: "À contacter",  color: "hsl(var(--primary))",          bg: "hsl(var(--secondary))",    icon: <User size={11} /> },
   contacte:      { label: "Contacté",     color: "hsl(38 80% 30%)",              bg: "hsl(var(--accent-light))", icon: <Clock size={11} /> },
@@ -61,10 +74,12 @@ export default function Contacts() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<ContactStatus | "tous">("tous");
+  const [sortByScore, setSortByScore] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [newContact, setNewContact] = useState({ prenom: "", nom: "", entreprise: "", email: "" });
   const [saving, setSaving] = useState(false);
   const [seqMap, setSeqMap] = useState<Record<string, ContactSequenceInfo>>({});
+  const [aiScoreMap, setAiScoreMap] = useState<Record<string, AIScore>>({});
 
   const load = async () => {
     if (!user) return;
@@ -76,6 +91,34 @@ export default function Contacts() {
     // Load sequence info for contacts
     if (data && data.length > 0) {
       const contactIds = data.map((c: Contact) => c.id);
+
+      // Load AI scores from lead_intakes (matched by email)
+      const emails = data.filter((c: Contact) => c.email).map((c: Contact) => c.email as string);
+      if (emails.length > 0) {
+        const { data: intakes } = await supabase
+          .from("lead_intakes")
+          .select("person_email, ai_score, ai_label")
+          .eq("user_id", user.id)
+          .in("person_email", emails)
+          .not("ai_score", "is", null);
+
+        if (intakes && intakes.length > 0) {
+          const newAiMap: Record<string, AIScore> = {};
+          for (const contact of data as Contact[]) {
+            const intake = (intakes as { person_email: string | null; ai_score: number | null; ai_label: string | null }[])
+              .find(i => i.person_email?.toLowerCase() === contact.email?.toLowerCase());
+            if (intake) {
+              newAiMap[contact.id] = {
+                contact_id: contact.id,
+                ai_score: intake.ai_score,
+                ai_label: intake.ai_label,
+              };
+            }
+          }
+          setAiScoreMap(newAiMap);
+        }
+      }
+
       const { data: execs } = await supabase
         .from("prospection_executions")
         .select("contact_id, status, current_step, sequence_id")
@@ -120,6 +163,11 @@ export default function Contacts() {
       (c.email || "").toLowerCase().includes(q);
     const matchStatus = filterStatus === "tous" || c.statut === filterStatus;
     return matchSearch && matchStatus;
+  }).sort((a, b) => {
+    if (!sortByScore) return 0;
+    const scoreA = aiScoreMap[a.id]?.ai_score ?? -1;
+    const scoreB = aiScoreMap[b.id]?.ai_score ?? -1;
+    return scoreB - scoreA;
   });
 
   const aContacter = contacts.filter(c => c.statut === "a_contacter").length;
@@ -226,6 +274,19 @@ export default function Contacts() {
             </select>
             <Filter size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>
+          <button
+            onClick={() => setSortByScore(v => !v)}
+            title="Trier par score IA"
+            className={`px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              sortByScore
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <Flame size={13} />
+            <span className="hidden sm:inline">Score IA</span>
+            <ArrowUpDown size={11} />
+          </button>
         </div>
 
         {/* Liste */}
@@ -248,6 +309,8 @@ export default function Contacts() {
               const cfg = statusConfig[c.statut];
               const src = sourceConfig[c.origine];
               const seqInfo = seqMap[c.id];
+              const aiInfo = aiScoreMap[c.id];
+              const aiCfg = aiInfo?.ai_label ? (aiScoreConfig[aiInfo.ai_label] ?? null) : null;
               return (
                 <Link key={c.id} to={`/contacts/${c.id}`}
                   className="card-surface p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
@@ -262,6 +325,12 @@ export default function Contacts() {
                         style={{ color: cfg.color, background: cfg.bg }}>
                         {cfg.icon} {cfg.label}
                       </span>
+                      {aiCfg && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                          style={{ color: aiCfg.color, background: aiCfg.bg }}>
+                          <Flame size={9} /> {aiCfg.label}
+                        </span>
+                      )}
                       {/* Sequence badge */}
                       {seqInfo && (
                         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"

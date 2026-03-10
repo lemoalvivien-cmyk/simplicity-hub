@@ -8,6 +8,7 @@ import UserLayout from "@/components/layout/UserLayout";
 import MissionTemplates, { MissionTemplate, MISSION_TEMPLATES } from "@/components/activation/MissionTemplates";
 import CopilotPanel from "@/components/ai/CopilotPanel";
 import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActivation } from "@/hooks/useActivation";
 import { toast } from "sonner";
@@ -79,11 +80,29 @@ export default function MissionNouvelle() {
       }).select("id").single();
 
       if (error) throw error;
-      setCreatedMissionId(data?.id ?? null);
+      const missionId = data?.id ?? null;
+      setCreatedMissionId(missionId);
       await trackEvent("first_mission_created");
       // PROOF: mission_created → analytics_events (real write, dual-write with activation hook)
-      analyticsTrackEvent("mission_created", user.id, { mission_id: data?.id ?? null });
+      analyticsTrackEvent("mission_created", user.id, { mission_id: missionId });
       setStep("success");
+
+      // 🔥 Background AI matching — fire-and-forget (don't block UX)
+      if (missionId) {
+        supabase.functions.invoke("ai-matching", {
+          body: {
+            mission_id: missionId,
+            company_user_id: user.id,
+            enterprise_profile: {
+              sector: form.secteur,
+              offer_description: form.description,
+              needs: form.type_client_recherche,
+              zone: form.zone,
+              target: form.type_client_recherche,
+            },
+          },
+        }).catch(() => {/* silent — matching is best-effort */});
+      }
     } catch {
       toast.error("Erreur lors de la création. Réessayez.");
     } finally {

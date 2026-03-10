@@ -136,8 +136,16 @@ Deno.serve(async (req) => {
                 logStep
               );
               logStep("Quota consume result", { consumeResult, subId: sub.id });
-
               logStep("Subscription synced after checkout", { userId });
+
+              // 🔔 Notification: paiement confirmé
+              await supabase.from("notifications").insert({
+                user_id: userId,
+                type: "gain_valide",
+                title: "Abonnement activé avec succès",
+                body: "Votre paiement a été confirmé. Votre accès est maintenant actif.",
+                href: "/account",
+              });
             }
           }
         }
