@@ -371,6 +371,15 @@ ${dossier ? `- Profil entreprise : ${dossier.secteur_activite ?? ""}, cible idé
                 status:         "a_faire",
               });
 
+              // 🔔 Notification: next best action recommended
+              await svc.from("notifications").insert({
+                user_id: userId,
+                type: "action_requise",
+                title: "Action recommandée par l'IA",
+                body: reason.slice(0, 120),
+                href: "/actions",
+              });
+
               result.actions_created          = 1;
               result.recommendations_created  = 1;
               result.output_count             = 1;
@@ -562,7 +571,17 @@ Génère le brief matinal.`;
           }
         }
 
-        if (recs.length > 0) await svc.from("openclaw_recommendations").insert(recs);
+        if (recs.length > 0) {
+          await svc.from("openclaw_recommendations").insert(recs);
+          // 🔔 Notification: radar signals detected
+          await svc.from("notifications").insert({
+            user_id: userId,
+            type: "radar_signal",
+            title: `Radar — ${recs.length} nouveau(x) signal(s) détecté(s)`,
+            body: `Le moteur de prospection a analysé ${missions.slice(0, 5).length} mission(s) et trouvé de nouvelles opportunités.`,
+            href: "/pilotage",
+          });
+        }
         if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: nextDayAt(8) }).eq("id", job_id);
 
         result.recommendations_created = recs.length;
@@ -601,7 +620,17 @@ Génère le brief matinal.`;
           const recentRes = await svc.from("openclaw_recommendations").select("linked_entity_id").eq("user_id", userId).eq("type", "opportunite_chaude").gte("created_at", new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString());
           const recentIds = new Set((recentRes.data || []).map((r: { linked_entity_id: string }) => r.linked_entity_id));
           const newRecs = hotRecs.filter(r => !recentIds.has(r.linked_entity_id as string));
-          if (newRecs.length > 0) await svc.from("openclaw_recommendations").insert(newRecs);
+          if (newRecs.length > 0) {
+            await svc.from("openclaw_recommendations").insert(newRecs);
+            // 🔔 Notification: hot opportunities detected
+            await svc.from("notifications").insert({
+              user_id: userId,
+              type: "alerte_pipeline",
+              title: `${newRecs.length} opportunité(s) chaude(s) détectée(s)`,
+              body: `Le moteur a identifié des opportunités à relancer en priorité.`,
+              href: "/pilotage",
+            });
+          }
           rescored = newRecs.length;
         }
 
@@ -644,6 +673,19 @@ Génère le brief matinal.`;
       case "trust_recompute": {
         const { error: trustErr } = await svc.rpc("refresh_trust_score", { p_facilitator_id: userId });
         await svc.from("trust_events").insert({ user_id: userId, event_type: "recompute_planifie", impact_score: 0, summary: "Réévaluation périodique du score de confiance." });
+        if (!trustErr) {
+          // Fetch new score to include in notification
+          const { data: scoreData } = await svc.from("trust_scores").select("global_score").eq("user_id", userId).maybeSingle();
+          await svc.from("notifications").insert({
+            user_id: userId,
+            type: "trust_update",
+            title: "Votre score de confiance a été mis à jour",
+            body: scoreData?.global_score != null
+              ? `Score actuel : ${scoreData.global_score}/100. Continuez à envoyer des introductions pour progresser.`
+              : "Votre score de confiance a été recalculé.",
+            href: "/profil",
+          });
+        }
         if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() }).eq("id", job_id);
         result.trust_updates = trustErr ? 0 : 1; result.output_count = result.trust_updates;
         result.output_summary = trustErr ? "Réévaluation confiance échouée." : "Score de confiance recalculé avec succès.";
@@ -684,6 +726,14 @@ Génère le brief matinal.`;
             agent_name: "validator", priority: "haute", status: "nouvelle",
             execution_id: executionId, recommended_action: "Vérifier et relancer ces introductions",
           });
+          // 🔔 Notification: pipeline alert
+          await svc.from("notifications").insert({
+            user_id: userId,
+            type: "alerte_pipeline",
+            title: `Pipeline bloqué — ${stuckOld.length} introduction(s) sans réponse`,
+            body: `${stuckOld.length} introduction(s) sont en attente depuis plus de 7 jours. Pensez à relancer.`,
+            href: "/introductions",
+          });
           recs = 1;
           prepareChannelAction("whatsapp", "relance", `${stuckOld.length} pipeline(s) bloqué(s) — relance préparée`, { stuck_count: stuckOld.length, type: "stuck_pipeline" });
         }
@@ -712,6 +762,14 @@ Génère le brief matinal.`;
             summary: `Ces missions n'ont pas encore de facilitateur associé : ${missionsWithNoRequests.join(", ")}.`,
             agent_name: "matchmaker", priority: "normale", status: "nouvelle",
             execution_id: executionId, recommended_action: "Explorer les facilitateurs disponibles",
+          });
+          // 🔔 Notification: facilitator match
+          await svc.from("notifications").insert({
+            user_id: userId,
+            type: "facilitateur_match",
+            title: `Matching facilitateur — ${missionsWithNoRequests.length} mission(s) à pourvoir`,
+            body: `L'IA a identifié des facilitateurs compatibles pour : ${missionsWithNoRequests.slice(0, 2).join(", ")}${missionsWithNoRequests.length > 2 ? "…" : ""}.`,
+            href: "/missions",
           });
           recsCreated = 1;
         }
