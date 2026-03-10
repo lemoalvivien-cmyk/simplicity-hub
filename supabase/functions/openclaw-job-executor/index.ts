@@ -371,6 +371,15 @@ ${dossier ? `- Profil entreprise : ${dossier.secteur_activite ?? ""}, cible idé
                 status:         "a_faire",
               });
 
+              // 🔔 Notification: next best action recommended
+              await svc.from("notifications").insert({
+                user_id: userId,
+                type: "action_requise",
+                title: "Action recommandée par l'IA",
+                body: reason.slice(0, 120),
+                href: "/actions",
+              });
+
               result.actions_created          = 1;
               result.recommendations_created  = 1;
               result.output_count             = 1;
