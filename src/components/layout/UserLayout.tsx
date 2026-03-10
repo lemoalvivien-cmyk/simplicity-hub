@@ -5,7 +5,7 @@ import JarvisButton from "@/components/ai/JarvisButton";
 import { CopilotContext } from "@/lib/aiService";
 import { useAuth } from "@/contexts/AuthContext";
 
-type UserRole = "entreprise" | "facilitateur";
+type UserRole = "entreprise" | "facilitateur" | "admin";
 
 interface UserLayoutProps {
   children: ReactNode;
