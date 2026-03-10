@@ -19,12 +19,8 @@ interface JarvisVoiceProps {
 type VoiceTTSMode = "elevenlabs" | "browser" | "loading";
 
 // ── Web Speech API types ──────────────────────────────────────────────────────
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnySpeechRecognition = any;
 
 // ── ElevenLabs TTS via REST (not Conversational AI) ───────────────────────────
 const ELEVENLABS_VOICE_ID = "nPczCjzI2devNBz1zQrb"; // Brian — clear FR-compatible
