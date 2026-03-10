@@ -393,15 +393,25 @@ export default function Autonomie() {
           )}
 
           {voicePreference === "premium" && (
-            <div
-              className="flex items-start gap-2 p-3 rounded-xl text-xs"
-              style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}
-            >
-              <Info size={13} className="shrink-0 mt-0.5" />
-              <p>
-                La voix premium utilise ElevenLabs. Un administrateur doit configurer l'agent vocal
-                depuis la page <strong>/agents → Connexion</strong>. En attendant, la voix navigateur est utilisée.
-              </p>
+            <div className="space-y-2">
+              <div
+                className="flex items-start gap-2 p-3 rounded-xl text-xs"
+                style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}
+              >
+                <Info size={13} className="shrink-0 mt-0.5" />
+                <p>
+                  La voix premium utilise ElevenLabs TTS. La clé API doit être configurée dans les secrets du projet.
+                  En attendant, la voix navigateur est utilisée en fallback automatique.
+                </p>
+              </div>
+              <button
+                onClick={handleTestElevenLabs}
+                disabled={testingVoice}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border border-border hover:bg-muted transition-colors"
+              >
+                {testingVoice ? <RefreshCw size={14} className="animate-spin" /> : <Mic size={14} />}
+                {testingVoice ? "Lecture ElevenLabs…" : "Tester la voix ElevenLabs"}
+              </button>
             </div>
           )}
         </div>
