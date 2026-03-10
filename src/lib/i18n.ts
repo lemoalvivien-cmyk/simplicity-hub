@@ -1113,7 +1113,7 @@ const resources = {
       checkout_success_promo_desc: "Your free 12-month access is activated. No payment needed with this code.",
       checkout_success_promo_shield: "Full access to all features for 12 months, with no commitment.",
       checkout_success_launch_badge: "Launch offer — €99 / year",
-      checkout_success_standard_badge: "Annual subscription — €490 / year",
+      checkout_success_standard_badge: "Annual subscription — €99 / year",
       checkout_success_moteur1_title: "Automated prospecting",
       checkout_success_moteur1_sub: "OpenClaw is ready.",
       checkout_success_moteur2_title: "Business introductions",
