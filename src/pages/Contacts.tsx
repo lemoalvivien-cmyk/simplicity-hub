@@ -32,6 +32,19 @@ interface ContactSequenceInfo {
   status: string;
 }
 
+interface AIScore {
+  contact_id: string;
+  ai_score: number | null;
+  ai_label: string | null;
+}
+
+const aiScoreConfig: Record<string, { label: string; color: string; bg: string }> = {
+  "Froid":   { label: "Froid",    color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
+  "Tiède":   { label: "Tiède",    color: "hsl(38 80% 40%)",              bg: "hsl(38 80% 96%)" },
+  "Chaud":   { label: "Chaud",    color: "hsl(24 100% 45%)",             bg: "hsl(24 100% 96%)" },
+  "Brûlant": { label: "Brûlant",  color: "hsl(0 72% 42%)",               bg: "hsl(0 72% 97%)" },
+};
+
 const statusConfig: Record<ContactStatus, { label: string; color: string; bg: string; icon: JSX.Element }> = {
   a_contacter:   { label: "À contacter",  color: "hsl(var(--primary))",          bg: "hsl(var(--secondary))",    icon: <User size={11} /> },
   contacte:      { label: "Contacté",     color: "hsl(38 80% 30%)",              bg: "hsl(var(--accent-light))", icon: <Clock size={11} /> },
