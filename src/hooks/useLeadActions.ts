@@ -43,6 +43,10 @@ export interface LeadAction {
   company_name?: string | null;
   source_type?: string | null;
   linked_opportunity_id?: string | null;
+  // AI scoring fields (joined from lead_intakes)
+  ai_score?: number | null;
+  ai_label?: string | null;
+  ai_reasoning?: string | null;
 }
 
 interface UseLeadActionsReturn {
