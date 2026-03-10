@@ -49,7 +49,7 @@ export default function HeroSection() {
             </span>
           </h1>
 
-          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/70 mb-9 max-w-lg mx-auto leading-[1.75] font-light px-2">
+          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/75 mb-9 max-w-lg mx-auto leading-[1.75] font-light px-2">
             Wiinup Max combine{" "}
             <span className="text-white/90 font-medium">prospection pilotée par IA</span> et{" "}
             <span className="text-white/90 font-medium">apport d'affaires structuré</span>.
@@ -80,7 +80,7 @@ export default function HeroSection() {
           </div>
 
           {/* Trust bar */}
-          <div className="flex flex-wrap items-center justify-center gap-5 text-white/50 text-xs">
+          <div className="flex flex-wrap items-center justify-center gap-5 text-white/60 text-xs">
             {trustItems.map(({ icon: Icon, label }) => (
               <span key={label} className="flex items-center gap-1.5">
                 <Icon size={10} aria-hidden="true" /> {label}
@@ -144,7 +144,7 @@ export default function HeroSection() {
                       aria-hidden="true"
                     />
                   )}
-                  <span className="text-[10px] font-medium text-white/50 leading-tight">{label}</span>
+                  <span className="text-[10px] font-medium text-white/65 leading-tight">{label}</span>
                 </div>
                 <p className="font-display font-bold text-lg md:text-xl leading-none" style={{ color }}>
                   {value}

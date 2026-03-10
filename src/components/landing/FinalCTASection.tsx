@@ -33,10 +33,10 @@ export default function FinalCTASection() {
             prospection, réseau et suivi.
           </span>
         </h2>
-        <p className="text-white/52 text-base mb-2 max-w-sm mx-auto leading-relaxed">
+        <p className="text-white/75 text-base mb-2 max-w-sm mx-auto leading-relaxed">
           Mettez-les enfin dans le même cockpit.
         </p>
-        <p className="text-white/28 text-sm mb-10">
+        <p className="text-white/55 text-sm mb-10">
           Un système. Deux moteurs. Des résultats mesurables.
         </p>
 
@@ -49,13 +49,13 @@ export default function FinalCTASection() {
             Démarrer ma première mission — 99 €/an
             <ArrowRight size={17} />
           </Link>
-          <span className="flex items-center gap-1.5 text-white/45 text-xs">
+          <span className="flex items-center gap-1.5 text-white/60 text-xs">
             <ShieldCheck size={12} aria-hidden="true" />
             Satisfait ou remboursé 30 jours
           </span>
         </div>
 
-        <p className="mt-5 text-white/22 text-xs">
+        <p className="mt-5 text-white/50 text-xs">
           Sans engagement · Annulation libre · Support inclus à chaque étape
         </p>
       </div>

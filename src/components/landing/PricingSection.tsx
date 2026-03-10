@@ -83,7 +83,7 @@ export default function PricingSection() {
               <p className="text-white/50 text-xs italic">
                 Le prix d'un café par semaine. Pour une machine d'acquisition complète.
               </p>
-              <p className="text-white/45 text-xs mt-2">
+              <p className="text-white/60 text-xs mt-2">
                 {launchAvailable
                   ? "Réservée aux 100 premières entreprises — accès complet immédiat"
                   : "Abonnement annuel — accès complet, support inclus"}
