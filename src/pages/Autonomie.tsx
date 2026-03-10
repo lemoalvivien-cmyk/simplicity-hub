@@ -126,13 +126,20 @@ export default function Autonomie() {
     toast.success(next ? "Kill Switch activé — tous les agents sont stoppés." : "Agents réactivés.");
   };
 
-  const handleVoiceChange = (pref: VoicePreference) => {
+  const handleVoiceChange = async (pref: VoicePreference) => {
     setVoicePreference(pref);
     localStorage.setItem("wiinup_voice_preference", pref);
+    // Also persist to openclaw_config for cross-device sync
+    if (user) {
+      await db.from("openclaw_config").upsert(
+        { user_id: user.id, autonomie_level: autonomieLevel, voice_preference: pref },
+        { onConflict: "user_id" }
+      );
+    }
     toast.success("Préférence vocale enregistrée.");
   };
 
-  const handleTestVoice = () => {
+  const handleTestVoiceBrowser = () => {
     if (!("speechSynthesis" in window)) return;
     setTestingVoice(true);
     window.speechSynthesis.cancel();
@@ -145,6 +152,41 @@ export default function Autonomie() {
     utter.onend = () => setTestingVoice(false);
     utter.onerror = () => setTestingVoice(false);
     window.speechSynthesis.speak(utter);
+  };
+
+  const handleTestElevenLabs = async () => {
+    setTestingVoice(true);
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+      const res = await fetch(`${supabaseUrl}/functions/v1/elevenlabs-tts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+        },
+        body: JSON.stringify({
+          text: "Bonjour. JARVIS est prêt. Vos agents travaillent pour vous.",
+          voiceId: "nPczCjzI2devNBz1zQrb",
+        }),
+      });
+      if (!res.ok) {
+        toast.error("ElevenLabs non configuré. Utilisez la voix navigateur.");
+        setTestingVoice(false);
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.play();
+      audio.onended = () => { URL.revokeObjectURL(url); setTestingVoice(false); };
+      audio.onerror = () => setTestingVoice(false);
+      toast.success("Voix ElevenLabs active !");
+    } catch {
+      toast.error("Erreur ElevenLabs — vérifiez la configuration.");
+      setTestingVoice(false);
+    }
   };
 
   if (loading) {
