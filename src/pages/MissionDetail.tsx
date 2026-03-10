@@ -2,13 +2,15 @@
  * MissionDetail — Page de détail d'une mission + formulaire d'introduction.
  * FULLY WIRED: lit les données réelles depuis Supabase, insère les introductions en DB,
  * et crée une entrée gain + intro_escrow au moment de l'envoi.
+ * Affiche les facilitateurs recommandés par l'IA (mission-based matching).
  */
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   ArrowLeft, Send, Info, AlertCircle, ChevronRight, CheckCircle2,
-  Clock, MapPin, Euro, Briefcase, Users, Loader2, Sparkles, Star, UserCheck
+  Clock, MapPin, Euro, Briefcase, Users, Loader2, Sparkles, Star, UserCheck,
+  ShieldCheck, Zap
 } from "lucide-react";
 import CopilotPanel from "@/components/ai/CopilotPanel";
 import { db } from "@/lib/supabase";
@@ -36,7 +38,9 @@ interface MissionMatch {
   compatibility_score: number;
   reasoning: string | null;
   status: string;
+  ai_generated?: boolean;
   facilitateur_name?: string;
+  trust_score?: number;
 }
 
 const statusConfig = {
@@ -229,6 +233,7 @@ export default function MissionDetail() {
   const [success, setSuccess] = useState(false);
   const [matches, setMatches] = useState<MissionMatch[]>([]);
   const [inviting, setInviting] = useState<string | null>(null);
+  const [isRunningAI, setIsRunningAI] = useState(false);
 
   const loadMatches = async (missionId: string) => {
     const { data } = await supabase
@@ -239,17 +244,66 @@ export default function MissionDetail() {
       .limit(5);
     if (!data || data.length === 0) return;
 
-    // Fetch names
+    // Fetch names + trust scores in parallel
     const ids = data.map((m: MissionMatch) => m.facilitateur_id);
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, prenom, email")
-      .in("id", ids);
+    const [profilesRes, trustRes] = await Promise.allSettled([
+      supabase.from("profiles").select("id, prenom, email").in("id", ids),
+      supabase.from("trust_scores").select("user_id, global_score").in("user_id", ids),
+    ]);
+
     const nameMap: Record<string, string> = {};
-    (profiles ?? []).forEach((p: { id: string; prenom: string | null; email: string | null }) => {
-      nameMap[p.id] = p.prenom ?? p.email?.split("@")[0] ?? "Apporteur";
-    });
-    setMatches(data.map((m: MissionMatch) => ({ ...m, facilitateur_name: nameMap[m.facilitateur_id] ?? "Apporteur" })));
+    const trustMap: Record<string, number> = {};
+
+    if (profilesRes.status === "fulfilled" && profilesRes.value.data) {
+      (profilesRes.value.data as { id: string; prenom: string | null; email: string | null }[]).forEach(p => {
+        nameMap[p.id] = p.prenom ?? p.email?.split("@")[0] ?? "Apporteur";
+      });
+    }
+    if (trustRes.status === "fulfilled" && trustRes.value.data) {
+      (trustRes.value.data as { user_id: string; global_score: number }[]).forEach(t => {
+        trustMap[t.user_id] = t.global_score;
+      });
+    }
+
+    setMatches(data.map((m: MissionMatch) => ({
+      ...m,
+      facilitateur_name: nameMap[m.facilitateur_id] ?? "Apporteur",
+      trust_score: trustMap[m.facilitateur_id] ?? 50,
+    })));
+  };
+
+  const runAIMatching = async () => {
+    if (!id || !user) return;
+    setIsRunningAI(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-matching`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            mode: "mission",
+            mission_id: id,
+            company_user_id: user.id,
+          }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) {
+        toast.error(result.error ?? "Erreur lors du matching IA");
+        return;
+      }
+      toast.success(`${result.matches?.length ?? 0} facilitateurs trouvés par l'IA !`);
+      await loadMatches(id);
+    } catch {
+      toast.error("Impossible de lancer le matching IA.");
+    } finally {
+      setIsRunningAI(false);
+    }
   };
 
   useEffect(() => {
@@ -400,43 +454,100 @@ export default function MissionDetail() {
         {/* Vue entreprise */}
         {role === "entreprise" && (
           <div className="space-y-4 mt-2">
-            {/* AI Match suggestions */}
-            {matches.length > 0 && (
-              <div className="card-surface p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
-                    <Sparkles size={13} className="text-white" />
+
+            {/* ── AI Facilitateur Recommendations ─────────────────────────── */}
+            <div className="card-surface p-5">
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: "hsl(var(--primary))" }}>
+                    <Sparkles size={13} style={{ color: "hsl(var(--primary-foreground))" }} />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-foreground text-sm">{matches.length} facilitateur{matches.length > 1 ? "s" : ""} recommandé{matches.length > 1 ? "s" : ""} par l'IA</h2>
-                    <p className="text-xs text-muted-foreground">Compatibilité calculée automatiquement selon votre mission</p>
+                    <h2 className="font-semibold text-foreground text-sm">
+                      {matches.length > 0
+                        ? `${Math.min(matches.length, 3)} facilitateur${matches.length > 1 ? "s" : ""} recommandé${matches.length > 1 ? "s" : ""} par l'IA`
+                        : "Recommandations IA"}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">Compatibilité analysée automatiquement selon votre mission</p>
                   </div>
                 </div>
+                <button
+                  onClick={runAIMatching}
+                  disabled={isRunningAI}
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
+                  style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}
+                >
+                  {isRunningAI
+                    ? <><Loader2 size={11} className="animate-spin" />Analyse…</>
+                    : <><Zap size={11} />{matches.length > 0 ? "Relancer" : "Lancer l'IA"}</>}
+                </button>
+              </div>
+
+              {matches.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 py-6 text-center">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={{ background: "hsl(var(--muted))" }}>
+                    <Sparkles size={22} className="text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Aucun match IA pour l'instant</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Cliquez sur "Lancer l'IA" pour trouver les meilleurs facilitateurs</p>
+                  </div>
+                </div>
+              ) : (
                 <div className="space-y-3">
-                  {matches.map(m => {
+                  {matches.slice(0, 3).map(m => {
                     const scoreColor = m.compatibility_score >= 75
-                      ? "hsl(var(--success))"
+                      ? "hsl(142 62% 35%)"
                       : m.compatibility_score >= 50
                       ? "hsl(38 80% 40%)"
                       : "hsl(var(--muted-foreground))";
                     const scoreBg = m.compatibility_score >= 75
-                      ? "hsl(var(--success-light))"
+                      ? "hsl(142 62% 96%)"
                       : m.compatibility_score >= 50
                       ? "hsl(38 80% 96%)"
                       : "hsl(var(--muted))";
+                    const trustColor = (m.trust_score ?? 50) >= 80
+                      ? "hsl(218 72% 40%)"
+                      : "hsl(var(--muted-foreground))";
+
                     return (
-                      <div key={m.id} className="flex items-start gap-3 p-3 rounded-xl border border-border hover:border-primary/30 transition-colors">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-bold text-sm"
+                      <div key={m.id}
+                        className="flex items-start gap-3 p-3 rounded-xl border border-border hover:border-primary/30 transition-colors"
+                      >
+                        {/* Avatar */}
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-bold text-sm"
                           style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
-                          {(m.facilitateur_name ?? "A").charAt(0)}
+                          {(m.facilitateur_name ?? "A").charAt(0).toUpperCase()}
                         </div>
+
+                        {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
                             <p className="text-sm font-semibold text-foreground">{m.facilitateur_name}</p>
+
+                            {/* Match score */}
                             <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
                               style={{ color: scoreColor, background: scoreBg }}>
                               <Star size={9} /> {m.compatibility_score}%
                             </span>
+
+                            {/* Trust score */}
+                            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+                              style={{ color: trustColor, background: "hsl(218 72% 96%)" }}>
+                              <ShieldCheck size={9} /> {m.trust_score ?? 50}/100
+                            </span>
+
+                            {/* AI badge */}
+                            {m.ai_generated && (
+                              <span className="inline-flex items-center gap-1 text-xs font-medium px-1.5 py-0.5 rounded-full"
+                                style={{ color: "hsl(25 95% 45%)", background: "hsl(25 95% 96%)" }}>
+                                <Sparkles size={8} /> IA
+                              </span>
+                            )}
+
+                            {/* Invited */}
                             {m.status === "acceptee" && (
                               <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
                                 style={{ color: "hsl(var(--success))", background: "hsl(var(--success-light))" }}>
@@ -444,10 +555,14 @@ export default function MissionDetail() {
                               </span>
                             )}
                           </div>
+
+                          {/* Match reason */}
                           {m.reasoning && (
-                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{m.reasoning}</p>
+                            <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{m.reasoning}</p>
                           )}
                         </div>
+
+                        {/* Invite button */}
                         {m.status !== "acceptee" && (
                           <button
                             onClick={() => handleInvite(m)}
@@ -455,16 +570,19 @@ export default function MissionDetail() {
                             className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
                             style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
                           >
-                            {inviting === m.facilitateur_id ? <Loader2 size={11} className="animate-spin" /> : "Inviter"}
+                            {inviting === m.facilitateur_id
+                              ? <Loader2 size={11} className="animate-spin" />
+                              : "Inviter"}
                           </button>
                         )}
                       </div>
                     );
                   })}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
+            {/* ── Introductions reçues ──────────────────────────────────── */}
             <div className="card-surface p-5">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-semibold text-foreground">Introductions reçues</h2>
