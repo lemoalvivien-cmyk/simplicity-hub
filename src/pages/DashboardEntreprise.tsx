@@ -41,6 +41,7 @@ export default function DashboardEntreprise() {
   const [validationsCount, setValidationsCount] = useState(0);
   const [hotOpps, setHotOpps] = useState(0);
   const [passiveAlerts, setPassiveAlerts] = useState<{ id: string; title: string; message: string; type: string; read: boolean }[]>([]);
+  const [prospectionOpen, setProspectionOpen] = useState(false);
 
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
