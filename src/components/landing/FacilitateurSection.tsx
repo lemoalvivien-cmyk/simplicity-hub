@@ -40,7 +40,7 @@ export default function FacilitateurSection() {
               <ArrowRight size={16} />
             </Link>
             <p className="text-[11px] text-muted-foreground mt-3">
-              Ce n'est pas du MLM. C'est de l'apport d'affaires direct et traçable.
+              Un modèle transparent d'apport d'affaires, avec attribution prouvée et paiement garanti.
             </p>
           </div>
 

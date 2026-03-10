@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 
 const FinalCTASection = forwardRef<HTMLElement>((_, ref) => {
@@ -41,26 +41,22 @@ const FinalCTASection = forwardRef<HTMLElement>((_, ref) => {
           Un système. Deux moteurs. Des résultats mesurables.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+        <div className="flex flex-col items-center gap-3">
           <Link
             to="/pricing"
             className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
             onClick={() => track("cta_final_enterprise")}
           >
-            Activer mon acquisition
+            Démarrer ma première mission — 99 €/an
             <ArrowRight size={17} />
           </Link>
-          <Link
-            to="/signup"
-            className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-white/55 border border-white/12 font-medium text-sm hover:border-white/28 hover:text-white/78 transition-all duration-200 w-full sm:w-auto"
-            onClick={() => track("cta_final_facilitator")}
-          >
-            <Users size={14} className="shrink-0" />
-            Monétiser mon réseau — Gratuit
-          </Link>
+          <span className="flex items-center gap-1.5 text-white/45 text-xs">
+            <ShieldCheck size={12} aria-hidden="true" />
+            Satisfait ou remboursé 30 jours
+          </span>
         </div>
 
-        <p className="mt-6 text-white/22 text-xs">
+        <p className="mt-5 text-white/22 text-xs">
           Sans engagement · Annulation libre · Support inclus à chaque étape
         </p>
       </div>

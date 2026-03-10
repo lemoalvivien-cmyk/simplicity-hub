@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, CheckCircle2, Shield, TrendingUp } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, TrendingUp } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import { AB, track } from "@/lib/landingTracking";
 
@@ -21,8 +21,8 @@ const HEADLINE_VARIANTS = {
 };
 
 const CTA_VARIANTS = {
-  v1_demarrer: "Lancer ma première mission",
-  v2_activer: "Activer mon acquisition",
+  v1_demarrer: "Démarrer ma première mission — 99 €/an",
+  v2_activer: "Activer mon acquisition — 99 €/an",
 };
 
 export default function HeroSection() {
@@ -78,7 +78,7 @@ export default function HeroSection() {
           </p>
 
           {/* CTAs — clear hierarchy */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-9 px-2">
+          <div className="flex flex-col items-center gap-2 mb-9 px-2">
             <Link
               to="/pricing"
               className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
@@ -87,14 +87,9 @@ export default function HeroSection() {
               {ctaLabel}
               <ArrowRight size={17} />
             </Link>
-            <Link
-              to="/signup"
-              className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl font-medium text-sm text-white/55 border border-white/12 hover:border-white/28 hover:text-white/75 transition-all duration-200 w-full sm:w-auto"
-              onClick={() => track("cta_hero_facilitator")}
-            >
-              <Users size={14} className="shrink-0" />
-              Monétiser mon réseau — Gratuit
-            </Link>
+            <p className="text-white/38 text-xs mt-1">
+              Premières recommandations IA sous 5 minutes
+            </p>
           </div>
 
           {/* Trust bar */}

@@ -1,33 +1,41 @@
+import { GitBranch, Network, AlertCircle, BarChart2, Layers, HandCoins } from "lucide-react";
+
 const problems = [
   {
-    emoji: "🔀",
+    icon: GitBranch,
+    color: "hsl(218 72% 55%)",
     title: "Prospection dispersée.",
     desc: "LinkedIn par-là, relances par-ci, tableur pour suivre. Rien n'avance, tout se perd.",
   },
   {
-    emoji: "🤝",
+    icon: Network,
+    color: "hsl(152 62% 42%)",
     title: "Réseau inexploité.",
     desc: "Des contacts qui pourraient ouvrir des portes — mais rien n'est activé, rien n'est tracé.",
   },
   {
-    emoji: "💸",
+    icon: AlertCircle,
+    color: "hsl(24 100% 55%)",
     title: "Intros qui disparaissent.",
     desc: "Une mise en relation prometteuse il y a 3 semaines. Jamais relancée. Le deal est mort.",
   },
   {
-    emoji: "📊",
+    icon: BarChart2,
+    color: "hsl(262 72% 58%)",
     title: "ROI invisible.",
     desc: "Quel canal rapporte ? Quel apporteur convertit ? Combien via le réseau ? Vous ne savez pas.",
   },
   {
-    emoji: "🛠️",
+    icon: Layers,
+    color: "hsl(38 95% 52%)",
     title: "4 outils qui ne se parlent pas.",
     desc: "CRM ici, emailing là, commissions dans un tableur. C'est épuisant et ça coûte des deals.",
   },
   {
-    emoji: "🌫️",
+    icon: HandCoins,
+    color: "hsl(152 62% 42%)",
     title: "Gains impayés, non prouvés.",
-    desc: "Vous avez fait une intro. Ça a abouti. Vous le prouver comment ? Vous serez payé quand ?",
+    desc: "Vous avez fait une intro. Ça a abouti. Comment le prouver ? Vous serez payé quand ?",
   },
 ];
 
@@ -47,18 +55,28 @@ export default function ProblemSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {problems.map(({ emoji, title, desc }) => (
-            <div
-              key={title}
-              className="bg-card border border-border rounded-2xl p-5 flex gap-3.5 items-start transition-all duration-200 hover:border-destructive/25 hover:shadow-sm"
-            >
-              <span className="text-xl shrink-0 mt-0.5" aria-hidden="true">{emoji}</span>
-              <div>
-                <p className="font-semibold text-foreground text-sm mb-1.5 leading-snug">{title}</p>
-                <p className="text-muted-foreground text-xs leading-relaxed">{desc}</p>
+          {problems.map(({ icon: Icon, color, title, desc }) => {
+            const bg = color.replace(")", " / 0.09)");
+            const border = color.replace(")", " / 0.18)");
+            return (
+              <div
+                key={title}
+                className="bg-card border rounded-2xl p-5 flex gap-3.5 items-start transition-all duration-200 hover:shadow-sm"
+                style={{ borderColor: border }}
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                  style={{ background: bg }}
+                >
+                  <Icon size={15} style={{ color }} aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground text-sm mb-1.5 leading-snug">{title}</p>
+                  <p className="text-muted-foreground text-xs leading-relaxed">{desc}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div

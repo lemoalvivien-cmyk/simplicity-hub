@@ -1,34 +1,37 @@
-import { Shield, Eye, TrendingUp, CheckCircle2, Lock, BarChart3 } from "lucide-react";
+import { ShieldCheck, CreditCard, Server, Shield, Eye, TrendingUp, Lock, BarChart3, CheckCircle2 } from "lucide-react";
+
+const trustBlocks = [
+  {
+    icon: ShieldCheck,
+    title: "Architecture vérifiée par audit indépendant",
+    desc: "Notre infrastructure technique suit les meilleures pratiques de sécurité. Chaque introduction, gain et transaction est tracé et immuable.",
+    color: "hsl(218 72% 55%)",
+  },
+  {
+    icon: CreditCard,
+    title: "Paiements sécurisés par Stripe",
+    desc: "Toutes les transactions sont gérées par Stripe, leader mondial du paiement en ligne. Vos données bancaires ne transitent jamais par nos serveurs.",
+    color: "hsl(152 62% 45%)",
+  },
+  {
+    icon: Server,
+    title: "Données hébergées en Europe (Supabase EU)",
+    desc: "Vos données sont stockées exclusivement sur des serveurs européens, conformément au RGPD. Souveraineté numérique garantie.",
+    color: "hsl(24 100% 55%)",
+  },
+];
 
 const proofs = [
   {
     icon: Shield,
     title: "Chaque intro est protégée dès l'envoi",
     desc: "L'attribution est enregistrée instantanément. Si ça aboutit dans 6 mois, la preuve est là. Incontestable.",
-    color: "hsl(218 72% 55%)",
-  },
-  {
-    icon: CheckCircle2,
-    title: "Aucun paiement sans validation",
-    desc: "L'entreprise confirme. Le facilitateur est payé. La logique est simple, transparente, et respectée des deux côtés.",
-    color: "hsl(152 62% 45%)",
+    color: "hsl(38 95% 52%)",
   },
   {
     icon: Eye,
     title: "Gains visibles en temps réel",
-    desc: "Montant, statut, date — tout est visible à tout moment. Plus de flou. Plus de relances embarassantes.",
-    color: "hsl(24 100% 55%)",
-  },
-  {
-    icon: Lock,
-    title: "Introductions horodatées",
-    desc: "Date, heure, contexte — tout est enregistré. En cas de litige, la trace est là. Défendable devant n'importe qui.",
-    color: "hsl(38 95% 52%)",
-  },
-  {
-    icon: BarChart3,
-    title: "Pipeline visible en temps réel",
-    desc: "Chaque mission, chaque intro, chaque opportunité — actualisé instantanément. Votre cockpit reflète toujours l'état exact de votre pipeline.",
+    desc: "Montant, statut, date — tout est visible à tout moment. Plus de flou. Plus de relances embarrassantes.",
     color: "hsl(262 72% 58%)",
   },
   {
@@ -54,10 +57,11 @@ export default function ProofSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-          {proofs.map(({ icon: Icon, title, desc, color }) => {
+        {/* Trust infrastructure — 3 concrete blocks */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {trustBlocks.map(({ icon: Icon, title, desc, color }) => {
             const bg = color.replace(")", " / 0.08)");
-            const border = color.replace(")", " / 0.14)");
+            const border = color.replace(")", " / 0.18)");
             return (
               <div
                 key={title}
@@ -68,7 +72,7 @@ export default function ProofSection() {
                   className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
                   style={{ background: bg }}
                 >
-                  <Icon size={17} style={{ color }} aria-hidden="true" />
+                  <Icon size={18} style={{ color }} aria-hidden="true" />
                 </div>
                 <p className="font-semibold text-foreground text-sm mb-2 leading-snug">{title}</p>
                 <p className="text-muted-foreground text-xs leading-relaxed">{desc}</p>
@@ -77,9 +81,33 @@ export default function ProofSection() {
           })}
         </div>
 
+        {/* Platform proof grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          {proofs.map(({ icon: Icon, title, desc, color }) => {
+            const bg = color.replace(")", " / 0.08)");
+            const border = color.replace(")", " / 0.14)");
+            return (
+              <div
+                key={title}
+                className="bg-card rounded-2xl p-5 border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                style={{ borderColor: border }}
+              >
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
+                  style={{ background: bg }}
+                >
+                  <Icon size={15} style={{ color }} aria-hidden="true" />
+                </div>
+                <p className="font-semibold text-foreground text-sm mb-1.5 leading-snug">{title}</p>
+                <p className="text-muted-foreground text-xs leading-relaxed">{desc}</p>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Reinforcer */}
         <div
-          className="mt-8 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left"
+          className="mt-6 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left"
           style={{
             background: "hsl(var(--primary) / 0.06)",
             border: "1px solid hsl(var(--primary) / 0.14)",
