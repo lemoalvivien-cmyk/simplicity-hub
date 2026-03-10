@@ -233,6 +233,7 @@ export default function MissionDetail() {
   const [success, setSuccess] = useState(false);
   const [matches, setMatches] = useState<MissionMatch[]>([]);
   const [inviting, setInviting] = useState<string | null>(null);
+  const [isRunningAI, setIsRunningAI] = useState(false);
 
   const loadMatches = async (missionId: string) => {
     const { data } = await supabase
@@ -243,17 +244,66 @@ export default function MissionDetail() {
       .limit(5);
     if (!data || data.length === 0) return;
 
-    // Fetch names
+    // Fetch names + trust scores in parallel
     const ids = data.map((m: MissionMatch) => m.facilitateur_id);
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, prenom, email")
-      .in("id", ids);
+    const [profilesRes, trustRes] = await Promise.allSettled([
+      supabase.from("profiles").select("id, prenom, email").in("id", ids),
+      supabase.from("trust_scores").select("user_id, global_score").in("user_id", ids),
+    ]);
+
     const nameMap: Record<string, string> = {};
-    (profiles ?? []).forEach((p: { id: string; prenom: string | null; email: string | null }) => {
-      nameMap[p.id] = p.prenom ?? p.email?.split("@")[0] ?? "Apporteur";
-    });
-    setMatches(data.map((m: MissionMatch) => ({ ...m, facilitateur_name: nameMap[m.facilitateur_id] ?? "Apporteur" })));
+    const trustMap: Record<string, number> = {};
+
+    if (profilesRes.status === "fulfilled" && profilesRes.value.data) {
+      (profilesRes.value.data as { id: string; prenom: string | null; email: string | null }[]).forEach(p => {
+        nameMap[p.id] = p.prenom ?? p.email?.split("@")[0] ?? "Apporteur";
+      });
+    }
+    if (trustRes.status === "fulfilled" && trustRes.value.data) {
+      (trustRes.value.data as { user_id: string; global_score: number }[]).forEach(t => {
+        trustMap[t.user_id] = t.global_score;
+      });
+    }
+
+    setMatches(data.map((m: MissionMatch) => ({
+      ...m,
+      facilitateur_name: nameMap[m.facilitateur_id] ?? "Apporteur",
+      trust_score: trustMap[m.facilitateur_id] ?? 50,
+    })));
+  };
+
+  const runAIMatching = async () => {
+    if (!id || !user) return;
+    setIsRunningAI(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-matching`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            mode: "mission",
+            mission_id: id,
+            company_user_id: user.id,
+          }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok) {
+        toast.error(result.error ?? "Erreur lors du matching IA");
+        return;
+      }
+      toast.success(`${result.matches?.length ?? 0} facilitateurs trouvés par l'IA !`);
+      await loadMatches(id);
+    } catch {
+      toast.error("Impossible de lancer le matching IA.");
+    } finally {
+      setIsRunningAI(false);
+    }
   };
 
   useEffect(() => {
