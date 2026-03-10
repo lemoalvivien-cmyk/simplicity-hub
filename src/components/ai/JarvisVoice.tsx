@@ -69,12 +69,12 @@ export default function JarvisVoice({ onTranscript, lastJarvisText, autoSpeak }:
   const [speaking, setSpeaking] = useState(false);
   const [ttsMode, setTtsMode] = useState<VoiceTTSMode>("loading");
   const [supported, setSupported] = useState(true);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSpokenRef = useRef<string>("");
 
   // ── Detect TTS capability ────────────────────────────────────────────────────
   useEffect(() => {
-    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRec = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SpeechRec) { setSupported(false); return; }
 
     // Check if ElevenLabs TTS edge function exists by probing voice-token
@@ -84,7 +84,6 @@ export default function JarvisVoice({ onTranscript, lastJarvisText, autoSpeak }:
         if (data?.fallback === "browser" || data?.error === "elevenlabs_not_configured") {
           setTtsMode("browser");
         } else {
-          // Try to detect elevenlabs-tts function availability
           setTtsMode("browser"); // default safe; will try EL on each speak attempt
         }
       })
