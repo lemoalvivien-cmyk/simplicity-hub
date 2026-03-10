@@ -432,7 +432,7 @@ export default function DashboardFacilitateur() {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <Link to="/profil" className="text-xs text-primary font-medium hover:underline">
+              <Link to="/profil/facilitateur" className="text-xs text-primary font-medium hover:underline">
                 Mon profil
               </Link>
             </div>
