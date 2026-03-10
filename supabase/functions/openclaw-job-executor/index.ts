@@ -664,6 +664,19 @@ Génère le brief matinal.`;
       case "trust_recompute": {
         const { error: trustErr } = await svc.rpc("refresh_trust_score", { p_facilitator_id: userId });
         await svc.from("trust_events").insert({ user_id: userId, event_type: "recompute_planifie", impact_score: 0, summary: "Réévaluation périodique du score de confiance." });
+        if (!trustErr) {
+          // Fetch new score to include in notification
+          const { data: scoreData } = await svc.from("trust_scores").select("global_score").eq("user_id", userId).maybeSingle();
+          await svc.from("notifications").insert({
+            user_id: userId,
+            type: "trust_update",
+            title: "Votre score de confiance a été mis à jour",
+            body: scoreData?.global_score != null
+              ? `Score actuel : ${scoreData.global_score}/100. Continuez à envoyer des introductions pour progresser.`
+              : "Votre score de confiance a été recalculé.",
+            href: "/profil",
+          });
+        }
         if (job_id) await svc.from("openclaw_jobs").update({ last_run_at: now(), next_run_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() }).eq("id", job_id);
         result.trust_updates = trustErr ? 0 : 1; result.output_count = result.trust_updates;
         result.output_summary = trustErr ? "Réévaluation confiance échouée." : "Score de confiance recalculé avec succès.";
