@@ -194,8 +194,16 @@ export default function Facilitateurs() {
     return matchSearch && matchSector && matchZone && matchCorridor;
   });
 
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(0);
+
   const hasFilters = sectorFilter || zoneFilter || corridorFilter;
   const favorisOnly = filtered.filter(f => f.isFavorite);
+
+  // Reset page on filter/sort/search change
+  useEffect(() => { setPage(0); }, [search, sectorFilter, zoneFilter, corridorFilter, sortMode]);
+
+  const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   return (
     <UserLayout role="entreprise" jarvisContext="dashboard">
