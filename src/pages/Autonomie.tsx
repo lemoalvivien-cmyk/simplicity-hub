@@ -383,7 +383,7 @@ export default function Autonomie() {
 
           {voicePreference === "browser" && (
             <button
-              onClick={handleTestVoice}
+              onClick={handleTestVoiceBrowser}
               disabled={testingVoice}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border border-border hover:bg-muted transition-colors"
             >
