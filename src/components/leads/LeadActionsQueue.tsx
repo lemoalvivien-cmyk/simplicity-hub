@@ -23,6 +23,7 @@ import {
 import { Link } from "react-router-dom";
 import { useLeadActions, type ActionType, type ActionStatus } from "@/hooks/useLeadActions";
 import { Skeleton } from "@/components/ui/skeleton";
+import AIScoreBadge from "@/components/leads/AIScoreBadge";
 
 // PROOF:EXECUTION_V1:action_queue_ui_real — action label map
 const ACTION_LABELS: Record<ActionType, string> = {
