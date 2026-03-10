@@ -72,7 +72,7 @@ export default function MentionsLegales() {
               Le traitement des données personnelles des utilisateurs est décrit dans notre{" "}
               <Link to="/confidentialite" className="text-primary underline">Politique de Confidentialité</Link>.
               Conformément au RGPD et à la loi Informatique et Libertés, vous pouvez exercer vos droits en contactant :{" "}
-              <a href="mailto:contact@vlmconsulting.fr" className="text-primary underline">contact@vlmconsulting.fr</a>.
+              <a href="mailto:contact@wiinupmax.com" className="text-primary underline">contact@wiinupmax.com</a>.
             </p>
           </div>
 

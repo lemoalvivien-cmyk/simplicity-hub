@@ -131,7 +131,7 @@ export default function CGU() {
             <h2 className="text-lg font-semibold text-foreground mb-3">10. Résiliation</h2>
             <p>
               L'utilisateur peut résilier son abonnement à tout moment depuis son espace compte ou en contactant
-              <a href="mailto:contact@vlmconsulting.fr" className="text-primary underline ml-1">contact@vlmconsulting.fr</a>.
+              <a href="mailto:contact@wiinupmax.com" className="text-primary underline ml-1">contact@wiinupmax.com</a>.
               La résiliation prend effet à la fin de la période d'abonnement en cours.
             </p>
             <p className="mt-2">

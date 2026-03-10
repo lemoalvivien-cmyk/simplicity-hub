@@ -124,7 +124,7 @@ export default function Confidentialite() {
             </ul>
             <p className="mt-3">
               Pour exercer vos droits, contactez-nous à :{" "}
-              <a href="mailto:contact@vlmconsulting.fr" className="text-primary underline">contact@vlmconsulting.fr</a>.
+              <a href="mailto:contact@wiinupmax.com" className="text-primary underline">contact@wiinupmax.com</a>.
               Nous répondrons dans un délai d'un mois. Vous avez également le droit d'introduire une réclamation auprès
               de la <strong>CNIL</strong> (<a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-primary underline">www.cnil.fr</a>).
             </p>
