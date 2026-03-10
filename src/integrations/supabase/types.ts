@@ -1750,10 +1750,14 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          name: string | null
           owner_user_id: string
+          subject: string | null
           template_type: string
           title: string
+          type: string | null
           updated_at: string
+          user_id: string | null
           utilises: number
         }
         Insert: {
@@ -1762,10 +1766,14 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          name?: string | null
           owner_user_id: string
+          subject?: string | null
           template_type: string
           title: string
+          type?: string | null
           updated_at?: string
+          user_id?: string | null
           utilises?: number
         }
         Update: {
@@ -1774,10 +1782,14 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          name?: string | null
           owner_user_id?: string
+          subject?: string | null
           template_type?: string
           title?: string
+          type?: string | null
           updated_at?: string
+          user_id?: string | null
           utilises?: number
         }
         Relationships: []
@@ -3864,6 +3876,98 @@ export type Database = {
           used_by?: string | null
         }
         Relationships: []
+      }
+      prospection_executions: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          current_step: number
+          id: string
+          last_action_at: string | null
+          next_action_at: string | null
+          sequence_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          current_step?: number
+          id?: string
+          last_action_at?: string | null
+          next_action_at?: string | null
+          sequence_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          current_step?: number
+          id?: string
+          last_action_at?: string | null
+          next_action_at?: string | null
+          sequence_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospection_executions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prospection_executions_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "prospection_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prospection_sequences: {
+        Row: {
+          campaign_id: string | null
+          created_at: string
+          id: string
+          name: string
+          status: string
+          steps: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          status?: string
+          steps?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          status?: string
+          steps?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospection_sequences_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campagnes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       qualified_interests: {
         Row: {
