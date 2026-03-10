@@ -1,133 +1,192 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-// Allowed origins — browser clients only
-const ALLOWED_ORIGINS = [
-  "https://wiinupmax.com",
-  "https://wiinupmax.lovable.app",
-  "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
-];
+const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const AI_MODEL = "google/gemini-2.5-flash";
 
-function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get("origin") ?? "";
-  const isLocal = origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1");
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) || isLocal ? origin : "";
-  return {
-    "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-  };
+interface Dossier {
+  secteur_activite: string | null;
+  cible_ideale: string | null;
+}
+
+async function loadDossier(
+  supabaseUrl: string,
+  serviceKey: string,
+  userId: string,
+): Promise<Dossier | null> {
+  const admin = createClient(supabaseUrl, serviceKey);
+  const { data } = await admin
+    .from("openclaw_dossier" as never)
+    .select("secteur_activite, cible_ideale")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return (data as Dossier) ?? null;
+}
+
+// Normalize raw score string/number → 0-100
+function normalizeScore(raw: unknown): number {
+  const n = Math.round(Number(raw) || 0);
+  // Handle legacy 1-10 scale
+  if (n >= 1 && n <= 10) return n * 10;
+  return Math.min(100, Math.max(0, n));
+}
+
+function scoreToLabel(score: number): string {
+  if (score >= 80) return "brûlant";
+  if (score >= 60) return "chaud";
+  if (score >= 35) return "tiède";
+  return "froid";
 }
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
-
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
     const { lead_data, intake_id } = await req.json();
 
     if (!lead_data) {
       return new Response(
         JSON.stringify({ error: "lead_data est requis." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    // ── Identify user for dossier lookup ─────────────────────
+    let userId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
 
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    // If intake_id, fetch user_id from DB directly (works from trigger calls too)
+    if (intake_id) {
+      const admin = createClient(supabaseUrl, serviceKey);
+      const { data: intake } = await admin
+        .from("lead_intakes")
+        .select("user_id")
+        .eq("id", intake_id)
+        .maybeSingle();
+      userId = (intake as { user_id: string } | null)?.user_id ?? null;
+    } else if (authHeader) {
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user } } = await userClient.auth.getUser();
+      userId = user?.id ?? null;
+    }
 
-    const systemPrompt = `Tu es un expert en qualification de leads B2B. Tu analyses les leads et tu les scores de 1 à 10 avec une justification courte en français. Tu retournes: score (number), label (Froid/Tiède/Chaud/Brûlant), reasoning (string max 50 mots), recommended_action (string).`;
+    // ── Load dossier in parallel ──────────────────────────────
+    const dossier = userId ? await loadDossier(supabaseUrl, serviceKey, userId) : null;
 
-    const userPrompt = `Analyse et score ce lead B2B :
+    // ── Build enriched prompt ─────────────────────────────────
+    const dossierContext = dossier
+      ? `\nCIBLE IDÉALE DÉFINIE PAR L'ENTREPRISE : ${dossier.cible_ideale ?? "Non définie"}
+SECTEUR DE L'ENTREPRISE : ${dossier.secteur_activite ?? "Non défini"}`
+      : "";
 
-Nom : ${lead_data.name ?? "Inconnu"}
-Entreprise : ${lead_data.company ?? "Non précisée"}
-Message/Contexte : ${lead_data.message ?? "Aucun contexte"}
-Source : ${lead_data.source ?? "Inconnue"}
+    const systemPrompt = `Tu es un expert en qualification de leads B2B. Tu scores les leads de 0 à 100 selon leur potentiel commercial réel. Tu analyses : la pertinence sectorielle, la taille estimée de l'entreprise, les signaux d'intention, et la qualité du contact. Tu retournes toujours un JSON strict.`;
+
+    const userPrompt = `Analyse et score ce lead B2B sur une échelle de 0 à 100 :
+
+NOM DU CONTACT : ${lead_data.name ?? "Inconnu"}
+ENTREPRISE : ${lead_data.company ?? "Non précisée"}
+MESSAGE / CONTEXTE : ${lead_data.message ?? "Aucun contexte"}
+SOURCE : ${lead_data.source ?? "Inconnue"}
+${dossierContext}
+
+Critères d'évaluation (poids) :
+- Pertinence sectorielle (25%) : le secteur du lead correspond-il à la cible idéale ?
+- Taille et potentiel estimé (20%) : indices sur la taille de l'entreprise, les ressources
+- Signal d'intention (30%) : le contexte indique-t-il un besoin actif ou une opportunité imminente ?
+- Qualité du contact (25%) : est-ce un décideur ? Les infos sont-elles complètes ?
 
 Réponds uniquement en JSON valide avec ce format exact :
 {
-  "score": <nombre entre 1 et 10>,
-  "label": "<Froid|Tiède|Chaud|Brûlant>",
-  "reasoning": "<justification en moins de 50 mots>",
-  "recommended_action": "<action recommandée courte>"
+  "score": <entier entre 0 et 100>,
+  "label": "<froid|tiède|chaud|brûlant>",
+  "reasoning": "<justification factuelle en 2-3 phrases max>",
+  "next_action": "<action concrète recommandée, ex: Envoyer un email de qualification, Appeler dans les 24h, Ajouter en liste d'attente>"
 }`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiRes = await fetch(LOVABLE_AI_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(20000),
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: AI_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.3,
+        temperature: 0.25,
+        max_tokens: 400,
       }),
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    if (!aiRes.ok) {
+      if (aiRes.status === 429) {
         return new Response(
           JSON.stringify({ error: "Limite de requêtes atteinte. Réessayez dans quelques instants." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      if (response.status === 402) {
+      if (aiRes.status === 402) {
         return new Response(
           JSON.stringify({ error: "Crédits IA insuffisants. Contactez le support." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      throw new Error(`AI gateway error ${response.status}`);
+      const errText = await aiRes.text().catch(() => "");
+      console.error("[ai-lead-scoring] AI gateway error:", aiRes.status, errText);
+      throw new Error(`AI gateway error ${aiRes.status}`);
     }
 
-    const aiData = await response.json();
+    const aiData = await aiRes.json();
     const rawContent: string = aiData.choices?.[0]?.message?.content ?? "";
 
-    const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+    const jsonMatch =
+      rawContent.match(/```json\s*([\s\S]*?)```/) ??
+      rawContent.match(/(\{[\s\S]*\})/);
     if (!jsonMatch) throw new Error("Impossible d'extraire le JSON de la réponse IA.");
 
-    const scoring = JSON.parse(jsonMatch[0]);
+    const scoring = JSON.parse(jsonMatch[1] ?? jsonMatch[0]);
 
-    const score = Math.min(10, Math.max(1, Math.round(Number(scoring.score) || 1)));
-    const label = ["Froid", "Tiède", "Chaud", "Brûlant"].includes(scoring.label)
-      ? scoring.label
-      : score <= 3 ? "Froid" : score <= 5 ? "Tiède" : score <= 7 ? "Chaud" : "Brûlant";
+    const score = normalizeScore(scoring.score);
+    const VALID_LABELS = ["froid", "tiède", "chaud", "brûlant"];
+    const label = VALID_LABELS.includes(String(scoring.label).toLowerCase())
+      ? String(scoring.label).toLowerCase()
+      : scoreToLabel(score);
 
     const result = {
       score,
       label,
-      reasoning: String(scoring.reasoning ?? "").slice(0, 300),
-      recommended_action: String(scoring.recommended_action ?? ""),
+      reasoning: String(scoring.reasoning ?? "").slice(0, 400),
+      next_action: String(scoring.next_action ?? scoring.recommended_action ?? "").slice(0, 200),
     };
 
-    // If intake_id is provided, persist the score back to lead_intakes via service role
-    if (intake_id && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
-      const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    // ── Persist score + next_action back to lead_intakes ──────
+    if (intake_id) {
+      const adminClient = createClient(supabaseUrl, serviceKey);
       const { error: updateError } = await adminClient
         .from("lead_intakes")
         .update({
           ai_score: result.score,
           ai_label: result.label,
           ai_reasoning: result.reasoning,
+          next_best_action: result.next_action,
           ai_scored_at: new Date().toISOString(),
         })
         .eq("id", intake_id);
 
       if (updateError) {
-        console.error("Failed to persist AI score:", updateError.message);
-        // Non-fatal — still return the score
+        console.error("[ai-lead-scoring] Failed to persist score:", updateError.message);
       }
     }
 
@@ -136,10 +195,10 @@ Réponds uniquement en JSON valide avec ce format exact :
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("ai-lead-scoring error:", err);
+    console.error("[ai-lead-scoring] error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Erreur inconnue" }),
-      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

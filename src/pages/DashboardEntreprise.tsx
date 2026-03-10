@@ -82,6 +82,7 @@ export default function DashboardEntreprise() {
   const [latestBrief, setLatestBrief]   = useState<OpenClawBrief | null>(null);
   const [aiRecoCount, setAiRecoCount]   = useState(0);
   const [gainsCount, setGainsCount]     = useState(0);
+  const [leadsCount, setLeadsCount]     = useState(0);
   const [loading, setLoading]           = useState(true);
 
   const prenom = profile?.prenom || "vous";
@@ -114,7 +115,7 @@ export default function DashboardEntreprise() {
             (m: { id: string }) => m.id
           ) || [];
 
-        const [missionsRes, introsRes, briefRes, aiRecoRes, gainsRes] = await Promise.all([
+        const [missionsRes, introsRes, briefRes, aiRecoRes, gainsRes, leadsRes] = await Promise.all([
           // 3 dernières missions
           db.from("missions")
             .select("id, titre, statut")
@@ -150,6 +151,13 @@ export default function DashboardEntreprise() {
             .select("id", { count: "exact", head: true })
             .eq("facilitateur_id", user.id)
             .in("statut", ["valide", "recu"]),
+
+          // Leads à traiter (lead_intakes non dupliqués, non traités)
+          db.from("lead_intakes")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .neq("dedup_status", "confirmed_duplicate")
+            .in("qualification_status", ["pending_review", "ready_for_action"]),
         ]);
 
         setMissions(missionsRes.data || []);
@@ -157,6 +165,7 @@ export default function DashboardEntreprise() {
         setLatestBrief((briefRes.data as OpenClawBrief[] | null)?.[0] ?? null);
         setAiRecoCount(aiRecoRes.count ?? 0);
         setGainsCount(gainsRes.count ?? 0);
+        setLeadsCount(leadsRes.count ?? 0);
       } catch {
         // silent fail — dashboard must always render
       } finally {
@@ -205,7 +214,7 @@ export default function DashboardEntreprise() {
           </div>
 
           {/* Compteurs pipeline cliquables */}
-          <div className="relative z-10 mt-4 grid grid-cols-4 gap-2">
+          <div className="relative z-10 mt-4 grid grid-cols-5 gap-2">
             <Link to="/missions" className="text-center py-2.5 px-2 rounded-xl hover:opacity-80 transition-opacity" style={{ background: "hsl(218 40% 16% / 0.6)" }}>
               <Briefcase size={12} className="mx-auto mb-1 text-white/40" />
               <p className="font-bold text-white text-lg leading-none">{loading ? "…" : missions.length}</p>
@@ -225,6 +234,23 @@ export default function DashboardEntreprise() {
               <Zap size={12} className="mx-auto mb-1 text-white/40" />
               <p className="font-bold text-white text-lg leading-none">{loading ? "…" : topActions.length}</p>
               <p className="text-white/40 text-xs mt-0.5">Actions IA</p>
+            </Link>
+            {/* Leads à traiter */}
+            <Link
+              to="/pilotage"
+              className="text-center py-2.5 px-2 rounded-xl hover:opacity-80 transition-opacity relative"
+              style={{ background: leadsCount > 0 ? "hsl(38 90% 20% / 0.6)" : "hsl(218 40% 16% / 0.6)" }}
+            >
+              <Sparkles size={12} className="mx-auto mb-1" style={{ color: leadsCount > 0 ? "hsl(38 90% 65%)" : "hsl(218 0% 55% / 0.4)" }} />
+              <p className="font-bold text-lg leading-none" style={{ color: leadsCount > 0 ? "hsl(38 90% 70%)" : "white" }}>
+                {loading ? "…" : leadsCount}
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: leadsCount > 0 ? "hsl(38 90% 60%)" : "hsl(218 0% 60% / 0.4)" }}>
+                Leads
+              </p>
+              {leadsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse" style={{ background: "hsl(38 90% 55%)" }} />
+              )}
             </Link>
           </div>
 
