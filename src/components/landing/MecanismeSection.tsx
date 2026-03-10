@@ -65,7 +65,7 @@ export default function MecanismeSection() {
                     style={{ background: "hsl(218 72% 55%)" }}
                     aria-hidden="true"
                   />
-                  <span className="text-sm text-white/80">{item}</span>
+                  <span className="text-sm text-white/85">{item}</span>
                 </li>
               ))}
             </ul>
