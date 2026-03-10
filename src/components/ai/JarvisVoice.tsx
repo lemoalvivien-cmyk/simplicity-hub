@@ -69,7 +69,8 @@ export default function JarvisVoice({ onTranscript, lastJarvisText, autoSpeak }:
   const [speaking, setSpeaking] = useState(false);
   const [ttsMode, setTtsMode] = useState<VoiceTTSMode>("loading");
   const [supported, setSupported] = useState(true);
-  const recognitionRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
   const lastSpokenRef = useRef<string>("");
 
   // ── Detect TTS capability ────────────────────────────────────────────────────
