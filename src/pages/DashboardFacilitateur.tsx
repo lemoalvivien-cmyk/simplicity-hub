@@ -173,11 +173,8 @@ export default function DashboardFacilitateur() {
           </div>
         )}
 
-        <PassiveCoachBanner />
         <OpenClawBrainWidget variant="facilitateur" />
-        {!isLaunchMode && <BestOfferToPush compact />}
         {!isLaunchMode && <BestAccessPanel title="Meilleur accès réseau" context={{ limit: 3 }} compact showAlternatives={false} />}
-        {!isLaunchMode && <NetworkValueMap />}
         {!loading && stepsCompleted < 4 && <FirstIntroChecklist />}
 
         {/* ── VALIDATION REQUESTS ───────────────────────────── */}
