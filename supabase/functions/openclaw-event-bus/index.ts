@@ -9,11 +9,7 @@
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 interface BusEvent {
   event_type: string;
@@ -97,6 +93,7 @@ const EVENT_JOB_MAP: Record<string, Array<{
 const BROADCAST_EVENTS = new Set(["daily_sweep", "weekly_sweep"]);
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

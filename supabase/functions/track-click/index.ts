@@ -10,11 +10,7 @@
  *  - Structured logs on all paths
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 // ── Input validation constants ────────────────────────────────────────────────
 const CODE_MAX_LENGTH = 64;
@@ -46,6 +42,7 @@ const log = (level: "info" | "warn" | "error", step: string, detail?: unknown) =
 const QUALIFIED_INTEREST_THRESHOLD = 3;
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
