@@ -8,11 +8,7 @@
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 // ── Channel capability matrix (honest) ─────────────────────────
 const CHANNEL_MATRIX: Record<string, { can_send: boolean; mode: string }> = {

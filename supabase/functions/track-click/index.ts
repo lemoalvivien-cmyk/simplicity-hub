@@ -10,11 +10,7 @@
  *  - Structured logs on all paths
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 // ── Input validation constants ────────────────────────────────────────────────
 const CODE_MAX_LENGTH = 64;
