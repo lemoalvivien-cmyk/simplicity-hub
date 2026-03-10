@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import PublicNav from "@/components/layout/PublicNav";
 import { Eye, EyeOff, CheckCircle2, Zap, AlertCircle, Loader2, Mail } from "lucide-react";
+import PublicNav from "@/components/layout/PublicNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackEvent } from "@/lib/analytics";
 
@@ -10,6 +10,8 @@ export default function Signup() {
   const [prenom, setPrenom] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [entreprise, setEntreprise] = useState("");
+  const [poste, setPoste] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -24,7 +26,6 @@ export default function Signup() {
       return;
     }
 
-    // PROOF: signup_started → analytics_events (real write on form submit)
     trackEvent("signup_started", null, { source: "signup_form" });
     setLoading(true);
     const { error: authError } = await signUp(email, password, prenom);
@@ -42,11 +43,13 @@ export default function Signup() {
       return;
     }
 
-    // Show "check your email" — do NOT auto-redirect before email confirmation
+    // Store optional fields in sessionStorage for Onboarding to pick up
+    if (entreprise.trim()) sessionStorage.setItem("signup_entreprise", entreprise.trim());
+    if (poste.trim()) sessionStorage.setItem("signup_poste", poste.trim());
+
     setSuccess(true);
   };
 
-  // ── Success state: check your inbox ──
   if (success) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -79,10 +82,7 @@ export default function Signup() {
             </div>
             <p className="text-xs text-muted-foreground">
               Pas reçu ?{" "}
-              <button
-                onClick={() => setSuccess(false)}
-                className="text-primary underline hover:no-underline"
-              >
+              <button onClick={() => setSuccess(false)} className="text-primary underline hover:no-underline">
                 Renvoyer ou modifier l'e-mail
               </button>
             </p>
@@ -99,16 +99,12 @@ export default function Signup() {
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
-              style={{ background: "var(--gradient-electric)" }}
-            >
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
+              style={{ background: "var(--gradient-electric)" }}>
               <Zap size={20} className="text-white" strokeWidth={2.5} />
             </div>
             <h1 className="font-display text-2xl font-bold text-foreground">Créer mon compte</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Prêt en 2 minutes. Vraiment.
-            </p>
+            <p className="text-muted-foreground text-sm mt-1">Prêt en 2 minutes. Vraiment.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="card-surface p-6 space-y-4">
@@ -120,55 +116,43 @@ export default function Signup() {
             )}
 
             <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">
-                Votre prénom
-              </label>
-              <input
-                type="text"
-                placeholder="Marie"
-                value={prenom}
-                onChange={(e) => setPrenom(e.target.value)}
-                required
-                autoComplete="given-name"
-                className="input-premium"
-              />
+              <label className="text-sm font-medium text-foreground block mb-1.5">Votre prénom</label>
+              <input type="text" placeholder="Marie" value={prenom}
+                onChange={(e) => setPrenom(e.target.value)} required autoComplete="given-name"
+                className="input-premium" />
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">
-                Adresse e-mail
-              </label>
-              <input
-                type="email"
-                placeholder="vous@exemple.fr"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                className="input-premium"
-              />
+              <label className="text-sm font-medium text-foreground block mb-1.5">Adresse e-mail</label>
+              <input type="email" placeholder="vous@exemple.fr" value={email}
+                onChange={(e) => setEmail(e.target.value)} required autoComplete="email"
+                className="input-premium" />
+            </div>
+
+            {/* Optional qualification fields — low friction, discrete */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Entreprise <span className="opacity-60">(optionnel)</span></label>
+                <input type="text" placeholder="Nom de votre entreprise" value={entreprise}
+                  onChange={(e) => setEntreprise(e.target.value)} autoComplete="organization"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition placeholder:text-muted-foreground/60" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Poste <span className="opacity-60">(optionnel)</span></label>
+                <input type="text" placeholder="Votre fonction" value={poste}
+                  onChange={(e) => setPoste(e.target.value)} autoComplete="organization-title"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition placeholder:text-muted-foreground/60" />
+              </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-foreground block mb-1.5">
-                Mot de passe
-              </label>
+              <label className="text-sm font-medium text-foreground block mb-1.5">Mot de passe</label>
               <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="8 caractères minimum"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  className="input-premium pr-11"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <input type={showPassword ? "text" : "password"} placeholder="8 caractères minimum"
+                  value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8}
+                  autoComplete="new-password" className="input-premium pr-11" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
@@ -179,19 +163,9 @@ export default function Signup() {
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-cta block text-center w-full py-3 text-sm disabled:opacity-60 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={15} className="animate-spin" />
-                  Création…
-                </>
-              ) : (
-                "Créer mon compte →"
-              )}
+            <button type="submit" disabled={loading}
+              className="btn-cta block text-center w-full py-3 text-sm disabled:opacity-60 flex items-center justify-center gap-2">
+              {loading ? <><Loader2 size={15} className="animate-spin" /> Création…</> : "Créer mon compte →"}
             </button>
 
             <p className="text-xs text-muted-foreground text-center leading-relaxed">
@@ -216,9 +190,7 @@ export default function Signup() {
 
           <p className="text-center text-sm text-muted-foreground mt-5">
             Déjà un compte ?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">
-              Se connecter
-            </Link>
+            <Link to="/login" className="text-primary font-medium hover:underline">Se connecter</Link>
           </p>
         </div>
       </div>
