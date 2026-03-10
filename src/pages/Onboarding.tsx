@@ -62,6 +62,10 @@ export default function Onboarding() {
       // PROOF: onboarding_done → analytics_events (real write)
       trackEvent("onboarding_done", user.id, { role: role ?? "unknown" });
       await refreshProfile();
+      // Trigger welcome_scan — fire & forget, non-blocking
+      supabase.functions.invoke("openclaw-scheduler", {
+        body: { tick_type: "welcome_scan", user_id: user.id },
+      }).catch(() => {});
       setDone(true);
     } catch {
       toast.error(t("onboarding_saving_error"));
