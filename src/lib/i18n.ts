@@ -1104,7 +1104,7 @@ const resources = {
       checkout_features_5: "Piloting & reports",
       checkout_features_6: "Priority support",
       checkout_pay_launch: "Pay €99 / year",
-      checkout_pay_standard: "Pay €490 / year",
+      checkout_pay_standard: "Start now — €99 / year",
       checkout_secure_stripe: "Secure payment by Stripe · Invoice included",
       checkout_facilitator_link: "Business introducer?",
       checkout_facilitator_free: "Free access here →",
