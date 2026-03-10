@@ -1794,6 +1794,47 @@ export type Database = {
         }
         Relationships: []
       }
+      mission_matches: {
+        Row: {
+          compatibility_score: number
+          created_at: string
+          facilitateur_id: string
+          id: string
+          mission_id: string
+          reasoning: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          compatibility_score?: number
+          created_at?: string
+          facilitateur_id: string
+          id?: string
+          mission_id: string
+          reasoning?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          compatibility_score?: number
+          created_at?: string
+          facilitateur_id?: string
+          id?: string
+          mission_id?: string
+          reasoning?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_matches_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       missions: {
         Row: {
           created_at: string
@@ -1833,6 +1874,39 @@ export type Database = {
           type_client_recherche?: string | null
           updated_at?: string
           zone?: string | null
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          href: string | null
+          id: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          href?: string | null
+          id?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
