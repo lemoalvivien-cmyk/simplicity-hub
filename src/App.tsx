@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import InstallBanner from "@/components/pwa/InstallBanner";
+import { usePageTracking } from "@/lib/analytics";
 
 import Pilotage from "./pages/Pilotage";
 
