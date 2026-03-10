@@ -67,7 +67,8 @@ export default function Checkout() {
   }, [searchParams, refresh, user?.id]);
 
   const effectiveLaunchAvailable = user ? launchAvailable : localLaunchAvailable;
-  const effectiveSlotsRemaining = user ? launchSlotsRemaining : localSlotsRemaining;
+  const effectiveSlotsRemaining: number | null = user ? launchSlotsRemaining : localSlotsRemaining;
+  const showSlotCounter = !quotaLoading && !quotaError && effectiveSlotsRemaining !== null && effectiveLaunchAvailable;
 
   const checkPromo = async () => {
     if (!promoCode.trim()) return;
