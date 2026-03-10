@@ -49,6 +49,7 @@ export default function Missions() {
 
   return (
     <UserLayout>
+      <PageTitle title="Missions disponibles" />
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">

@@ -88,6 +88,7 @@ export default function Gains() {
 
   return (
     <UserLayout>
+      <PageTitle title="Mes gains" />
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
           <h1 className="font-display text-2xl font-bold text-foreground mb-1">Mes gains</h1>
