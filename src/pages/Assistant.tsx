@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import UserLayout from "@/components/layout/UserLayout";
-import { Send, Sparkles, User, Loader2, RefreshCw, ChevronRight } from "lucide-react";
-import { askAI, JARVIS_QUICK_QUESTIONS, AiResponse } from "@/lib/aiService";
+import { Send, Sparkles, User, Loader2, RefreshCw, ChevronRight, Zap } from "lucide-react";
+import { askAI, JARVIS_QUICK_QUESTIONS, AiResponse, ChatHistoryMessage } from "@/lib/aiService";
 import { useNavigate } from "react-router-dom";
 
 type Message = {
@@ -9,8 +9,12 @@ type Message = {
   role: "user" | "assistant";
   content: string;
   action?: AiResponse["action"];
+  suggested_actions?: Array<{ label: string; href: string }>;
+  source?: AiResponse["source"];
   timestamp: Date;
 };
+
+const MAX_HISTORY = 20;
 
 export default function Assistant() {
   const navigate = useNavigate();
@@ -18,7 +22,7 @@ export default function Assistant() {
     {
       id: 0,
       role: "assistant",
-      content: "Bonjour ! Je suis JARVIS, votre assistant business. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
+      content: "Bonjour ! Je suis JARVIS, votre assistant business IA. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
       timestamp: new Date(),
     },
   ]);
@@ -40,14 +44,25 @@ export default function Assistant() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => {
+      const next = [...prev, userMsg];
+      // Keep max 20 messages (excluding initial greeting)
+      return next.length > MAX_HISTORY + 1 ? [next[0], ...next.slice(-(MAX_HISTORY))] : next;
+    });
     setInput("");
     setLoading(true);
+
+    // Build conversation history for AI (last 10 messages)
+    const history: ChatHistoryMessage[] = messages.slice(-10).map((m) => ({
+      role: m.role === "user" ? "user" : "assistant",
+      content: m.content,
+    }));
 
     const res = await askAI({
       role: "jarvis",
       context: "dashboard",
       input: text,
+      history,
     });
 
     const reply: Message = {
@@ -55,6 +70,8 @@ export default function Assistant() {
       role: "assistant",
       content: res.text,
       action: res.action,
+      suggested_actions: res.suggested_actions,
+      source: res.source,
       timestamp: new Date(),
     };
 
@@ -62,20 +79,17 @@ export default function Assistant() {
     setLoading(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    send(input);
-  };
-
   const reset = () => {
     setMessages([{
       id: 0,
       role: "assistant",
-      content: "Bonjour ! Je suis JARVIS, votre assistant business. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
+      content: "Bonjour ! Je suis JARVIS, votre assistant business IA. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
       timestamp: new Date(),
     }]);
     setInput("");
   };
+
+  const aiMessagesCount = messages.filter(m => m.role === "assistant" && m.source === "model_strong").length;
 
   return (
     <UserLayout jarvisContext="dashboard">
@@ -90,8 +104,15 @@ export default function Assistant() {
               <Sparkles size={20} style={{ color: "hsl(var(--primary-foreground))" }} />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-bold text-foreground">JARVIS</h1>
-              <p className="text-sm text-muted-foreground">Votre assistant business — répond en quelques secondes.</p>
+              <div className="flex items-center gap-2">
+                <h1 className="font-display text-2xl font-bold text-foreground">JARVIS</h1>
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">
+                  <Zap size={9} /> IA
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Assistant business — {messages.length - 1} message{messages.length > 2 ? "s" : ""} · {aiMessagesCount} réponse{aiMessagesCount > 1 ? "s" : ""} IA
+              </p>
             </div>
           </div>
           <button
@@ -113,9 +134,7 @@ export default function Assistant() {
                 className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
               >
                 <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                    msg.role === "assistant" ? "" : "bg-muted"
-                  }`}
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${msg.role === "assistant" ? "" : "bg-muted"}`}
                   style={msg.role === "assistant" ? { background: "var(--gradient-primary)" } : {}}
                 >
                   {msg.role === "assistant"
@@ -123,7 +142,15 @@ export default function Assistant() {
                     : <User size={14} className="text-muted-foreground" />
                   }
                 </div>
-                <div className="max-w-[78%] space-y-2">
+                <div className="max-w-[78%] space-y-1.5">
+                  {/* AI source badge */}
+                  {msg.role === "assistant" && msg.source === "model_strong" && (
+                    <div className="flex items-center gap-1">
+                      <Zap size={10} className="text-violet-500" />
+                      <span className="text-[10px] font-semibold text-violet-500 uppercase tracking-wide">Réponse IA</span>
+                    </div>
+                  )}
+
                   <div
                     className="px-4 py-3 text-sm leading-relaxed"
                     style={{
@@ -143,35 +170,48 @@ export default function Assistant() {
                       );
                     })}
                   </div>
-                  {msg.action && (
+
+                  {/* Legacy single action */}
+                  {msg.action && !msg.suggested_actions?.length && (
                     <button
                       onClick={() => msg.action?.href && navigate(msg.action.href)}
                       className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
-                      style={{
-                        background: "hsl(var(--secondary))",
-                        color: "hsl(var(--primary))",
-                        border: "1px solid hsl(var(--border))",
-                      }}
+                      style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))", border: "1px solid hsl(var(--border))" }}
                     >
                       {msg.action.label} <ChevronRight size={12} />
                     </button>
                   )}
+
+                  {/* Suggested actions from AI */}
+                  {msg.suggested_actions && msg.suggested_actions.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-0.5">
+                      {msg.suggested_actions.map((sa) => (
+                        <button
+                          key={sa.href}
+                          onClick={() => navigate(sa.href)}
+                          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl transition-colors"
+                          style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))", border: "1px solid hsl(var(--border))" }}
+                        >
+                          {sa.label} <ChevronRight size={11} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Timestamp */}
+                  <p className="text-[10px] text-muted-foreground pl-1">
+                    {msg.timestamp.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
                 </div>
               </div>
             ))}
 
             {loading && (
               <div className="flex gap-3 flex-row">
-                <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
                   <Sparkles size={14} style={{ color: "hsl(var(--primary-foreground))" }} />
                 </div>
-                <div
-                  className="px-4 py-3 flex items-center gap-2"
-                  style={{ background: "hsl(var(--muted))", borderRadius: "1rem 1rem 1rem 0.25rem" }}
-                >
+                <div className="px-4 py-3 flex items-center gap-2" style={{ background: "hsl(var(--muted))", borderRadius: "1rem 1rem 1rem 0.25rem" }}>
                   <Loader2 size={14} className="animate-spin text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Je réfléchis…</span>
                 </div>
@@ -181,9 +221,9 @@ export default function Assistant() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Quick questions */}
-          {messages.length <= 1 && (
-            <div className="px-5 pb-3 space-y-2">
+          {/* Quick questions — always visible when history is short */}
+          {messages.length <= 2 && !loading && (
+            <div className="px-5 pb-3 space-y-2 border-t border-border pt-3">
               <p className="text-xs text-muted-foreground">Questions fréquentes :</p>
               <div className="flex flex-wrap gap-2">
                 {JARVIS_QUICK_QUESTIONS.map((q) => (
@@ -201,13 +241,14 @@ export default function Assistant() {
 
           {/* Input */}
           <div className="border-t border-border p-4">
-            <form onSubmit={handleSubmit} className="flex gap-2">
+            <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="flex gap-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Posez votre question…"
                 className="flex-1 px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 transition-shadow"
+                autoFocus
               />
               <button
                 type="submit"

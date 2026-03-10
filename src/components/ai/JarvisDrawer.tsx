@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Sparkles, Send, ChevronRight, Loader2, RotateCcw } from "lucide-react";
-import { askAI, AiResponse, JARVIS_QUICK_QUESTIONS, CopilotContext } from "@/lib/aiService";
+import { X, Sparkles, Send, ChevronRight, Loader2, RotateCcw, Zap } from "lucide-react";
+import { askAI, AiResponse, JARVIS_QUICK_QUESTIONS, CopilotContext, ChatHistoryMessage } from "@/lib/aiService";
 import { useNavigate } from "react-router-dom";
 
 interface Message {
@@ -8,6 +8,8 @@ interface Message {
   role: "user" | "jarvis";
   text: string;
   action?: AiResponse["action"];
+  suggested_actions?: Array<{ label: string; href: string }>;
+  source?: AiResponse["source"];
 }
 
 interface JarvisDrawerProps {
@@ -42,13 +44,21 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
     setInput("");
     setLoading(true);
 
-    const res = await askAI({ role: "jarvis", context, input: text, userRole });
+    // Build history from last 5 jarvis<->user exchanges
+    const history: ChatHistoryMessage[] = messages.slice(-10).map((m) => ({
+      role: m.role === "user" ? "user" : "assistant",
+      content: m.text,
+    }));
+
+    const res = await askAI({ role: "jarvis", context, input: text, userRole, history });
 
     const jarvisMsg: Message = {
       id: Date.now() + 1,
       role: "jarvis",
       text: res.text,
       action: res.action,
+      suggested_actions: res.suggested_actions,
+      source: res.source,
     };
     setMessages((prev) => [...prev, jarvisMsg]);
     setLoading(false);
@@ -67,10 +77,7 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm" onClick={onClose} />
 
       {/* Drawer */}
       <div
@@ -99,7 +106,7 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
             </div>
             <div>
               <p className="font-semibold text-foreground text-sm leading-none">JARVIS</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Assistant business</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Assistant business IA</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -131,23 +138,23 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
                   <Sparkles size={12} style={{ color: "hsl(var(--primary-foreground))" }} />
                 </div>
               )}
-              <div className="max-w-[82%] space-y-2">
+              <div className="max-w-[82%] space-y-1.5">
+                {/* AI badge */}
+                {msg.role === "jarvis" && msg.source === "model_strong" && (
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <Zap size={10} className="text-violet-500" />
+                    <span className="text-[10px] font-semibold text-violet-500 uppercase tracking-wide">IA</span>
+                  </div>
+                )}
                 <div
                   className="px-4 py-3 rounded-2xl text-sm leading-relaxed"
                   style={{
-                    background: msg.role === "user"
-                      ? "hsl(var(--primary))"
-                      : "hsl(var(--muted))",
-                    color: msg.role === "user"
-                      ? "hsl(var(--primary-foreground))"
-                      : "hsl(var(--foreground))",
-                    borderRadius: msg.role === "user"
-                      ? "1rem 1rem 0.25rem 1rem"
-                      : "1rem 1rem 1rem 0.25rem",
+                    background: msg.role === "user" ? "hsl(var(--primary))" : "hsl(var(--muted))",
+                    color: msg.role === "user" ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
+                    borderRadius: msg.role === "user" ? "1rem 1rem 0.25rem 1rem" : "1rem 1rem 1rem 0.25rem",
                   }}
                 >
                   {msg.text.split("\n").map((line, i) => {
-                    // Bold parsing **text**
                     const parts = line.split("**");
                     return (
                       <p key={i} className={i > 0 ? "mt-1" : ""}>
@@ -158,21 +165,32 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
                     );
                   })}
                 </div>
-                {msg.action && (
+
+                {/* Legacy single action */}
+                {msg.action && !msg.suggested_actions?.length && (
                   <button
-                    onClick={() => {
-                      if (msg.action?.href) navigate(msg.action.href);
-                      onClose();
-                    }}
+                    onClick={() => { if (msg.action?.href) navigate(msg.action.href); onClose(); }}
                     className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
-                    style={{
-                      background: "hsl(var(--secondary))",
-                      color: "hsl(var(--primary))",
-                      border: "1px solid hsl(var(--border))",
-                    }}
+                    style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))", border: "1px solid hsl(var(--border))" }}
                   >
                     {msg.action.label} <ChevronRight size={12} />
                   </button>
+                )}
+
+                {/* Suggested actions from AI */}
+                {msg.suggested_actions && msg.suggested_actions.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                    {msg.suggested_actions.map((sa) => (
+                      <button
+                        key={sa.href}
+                        onClick={() => { navigate(sa.href); onClose(); }}
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-xl transition-colors"
+                        style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))", border: "1px solid hsl(var(--border))" }}
+                      >
+                        {sa.label} <ChevronRight size={10} />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>
@@ -180,23 +198,17 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
 
           {loading && (
             <div className="flex gap-2.5">
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: "var(--gradient-primary)" }}
-              >
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
                 <Sparkles size={12} style={{ color: "hsl(var(--primary-foreground))" }} />
               </div>
-              <div
-                className="px-4 py-3 rounded-2xl flex items-center gap-2"
-                style={{ background: "hsl(var(--muted))", borderRadius: "1rem 1rem 1rem 0.25rem" }}
-              >
+              <div className="px-4 py-3 rounded-2xl flex items-center gap-2" style={{ background: "hsl(var(--muted))", borderRadius: "1rem 1rem 1rem 0.25rem" }}>
                 <Loader2 size={13} className="animate-spin text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Je réfléchis…</span>
               </div>
             </div>
           )}
 
-          {/* Questions rapides si pas encore de conversation */}
+          {/* Quick questions */}
           {messages.length === 1 && !loading && (
             <div className="pt-1">
               <p className="text-xs text-muted-foreground mb-2 pl-1">Questions fréquentes :</p>
@@ -219,10 +231,7 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
 
         {/* Input */}
         <div className="border-t border-border px-4 py-3 shrink-0">
-          <form
-            onSubmit={(e) => { e.preventDefault(); send(input); }}
-            className="flex gap-2"
-          >
+          <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="flex gap-2">
             <input
               type="text"
               value={input}
