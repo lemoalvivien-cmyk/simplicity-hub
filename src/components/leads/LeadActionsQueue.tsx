@@ -23,6 +23,7 @@ import {
 import { Link } from "react-router-dom";
 import { useLeadActions, type ActionType, type ActionStatus } from "@/hooks/useLeadActions";
 import { Skeleton } from "@/components/ui/skeleton";
+import AIScoreBadge from "@/components/leads/AIScoreBadge";
 
 // PROOF:EXECUTION_V1:action_queue_ui_real — action label map
 const ACTION_LABELS: Record<ActionType, string> = {
@@ -219,7 +220,7 @@ export default function LeadActionsQueue({
               </span>
 
               <div className="flex-1 min-w-0">
-                {/* Action label + priority badge */}
+                {/* Action label + priority badge + AI score */}
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <p className="text-xs font-semibold text-foreground">{label}</p>
                   {pCfg.label && (
@@ -236,6 +237,14 @@ export default function LeadActionsQueue({
                       En cours
                     </span>
                   )}
+                  {/* AI lead score badge */}
+                  <AIScoreBadge
+                    score={action.ai_score}
+                    label={action.ai_label}
+                    reasoning={action.ai_reasoning}
+                    size="sm"
+                    showReasoning
+                  />
                 </div>
 
                 {/* Context line: entity + source + status */}

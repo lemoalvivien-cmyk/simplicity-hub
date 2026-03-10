@@ -81,6 +81,11 @@ export interface LeadIntake {
   nba_context: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+  // AI scoring fields
+  ai_score: number | null;
+  ai_label: string | null;
+  ai_reasoning: string | null;
+  ai_scored_at: string | null;
 }
 
 export interface LeadAction {

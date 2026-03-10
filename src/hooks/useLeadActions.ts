@@ -43,6 +43,10 @@ export interface LeadAction {
   company_name?: string | null;
   source_type?: string | null;
   linked_opportunity_id?: string | null;
+  // AI scoring fields (joined from lead_intakes)
+  ai_score?: number | null;
+  ai_label?: string | null;
+  ai_reasoning?: string | null;
 }
 
 interface UseLeadActionsReturn {
@@ -80,7 +84,10 @@ export function useLeadActions(statusFilter: ActionStatus[] = ["open", "in_progr
             person_name,
             company_name,
             source_type,
-            linked_opportunity_id
+            linked_opportunity_id,
+            ai_score,
+            ai_label,
+            ai_reasoning
           )
         `)
         .eq("actor_user_id", user.id)
@@ -97,6 +104,9 @@ export function useLeadActions(statusFilter: ActionStatus[] = ["open", "in_progr
             company_name: intake?.company_name ?? null,
             source_type: intake?.source_type ?? null,
             linked_opportunity_id: intake?.linked_opportunity_id ?? null,
+            ai_score: intake?.ai_score ?? null,
+            ai_label: intake?.ai_label ?? null,
+            ai_reasoning: intake?.ai_reasoning ?? null,
           } as LeadAction;
         });
         setActions(mapped);
