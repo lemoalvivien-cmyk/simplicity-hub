@@ -1,15 +1,9 @@
-/**
- * BestAccessPanel — Shows the best facilitator paths for a given context
- * Embeddable in dashboards, radar, facilitateur pages
- * Fully internationalized with useTranslation
- */
 import { useState, useEffect } from "react";
 import { useGraphEngine, BestPath, PathContext } from "@/hooks/useGraphEngine";
 import {
   Sparkles, ArrowRight, Shield, TrendingUp, Globe, Zap,
   Loader2, ChevronRight, Star, Users
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 interface Props {
   context?: PathContext;
@@ -37,6 +31,8 @@ function ScorePill({ score, label }: { score: number; label: string }) {
   );
 }
 
+void ScorePill;
+
 function ScoreBar({ value, color = "hsl(var(--primary))" }: { value: number; color?: string }) {
   return (
     <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
@@ -59,7 +55,6 @@ const DIMENSION_COLORS: Record<string, string> = {
 export default function BestAccessPanel({ context = {}, title, showAlternatives = true, compact = false, onSelectPath }: Props) {
   const { loading, paths, findBestPaths } = useGraphEngine();
   const [expanded, setExpanded] = useState<string | null>(null);
-  const { t } = useTranslation();
 
   useEffect(() => {
     findBestPaths({ ...context, limit: compact ? 3 : 5 });
@@ -72,7 +67,7 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
     return (
       <div className="card-surface p-5 flex items-center gap-3">
         <Loader2 size={16} className="animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">{t("best_path_loading")}</p>
+        <p className="text-sm text-muted-foreground">Calcul du meilleur accès…</p>
       </div>
     );
   }
@@ -83,22 +78,22 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
         <div className="flex items-center gap-2 mb-2">
           <Sparkles size={14} className="text-primary" />
           <h3 className="text-sm font-semibold text-foreground">
-            {title || t("best_path_title")}
+            {title || "Meilleur accès réseau"}
           </h3>
         </div>
         <p className="text-xs text-muted-foreground">
-          {t("best_path_empty")}
+          Aucun facilitateur trouvé pour ce contexte.
         </p>
       </div>
     );
   }
 
   const dimensions = [
-    { key: "trust",      label: t("best_path_trust"),      value: best.trust_score,      icon: Shield },
-    { key: "conversion", label: t("best_path_conversion"),  value: best.conversion_score, icon: TrendingUp },
-    { key: "corridor",   label: t("best_path_corridor"),    value: best.corridor_score,   icon: Globe },
-    { key: "language",   label: t("best_path_language"),    value: best.language_score,   icon: Users },
-    { key: "sector",     label: t("best_path_sector"),      value: best.sector_score,     icon: Star },
+    { key: "trust",      label: "Confiance",   value: best.trust_score,      icon: Shield },
+    { key: "conversion", label: "Conversion",  value: best.conversion_score, icon: TrendingUp },
+    { key: "corridor",   label: "Corridor",    value: best.corridor_score,   icon: Globe },
+    { key: "language",   label: "Langue",      value: best.language_score,   icon: Users },
+    { key: "sector",     label: "Secteur",     value: best.sector_score,     icon: Star },
   ];
 
   return (
@@ -114,10 +109,10 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
           </div>
           <div className="flex-1">
             <h3 className="text-sm font-semibold text-foreground">
-              {title || t("best_path_title")}
+              {title || "Meilleur accès réseau"}
             </h3>
             <p className="text-xs text-muted-foreground">
-              {paths.length} facilitateur{paths.length > 1 ? "s" : ""} · {t("best_path_engine_label")}
+              {paths.length} facilitateur{paths.length > 1 ? "s" : ""} · Score IA
             </p>
           </div>
         </div>
@@ -132,7 +127,6 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
         }}
       >
         <div className="flex items-start gap-3">
-          {/* Avatar */}
           <div
             className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 font-bold text-white text-lg"
             style={{ background: "var(--gradient-primary)" }}
@@ -150,14 +144,13 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
                   color: best.global_score >= 70 ? "hsl(142 50% 30%)" : "hsl(var(--muted-foreground))",
                 }}
               >
-                {t("best_path_recommended")}
+                Recommandé
               </span>
             </div>
 
-            {/* Score bar */}
             <div className="mt-2 mb-2">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-muted-foreground">{t("best_path_global_score")}</span>
+                <span className="text-xs text-muted-foreground">Score global</span>
                 <span className="text-xs font-bold" style={{ color: "hsl(var(--primary))" }}>
                   {best.global_score}/100 — {best.confidence_label}
                 </span>
@@ -168,7 +161,6 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
               />
             </div>
 
-            {/* Explanation pills */}
             {best.explanation.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {best.explanation.slice(0, 3).map((e, i) => (
@@ -179,7 +171,6 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
               </div>
             )}
 
-            {/* Next action */}
             <div className="mt-2 flex items-center gap-1.5">
               <Zap size={11} style={{ color: "hsl(var(--primary))" }} />
               <span className="text-xs font-semibold" style={{ color: "hsl(var(--primary))" }}>
@@ -195,7 +186,6 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
           />
         </div>
 
-        {/* Expanded dimension scores */}
         {expanded === best.facilitator_id && !compact && (
           <div className="mt-4 pt-4 border-t space-y-2.5" style={{ borderColor: "hsl(var(--border))" }}>
             {dimensions.map(({ key, label, value, icon: Icon }) => (
@@ -212,21 +202,19 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
             ))}
             {best.total_intros > 0 && (
               <p className="text-xs text-muted-foreground pt-1">
-                {best.intros_validees} {t("best_path_intros_validated")} {best.total_intros} · {
-                  best.revenue > 0 ? t("best_path_gains") : t("best_path_no_gains")
-                }
+                {best.intros_validees} intros validées sur {best.total_intros} ·{" "}
+                {best.revenue > 0 ? `${best.revenue} € générés` : "Aucun gain enregistré"}
               </p>
             )}
           </div>
         )}
       </div>
 
-      {/* Alternatives */}
       {showAlternatives && alternatives.length > 0 && (
         <div className="border-t" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="p-3 pb-1">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              {t("best_path_alternatives")}
+              Autres options
             </p>
           </div>
           {alternatives.slice(0, compact ? 2 : 3).map(alt => (
@@ -236,10 +224,10 @@ export default function BestAccessPanel({ context = {}, title, showAlternatives 
               onClick={() => onSelectPath?.(alt)}
             >
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold text-sm text-white"
-                style={{ background: "hsl(var(--muted))" }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold text-sm"
+                style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
               >
-                <span style={{ color: "hsl(var(--foreground))" }}>{alt.facilitator_name.charAt(0)}</span>
+                {alt.facilitator_name.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
