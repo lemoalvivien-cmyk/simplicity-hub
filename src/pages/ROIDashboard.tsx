@@ -1,14 +1,25 @@
 /**
  * ROI Dashboard Entreprise — PROOF:ROI_DASHBOARD_V1:enterprise_roi_real
- * Reads from: missions, introductions, gains — for the logged-in entreprise user.
+ * Reads from: missions, introductions, gains, contacts, openclaw_scheduler_heartbeats
  * Zero hardcode. All metrics calculated from DB.
+ * Monthly evolution chart with Recharts (last 6 months).
  */
 import { useEffect, useState } from "react";
 import UserLayout from "@/components/layout/UserLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Target, Send, CheckCircle2, Euro, Clock, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
-import { formatDistanceToNow, differenceInDays, parseISO } from "date-fns";
+import {
+  Target, Send, CheckCircle2, Euro, Clock, TrendingUp, AlertCircle,
+  RefreshCw, Users, Zap, BarChart3, Heart
+} from "lucide-react";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, BarChart, Bar
+} from "recharts";
+import {
+  formatDistanceToNow, differenceInDays, parseISO,
+  subMonths, startOfMonth, endOfMonth, format
+} from "date-fns";
 import { fr } from "date-fns/locale";
 
 interface Mission {
@@ -33,6 +44,14 @@ interface Gain {
   created_at: string;
 }
 
+interface MonthlyPoint {
+  month: string;         // "Jan", "Fév" …
+  missions: number;
+  intros: number;
+  gains: number;
+  montant: number;
+}
+
 interface ROIMetrics {
   missionsCreees: number;
   introsRecues: number;
@@ -40,8 +59,12 @@ interface ROIMetrics {
   gainsGeneres: number;
   montantTotal: number;
   tauxValidation: number | null;
-  tempsMoyenPremierIntro: number | null;   // jours
-  tempsMoyenValidation: number | null;      // jours depuis soumission à validation
+  tempsMoyenPremierIntro: number | null;
+  tempsMoyenValidation: number | null;
+  contactsTotal: number;
+  openClawScore: number | null;
+  roi: number | null;           // (montantTotal / 99) * 100
+  coutParLead: number | null;   // 99 / introsRecues
 }
 
 function MetricCard({
@@ -50,22 +73,24 @@ function MetricCard({
   value,
   sub,
   accent = false,
+  highlight = false,
 }: {
   icon: typeof Target;
   label: string;
   value: string | number;
   sub?: string;
   accent?: boolean;
+  highlight?: boolean;
 }) {
   return (
-    <div className="stat-card">
+    <div className={`stat-card ${highlight ? "ring-2 ring-primary/30" : ""}`}>
       <div className="flex items-start gap-3">
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${accent ? "bg-primary/15" : "bg-muted"}`}>
           <Icon size={17} className={accent ? "text-primary" : "text-muted-foreground"} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs text-muted-foreground">{label}</p>
-          <p className={`font-display text-2xl font-bold mt-0.5 ${accent ? "text-primary" : "text-foreground"}`}>{value}</p>
+          <p className={`font-display text-2xl font-bold mt-0.5 ${highlight ? "text-success" : accent ? "text-primary" : "text-foreground"}`}>{value}</p>
           {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
         </div>
       </div>
@@ -73,10 +98,38 @@ function MetricCard({
   );
 }
 
+const MONTHS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+
+function buildMonthlyData(
+  missions: Mission[],
+  intros: Introduction[],
+  gains: Gain[]
+): MonthlyPoint[] {
+  const now = new Date();
+  return Array.from({ length: 6 }, (_, i) => {
+    const d = subMonths(now, 5 - i);
+    const start = startOfMonth(d);
+    const end = endOfMonth(d);
+    const inRange = (s: string) => {
+      const t = parseISO(s);
+      return t >= start && t <= end;
+    };
+    const monthGains = gains.filter(g => inRange(g.created_at));
+    return {
+      month: MONTHS_FR[d.getMonth()],
+      missions: missions.filter(m => inRange(m.created_at)).length,
+      intros: intros.filter(ii => inRange(ii.created_at)).length,
+      gains: monthGains.length,
+      montant: monthGains.reduce((s, g) => s + (g.montant ?? 0), 0),
+    };
+  });
+}
+
 export default function ROIDashboard() {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<ROIMetrics | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
+  const [monthly, setMonthly] = useState<MonthlyPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
@@ -86,11 +139,12 @@ export default function ROIDashboard() {
     setLoading(true);
     setError(null);
     try {
-      // PROOF:ROI_DASHBOARD_V1:reads_from_db — all queries target real tables
       const [
         { data: missionsData, error: mErr },
         { data: introsData, error: iErr },
         { data: gainsData, error: gErr },
+        { count: contactsCount },
+        { data: heartbeatData },
       ] = await Promise.all([
         supabase
           .from("missions")
@@ -107,6 +161,16 @@ export default function ROIDashboard() {
           .select("id, montant, statut, created_at")
           .eq("facilitateur_id", user.id)
           .in("statut", ["valide", "recu"]),
+        supabase
+          .from("contacts")
+          .select("id", { count: "exact", head: true })
+          .eq("owner_user_id", user.id),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("openclaw_scheduler_heartbeats") as any)
+          .select("health_score")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1),
       ]);
 
       if (mErr) throw mErr;
@@ -120,7 +184,6 @@ export default function ROIDashboard() {
       const introsValidees = is.filter(i => i.statut === "validee");
       const tauxValidation = is.length > 0 ? Math.round((introsValidees.length / is.length) * 100) : null;
 
-      // Time-to-first-intro: for each mission, days between mission.created_at and first intro.created_at
       const ttfis: number[] = ms.map(m => {
         const firstIntro = is
           .filter(i => i.mission_id === m.id)
@@ -132,7 +195,6 @@ export default function ROIDashboard() {
         ? Math.round(ttfis.reduce((s, d) => s + d, 0) / ttfis.length)
         : null;
 
-      // Time-to-validation: days from intro.created_at to updated_at for validated intros
       const ttvs: number[] = introsValidees.map(i =>
         differenceInDays(parseISO(i.updated_at), parseISO(i.created_at))
       ).filter(d => d >= 0);
@@ -141,6 +203,9 @@ export default function ROIDashboard() {
         : null;
 
       const montantTotal = gs.reduce((s, g) => s + (g.montant ?? 0), 0);
+      const roi = montantTotal > 0 ? Math.round((montantTotal / 99) * 100) : null;
+      const coutParLead = is.length > 0 ? Math.round(99 / is.length) : null;
+      const openClawScore = heartbeatData?.[0]?.health_score ?? null;
 
       setMetrics({
         missionsCreees: ms.length,
@@ -151,8 +216,13 @@ export default function ROIDashboard() {
         tauxValidation,
         tempsMoyenPremierIntro,
         tempsMoyenValidation,
+        contactsTotal: contactsCount ?? 0,
+        openClawScore,
+        roi,
+        coutParLead,
       });
       setMissions(ms.slice(0, 5));
+      setMonthly(buildMonthlyData(ms, is, gs));
       setLastRefresh(new Date());
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Erreur de chargement");
@@ -166,6 +236,7 @@ export default function ROIDashboard() {
   return (
     <UserLayout>
       <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* ── Header ── */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
@@ -194,7 +265,7 @@ export default function ROIDashboard() {
 
         {loading ? (
           <div className="grid sm:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
+            {Array.from({ length: 9 }).map((_, i) => (
               <div key={i} className="stat-card animate-pulse">
                 <div className="h-8 bg-muted rounded w-16 mb-2" />
                 <div className="h-4 bg-muted rounded w-24" />
@@ -203,20 +274,34 @@ export default function ROIDashboard() {
           </div>
         ) : metrics ? (
           <>
+            {/* ── KPI ROI Banner ── */}
+            {metrics.roi !== null && (
+              <div className="card-surface p-5 mb-6 border border-success/30 bg-success/5">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="w-10 h-10 rounded-xl bg-success/15 flex items-center justify-center shrink-0">
+                    <Euro size={18} className="text-success" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground">Retour sur investissement</p>
+                    <p className="font-display text-3xl font-bold text-success">{metrics.roi}%</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {metrics.montantTotal.toLocaleString("fr")} € générés pour 99 € investis
+                    </p>
+                  </div>
+                  {metrics.coutParLead !== null && (
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">Coût par lead</p>
+                      <p className="font-display text-xl font-bold text-foreground">{metrics.coutParLead} €</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── Metrics Grid ── */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              <MetricCard
-                icon={Target}
-                label="Missions créées"
-                value={metrics.missionsCreees}
-                sub="Toutes les missions actives et archivées"
-                accent
-              />
-              <MetricCard
-                icon={Send}
-                label="Introductions reçues"
-                value={metrics.introsRecues}
-                sub="Toutes introductions soumises par des facilitateurs"
-              />
+              <MetricCard icon={Target} label="Missions créées" value={metrics.missionsCreees} sub="Toutes missions actives et archivées" accent />
+              <MetricCard icon={Send} label="Introductions reçues" value={metrics.introsRecues} sub="Soumises par des facilitateurs" />
               <MetricCard
                 icon={CheckCircle2}
                 label="Introductions validées"
@@ -229,33 +314,53 @@ export default function ROIDashboard() {
                 label="Gains confirmés"
                 value={metrics.montantTotal > 0 ? `${metrics.montantTotal.toLocaleString("fr")} €` : metrics.gainsGeneres}
                 sub={metrics.montantTotal > 0 ? `${metrics.gainsGeneres} gain(s) validé(s)` : "Montant inconnu ou 0 €"}
+                highlight={metrics.montantTotal > 0}
               />
+              <MetricCard icon={Users} label="Contacts prospectés" value={metrics.contactsTotal} sub="Dans votre base contacts" />
               <MetricCard
                 icon={Clock}
                 label="Délai moyen 1ʳᵉ intro"
                 value={metrics.tempsMoyenPremierIntro !== null ? `${metrics.tempsMoyenPremierIntro}j` : "—"}
-                sub={metrics.tempsMoyenPremierIntro !== null ? "Jours entre création mission et 1ʳᵉ intro reçue" : "Données insuffisantes"}
+                sub={metrics.tempsMoyenPremierIntro !== null ? "Entre création mission et 1ʳᵉ intro" : "Données insuffisantes"}
               />
               <MetricCard
                 icon={TrendingUp}
                 label="Délai moyen validation"
                 value={metrics.tempsMoyenValidation !== null ? `${metrics.tempsMoyenValidation}j` : "—"}
-                sub={metrics.tempsMoyenValidation !== null ? "Jours entre soumission et validation d'une intro" : "Données insuffisantes"}
+                sub={metrics.tempsMoyenValidation !== null ? "Entre soumission et validation" : "Données insuffisantes"}
               />
+              {metrics.coutParLead !== null && (
+                <MetricCard
+                  icon={BarChart3}
+                  label="Coût par lead"
+                  value={`${metrics.coutParLead} €`}
+                  sub="Abonnement 99 € / nb d'introductions"
+                />
+              )}
+              {metrics.openClawScore !== null && (
+                <MetricCard
+                  icon={Heart}
+                  label="Score santé OpenClaw"
+                  value={`${metrics.openClawScore}/100`}
+                  sub="Cerveau agentique actif"
+                  accent={metrics.openClawScore >= 70}
+                />
+              )}
             </div>
 
-            {/* Taux de conversion funnel */}
+            {/* ── Conversion Funnel ── */}
             {metrics.introsRecues > 0 && (
               <div className="card-surface p-5 mb-6">
                 <h2 className="font-semibold text-foreground mb-4 text-sm">Pipeline de conversion</h2>
                 <div className="space-y-3">
                   {[
-                    { label: "Missions créées",       val: metrics.missionsCreees },
-                    { label: "Intros reçues",          val: metrics.introsRecues },
-                    { label: "Intros validées",        val: metrics.introsValidees },
-                    { label: "Gains confirmés",        val: metrics.gainsGeneres },
+                    { label: "Missions créées", val: metrics.missionsCreees },
+                    { label: "Intros reçues", val: metrics.introsRecues },
+                    { label: "Intros validées", val: metrics.introsValidees },
+                    { label: "Gains confirmés", val: metrics.gainsGeneres },
                   ].map(({ label, val }) => {
-                    const pct = metrics.introsRecues > 0 ? Math.round((val / Math.max(metrics.introsRecues, metrics.missionsCreees)) * 100) : 0;
+                    const base = Math.max(metrics.introsRecues, metrics.missionsCreees, 1);
+                    const pct = Math.round((val / base) * 100);
                     return (
                       <div key={label}>
                         <div className="flex items-center justify-between mb-1 text-xs">
@@ -275,7 +380,72 @@ export default function ROIDashboard() {
               </div>
             )}
 
-            {/* Recent missions */}
+            {/* ── Monthly Chart ── */}
+            {monthly.some(m => m.intros > 0 || m.missions > 0) && (
+              <div className="card-surface p-5 mb-6">
+                <h2 className="font-semibold text-foreground mb-1 text-sm flex items-center gap-2">
+                  <BarChart3 size={14} className="text-primary" />
+                  Évolution mensuelle — 6 derniers mois
+                </h2>
+                <p className="text-xs text-muted-foreground mb-4">Missions · Introductions · Gains</p>
+                <ResponsiveContainer width="100%" height={200}>
+                  <AreaChart data={monthly} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="gMissions" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(218, 72%, 55%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(218, 72%, 55%)" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gIntros" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(270, 72%, 60%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(270, 72%, 60%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Area type="monotone" dataKey="missions" name="Missions" stroke="hsl(218, 72%, 55%)" fill="url(#gMissions)" strokeWidth={2} dot={false} />
+                    <Area type="monotone" dataKey="intros" name="Introductions" stroke="hsl(270, 72%, 60%)" fill="url(#gIntros)" strokeWidth={2} dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* ── Monthly Gains Chart ── */}
+            {monthly.some(m => m.montant > 0) && (
+              <div className="card-surface p-5 mb-6">
+                <h2 className="font-semibold text-foreground mb-1 text-sm flex items-center gap-2">
+                  <Euro size={14} className="text-success" />
+                  Gains par mois (€)
+                </h2>
+                <ResponsiveContainer width="100%" height={140}>
+                  <BarChart data={monthly} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                    <Tooltip
+                      formatter={(v: number) => [`${v.toLocaleString("fr")} €`, "Montant"]}
+                      contentStyle={{
+                        background: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: 8,
+                        fontSize: 12,
+                      }}
+                    />
+                    <Bar dataKey="montant" name="Gains" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* ── Recent Missions ── */}
             {missions.length > 0 && (
               <div className="card-surface overflow-hidden">
                 <div className="px-5 py-3 border-b border-border">
@@ -307,7 +477,7 @@ export default function ROIDashboard() {
         ) : null}
 
         <p className="text-xs text-muted-foreground mt-6 text-center">
-          Source : tables <code>missions</code>, <code>introductions</code>, <code>gains</code> · Zéro hardcode
+          Source : <code>missions</code>, <code>introductions</code>, <code>gains</code>, <code>contacts</code> · Zéro hardcode
         </p>
       </div>
     </UserLayout>

@@ -10,8 +10,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
 // ── Validated event types ────────────────────────────────────────────────────
-// These are the ONLY accepted values — no freeform strings.
 export const ANALYTICS_EVENTS = [
+  "page_view",
   "landing_view",
   "cta_click",
   "pricing_view",
@@ -24,6 +24,10 @@ export const ANALYTICS_EVENTS = [
   "signup_started",
   "login_success",
   "promo_redeemed",
+  "contact_added",
+  "campaign_launched",
+  "ai_used",
+  "sequence_started",
 ] as const;
 
 export type AnalyticsEventType = typeof ANALYTICS_EVENTS[number];
@@ -55,10 +59,8 @@ export function trackEvent(
   const sessionId = getSessionId();
   const page = typeof window !== "undefined" ? window.location.pathname : "/";
 
-  // PROOF:ANALYTICS_RUNTIME_V1:real_insert — writes to analytics_events
-  // Cast required: analytics_events types auto-generated, column subset is valid
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (supabase.from("analytics_events") as any)
+  supabase
+    .from("analytics_events")
     .insert({
       event_type: eventType,
       session_id: sessionId,
@@ -78,7 +80,8 @@ export function trackEvent(
 }
 
 // ── React hook ───────────────────────────────────────────────────────────────
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function useAnalytics() {
@@ -92,4 +95,18 @@ export function useAnalytics() {
   );
 
   return { track };
+}
+
+// ── Auto page-view tracker ────────────────────────────────────────────────────
+export function usePageTracking() {
+  const { user } = useAuth();
+  const location = useLocation();
+  const prevPath = useRef<string | null>(null);
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === prevPath.current) return;
+    prevPath.current = path;
+    trackEvent("page_view", user?.id ?? null, { path });
+  }, [location.pathname, user?.id]);
 }
