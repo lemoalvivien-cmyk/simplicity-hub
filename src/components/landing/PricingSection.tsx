@@ -30,13 +30,13 @@ const PRICING_FRAME = {
     badge: "Offre lancement",
     headline: "Simple, honnête, transparent.",
     sub: "L'offre entreprise est payante. L'accès facilitateur est gratuit. Il n'y a rien de caché.",
-    ctaLabel: (isLaunch: boolean) => isLaunch ? "Lancer ma première mission — 99 €" : "Lancer ma première mission — 490 €",
+    ctaLabel: (_isLaunch: boolean) => "Lancer ma première mission — 99 €",
   },
   v2_investissement: {
-    badge: "Investissement acquisition",
+...
     headline: "Moins qu'un commercial junior. Pour tout un système.",
-    sub: "99 € pour activer prospection IA + réseau humain structuré + cockpit de suivi. Pour la première année.",
-    ctaLabel: (isLaunch: boolean) => isLaunch ? "Activer mon acquisition — 99 €" : "Activer mon acquisition — 490 €",
+    sub: "99 € pour activer prospection IA + réseau humain structuré + cockpit de suivi.",
+    ctaLabel: (_isLaunch: boolean) => "Activer mon acquisition — 99 €",
   },
 };
 
