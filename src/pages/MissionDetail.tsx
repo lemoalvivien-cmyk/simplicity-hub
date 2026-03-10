@@ -246,7 +246,7 @@ export default function MissionDetail() {
       .select("id, prenom, email")
       .in("id", ids);
     const nameMap: Record<string, string> = {};
-    (profiles ?? []).forEach((p: { id: string; prenom: string | null; email: string }) => {
+    (profiles ?? []).forEach((p: { id: string; prenom: string | null; email: string | null }) => {
       nameMap[p.id] = p.prenom ?? p.email?.split("@")[0] ?? "Apporteur";
     });
     setMatches(data.map((m: MissionMatch) => ({ ...m, facilitateur_name: nameMap[m.facilitateur_id] ?? "Apporteur" })));
