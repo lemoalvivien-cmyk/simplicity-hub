@@ -21,8 +21,8 @@ const HEADLINE_VARIANTS = {
 };
 
 const CTA_VARIANTS = {
-  v1_demarrer: "Lancer ma première mission",
-  v2_activer: "Activer mon acquisition",
+  v1_demarrer: "Démarrer ma première mission — 99 €/an",
+  v2_activer: "Activer mon acquisition — 99 €/an",
 };
 
 export default function HeroSection() {
