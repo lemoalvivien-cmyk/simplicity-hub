@@ -97,7 +97,7 @@ export default function MecanismeSection() {
                   </p>
                 </div>
               </div>
-              <p className="text-white/75 text-sm leading-relaxed">
+              <p className="text-white/80 text-sm leading-relaxed">
                 Un réseau de facilitateurs actifs recommande votre offre à leurs contacts qualifiés.
                 Chaque introduction est tracée, vérifiée, et prouvable.
               </p>
