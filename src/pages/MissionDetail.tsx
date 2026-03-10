@@ -399,21 +399,88 @@ export default function MissionDetail() {
 
         {/* Vue entreprise */}
         {role === "entreprise" && (
-          <div className="card-surface p-5 mt-2">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-foreground">Introductions reçues</h2>
-              <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
-                {introCount}
-              </span>
+          <div className="space-y-4 mt-2">
+            {/* AI Match suggestions */}
+            {matches.length > 0 && (
+              <div className="card-surface p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "var(--gradient-primary)" }}>
+                    <Sparkles size={13} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-foreground text-sm">{matches.length} facilitateur{matches.length > 1 ? "s" : ""} recommandé{matches.length > 1 ? "s" : ""} par l'IA</h2>
+                    <p className="text-xs text-muted-foreground">Compatibilité calculée automatiquement selon votre mission</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {matches.map(m => {
+                    const scoreColor = m.compatibility_score >= 75
+                      ? "hsl(var(--success))"
+                      : m.compatibility_score >= 50
+                      ? "hsl(38 80% 40%)"
+                      : "hsl(var(--muted-foreground))";
+                    const scoreBg = m.compatibility_score >= 75
+                      ? "hsl(var(--success-light))"
+                      : m.compatibility_score >= 50
+                      ? "hsl(38 80% 96%)"
+                      : "hsl(var(--muted))";
+                    return (
+                      <div key={m.id} className="flex items-start gap-3 p-3 rounded-xl border border-border hover:border-primary/30 transition-colors">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-bold text-sm"
+                          style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
+                          {(m.facilitateur_name ?? "A").charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-semibold text-foreground">{m.facilitateur_name}</p>
+                            <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
+                              style={{ color: scoreColor, background: scoreBg }}>
+                              <Star size={9} /> {m.compatibility_score}%
+                            </span>
+                            {m.status === "acceptee" && (
+                              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+                                style={{ color: "hsl(var(--success))", background: "hsl(var(--success-light))" }}>
+                                <UserCheck size={10} /> Invité
+                              </span>
+                            )}
+                          </div>
+                          {m.reasoning && (
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{m.reasoning}</p>
+                          )}
+                        </div>
+                        {m.status !== "acceptee" && (
+                          <button
+                            onClick={() => handleInvite(m)}
+                            disabled={inviting === m.facilitateur_id}
+                            className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                            style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+                          >
+                            {inviting === m.facilitateur_id ? <Loader2 size={11} className="animate-spin" /> : "Inviter"}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="card-surface p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-semibold text-foreground">Introductions reçues</h2>
+                <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
+                  {introCount}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                {introCount === 0
+                  ? "Aucune introduction reçue pour cette mission pour l'instant."
+                  : `Vous avez reçu ${introCount} introduction${introCount > 1 ? "s" : ""}. Rendez-vous dans la section Introductions pour les examiner.`}
+              </p>
+              <Link to="/entreprise/introductions" className="btn-primary text-sm py-2.5 px-5">
+                Voir les introductions reçues
+              </Link>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              {introCount === 0
-                ? "Aucune introduction reçue pour cette mission pour l'instant."
-                : `Vous avez reçu ${introCount} introduction${introCount > 1 ? "s" : ""}. Rendez-vous dans la section Introductions pour les examiner.`}
-            </p>
-            <Link to="/entreprise/introductions" className="btn-primary text-sm py-2.5 px-5">
-              Voir les introductions reçues
-            </Link>
           </div>
         )}
       </div>
