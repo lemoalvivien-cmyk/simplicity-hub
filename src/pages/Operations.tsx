@@ -1909,8 +1909,6 @@ export default function Operations() {
             engineHealthy={engineHealthy}
             heartbeats={heartbeats}
             recentExecutions={recentExecutions}
-            schedulerTriggering={schedulerTriggering}
-            triggerScheduler={triggerScheduler}
             healthcheckResult={healthcheckResult}
             healthcheckLoading={healthcheckLoading}
             setHealthcheckResult={setHealthcheckResult}
