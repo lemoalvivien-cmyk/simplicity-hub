@@ -30,6 +30,15 @@ interface Mission {
   created_at: string;
 }
 
+interface MissionMatch {
+  id: string;
+  facilitateur_id: string;
+  compatibility_score: number;
+  reasoning: string | null;
+  status: string;
+  facilitateur_name?: string;
+}
+
 const statusConfig = {
   active: { label: "Ouverte", color: "hsl(var(--success))", bg: "hsl(var(--success-light))", icon: <CheckCircle2 size={13} /> },
   en_pause: { label: "En pause", color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))", icon: <Clock size={13} /> },
