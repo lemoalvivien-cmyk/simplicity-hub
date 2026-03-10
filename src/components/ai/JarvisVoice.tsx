@@ -106,7 +106,7 @@ export default function JarvisVoice({ onTranscript, lastJarvisText, autoSpeak }:
 
   // ── Start / stop STT ─────────────────────────────────────────────────────────
   const startListening = useCallback(() => {
-    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRec = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SpeechRec) return;
 
     const rec = new SpeechRec();
