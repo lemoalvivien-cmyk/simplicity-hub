@@ -15,8 +15,8 @@ const objections = [
     a: "C'est le cas d'usage numéro 1. Les facilitateurs les plus performants faisaient déjà des mises en relation informelles. La plateforme structure ce qui existe déjà — sans le changer.",
   },
   {
-    q: "Est-ce du MLM déguisé ?",
-    a: "Non. Aucun recrutement, aucun niveau, aucune pyramide. C'est de l'apport d'affaires direct et traçable — une pratique commerciale classique, légale, utilisée par des courtiers et consultants depuis des décennies. Simplement bien outillée.",
+    q: "Comment fonctionne le modèle d'apport d'affaires ?",
+    a: "C'est un modèle transparent : un facilitateur présente un contact qualifié à une entreprise. Si l'introduction aboutit, le facilitateur reçoit un gain tracé et garanti. Chaque étape est prouvée dans le système.",
   },
   {
     q: "Comment je prouve ce qui m'appartient ?",

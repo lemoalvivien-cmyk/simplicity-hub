@@ -168,7 +168,7 @@ export default function PricingSection() {
                 Créer mon accès facilitateur — Gratuit
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
-                Ce n'est pas du MLM · Apport d'affaires structuré et traçable
+                Modèle transparent d'apport d'affaires · Attribution prouvée · Paiement garanti
               </p>
             </div>
           </div>
