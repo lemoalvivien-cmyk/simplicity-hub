@@ -74,10 +74,12 @@ export default function Contacts() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<ContactStatus | "tous">("tous");
+  const [sortByScore, setSortByScore] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [newContact, setNewContact] = useState({ prenom: "", nom: "", entreprise: "", email: "" });
   const [saving, setSaving] = useState(false);
   const [seqMap, setSeqMap] = useState<Record<string, ContactSequenceInfo>>({});
+  const [aiScoreMap, setAiScoreMap] = useState<Record<string, AIScore>>({});
 
   const load = async () => {
     if (!user) return;
