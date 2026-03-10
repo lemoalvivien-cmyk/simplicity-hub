@@ -387,6 +387,12 @@ export default function DashboardEntreprise() {
           </div>
         )}
       </div>
+
+      <ProspectionModal
+        open={prospectionOpen}
+        onClose={() => setProspectionOpen(false)}
+        defaultCompanyName={profile?.prenom ? "" : ""}
+      />
     </UserLayout>
   );
 }
