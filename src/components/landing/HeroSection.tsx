@@ -67,7 +67,7 @@ export default function HeroSection() {
               className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
               onClick={() => track("cta_hero_enterprise")}
             >
-              Démarrer ma première mission — 99 €/an
+              Démarrer — 99 €/an
               <ArrowRight size={17} />
             </Link>
             <Link
