@@ -325,7 +325,7 @@ export default function Contacts() {
                   className="card-surface p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
                     style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
-                    {(c.prenom || "?").charAt(0)}{(c.nom || "").charAt(0)}
+                    {(c.prenom_nom || "?").charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
