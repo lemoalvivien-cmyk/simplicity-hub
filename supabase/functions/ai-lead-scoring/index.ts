@@ -49,7 +49,8 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { lead_data, intake_id } = await req.json();
+    const body = await req.json();
+    const { lead_data, intake_id } = body;
 
     if (!lead_data) {
       return new Response(
@@ -58,12 +59,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ── Identify user for dossier lookup ─────────────────────
+    // ── Auth: required unless called via internal trigger (intake_id path) ───
+    // When called from a DB trigger, intake_id is provided and user_id is fetched directly.
+    // When called from the client, a valid JWT is required.
     let userId: string | null = null;
     const authHeader = req.headers.get("Authorization");
 
-    // If intake_id, fetch user_id from DB directly (works from trigger calls too)
     if (intake_id) {
+      // Internal/trigger path: resolve user from DB, no JWT needed
       const admin = createClient(supabaseUrl, serviceKey);
       const { data: intake } = await admin
         .from("lead_intakes")
@@ -71,12 +74,31 @@ Deno.serve(async (req) => {
         .eq("id", intake_id)
         .maybeSingle();
       userId = (intake as { user_id: string } | null)?.user_id ?? null;
-    } else if (authHeader) {
+      if (!userId) {
+        return new Response(
+          JSON.stringify({ error: "intake_id invalide." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    } else {
+      // Client path: JWT required
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: { user } } = await userClient.auth.getUser();
-      userId = user?.id ?? null;
+      const { data: { user }, error: authError } = await userClient.auth.getUser();
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      userId = user.id;
     }
 
     // ── Load dossier in parallel ──────────────────────────────
