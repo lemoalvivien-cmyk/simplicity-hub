@@ -64,8 +64,12 @@ export default function MissionNouvelle() {
 
   const isValid = form.titre.trim().length > 3 && form.description.trim().length > 10;
 
+  const savingRef = { current: false };
+
   const handleSave = async () => {
     if (!user || !isValid) return;
+    if (saving || savingRef.current) return; // CM2-5: double-submit guard
+    savingRef.current = true;
     setSaving(true);
     try {
       const { data, error } = await db.from("missions").insert({
