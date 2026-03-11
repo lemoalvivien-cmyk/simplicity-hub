@@ -339,7 +339,7 @@ export default function Pilotage() {
                   {AUTONOMY_LEVELS.map((lvl) => (
                     <button
                       key={lvl.id}
-                      onClick={() => setAutonomyLevel(lvl.id)}
+                      onClick={() => handleAutonomyChange(lvl.id)}
                       className={`flex-1 text-center text-[10px] font-medium py-0.5 rounded transition-colors ${
                         autonomyLevel === lvl.id
                           ? "text-primary"
