@@ -140,12 +140,12 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
           {/* Linked opportunity badge */}
           {intro.lead_opportunity_id && (
             <Link
-              to="/opportunites"
+              to="/pilotage"
               className="flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl w-full"
               style={{ background: "hsl(var(--success-light))", color: "hsl(var(--success))" }}
             >
               <Target size={12} />
-              Opportunité créée — voir dans le pipeline
+              Opportunité créée — voir dans Mon IA
             </Link>
           )}
           {/* PROOF:EXECUTION_V1:action_queue_ui_real — real action from lead_actions table */}

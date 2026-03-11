@@ -120,6 +120,13 @@ export default function Pilotage() {
     load();
   }, [user]);
 
+  const handleAutonomyChange = async (value: number) => {
+    setAutonomyLevel(value);
+    if (user) {
+      await db.from("openclaw_config").upsert({ user_id: user.id, autonomy_level: value }, { onConflict: "user_id" });
+    }
+  };
+
   const handleKillSwitch = async (value: boolean) => {
     if (value && !killConfirm) { setKillConfirm(true); return; }
     setKillConfirm(false);
@@ -163,7 +170,15 @@ export default function Pilotage() {
                 {validationsPending} validation{validationsPending > 1 ? "s" : ""} en attente
               </Link>
             )}
-            <div className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${openClawConnected ? "border-green-300 text-green-700 bg-green-50" : "border-border text-muted-foreground bg-muted"}`}>
+            <div className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${
+              openClawConnected
+                ? "text-foreground"
+                : "border-border text-muted-foreground bg-muted"}`}
+              style={openClawConnected ? {
+                borderColor: "hsl(var(--success) / 0.3)",
+                background: "hsl(var(--success-light))",
+                color: "hsl(var(--success))"
+              } : {}}>
               {openClawConnected
                 ? <><Wifi size={11} /> IA active</>
                 : <><WifiOff size={11} /> IA inactive</>}
@@ -317,14 +332,14 @@ export default function Pilotage() {
                   max={4}
                   step={1}
                   value={autonomyLevel}
-                  onChange={(e) => setAutonomyLevel(Number(e.target.value))}
+                  onChange={(e) => handleAutonomyChange(Number(e.target.value))}
                   className="w-full accent-primary"
                 />
                 <div className="flex justify-between">
                   {AUTONOMY_LEVELS.map((lvl) => (
                     <button
                       key={lvl.id}
-                      onClick={() => setAutonomyLevel(lvl.id)}
+                      onClick={() => handleAutonomyChange(lvl.id)}
                       className={`flex-1 text-center text-[10px] font-medium py-0.5 rounded transition-colors ${
                         autonomyLevel === lvl.id
                           ? "text-primary"
@@ -407,14 +422,16 @@ export default function Pilotage() {
             <div className="card-surface p-5">
               <h2 className="font-semibold text-foreground flex items-center gap-2 mb-3">
                 {openClawConnected
-                  ? <Wifi size={16} className="text-green-600" />
+                  ? <Wifi size={16} className="text-success" />
                   : <WifiOff size={16} className="text-muted-foreground" />}
                 Connexion gateway
               </h2>
               {openClawConnected ? (
-                <div className="flex items-center gap-2 rounded-xl p-3 bg-green-50 border border-green-200">
-                  <span className="w-2 h-2 rounded-full bg-green-500 shrink-0 animate-pulse" />
-                  <p className="text-xs font-medium text-green-700">Gateway connecté — l'IA est opérationnelle.</p>
+                <div className="flex items-center gap-2 rounded-xl p-3"
+                  style={{ background: "hsl(var(--success-light))", border: "1px solid hsl(var(--success) / 0.2)" }}>
+                  <span className="w-2 h-2 rounded-full shrink-0 animate-pulse"
+                    style={{ background: "hsl(var(--success))" }} />
+                  <p className="text-xs font-medium" style={{ color: "hsl(var(--success))" }}>Gateway connecté — l'IA est opérationnelle.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -422,10 +439,10 @@ export default function Pilotage() {
                     <span className="w-2 h-2 rounded-full bg-muted-foreground/40 shrink-0" />
                     <p className="text-xs text-muted-foreground">Gateway non connecté — l'IA analyse uniquement.</p>
                   </div>
-                  <Link to="/agents"
+                  <Link to="/pilotage"
                     className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl"
                     style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-                    Connecter le gateway <ChevronRight size={11} />
+                    En savoir plus <ChevronRight size={11} />
                   </Link>
                 </div>
               )}

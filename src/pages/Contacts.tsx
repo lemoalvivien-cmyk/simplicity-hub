@@ -13,15 +13,12 @@ type ContactSource = "import" | "manuel" | "introduction" | "prospection" | "tel
 
 interface Contact {
   id: string;
-  prenom: string;
-  nom: string;
-  entreprise: string;
-  poste: string;
-  email: string;
-  telephone: string;
+  prenom_nom: string;
+  entreprise: string | null;
+  email: string | null;
+  telephone: string | null;
   statut: ContactStatus;
   origine: ContactSource;
-  prochaine_action: string;
   created_at: string;
 }
 
@@ -174,16 +171,8 @@ export default function Contacts() {
   useEffect(() => { setPage(0); }, [search, filterStatus]);
   useEffect(() => { load(page); }, [user, page, search, filterStatus]);
 
-  const filtered = contacts.filter((c) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      (c.prenom || "").toLowerCase().includes(q) ||
-      (c.nom || "").toLowerCase().includes(q) ||
-      (c.entreprise || "").toLowerCase().includes(q) ||
-      (c.email || "").toLowerCase().includes(q);
-    const matchStatus = filterStatus === "tous" || c.statut === filterStatus;
-    return matchSearch && matchStatus;
-  }).sort((a, b) => {
+  // Client-side sort only (server handles filter+search)
+  const filtered = contacts.sort((a, b) => {
     if (!sortByScore) return 0;
     const scoreA = aiScoreMap[a.id]?.ai_score ?? -1;
     const scoreB = aiScoreMap[b.id]?.ai_score ?? -1;
@@ -196,12 +185,12 @@ export default function Contacts() {
   const handleAddContact = async () => {
     if (!user || !newContact.prenom.trim()) return;
     setSaving(true);
+    const fullName = [newContact.prenom.trim(), newContact.nom.trim()].filter(Boolean).join(" ");
     const { error } = await db.from("contacts").insert({
       owner_user_id: user.id,
-      prenom: newContact.prenom,
-      nom: newContact.nom,
-      entreprise: newContact.entreprise,
-      email: newContact.email,
+      prenom_nom: fullName,
+      entreprise: newContact.entreprise.trim() || null,
+      email: newContact.email.trim() || null,
       origine: "manuel",
       statut: "a_contacter",
     });
@@ -336,11 +325,11 @@ export default function Contacts() {
                   className="card-surface p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
                     style={{ background: "hsl(var(--secondary))", color: "hsl(var(--primary))" }}>
-                    {(c.prenom || "?").charAt(0)}{(c.nom || "").charAt(0)}
+                    {(c.prenom_nom || "?").charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-foreground">{c.prenom} {c.nom}</p>
+                      <p className="text-sm font-semibold text-foreground">{c.prenom_nom}</p>
                       <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
                         style={{ color: cfg.color, background: cfg.bg }}>
                         {cfg.icon} {cfg.label}
@@ -361,15 +350,12 @@ export default function Contacts() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">
-                      {c.entreprise}{c.poste && ` · ${c.poste}`}
+                      {c.entreprise || ""}
                     </p>
                     {seqInfo && (
                       <p className="text-xs mt-0.5 truncate text-muted-foreground">
                         📬 {seqInfo.sequence_name}
                       </p>
-                    )}
-                    {c.prochaine_action && !seqInfo && (
-                      <p className="text-xs mt-0.5 truncate" style={{ color: "hsl(var(--primary))" }}>→ {c.prochaine_action}</p>
                     )}
                   </div>
                   <div className="hidden sm:flex flex-col items-end gap-1.5 shrink-0">

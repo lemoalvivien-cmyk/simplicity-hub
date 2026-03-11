@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import UserLayout from "@/components/layout/UserLayout";
-import { Users, CheckCircle2, Save } from "lucide-react";
+import { Users, CheckCircle2, Save, Loader2, AlertCircle } from "lucide-react";
 import CopilotPanel from "@/components/ai/CopilotPanel";
+import { db } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const secteurs = ["SaaS / Tech", "Immobilier", "Finance / Assurance", "Formation", "Commerce", "Industrie", "Conseil", "Autre"];
 const zones = ["France entière", "Île-de-France", "Grand Ouest", "Grand Sud", "Grand Est", "International"];
@@ -17,15 +20,49 @@ const typeContacts = [
 ];
 
 export default function ProfilFacilitateur() {
-  const [saved, setSaved] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading]   = useState(true);
+  const [saving, setSaving]     = useState(false);
+  const [saved, setSaved]       = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const savingRef               = useRef(false);
+
   const [form, setForm] = useState({
-    prenom: "Thomas",
-    description: "J'ai un réseau de dirigeants TPE/PME en Île-de-France, principalement dans le commerce, l'artisanat et les services. Je connais beaucoup de personnes qui cherchent à simplifier leur gestion.",
-    secteur: "Commerce",
-    zone: "Île-de-France",
-    contacts: ["Dirigeants TPE / artisans", "Dirigeants PME"],
-    experience: "J'ai passé 10 ans dans le conseil aux TPE. Je connais bien leurs problèmes et je sais identifier les bons moments pour les approcher.",
+    description: "",
+    secteur: "",
+    zone: "",
+    contacts: [] as string[],
+    experience: "",
   });
+
+  // Load existing profile
+  useEffect(() => {
+    if (!user) return;
+    db.from("facilitateur_profiles")
+      .select("description_reseau, secteur, zone, types_contacts")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          let contacts: string[] = [];
+          try {
+            contacts = data.types_contacts
+              ? (typeof data.types_contacts === "string"
+                  ? JSON.parse(data.types_contacts)
+                  : (data.types_contacts as string[]))
+              : [];
+          } catch { contacts = []; }
+          setForm({
+            description: data.description_reseau || "",
+            secteur: data.secteur || "",
+            zone: data.zone || "",
+            contacts: Array.isArray(contacts) ? contacts : [],
+            experience: "",
+          });
+        }
+        setLoading(false);
+      });
+  }, [user]);
 
   const toggleContact = (c: string) => {
     setForm((f) => ({
@@ -36,10 +73,42 @@ export default function ProfilFacilitateur() {
     }));
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    if (!user || saving || savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
+    setError(null);
+    try {
+      const { error: dbErr } = await db.from("facilitateur_profiles").upsert({
+        user_id: user.id,
+        description_reseau: form.description.trim() || null,
+        secteur: form.secteur || null,
+        zone: form.zone || null,
+        types_contacts: JSON.stringify(form.contacts),
+      }, { onConflict: "user_id" });
+
+      if (dbErr) throw dbErr;
+      setSaved(true);
+      toast.success("Profil enregistré !");
+      setTimeout(() => setSaved(false), 3000);
+    } catch {
+      setError("Impossible d'enregistrer votre profil. Réessayez.");
+      toast.error("Erreur lors de l'enregistrement.");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <UserLayout>
+        <div className="flex items-center justify-center h-48">
+          <Loader2 size={20} className="animate-spin text-muted-foreground" />
+        </div>
+      </UserLayout>
+    );
+  }
 
   return (
     <UserLayout>
@@ -66,6 +135,12 @@ export default function ProfilFacilitateur() {
           </div>
         )}
 
+        {error && (
+          <div className="flex items-center gap-2 p-3 rounded-xl mb-5 text-sm font-medium bg-destructive/10 text-destructive border border-destructive/20">
+            <AlertCircle size={16} /> {error}
+          </div>
+        )}
+
         <div className="space-y-5">
           {/* Présentation */}
           <div className="card-surface p-5">
@@ -79,8 +154,10 @@ export default function ProfilFacilitateur() {
             <textarea
               rows={3}
               value={form.description}
+              maxLength={1500}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+              placeholder="ex : J'ai un réseau de dirigeants PME dans le commerce et l'industrie..."
             />
           </div>
 
@@ -168,6 +245,7 @@ export default function ProfilFacilitateur() {
             <textarea
               rows={2}
               value={form.experience}
+              maxLength={500}
               onChange={(e) => setForm((f) => ({ ...f, experience: e.target.value }))}
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
               placeholder="ex : 10 ans dans le conseil aux TPE…"
@@ -175,15 +253,24 @@ export default function ProfilFacilitateur() {
           </div>
 
           {/* Copilot IA */}
-          <CopilotPanel
-            context="profil_facilitateur"
-            textToImprove={form.description}
-            userRole="facilitateur"
-          />
+          {form.description.length > 20 && (
+            <CopilotPanel
+              context="profil_facilitateur"
+              textToImprove={form.description}
+              userRole="facilitateur"
+            />
+          )}
 
           {/* Save */}
-          <button onClick={handleSave} className="btn-cta w-full py-4">
-            <Save size={16} /> Enregistrer mon profil
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-cta w-full py-4 disabled:opacity-60 flex items-center justify-center gap-2"
+          >
+            {saving
+              ? <><Loader2 size={16} className="animate-spin" /> Enregistrement…</>
+              : <><Save size={16} /> Enregistrer mon profil</>
+            }
           </button>
         </div>
       </div>
