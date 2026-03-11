@@ -289,34 +289,52 @@ export default function DashboardEntreprise() {
 
               {/* OpenClaw */}
               <div className="p-5">
-                <div className="rounded-2xl overflow-hidden" style={{
-                  background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
-                  border: "1px solid hsl(218 40% 22% / 0.5)"
-                }}>
-                  <div className="p-4">
-                    <OpenClawBrainWidget variant="entreprise" />
-                  </div>
-                  {aiRecoCount > 0 && (
-                    <Link to="/pilotage" className="flex items-center justify-between px-4 py-2.5 border-t border-white/5 hover:bg-white/5 transition-colors">
-                      <div className="flex items-center gap-2">
-                        <Sparkles size={12} style={{ color: "hsl(270 80% 70%)" }} />
-                        <span className="text-xs font-semibold" style={{ color: "hsl(270 80% 75%)" }}>
-                          {aiRecoCount} recommandation{aiRecoCount > 1 ? "s" : ""} IA nouvelle{aiRecoCount > 1 ? "s" : ""}
-                        </span>
-                      </div>
-                      <ArrowRight size={12} className="text-white/30" />
-                    </Link>
-                  )}
-                  {latestBrief && (
-                    <div className="px-4 py-3 border-t border-white/5">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FileText size={10} className="text-white/40" />
-                        <span className="text-xs text-white/40 uppercase tracking-wider font-semibold">Dernier brief</span>
-                      </div>
-                      <p className="text-xs text-white/65 leading-relaxed line-clamp-2">{latestBrief.summary}</p>
+                {openclawReady ? (
+                  <div className="rounded-2xl overflow-hidden" style={{
+                    background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
+                    border: "1px solid hsl(218 40% 22% / 0.5)"
+                  }}>
+                    <div className="p-4">
+                      <OpenClawBrainWidget variant="entreprise" />
                     </div>
-                  )}
-                </div>
+                    {aiRecoCount > 0 && (
+                      <Link to="/pilotage" className="flex items-center justify-between px-4 py-2.5 border-t border-white/5 hover:bg-white/5 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={12} style={{ color: "hsl(270 80% 70%)" }} />
+                          <span className="text-xs font-semibold" style={{ color: "hsl(270 80% 75%)" }}>
+                            {aiRecoCount} recommandation{aiRecoCount > 1 ? "s" : ""} IA nouvelle{aiRecoCount > 1 ? "s" : ""}
+                          </span>
+                        </div>
+                        <ArrowRight size={12} className="text-white/30" />
+                      </Link>
+                    )}
+                    {latestBrief && (
+                      <div className="px-4 py-3 border-t border-white/5">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FileText size={10} className="text-white/40" />
+                          <span className="text-xs text-white/40 uppercase tracking-wider font-semibold">Dernier brief</span>
+                        </div>
+                        <p className="text-xs text-white/65 leading-relaxed line-clamp-2">{latestBrief.summary}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl p-5 flex items-start gap-4"
+                    style={{
+                      background: "hsl(var(--secondary))",
+                      border: "1px solid hsl(var(--border))",
+                    }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-muted">
+                      <Sparkles size={16} className="text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground mb-0.5">Prospection IA — Bientôt disponible</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Nous préparons votre moteur de prospection. Il sera actif très prochainement.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Missions récentes */}
