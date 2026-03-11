@@ -69,7 +69,7 @@ export default function FacilitateurSection() {
               {benefits.map((item) => (
                 <li key={item} className="flex items-start gap-3">
                   <CheckCircle2 size={14} style={{ color: "hsl(24 100% 60%)" }} className="shrink-0 mt-0.5" />
-                  <span className="text-sm text-white/78 leading-snug">{item}</span>
+                  <span className="text-sm text-white/95 leading-snug">{item}</span>
                 </li>
               ))}
             </ul>
