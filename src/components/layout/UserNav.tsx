@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import NotificationBell from "@/components/NotificationBell";
 
 /* ── Types ─────────────────────────────────────────── */
@@ -73,15 +74,35 @@ function useBadges(role: AppRole, userId: string | undefined) {
   return { pendingIntros, urgentActions, pendingGains, myIntros };
 }
 
+/* ── Gateway readiness hook ─────────────────────────── */
+function useGatewayReady(userId: string | undefined) {
+  const [gatewayReady, setGatewayReady] = useState(false);
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from("openclaw_config")
+      .select("gateway_url, is_connected")
+      .eq("user_id", userId)
+      .maybeSingle()
+      .then(({ data }) => {
+        setGatewayReady(!!data?.gateway_url && data.is_connected === true);
+      });
+  }, [userId]);
+  return gatewayReady;
+}
+
 /* ── Nav definitions ────────────────────────────────── */
-function buildEntrepriseGroups(badges: ReturnType<typeof useBadges>): NavGroup[] {
+function buildEntrepriseGroups(badges: ReturnType<typeof useBadges>, gatewayReady: boolean): NavGroup[] {
+  const accueilItems: NavItem[] = [
+    { to: "/dashboard/entreprise", label: "Tableau de bord", icon: LayoutDashboard },
+  ];
+  if (gatewayReady) {
+    accueilItems.push({ to: "/pilotage", label: "Mon IA", icon: Activity, badgeLabel: badges.urgentActions > 0 ? "Nouveau" : undefined });
+  }
   return [
     {
       label: "Accueil",
-      items: [
-        { to: "/dashboard/entreprise", label: "Tableau de bord", icon: LayoutDashboard },
-        { to: "/pilotage",             label: "Mon IA",           icon: Activity, badgeLabel: badges.urgentActions > 0 ? "Nouveau" : undefined },
-      ],
+      items: accueilItems,
     },
     {
       label: "Missions",
@@ -167,10 +188,11 @@ export default function UserNav({ role: roleProp }: UserNavProps) {
      : "facilitateur");
 
   const badges = useBadges(role, user?.id);
+  const gatewayReady = useGatewayReady(role === "entreprise" ? user?.id : undefined);
 
   const groups =
     role === "admin"        ? adminGroups :
-    role === "entreprise"   ? buildEntrepriseGroups(badges) :
+    role === "entreprise"   ? buildEntrepriseGroups(badges, gatewayReady) :
     buildFacilitateurGroups(badges);
 
   // Flatten for mobile bottom bar

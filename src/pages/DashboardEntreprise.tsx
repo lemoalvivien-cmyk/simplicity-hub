@@ -97,6 +97,7 @@ export default function DashboardEntreprise() {
   const [totalGains, setTotalGains]       = useState(0);
   const [loading, setLoading]             = useState(true);
   const [detailsOpen, setDetailsOpen]     = useState(false);
+  const [openclawReady, setOpenclawReady] = useState(false);
 
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
@@ -123,7 +124,7 @@ export default function DashboardEntreprise() {
         const missionIds =
           (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
 
-        const [missionsRes, introsRes, briefRes, aiRecoRes, gainsRes, gainsValRes, leadsRes] = await Promise.all([
+        const [missionsRes, introsRes, briefRes, aiRecoRes, gainsRes, gainsValRes, leadsRes, configRes] = await Promise.all([
           db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(3),
           missionIds.length > 0
             ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).order("created_at", { ascending: false }).limit(3)
@@ -133,6 +134,7 @@ export default function DashboardEntreprise() {
           db.from("gains").select("id", { count: "exact", head: true }).eq("facilitateur_id", user.id).in("statut", ["valide", "recu"]),
           db.from("gains").select("montant").eq("facilitateur_id", user.id).in("statut", ["valide", "recu"]),
           db.from("lead_intakes").select("id", { count: "exact", head: true }).eq("user_id", user.id).neq("dedup_status", "confirmed_duplicate").in("qualification_status", ["pending_review", "ready_for_action"]),
+          db.from("openclaw_config").select("gateway_url, is_connected").eq("user_id", user.id).maybeSingle(),
         ]);
 
         setMissions(missionsRes.data || []);
@@ -142,6 +144,8 @@ export default function DashboardEntreprise() {
         setGainsCount(gainsRes.count ?? 0);
         setTotalGains(((gainsValRes.data || []) as { montant: number | null }[]).reduce((s, g) => s + (g.montant || 0), 0));
         setLeadsCount(leadsRes.count ?? 0);
+        const cfg = configRes.data as { gateway_url: string | null; is_connected: boolean } | null;
+        setOpenclawReady(!!cfg?.gateway_url && cfg.is_connected === true);
       } catch {
         // silent fail
       } finally {
@@ -285,34 +289,52 @@ export default function DashboardEntreprise() {
 
               {/* OpenClaw */}
               <div className="p-5">
-                <div className="rounded-2xl overflow-hidden" style={{
-                  background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
-                  border: "1px solid hsl(218 40% 22% / 0.5)"
-                }}>
-                  <div className="p-4">
-                    <OpenClawBrainWidget variant="entreprise" />
-                  </div>
-                  {aiRecoCount > 0 && (
-                    <Link to="/pilotage" className="flex items-center justify-between px-4 py-2.5 border-t border-white/5 hover:bg-white/5 transition-colors">
-                      <div className="flex items-center gap-2">
-                        <Sparkles size={12} style={{ color: "hsl(270 80% 70%)" }} />
-                        <span className="text-xs font-semibold" style={{ color: "hsl(270 80% 75%)" }}>
-                          {aiRecoCount} recommandation{aiRecoCount > 1 ? "s" : ""} IA nouvelle{aiRecoCount > 1 ? "s" : ""}
-                        </span>
-                      </div>
-                      <ArrowRight size={12} className="text-white/30" />
-                    </Link>
-                  )}
-                  {latestBrief && (
-                    <div className="px-4 py-3 border-t border-white/5">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <FileText size={10} className="text-white/40" />
-                        <span className="text-xs text-white/40 uppercase tracking-wider font-semibold">Dernier brief</span>
-                      </div>
-                      <p className="text-xs text-white/65 leading-relaxed line-clamp-2">{latestBrief.summary}</p>
+                {openclawReady ? (
+                  <div className="rounded-2xl overflow-hidden" style={{
+                    background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
+                    border: "1px solid hsl(218 40% 22% / 0.5)"
+                  }}>
+                    <div className="p-4">
+                      <OpenClawBrainWidget variant="entreprise" />
                     </div>
-                  )}
-                </div>
+                    {aiRecoCount > 0 && (
+                      <Link to="/pilotage" className="flex items-center justify-between px-4 py-2.5 border-t border-white/5 hover:bg-white/5 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={12} style={{ color: "hsl(270 80% 70%)" }} />
+                          <span className="text-xs font-semibold" style={{ color: "hsl(270 80% 75%)" }}>
+                            {aiRecoCount} recommandation{aiRecoCount > 1 ? "s" : ""} IA nouvelle{aiRecoCount > 1 ? "s" : ""}
+                          </span>
+                        </div>
+                        <ArrowRight size={12} className="text-white/30" />
+                      </Link>
+                    )}
+                    {latestBrief && (
+                      <div className="px-4 py-3 border-t border-white/5">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <FileText size={10} className="text-white/40" />
+                          <span className="text-xs text-white/40 uppercase tracking-wider font-semibold">Dernier brief</span>
+                        </div>
+                        <p className="text-xs text-white/65 leading-relaxed line-clamp-2">{latestBrief.summary}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl p-5 flex items-start gap-4"
+                    style={{
+                      background: "hsl(var(--secondary))",
+                      border: "1px solid hsl(var(--border))",
+                    }}>
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-muted">
+                      <Sparkles size={16} className="text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground mb-0.5">Prospection IA — Bientôt disponible</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Nous préparons votre moteur de prospection. Il sera actif très prochainement.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Missions récentes */}
