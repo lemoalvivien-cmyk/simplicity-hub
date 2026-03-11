@@ -102,9 +102,9 @@ function buildEntrepriseGroups(badges: ReturnType<typeof useBadges>): NavGroup[]
     {
       label: "Mon compte",
       items: [
-        { to: "/profil",  label: "Mon profil",     icon: UserCircle },
-        { to: "/aide",    label: "Aide",           icon: HelpCircle },
-        { to: "/account", label: "Mon abonnement", icon: Settings },
+        { to: "/profil/entreprise", label: "Mon profil",     icon: UserCircle },
+        { to: "/help",              label: "Aide",           icon: HelpCircle },
+        { to: "/account",           label: "Mon abonnement", icon: Settings },
       ],
     },
   ];
