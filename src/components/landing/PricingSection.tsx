@@ -10,7 +10,7 @@ const entrepriseFeatures = [
   "Prospection automatisée OpenClaw",
   "Deal Radar — signaux d'intention",
   "Cockpit central de suivi",
-  "Assistant JARVIS illimité",
+  "Assistant KITT IA illimité",
   "Marketplace de facilitateurs",
   "Gains & commissions traçables",
   "Support inclus · Mises à jour incluses",
