@@ -1,25 +1,55 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, CheckCircle2, Zap, AlertCircle, Loader2, Mail } from "lucide-react";
 import PublicNav from "@/components/layout/PublicNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackEvent } from "@/lib/analytics";
+
+function PasswordStrengthBar({ password }: { password: string }) {
+  if (!password) return null;
+  const len = password.length;
+  const strength = len < 8 ? 1 : len <= 12 ? 2 : 3;
+  const labels = ["", "Trop court", "Correct", "Fort"];
+  const colors = ["", "hsl(var(--destructive))", "hsl(var(--warning, 38 92% 50%))", "hsl(var(--success))"];
+
+  return (
+    <div className="mt-2 space-y-1">
+      <div className="flex gap-1">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-1 flex-1 rounded-full transition-all duration-300"
+            style={{
+              background: i <= strength ? colors[strength] : "hsl(var(--border))",
+            }}
+          />
+        ))}
+      </div>
+      <p className="text-xs" style={{ color: colors[strength] }}>{labels[strength]}</p>
+    </div>
+  );
+}
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [prenom, setPrenom] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [entreprise, setEntreprise] = useState("");
-  const [poste, setPoste] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { signUp } = useAuth();
+  const [searchParams] = useSearchParams();
+  const redirect = searchParams.get("redirect");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Adresse e-mail invalide.");
+      return;
+    }
 
     if (password.length < 8) {
       setError("Le mot de passe doit faire au moins 8 caractères.");
@@ -43,9 +73,8 @@ export default function Signup() {
       return;
     }
 
-    // Store optional fields in sessionStorage for Onboarding to pick up
-    if (entreprise.trim()) sessionStorage.setItem("signup_entreprise", entreprise.trim());
-    if (poste.trim()) sessionStorage.setItem("signup_poste", poste.trim());
+    // Store redirect so Login can pick it up after email confirmation
+    if (redirect) sessionStorage.setItem("post_login_redirect", redirect);
 
     setSuccess(true);
   };
@@ -124,43 +153,36 @@ export default function Signup() {
 
             <div>
               <label className="text-sm font-medium text-foreground block mb-1.5">Adresse e-mail</label>
-              <input type="email" placeholder="vous@exemple.fr" value={email}
-                onChange={(e) => setEmail(e.target.value)} required autoComplete="email"
-                className="input-premium" />
-            </div>
-
-            {/* Optional qualification fields — low friction, discrete */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1">Entreprise <span className="opacity-60">(optionnel)</span></label>
-                <input type="text" placeholder="Nom de votre entreprise" value={entreprise}
-                  onChange={(e) => setEntreprise(e.target.value)} autoComplete="organization"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition placeholder:text-muted-foreground/60" />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1">Poste <span className="opacity-60">(optionnel)</span></label>
-                <input type="text" placeholder="Votre fonction" value={poste}
-                  onChange={(e) => setPoste(e.target.value)} autoComplete="organization-title"
-                  className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition placeholder:text-muted-foreground/60" />
-              </div>
+              <input
+                type="email"
+                placeholder="vous@exemple.fr"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); if (error) setError(null); }}
+                required
+                autoComplete="email"
+                className="input-premium"
+              />
             </div>
 
             <div>
               <label className="text-sm font-medium text-foreground block mb-1.5">Mot de passe</label>
               <div className="relative">
-                <input type={showPassword ? "text" : "password"} placeholder="8 caractères minimum"
-                  value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8}
-                  autoComplete="new-password" className="input-premium pr-11" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="8 caractères minimum"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  className="input-premium pr-11"
+                />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {password.length > 0 && password.length < 8 && (
-                <p className="text-xs text-destructive mt-1">
-                  {8 - password.length} caractère{8 - password.length > 1 ? "s" : ""} manquant{8 - password.length > 1 ? "s" : ""}
-                </p>
-              )}
+              <PasswordStrengthBar password={password} />
             </div>
 
             <button type="submit" disabled={loading}
