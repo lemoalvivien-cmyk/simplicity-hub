@@ -124,7 +124,7 @@ export default function DashboardEntreprise() {
         const missionIds =
           (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
 
-        const [missionsRes, introsRes, briefRes, aiRecoRes, gainsRes, gainsValRes, leadsRes] = await Promise.all([
+        const [missionsRes, introsRes, briefRes, aiRecoRes, gainsRes, gainsValRes, leadsRes, configRes] = await Promise.all([
           db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(3),
           missionIds.length > 0
             ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).order("created_at", { ascending: false }).limit(3)
@@ -134,6 +134,7 @@ export default function DashboardEntreprise() {
           db.from("gains").select("id", { count: "exact", head: true }).eq("facilitateur_id", user.id).in("statut", ["valide", "recu"]),
           db.from("gains").select("montant").eq("facilitateur_id", user.id).in("statut", ["valide", "recu"]),
           db.from("lead_intakes").select("id", { count: "exact", head: true }).eq("user_id", user.id).neq("dedup_status", "confirmed_duplicate").in("qualification_status", ["pending_review", "ready_for_action"]),
+          db.from("openclaw_config").select("gateway_url, is_connected").eq("user_id", user.id).maybeSingle(),
         ]);
 
         setMissions(missionsRes.data || []);
@@ -143,6 +144,8 @@ export default function DashboardEntreprise() {
         setGainsCount(gainsRes.count ?? 0);
         setTotalGains(((gainsValRes.data || []) as { montant: number | null }[]).reduce((s, g) => s + (g.montant || 0), 0));
         setLeadsCount(leadsRes.count ?? 0);
+        const cfg = configRes.data as { gateway_url: string | null; is_connected: boolean } | null;
+        setOpenclawReady(!!cfg?.gateway_url && cfg.is_connected === true);
       } catch {
         // silent fail
       } finally {
