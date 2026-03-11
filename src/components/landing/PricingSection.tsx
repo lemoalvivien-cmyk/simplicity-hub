@@ -26,7 +26,7 @@ const facilitateurFeatures = [
   "Aucune commission prélevée par la plateforme",
 ];
 
-export default function PricingSection() {
+function PricingSectionInner() {
   const [launchAvailable, setLaunchAvailable] = useState(true);
   const [slotsRemaining, setSlotsRemaining] = useState(100);
 
