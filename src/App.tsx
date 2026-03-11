@@ -112,6 +112,7 @@ const App = () => (
                 <Route path="/cgu" element={<CGU />} />
                 <Route path="/confidentialite" element={<Confidentialite />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
+                <Route path="/a-propos" element={<APropos />} />
 
                 {/* ── Onboarding ───────────────────────────── */}
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
