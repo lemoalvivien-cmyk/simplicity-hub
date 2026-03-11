@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 
-export default function FinalCTASectionInner() {
+const FinalCTASection = forwardRef<HTMLElement>(function FinalCTASection(_, ref) {
   return (
-    <>
+    <section ref={ref as React.RefObject<HTMLElement>} className="hero-bg py-24 md:py-32 relative overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -62,4 +62,8 @@ export default function FinalCTASectionInner() {
       </div>
     </section>
   );
-}
+});
+
+FinalCTASection.displayName = "FinalCTASection";
+
+export default FinalCTASection;
