@@ -346,7 +346,9 @@ export default function DashboardFacilitateur() {
                       <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "hsl(218 72% 18% / 0.08)" }}>
                         <ShieldCheck size={13} className="text-primary" />
                       </div>
-                      <h2 className="font-semibold text-foreground text-sm">Score de confiance</h2>
+                      <h2 className="font-semibold text-foreground text-sm">
+                        <GlossaryTooltip term="Score de confiance">Score de confiance</GlossaryTooltip>
+                      </h2>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Info size={13} className="text-muted-foreground cursor-help" />
