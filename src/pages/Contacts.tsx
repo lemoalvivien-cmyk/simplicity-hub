@@ -171,16 +171,8 @@ export default function Contacts() {
   useEffect(() => { setPage(0); }, [search, filterStatus]);
   useEffect(() => { load(page); }, [user, page, search, filterStatus]);
 
-  const filtered = contacts.filter((c) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      (c.prenom || "").toLowerCase().includes(q) ||
-      (c.nom || "").toLowerCase().includes(q) ||
-      (c.entreprise || "").toLowerCase().includes(q) ||
-      (c.email || "").toLowerCase().includes(q);
-    const matchStatus = filterStatus === "tous" || c.statut === filterStatus;
-    return matchSearch && matchStatus;
-  }).sort((a, b) => {
+  // Client-side sort only (server handles filter+search)
+  const filtered = contacts.sort((a, b) => {
     if (!sortByScore) return 0;
     const scoreA = aiScoreMap[a.id]?.ai_score ?? -1;
     const scoreB = aiScoreMap[b.id]?.ai_score ?? -1;
