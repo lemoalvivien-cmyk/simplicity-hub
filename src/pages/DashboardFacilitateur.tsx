@@ -371,14 +371,14 @@ export default function DashboardFacilitateur() {
                           {trustScore !== null && <span className="text-base font-normal text-muted-foreground">/100</span>}
                         </span>
                         <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: `${trustColor}18`, color: trustColor }}>
-                          {trustPct >= 80 ? "Expert" : trustPct >= 60 ? "Confirmé" : trustPct >= 40 ? "En cours" : "Débutant"}
+                          {trustUnknown ? "Score en cours de calcul" : trustPct >= 80 ? "Expert" : trustPct >= 60 ? "Confirmé" : trustPct >= 40 ? "En cours" : "Débutant"}
                         </span>
                       </div>
                       <div className="relative h-2.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
                         <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700" style={{ width: `${trustPct}%`, background: trustColor }} />
                       </div>
                       <p className="text-xs text-muted-foreground mt-2">
-                        {trustScore === null ? "Effectuez votre première introduction pour générer votre score." : trustPct < 50 ? "Envoyez des introductions qualifiées pour augmenter votre score." : "Continuez à envoyer des introductions validées pour progresser."}
+                        {trustUnknown ? "Score en cours de calcul — effectuez votre première introduction pour l'activer." : trustPct < 50 ? "Envoyez des introductions qualifiées pour augmenter votre score." : "Continuez à envoyer des introductions validées pour progresser."}
                       </p>
                     </>
                   )}
