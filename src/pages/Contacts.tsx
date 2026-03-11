@@ -185,12 +185,12 @@ export default function Contacts() {
   const handleAddContact = async () => {
     if (!user || !newContact.prenom.trim()) return;
     setSaving(true);
+    const fullName = [newContact.prenom.trim(), newContact.nom.trim()].filter(Boolean).join(" ");
     const { error } = await db.from("contacts").insert({
       owner_user_id: user.id,
-      prenom: newContact.prenom,
-      nom: newContact.nom,
-      entreprise: newContact.entreprise,
-      email: newContact.email,
+      prenom_nom: fullName,
+      entreprise: newContact.entreprise.trim() || null,
+      email: newContact.email.trim() || null,
       origine: "manuel",
       statut: "a_contacter",
     });
