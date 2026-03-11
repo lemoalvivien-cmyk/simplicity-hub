@@ -301,7 +301,7 @@ export default function Account() {
             <h2 className="font-semibold text-foreground">Autonomie & OpenClaw</h2>
           </div>
           <Link
-            to="/autonomie"
+            to="/pilotage"
             className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
             Configurer OpenClaw, la voix et les canaux

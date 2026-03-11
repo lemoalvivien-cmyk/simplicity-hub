@@ -22,10 +22,10 @@ export default function JarvisButton({ context = "dashboard", userRole = "facili
           color: "hsl(var(--primary-foreground))",
           boxShadow: "var(--shadow-primary)",
         }}
-        aria-label="Ouvrir JARVIS"
+        aria-label="Ouvrir KITT IA"
       >
         <Sparkles size={16} />
-        <span className="hidden sm:inline">JARVIS</span>
+        <span className="hidden sm:inline">KITT IA</span>
         {/* Pulse indicator */}
         <span
           className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-card animate-pulse"
