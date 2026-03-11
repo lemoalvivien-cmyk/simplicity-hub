@@ -73,7 +73,7 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
     setMessages([{
       id: 0,
       role: "jarvis",
-      text: "Bonjour ! Je suis JARVIS, votre assistant business. Comment puis-je vous aider ?",
+      text: "Bonjour ! Je suis KITT IA, votre assistant business. Comment puis-je vous aider ?",
     }]);
   };
 
