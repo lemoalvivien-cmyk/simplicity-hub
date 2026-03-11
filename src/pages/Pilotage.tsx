@@ -163,7 +163,15 @@ export default function Pilotage() {
                 {validationsPending} validation{validationsPending > 1 ? "s" : ""} en attente
               </Link>
             )}
-            <div className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${openClawConnected ? "border-green-300 text-green-700 bg-green-50" : "border-border text-muted-foreground bg-muted"}`}>
+            <div className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${
+              openClawConnected
+                ? "text-foreground"
+                : "border-border text-muted-foreground bg-muted"}`}
+              style={openClawConnected ? {
+                borderColor: "hsl(var(--success) / 0.3)",
+                background: "hsl(var(--success-light))",
+                color: "hsl(var(--success))"
+              } : {}}>
               {openClawConnected
                 ? <><Wifi size={11} /> IA active</>
                 : <><WifiOff size={11} /> IA inactive</>}
