@@ -358,6 +358,7 @@ export default function Onboarding() {
             rows={3}
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
+            maxLength={1500}
             placeholder={isEntreprise ? t("onboarding_placeholder_desc_company") : t("onboarding_placeholder_desc_facilitator")}
             className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
           />

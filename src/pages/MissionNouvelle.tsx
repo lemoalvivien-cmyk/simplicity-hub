@@ -64,8 +64,12 @@ export default function MissionNouvelle() {
 
   const isValid = form.titre.trim().length > 3 && form.description.trim().length > 10;
 
+  const savingRef = { current: false };
+
   const handleSave = async () => {
     if (!user || !isValid) return;
+    if (saving || savingRef.current) return; // CM2-5: double-submit guard
+    savingRef.current = true;
     setSaving(true);
     try {
       const { data, error } = await db.from("missions").insert({
@@ -106,6 +110,7 @@ export default function MissionNouvelle() {
     } catch {
       toast.error("Erreur lors de la création. Réessayez.");
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
@@ -182,6 +187,7 @@ export default function MissionNouvelle() {
                   type="text"
                   value={form.titre}
                   onChange={e => setForm(f => ({ ...f, titre: e.target.value }))}
+                  maxLength={120}
                   placeholder="ex : Je cherche des clients B2B dans la tech"
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
                 />
@@ -196,6 +202,7 @@ export default function MissionNouvelle() {
                   rows={4}
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  maxLength={2000}
                   placeholder="Décrivez le profil idéal du contact que vous cherchez..."
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition resize-none"
                 />
@@ -211,6 +218,7 @@ export default function MissionNouvelle() {
                   type="text"
                   value={form.type_client_recherche}
                   onChange={e => setForm(f => ({ ...f, type_client_recherche: e.target.value }))}
+                  maxLength={200}
                   placeholder="ex : Dirigeant PME, Responsable IT, DRH..."
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
                 />
@@ -257,6 +265,7 @@ export default function MissionNouvelle() {
                   type="text"
                   value={form.recompense}
                   onChange={e => setForm(f => ({ ...f, recompense: e.target.value }))}
+                  maxLength={200}
                   placeholder="ex : 300 € par client validé"
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
                 />
