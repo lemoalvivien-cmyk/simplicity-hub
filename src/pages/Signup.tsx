@@ -164,7 +164,7 @@ export default function Signup() {
             </div>
 
             <button type="submit" disabled={loading}
-              className="btn-cta block text-center w-full py-3 text-sm disabled:opacity-60 flex items-center justify-center gap-2">
+              className="btn-cta w-full py-3 text-sm disabled:opacity-60 flex items-center justify-center gap-2">
               {loading ? <><Loader2 size={15} className="animate-spin" /> Création…</> : "Créer mon compte →"}
             </button>
 

@@ -27,13 +27,13 @@ export default function UserLayout({ children, role: roleProp, jarvisContext = "
     role === "entreprise" ? "entreprise" : "facilitateur";
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex overflow-x-hidden">
       {/* Sidebar — desktop only, 224px wide */}
       <UserNav role={role} />
 
       {/* Main content — offset by sidebar width on desktop */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-56">
-        <main className="flex-1 container py-8 animate-fade-in pb-20 md:pb-8">
+      <div className="flex-1 flex flex-col min-w-0 md:ml-56 overflow-x-hidden">
+        <main className="flex-1 container py-8 animate-fade-in pb-20 md:pb-8 overflow-x-hidden">
           {children}
         </main>
         <footer className="hidden md:block border-t border-border py-4">

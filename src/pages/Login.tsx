@@ -149,7 +149,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={submitting}
-              className="btn-primary block text-center w-full py-3 text-sm disabled:opacity-60 flex items-center justify-center gap-2"
+              className="btn-primary w-full py-3 text-sm disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>

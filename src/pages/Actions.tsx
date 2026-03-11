@@ -12,20 +12,20 @@ import {
 } from "@/hooks/useUserActions";
 
 /* ─── TYPE CONFIG ──────────────────────────────────────────────── */
-const typeConfig: Record<UserActionType, { label: string; colorClass: string; bgClass: string; icon: React.ReactNode }> = {
-  appeler:  { label: "Appeler",   colorClass: "text-blue-700",   bgClass: "bg-blue-100",   icon: <Phone      size={12} /> },
-  envoyer:  { label: "Contacter", colorClass: "text-green-700",  bgClass: "bg-green-100",  icon: <Mail       size={12} /> },
-  relancer: { label: "Relancer",  colorClass: "text-orange-700", bgClass: "bg-orange-100", icon: <Send       size={12} /> },
-  valider:  { label: "Valider",   colorClass: "text-violet-700", bgClass: "bg-violet-100", icon: <CheckCircle2 size={12} /> },
-  verifier: { label: "Vérifier",  colorClass: "text-slate-600",  bgClass: "bg-slate-100",  icon: <AlertCircle  size={12} /> },
-  analyser: { label: "Analyser",  colorClass: "text-indigo-700", bgClass: "bg-indigo-100", icon: <BarChart3   size={12} /> },
+const typeConfig: Record<UserActionType, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  appeler:  { label: "Appeler",   color: "hsl(var(--primary))",         bg: "hsl(var(--secondary))",      icon: <Phone      size={12} /> },
+  envoyer:  { label: "Contacter", color: "hsl(var(--success))",         bg: "hsl(var(--success-light))",  icon: <Mail       size={12} /> },
+  relancer: { label: "Relancer",  color: "hsl(var(--accent))",          bg: "hsl(var(--accent-light))",   icon: <Send       size={12} /> },
+  valider:  { label: "Valider",   color: "hsl(var(--electric))",        bg: "hsl(var(--electric-light))", icon: <CheckCircle2 size={12} /> },
+  verifier: { label: "Vérifier",  color: "hsl(var(--muted-foreground))",bg: "hsl(var(--muted))",          icon: <AlertCircle  size={12} /> },
+  analyser: { label: "Analyser",  color: "hsl(var(--primary-glow))",    bg: "hsl(var(--secondary))",      icon: <BarChart3   size={12} /> },
 };
 
-const priorityConfig: Record<UserActionPriority, { label: string; dotClass: string; sectionIcon: React.ReactNode; borderStyle?: React.CSSProperties }> = {
-  urgente: { label: "Urgentes",       dotClass: "bg-red-500",    sectionIcon: <Zap size={14} className="text-red-500" />,            borderStyle: { borderLeft: "3px solid hsl(var(--destructive))" } },
-  haute:   { label: "Priorité haute", dotClass: "bg-orange-400", sectionIcon: <Zap size={14} className="text-orange-400" />,         borderStyle: { borderLeft: "3px solid hsl(var(--accent))" } },
-  normale: { label: "Aujourd'hui",    dotClass: "bg-primary",    sectionIcon: <Clock size={14} className="text-muted-foreground" />, borderStyle: undefined },
-  basse:   { label: "Cette semaine",  dotClass: "bg-muted",      sectionIcon: <Clock size={14} className="text-muted-foreground" />, borderStyle: undefined },
+const priorityConfig: Record<UserActionPriority, { label: string; dotStyle: React.CSSProperties; sectionIcon: React.ReactNode; borderStyle?: React.CSSProperties }> = {
+  urgente: { label: "Urgentes",       dotStyle: { background: "hsl(var(--destructive))" },     sectionIcon: <Zap size={14} style={{ color: "hsl(var(--destructive))" }} />,        borderStyle: { borderLeft: "3px solid hsl(var(--destructive))" } },
+  haute:   { label: "Priorité haute", dotStyle: { background: "hsl(var(--accent))" },          sectionIcon: <Zap size={14} style={{ color: "hsl(var(--accent))" }} />,             borderStyle: { borderLeft: "3px solid hsl(var(--accent))" } },
+  normale: { label: "Aujourd'hui",    dotStyle: { background: "hsl(var(--primary))" },         sectionIcon: <Clock size={14} className="text-muted-foreground" />,                 borderStyle: undefined },
+  basse:   { label: "Cette semaine",  dotStyle: { background: "hsl(var(--muted-foreground))" },sectionIcon: <Clock size={14} className="text-muted-foreground" />,                 borderStyle: undefined },
 };
 
 const PRIORITY_ORDER: UserActionPriority[] = ["urgente", "haute", "normale", "basse"];
@@ -138,16 +138,19 @@ function ActionCard({ action, onDone }: { action: UserAction; onDone: () => void
     >
       {/* Top badges */}
       <div className="flex items-center gap-2 mb-2 flex-wrap">
-        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.colorClass} ${cfg.bgClass}`}>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+          style={{ color: cfg.color, background: cfg.bg }}>
           {cfg.icon} {cfg.label}
         </span>
         {action.source === "openclaw" && (
-          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full text-violet-700 bg-violet-100">
+          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+            style={{ color: "hsl(var(--electric))", background: "hsl(var(--electric-light))" }}>
             <Zap size={10} /> OpenClaw
           </span>
         )}
         {action.source === "ai_recommendation" && (
-          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full text-indigo-700 bg-indigo-100">
+          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+            style={{ color: "hsl(var(--primary-glow))", background: "hsl(var(--secondary))" }}>
             <BarChart3 size={10} /> IA
           </span>
         )}
@@ -234,10 +237,10 @@ export default function Actions() {
   const urgentes = grouped["urgente"].length;
 
   const summaryStats = [
-    { label: "Urgentes",      value: grouped["urgente"].length, dotClass: "bg-red-500" },
-    { label: "Priorité haute",value: grouped["haute"].length,   dotClass: "bg-orange-400" },
-    { label: "Normales",      value: grouped["normale"].length, dotClass: "bg-primary" },
-    { label: "Basses",        value: grouped["basse"].length,   dotClass: "bg-muted-foreground" },
+    { label: "Urgentes",      value: grouped["urgente"].length, dotColor: "hsl(var(--destructive))" },
+    { label: "Priorité haute",value: grouped["haute"].length,   dotColor: "hsl(var(--accent))" },
+    { label: "Normales",      value: grouped["normale"].length, dotColor: "hsl(var(--primary))" },
+    { label: "Basses",        value: grouped["basse"].length,   dotColor: "hsl(var(--muted-foreground))" },
   ];
 
   return (
@@ -279,9 +282,9 @@ export default function Actions() {
         {/* Summary chips */}
         {!isLoading && (
           <div className="grid grid-cols-4 gap-2 mb-5">
-            {summaryStats.map(({ label, value, dotClass }) => (
+            {summaryStats.map(({ label, value, dotColor }) => (
               <div key={label} className="card-surface p-2.5 text-center">
-                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${dotClass}`} />
+                <div className="w-2 h-2 rounded-full mx-auto mb-1" style={{ background: dotColor }} />
                 <p className="font-display text-lg font-bold text-foreground">{value}</p>
                 <p className="text-xs text-muted-foreground leading-tight">{label}</p>
               </div>
