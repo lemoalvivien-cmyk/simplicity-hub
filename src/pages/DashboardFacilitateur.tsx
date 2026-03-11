@@ -37,7 +37,7 @@ function StatutPill({ statut }: { statut: string | null }) {
   );
 }
 
-function StatCard({ label, value, to, loading, accent }: { label: string; value: string | number; to: string; loading: boolean; accent?: boolean }) {
+function StatCard({ label, value, to, loading, accent }: { label: React.ReactNode; value: string | number; to: string; loading: boolean; accent?: boolean }) {
   return (
     <Link to={to}
       className="flex-1 rounded-2xl p-4 border-2 transition-all hover:shadow-md"
