@@ -61,8 +61,4 @@ export default function FinalCTASection() {
       </div>
     </section>
   );
-});
-
-FinalCTASection.displayName = "FinalCTASection";
-
-export default FinalCTASection;
+}

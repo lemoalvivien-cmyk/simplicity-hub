@@ -1,4 +1,3 @@
-import { forwardRef, type RefObject } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, ArrowRight, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -26,7 +25,7 @@ const facilitateurFeatures = [
   "Aucune commission prélevée par la plateforme",
 ];
 
-function PricingSectionInner() {
+export default function PricingSection() {
   const [launchAvailable, setLaunchAvailable] = useState(true);
   const [slotsRemaining, setSlotsRemaining] = useState(100);
 
@@ -45,7 +44,7 @@ function PricingSectionInner() {
   }, []);
 
   return (
-    <div className="py-20 bg-background">
+    <section id="pricing" className="bg-background py-20">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">Offre lancement</p>
@@ -156,17 +155,6 @@ function PricingSectionInner() {
           Paiement sécurisé · Données protégées · Facturation annuelle · Aucun frais caché
         </p>
       </div>
-    </div>
-  );
-}
-
-const PricingSection = forwardRef<HTMLElement>(function PricingSection(_, ref) {
-  return (
-    <section ref={ref as RefObject<HTMLElement>} id="pricing" className="bg-background">
-      <PricingSectionInner />
     </section>
   );
-});
-PricingSection.displayName = "PricingSection";
-
-export default PricingSection;
+}
