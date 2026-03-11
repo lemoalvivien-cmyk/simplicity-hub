@@ -12,20 +12,20 @@ import {
 } from "@/hooks/useUserActions";
 
 /* ─── TYPE CONFIG ──────────────────────────────────────────────── */
-const typeConfig: Record<UserActionType, { label: string; colorClass: string; bgClass: string; icon: React.ReactNode }> = {
-  appeler:  { label: "Appeler",   colorClass: "text-blue-700",   bgClass: "bg-blue-100",   icon: <Phone      size={12} /> },
-  envoyer:  { label: "Contacter", colorClass: "text-green-700",  bgClass: "bg-green-100",  icon: <Mail       size={12} /> },
-  relancer: { label: "Relancer",  colorClass: "text-orange-700", bgClass: "bg-orange-100", icon: <Send       size={12} /> },
-  valider:  { label: "Valider",   colorClass: "text-violet-700", bgClass: "bg-violet-100", icon: <CheckCircle2 size={12} /> },
-  verifier: { label: "Vérifier",  colorClass: "text-slate-600",  bgClass: "bg-slate-100",  icon: <AlertCircle  size={12} /> },
-  analyser: { label: "Analyser",  colorClass: "text-indigo-700", bgClass: "bg-indigo-100", icon: <BarChart3   size={12} /> },
+const typeConfig: Record<UserActionType, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  appeler:  { label: "Appeler",   color: "hsl(var(--primary))",         bg: "hsl(var(--secondary))",      icon: <Phone      size={12} /> },
+  envoyer:  { label: "Contacter", color: "hsl(var(--success))",         bg: "hsl(var(--success-light))",  icon: <Mail       size={12} /> },
+  relancer: { label: "Relancer",  color: "hsl(var(--accent))",          bg: "hsl(var(--accent-light))",   icon: <Send       size={12} /> },
+  valider:  { label: "Valider",   color: "hsl(var(--electric))",        bg: "hsl(var(--electric-light))", icon: <CheckCircle2 size={12} /> },
+  verifier: { label: "Vérifier",  color: "hsl(var(--muted-foreground))",bg: "hsl(var(--muted))",          icon: <AlertCircle  size={12} /> },
+  analyser: { label: "Analyser",  color: "hsl(var(--primary-glow))",    bg: "hsl(var(--secondary))",      icon: <BarChart3   size={12} /> },
 };
 
-const priorityConfig: Record<UserActionPriority, { label: string; dotClass: string; sectionIcon: React.ReactNode; borderStyle?: React.CSSProperties }> = {
-  urgente: { label: "Urgentes",       dotClass: "bg-red-500",    sectionIcon: <Zap size={14} className="text-red-500" />,            borderStyle: { borderLeft: "3px solid hsl(var(--destructive))" } },
-  haute:   { label: "Priorité haute", dotClass: "bg-orange-400", sectionIcon: <Zap size={14} className="text-orange-400" />,         borderStyle: { borderLeft: "3px solid hsl(var(--accent))" } },
-  normale: { label: "Aujourd'hui",    dotClass: "bg-primary",    sectionIcon: <Clock size={14} className="text-muted-foreground" />, borderStyle: undefined },
-  basse:   { label: "Cette semaine",  dotClass: "bg-muted",      sectionIcon: <Clock size={14} className="text-muted-foreground" />, borderStyle: undefined },
+const priorityConfig: Record<UserActionPriority, { label: string; dotStyle: React.CSSProperties; sectionIcon: React.ReactNode; borderStyle?: React.CSSProperties }> = {
+  urgente: { label: "Urgentes",       dotStyle: { background: "hsl(var(--destructive))" },     sectionIcon: <Zap size={14} style={{ color: "hsl(var(--destructive))" }} />,        borderStyle: { borderLeft: "3px solid hsl(var(--destructive))" } },
+  haute:   { label: "Priorité haute", dotStyle: { background: "hsl(var(--accent))" },          sectionIcon: <Zap size={14} style={{ color: "hsl(var(--accent))" }} />,             borderStyle: { borderLeft: "3px solid hsl(var(--accent))" } },
+  normale: { label: "Aujourd'hui",    dotStyle: { background: "hsl(var(--primary))" },         sectionIcon: <Clock size={14} className="text-muted-foreground" />,                 borderStyle: undefined },
+  basse:   { label: "Cette semaine",  dotStyle: { background: "hsl(var(--muted-foreground))" },sectionIcon: <Clock size={14} className="text-muted-foreground" />,                 borderStyle: undefined },
 };
 
 const PRIORITY_ORDER: UserActionPriority[] = ["urgente", "haute", "normale", "basse"];
