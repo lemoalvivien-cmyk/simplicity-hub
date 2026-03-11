@@ -110,6 +110,7 @@ export default function MissionNouvelle() {
     } catch {
       toast.error("Erreur lors de la création. Réessayez.");
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
