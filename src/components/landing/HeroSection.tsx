@@ -49,11 +49,15 @@ export default function HeroSection() {
             </span>
           </h1>
 
-          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/75 mb-9 max-w-lg mx-auto leading-[1.75] font-light px-2">
+          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/75 mb-5 max-w-lg mx-auto leading-[1.75] font-light px-2">
             Wiinup Max combine{" "}
             <span className="text-white/90 font-medium">prospection pilotée par IA</span> et{" "}
             <span className="text-white/90 font-medium">apport d'affaires structuré</span>.
             Chaque opportunité est tracée. Chaque résultat est mesurable.
+          </p>
+
+          <p className="text-[clamp(1rem,2.5vw,1.15rem)] text-white font-medium mb-9 max-w-lg mx-auto leading-[1.7] px-2 text-center" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
+            Avec Wiinup, augmentez vos revenus en toute sécurité, sans investir, sans charge mentale et sans changer vos habitudes.
           </p>
 
           {/* CTAs */}

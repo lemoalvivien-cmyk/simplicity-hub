@@ -62,14 +62,14 @@ export default function FacilitateurSection() {
               </p>
               <div className="flex items-baseline gap-2">
                 <p className="font-display font-bold text-white text-2xl leading-none">Gratuit</p>
-                <p className="text-white/60 text-xs">Pour toujours · Sans carte bancaire</p>
+                <p className="text-white/80 text-xs">Pour toujours · Sans carte bancaire</p>
               </div>
             </div>
             <ul className="p-6 space-y-3">
               {benefits.map((item) => (
                 <li key={item} className="flex items-start gap-3">
                   <CheckCircle2 size={14} style={{ color: "hsl(24 100% 60%)" }} className="shrink-0 mt-0.5" />
-                  <span className="text-sm text-white/78 leading-snug">{item}</span>
+                  <span className="text-sm text-white/95 leading-snug">{item}</span>
                 </li>
               ))}
             </ul>

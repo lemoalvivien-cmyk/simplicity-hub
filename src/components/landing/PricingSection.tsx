@@ -10,7 +10,7 @@ const entrepriseFeatures = [
   "Prospection automatisée OpenClaw",
   "Deal Radar — signaux d'intention",
   "Cockpit central de suivi",
-  "Assistant JARVIS illimité",
+  "Assistant KITT IA illimité",
   "Marketplace de facilitateurs",
   "Gains & commissions traçables",
   "Support inclus · Mises à jour incluses",
@@ -69,18 +69,18 @@ export default function PricingSection() {
                   {slotsRemaining} place{slotsRemaining > 1 ? "s" : ""} restante{slotsRemaining > 1 ? "s" : ""} — Offre lancement
                 </div>
               )}
-              <p className="text-white/70 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
+              <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
               <div className="flex items-end gap-2 mb-1">
                 <span className="font-display font-bold text-5xl text-white leading-none">8,25 €</span>
                 <div className="pb-1.5">
-                  <p className="text-white/70 text-sm">/mois</p>
+                  <p className="text-white/90 text-sm">/mois</p>
                 </div>
               </div>
-              <p className="text-white/70 text-sm font-medium mb-1">99 € facturé annuellement</p>
-              <p className="text-white/55 text-xs italic">
+              <p className="text-white/90 text-sm font-medium mb-1">99 € facturé annuellement</p>
+              <p className="text-white/75 text-xs italic">
                 Le prix d'un café par semaine. Pour une machine d'acquisition complète.
               </p>
-              <p className="text-white/60 text-xs mt-2">
+              <p className="text-white/75 text-xs mt-2">
                 {launchAvailable
                   ? "Réservée aux 100 premières entreprises — accès complet immédiat"
                   : "Abonnement annuel — accès complet, support inclus"}
@@ -116,11 +116,11 @@ export default function PricingSection() {
               className="px-7 pt-7 pb-5"
               style={{ background: "var(--gradient-accent)" }}
             >
-              <p className="text-white/85 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur / Apporteur</p>
+              <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur / Apporteur</p>
               <div className="flex items-baseline gap-3 mb-1">
                 <span className="font-display font-bold text-5xl text-white">Gratuit</span>
               </div>
-              <p className="text-white/75 text-xs mt-1">Pour toujours · Sans carte bancaire · Zéro frais caché</p>
+              <p className="text-white/80 text-xs mt-1">Pour toujours · Sans carte bancaire · Zéro frais caché</p>
             </div>
 
             <div className="px-7 py-6 flex flex-col">
