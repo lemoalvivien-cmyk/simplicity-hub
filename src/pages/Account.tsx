@@ -313,7 +313,7 @@ export default function Account() {
         {/* Logout */}
         <div className="border-t border-border pt-5">
           <button
-            onClick={signOut}
+            onClick={async () => { await signOut(); navigate("/login", { replace: true }); }}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <LogOut size={15} />
