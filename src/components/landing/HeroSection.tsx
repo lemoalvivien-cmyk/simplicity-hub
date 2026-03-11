@@ -56,7 +56,7 @@ export default function HeroSection() {
             Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
 
-          {/* CTAs — clear hierarchy */}
+          {/* CTAs */}
           <div className="flex flex-col items-center gap-3 mb-9 px-2">
             <Link
               to="/signup"
@@ -74,7 +74,7 @@ export default function HeroSection() {
               <Users size={15} />
               Devenir facilitateur — Gratuit
             </Link>
-            <p className="text-white/50 text-xs mt-1">
+            <p className="text-white/55 text-xs mt-1">
               Premières recommandations IA sous 5 minutes
             </p>
           </div>
@@ -120,7 +120,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* KPI grid — illustrative */}
+          {/* KPI grid */}
           <div className="p-4 md:p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               { label: "Missions actives", value: "3", color: "hsl(218 72% 58%)", live: true },
@@ -152,7 +152,6 @@ export default function HeroSection() {
               </div>
             ))}
           </div>
-          {/* Legal — illustrative disclaimer */}
           <p className="text-center text-white/20 text-[9px] px-4 pb-3 pt-1">
             Interface illustrative — données de démonstration
           </p>

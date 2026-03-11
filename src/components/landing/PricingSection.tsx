@@ -52,14 +52,13 @@ export default function PricingSection() {
             Simple, honnête, transparent.
           </h2>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
-            L'offre entreprise est payante. L'accès facilitateur est gratuit. Il n'y a rien de caché.
+            L'offre entreprise est payante. L'accès facilitateur est gratuit. Rien de caché.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 items-start">
           {/* Entreprise — dominant */}
           <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-lg flex flex-col">
-            {/* Header */}
             <div
               className="px-7 pt-7 pb-5"
               style={{ background: "var(--gradient-primary)" }}
@@ -72,15 +71,13 @@ export default function PricingSection() {
               )}
               <p className="text-white/70 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
               <div className="flex items-end gap-2 mb-1">
-                <span className="font-display font-bold text-5xl text-white leading-none">
-                  8,25 €
-                </span>
+                <span className="font-display font-bold text-5xl text-white leading-none">8,25 €</span>
                 <div className="pb-1.5">
                   <p className="text-white/70 text-sm">/mois</p>
                 </div>
               </div>
               <p className="text-white/70 text-sm font-medium mb-1">99 € facturé annuellement</p>
-              <p className="text-white/50 text-xs italic">
+              <p className="text-white/55 text-xs italic">
                 Le prix d'un café par semaine. Pour une machine d'acquisition complète.
               </p>
               <p className="text-white/60 text-xs mt-2">
@@ -90,7 +87,6 @@ export default function PricingSection() {
               </p>
             </div>
 
-            {/* Features */}
             <div className="px-7 py-6 flex flex-col flex-1">
               <ul className="space-y-3 mb-7 flex-1">
                 {entrepriseFeatures.map((item) => (
@@ -116,7 +112,6 @@ export default function PricingSection() {
 
           {/* Facilitateur — secondaire */}
           <div className="bg-card rounded-2xl overflow-hidden border-2 border-accent flex flex-col">
-            {/* Header */}
             <div
               className="px-7 pt-7 pb-5"
               style={{ background: "var(--gradient-accent)" }}
@@ -128,7 +123,6 @@ export default function PricingSection() {
               <p className="text-white/75 text-xs mt-1">Pour toujours · Sans carte bancaire · Zéro frais caché</p>
             </div>
 
-            {/* Features */}
             <div className="px-7 py-6 flex flex-col">
               <ul className="space-y-3 mb-7">
                 {facilitateurFeatures.map((item) => (
