@@ -41,6 +41,7 @@ export default function Onboarding() {
   });
   const [done, setDone] = useState(false);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
   const [params] = useSearchParams();
