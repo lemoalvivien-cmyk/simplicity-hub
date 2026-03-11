@@ -6,6 +6,7 @@ import PageTitle from "@/components/ui/PageTitle";
 import ListPagination from "@/components/ui/ListPagination";
 import { Send, CheckCircle2, Clock, XCircle, ChevronRight, Plus, Loader2 } from "lucide-react";
 import { db } from "@/lib/supabase";
+import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";

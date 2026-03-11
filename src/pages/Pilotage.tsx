@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 

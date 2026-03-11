@@ -10,6 +10,7 @@ import {
   Plus, ShieldCheck, Info, ChevronDown, ChevronUp, ChevronRight,
 } from "lucide-react";
 import { db } from "@/lib/supabase";
+import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import VoiceWelcome from "@/components/ai/VoiceWelcome";
 import { Progress } from "@/components/ui/progress";

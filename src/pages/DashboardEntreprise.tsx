@@ -11,6 +11,7 @@ import {
   ChevronDown, ChevronUp,
 } from "lucide-react";
 import { db } from "@/lib/supabase";
+import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
 import ActivationProgressBar from "@/components/activation/ActivationProgressBar";

@@ -6,6 +6,7 @@ import { Euro, MapPin, ChevronRight, Plus, Search, Send, Loader2, Briefcase } fr
 import PageTitle from "@/components/ui/PageTitle";
 import ListPagination from "@/components/ui/ListPagination";
 import { db } from "@/lib/supabase";
+import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 
 interface Mission {
   id: string;
