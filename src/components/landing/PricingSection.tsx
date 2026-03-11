@@ -156,12 +156,16 @@ function PricingSectionInner() {
           Paiement sécurisé · Données protégées · Facturation annuelle · Aucun frais caché
         </p>
       </div>
-    </section>
+    </div>
   );
 }
 
 const PricingSection = forwardRef<HTMLElement>(function PricingSection(_, ref) {
-  return <section ref={ref as React.RefObject<HTMLElement>} id="pricing"><PricingSectionInner /></section>;
+  return (
+    <section ref={ref as React.RefObject<HTMLElement>} id="pricing" className="bg-background">
+      <PricingSectionInner />
+    </section>
+  );
 });
 PricingSection.displayName = "PricingSection";
 

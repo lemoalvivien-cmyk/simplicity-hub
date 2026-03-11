@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 
-export default function FinalCTASection() {
+export default function FinalCTASectionInner() {
   return (
-    <section className="hero-bg py-24 md:py-32 relative overflow-hidden">
+    <>
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
