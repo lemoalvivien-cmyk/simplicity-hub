@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
 import { trackEvent } from "@/lib/analytics";
 
 type Role = "entreprise" | "facilitateur" | null;
@@ -33,7 +32,6 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
 }
 
 export default function Onboarding() {
-  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [role, setRole] = useState<Role>(null);
   const [profile, setProfile] = useState<ProfileData>({
@@ -48,12 +46,12 @@ export default function Onboarding() {
   const via = params.get("via");
 
   const welcomeMsg = via === "code"
-    ? t("onboarding_welcome_via_code")
-    : t("onboarding_welcome_default");
+    ? "Votre code d'invitation a été validé. Configurons votre espace."
+    : "Configurons votre espace en 2 minutes.";
 
   const saveProfile = async (description: string) => {
     if (!user) return;
-    if (saving || savingRef.current) return; // CM2-5: double-submit guard
+    if (saving || savingRef.current) return;
     savingRef.current = true;
     setSaving(true);
     try {
@@ -63,28 +61,21 @@ export default function Onboarding() {
       } else if (role === "facilitateur") {
         await db.from("facilitateur_profiles").upsert({ user_id: user.id, description_reseau: description, secteur: profile.secteur }, { onConflict: "user_id" });
       }
-      // PROOF: onboarding_done → analytics_events (real write)
       trackEvent("onboarding_done", user.id, { role: role ?? "unknown" });
       await refreshProfile();
 
-      // ── OPENCLAW ACTIVATION (fire & forget) ────────────────
       if (role === "entreprise") {
-        // Check if user already has missions
         const { count: missionCount } = await db
           .from("missions")
           .select("id", { count: "exact", head: true })
           .eq("entreprise_id", user.id);
 
         const activationCalls: Promise<unknown>[] = [
-          // 1. Sync entreprise profile into OpenClaw dossier
           supabase.functions.invoke("openclaw-dossier-sync", { body: { force: true } }),
-          // 2. Generate first AI welcome brief
           supabase.functions.invoke("openclaw-job-executor", { body: { job_type: "daily_brief_generate" } }),
-          // Legacy welcome scan
           supabase.functions.invoke("openclaw-scheduler", { body: { tick_type: "welcome_scan", user_id: user.id } }),
         ];
 
-        // 3. If missions exist, also trigger radar scan
         if ((missionCount ?? 0) > 0) {
           activationCalls.push(
             supabase.functions.invoke("openclaw-job-executor", { body: { job_type: "radar_scan" } })
@@ -94,7 +85,6 @@ export default function Onboarding() {
         Promise.allSettled(activationCalls).catch(() => {});
         toast.success("Le cerveau WiinupMax analyse votre profil. Vos premières recommandations arrivent...");
       } else {
-        // Facilitateur — keep existing welcome scan only
         supabase.functions.invoke("openclaw-scheduler", {
           body: { tick_type: "welcome_scan", user_id: user.id },
         }).catch(() => {});
@@ -102,7 +92,7 @@ export default function Onboarding() {
 
       setDone(true);
     } catch {
-      toast.error(t("onboarding_saving_error"));
+      toast.error("Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.");
     } finally {
       savingRef.current = false;
       setSaving(false);
@@ -116,30 +106,30 @@ export default function Onboarding() {
         <div className="w-12 h-12 rounded-2xl bg-gradient-primary flex items-center justify-center mb-5">
           <span className="text-white font-display font-bold text-xl">W</span>
         </div>
-        <h1 className="font-display text-2xl font-bold text-foreground mb-2">{t("onboarding_welcome_title")}</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground mb-2">Bienvenue sur Wiinup Max</h1>
         <p className="text-muted-foreground leading-relaxed">{welcomeMsg}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-5">
         <div className="rounded-2xl p-4" style={{ background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))", border: "1px solid hsl(218 40% 22% / 0.6)" }}>
           <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(218 72% 65%)" }}>Moteur 1</p>
-          <p className="font-semibold text-white text-sm">{t("onboarding_moteur1_title")}</p>
-          <p className="text-white/45 text-xs mt-1">{t("onboarding_moteur1_sub")}</p>
+          <p className="font-semibold text-white text-sm">Prospection IA</p>
+          <p className="text-white/45 text-xs mt-1">L'IA trouve vos clients</p>
         </div>
         <div className="rounded-2xl p-4" style={{ background: "linear-gradient(135deg, hsl(24 60% 8%), hsl(38 50% 11%))", border: "1px solid hsl(24 50% 20% / 0.6)" }}>
           <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(24 100% 65%)" }}>Moteur 2</p>
-          <p className="font-semibold text-white text-sm">{t("onboarding_moteur2_title")}</p>
-          <p className="text-white/45 text-xs mt-1">{t("onboarding_moteur2_sub")}</p>
+          <p className="font-semibold text-white text-sm">Apport d'affaires</p>
+          <p className="text-white/45 text-xs mt-1">Votre réseau vous rapporte</p>
         </div>
       </div>
-      <p className="text-xs text-center text-muted-foreground mb-5">{t("onboarding_double_engine")}</p>
+      <p className="text-xs text-center text-muted-foreground mb-5">Deux moteurs combinés pour maximiser vos résultats.</p>
 
       <div className="card-surface p-5 mb-6 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("onboarding_what_awaits")}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Ce qui vous attend</p>
         {([
-          { n: "1", label: t("onboarding_step1_label"), sub: t("onboarding_step1_sub") },
-          { n: "2", label: t("onboarding_step2_label"), sub: t("onboarding_step2_sub") },
-          { n: "3", label: t("onboarding_step3_label"), sub: t("onboarding_step3_sub") },
+          { n: "1", label: "Choisir votre rôle", sub: "30 secondes" },
+          { n: "2", label: "Compléter votre profil", sub: "1 minute" },
+          { n: "3", label: "Décrire votre activité", sub: "Optionnel" },
         ] as const).map(({ n, label, sub }) => (
           <div key={n} className="flex items-start gap-3">
             <div className="w-6 h-6 rounded-full bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -153,9 +143,9 @@ export default function Onboarding() {
         ))}
       </div>
 
-      <p className="text-xs text-muted-foreground mb-5 text-center">{t("onboarding_trust_note")}</p>
+      <p className="text-xs text-muted-foreground mb-5 text-center">Vos données restent privées. Vous pouvez tout modifier plus tard.</p>
       <button onClick={() => setStep(1)} className="btn-cta w-full py-4">
-        {t("onboarding_cta_start")} <ArrowRight size={16} />
+        C'est parti <ArrowRight size={16} />
       </button>
     </div>
   );
@@ -165,10 +155,10 @@ export default function Onboarding() {
     <div className="w-full max-w-md animate-fade-in" key="role">
       <div className="mb-7">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-          {t("onboarding_step_label", { step: 1, total: TOTAL_STEPS })}
+          Étape 1 sur {TOTAL_STEPS}
         </p>
-        <h1 className="font-display text-2xl font-bold text-foreground mb-2">{t("onboarding_role_title")}</h1>
-        <p className="text-muted-foreground text-sm">{t("onboarding_role_subtitle")}</p>
+        <h1 className="font-display text-2xl font-bold text-foreground mb-2">Quel est votre rôle ?</h1>
+        <p className="text-muted-foreground text-sm">Cela détermine votre expérience.</p>
       </div>
 
       <div className="space-y-3 mb-6">
@@ -180,10 +170,10 @@ export default function Onboarding() {
             <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center shrink-0"><Building2 size={20} className="text-primary" /></div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-foreground">{t("onboarding_role_company_title")}</p>
+                <p className="font-semibold text-foreground">Entreprise</p>
                 {role === "entreprise" && <CheckCircle2 size={18} className="text-primary shrink-0" />}
               </div>
-              <p className="text-sm text-muted-foreground mt-0.5">{t("onboarding_role_company_sub")}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Je cherche des clients via le réseau et l'IA</p>
             </div>
           </div>
         </button>
@@ -196,10 +186,10 @@ export default function Onboarding() {
             <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center shrink-0"><Users size={20} className="text-primary" /></div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-foreground">{t("onboarding_role_facilitator_title")}</p>
+                <p className="font-semibold text-foreground">Apporteur / Facilitateur</p>
                 {role === "facilitateur" && <CheckCircle2 size={18} className="text-primary shrink-0" />}
               </div>
-              <p className="text-sm text-muted-foreground mt-0.5">{t("onboarding_role_facilitator_sub")}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Je mets en relation et je gagne des commissions</p>
             </div>
           </div>
         </button>
@@ -210,7 +200,7 @@ export default function Onboarding() {
         disabled={!role}
         className="btn-cta w-full py-4 disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {t("onboarding_cta_continue")} <ChevronRight size={16} />
+        Continuer <ChevronRight size={16} />
       </button>
     </div>
   );
@@ -242,17 +232,17 @@ export default function Onboarding() {
       <div className="w-full max-w-md animate-fade-in" key="profile">
         <div className="mb-7">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-            {t("onboarding_step_label", { step: 2, total: TOTAL_STEPS })}
+            Étape 2 sur {TOTAL_STEPS}
           </p>
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">{t("onboarding_profile_title")}</h1>
-          <p className="text-muted-foreground text-sm">{t("onboarding_profile_subtitle")}</p>
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">Votre profil</h1>
+          <p className="text-muted-foreground text-sm">Ces informations aident à vous trouver les bonnes opportunités.</p>
         </div>
 
         <div className="space-y-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
-              {t("onboarding_field_prenom")}
-              <span className="text-muted-foreground font-normal ml-1">{t("onboarding_field_prenom_hint")}</span>
+              Prénom
+              <span className="text-muted-foreground font-normal ml-1">(comment on vous appelle)</span>
             </label>
             <input
               type="text"
@@ -265,8 +255,8 @@ export default function Onboarding() {
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
-              {isEntreprise ? t("onboarding_field_entity_company") : t("onboarding_field_entity_facilitator")}
-              <span className="text-muted-foreground font-normal ml-1">{t("onboarding_field_entity_hint")}</span>
+              {isEntreprise ? "Nom de l'entreprise" : "Votre nom / structure"}
+              <span className="text-muted-foreground font-normal ml-1">(visible sur votre profil)</span>
             </label>
             <input
               type="text"
@@ -279,8 +269,8 @@ export default function Onboarding() {
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
-              {isEntreprise ? t("onboarding_field_sector_company") : t("onboarding_field_sector_facilitator")}
-              <span className="text-muted-foreground font-normal ml-1">{t("onboarding_field_sector_hint")}</span>
+              {isEntreprise ? "Secteur d'activité" : "Votre domaine de réseau"}
+              <span className="text-muted-foreground font-normal ml-1">(choisissez le plus proche)</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               {sectorOptions.map((s) => (
@@ -297,8 +287,8 @@ export default function Onboarding() {
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
-              {t("onboarding_field_goal")}
-              <span className="text-muted-foreground font-normal ml-1">{t("onboarding_field_goal_hint")}</span>
+              Objectif principal
+              <span className="text-muted-foreground font-normal ml-1">(un seul)</span>
             </label>
             <div className="space-y-2">
               {goals.map((g) => (
@@ -320,13 +310,13 @@ export default function Onboarding() {
           disabled={!isValid}
           className="btn-cta w-full py-4 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {t("onboarding_cta_continue")} <ChevronRight size={16} />
+          Continuer <ChevronRight size={16} />
         </button>
         <button
           onClick={() => setStep(1)}
           className="w-full text-center mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          {t("onboarding_cta_back")}
+          Retour
         </button>
       </div>
     );
@@ -346,27 +336,33 @@ export default function Onboarding() {
       <div className="w-full max-w-md animate-fade-in" key="action">
         <div className="mb-7">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-            {t("onboarding_step_label", { step: 3, total: TOTAL_STEPS })}
+            Étape 3 sur {TOTAL_STEPS}
           </p>
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">{t("onboarding_action_title")}</h1>
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+            {isEntreprise ? "Décrivez votre offre" : "Décrivez votre réseau"}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            {isEntreprise ? t("onboarding_action_desc_company") : t("onboarding_action_desc_facilitator")}
+            {isEntreprise
+              ? "L'IA utilise cette description pour prospecter à votre place."
+              : "Aidez les entreprises à comprendre qui vous pouvez connecter."}
           </p>
         </div>
 
         <div className="card-surface p-5 mb-5">
           <label className="block text-sm font-medium text-foreground mb-2">
-            {isEntreprise ? t("onboarding_field_desc_company") : t("onboarding_field_desc_facilitator")}
+            {isEntreprise ? "Votre offre en quelques mots" : "Votre réseau en quelques mots"}
           </label>
           <textarea
             rows={3}
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
             maxLength={1500}
-            placeholder={isEntreprise ? t("onboarding_placeholder_desc_company") : t("onboarding_placeholder_desc_facilitator")}
+            placeholder={isEntreprise
+              ? "ex : Nous proposons un logiciel RH pour PME de 50 à 500 salariés..."
+              : "ex : Je connais principalement des dirigeants PME dans l'industrie et la logistique..."}
             className="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
           />
-          <p className="text-xs text-muted-foreground mt-2">{t("onboarding_desc_note")}</p>
+          <p className="text-xs text-muted-foreground mt-2">Vous pourrez modifier cela à tout moment dans votre profil.</p>
         </div>
 
         <button
@@ -375,9 +371,9 @@ export default function Onboarding() {
           className="btn-cta w-full py-4 disabled:opacity-60"
         >
           {saving ? (
-            <><Loader2 size={16} className="animate-spin" /> {t("onboarding_saving")}</>
+            <><Loader2 size={16} className="animate-spin" /> Enregistrement…</>
           ) : (
-            t("onboarding_cta_finish")
+            "Terminer et accéder à mon espace"
           )}
         </button>
         <button
@@ -385,7 +381,7 @@ export default function Onboarding() {
           disabled={saving}
           className="w-full text-center mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
         >
-          {t("onboarding_cta_skip")}
+          Passer cette étape
         </button>
       </div>
     );
@@ -402,18 +398,20 @@ export default function Onboarding() {
           <CheckCircle2 size={32} style={{ color: "hsl(var(--success))" }} />
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-          {t("onboarding_done_title", { prenom })}
+          Bienvenue, {prenom} ! 🎉
         </h1>
         <p className="text-muted-foreground text-sm mb-7">
-          {isEntreprise ? t("onboarding_done_sub_company") : t("onboarding_done_sub_facilitator")}
+          {isEntreprise
+            ? "Votre espace entreprise est prêt. OpenClaw démarre la prospection."
+            : "Votre profil facilitateur est actif. Explorez les missions disponibles."}
         </p>
 
         <div className="card-surface p-5 mb-6 text-left space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("onboarding_done_ready")}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tout est prêt</p>
           {[
-            t("onboarding_done_item1"),
-            isEntreprise ? t("onboarding_done_item2_company") : t("onboarding_done_item2_facilitator"),
-            t("onboarding_done_item3"),
+            "Profil créé et sécurisé",
+            isEntreprise ? "OpenClaw activé — prospection en cours" : "Accès aux missions débloqué",
+            "Assistant KITT IA disponible",
           ].map((item) => (
             <div key={item} className="flex items-center gap-3">
               <CheckCircle2 size={15} style={{ color: "hsl(var(--success))" }} />
@@ -426,13 +424,13 @@ export default function Onboarding() {
           onClick={() => navigate(isEntreprise ? "/dashboard/entreprise" : "/dashboard/facilitateur")}
           className="btn-cta w-full py-4 mb-3"
         >
-          {t("onboarding_cta_space")} <ArrowRight size={16} />
+          Accéder à mon espace <ArrowRight size={16} />
         </button>
         <button
           onClick={() => navigate("/missions")}
           className="w-full px-4 py-3 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
         >
-          {isEntreprise ? t("onboarding_cta_missions_company") : t("onboarding_cta_missions_facilitator")}
+          {isEntreprise ? "Créer ma première mission" : "Voir les missions disponibles"}
         </button>
       </div>
     );
@@ -445,7 +443,7 @@ export default function Onboarding() {
           <span className="font-display font-bold text-foreground">WIINUP MAX</span>
           {step > 0 && step < 4 && !done && (
             <span className="text-xs text-muted-foreground">
-              {t("onboarding_step_label", { step, total: TOTAL_STEPS })}
+              Étape {step} sur {TOTAL_STEPS}
             </span>
           )}
         </div>
