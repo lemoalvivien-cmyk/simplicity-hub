@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 // ── Validated event types ────────────────────────────────────────────────────
 export const ANALYTICS_EVENTS = [
+  "page_view",
   "landing_view",
   "cta_click",
   "pricing_view",
