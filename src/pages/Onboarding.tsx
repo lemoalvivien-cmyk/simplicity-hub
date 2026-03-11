@@ -104,6 +104,7 @@ export default function Onboarding() {
     } catch {
       toast.error(t("onboarding_saving_error"));
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
