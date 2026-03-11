@@ -60,13 +60,37 @@ export default function Login() {
     // Profile loading + redirect handled by useEffect above
   };
 
+  // Timeout guard: if redirect takes >5s, show a recovery message
+  const [redirectTimeout, setRedirectTimeout] = useState(false);
+  useEffect(() => {
+    if (!redirecting && !(loading && user)) return;
+    const t = setTimeout(() => setRedirectTimeout(true), 5000);
+    return () => clearTimeout(t);
+  }, [redirecting, loading, user]);
+
   // Show full-page spinner while redirect is happening
   if (redirecting || (loading && user)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">Connexion en cours…</p>
+        <div className="text-center max-w-xs px-4">
+          {!redirectTimeout ? (
+            <>
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">Connexion en cours…</p>
+            </>
+          ) : (
+            <>
+              <AlertCircle size={28} className="text-destructive mx-auto mb-3" />
+              <p className="text-sm text-foreground font-medium mb-1">La connexion prend plus de temps que prévu.</p>
+              <p className="text-xs text-muted-foreground mb-4">Rechargez la page pour réessayer.</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="btn-primary px-6 py-2.5 text-sm"
+              >
+                Recharger la page
+              </button>
+            </>
+          )}
         </div>
       </div>
     );

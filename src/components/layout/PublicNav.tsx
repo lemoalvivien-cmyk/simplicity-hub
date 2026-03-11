@@ -154,13 +154,16 @@ export default function PublicNav() {
 export function LegalFooter() {
   return (
     <footer className="border-t border-border bg-background/50 py-6">
-      <div className="container flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-        <span>© {new Date().getFullYear()} VLM Consulting — SIRET 83512508900028</span>
-        <nav className="flex items-center gap-4" aria-label="Liens légaux">
-          <Link to="/cgu" className="hover:text-foreground transition-colors">CGU</Link>
-          <Link to="/confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
-          <Link to="/mentions-legales" className="hover:text-foreground transition-colors">Mentions légales</Link>
-        </nav>
+      {/* pb-20 on mobile clears the sticky CTA bottom bar (~64px) */}
+      <div className="pb-20 md:pb-0">
+        <div className="container flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span>© {new Date().getFullYear()} VLM Consulting — SIRET 83512508900028</span>
+          <nav className="flex items-center gap-4" aria-label="Liens légaux">
+            <Link to="/cgu" className="hover:text-foreground transition-colors">CGU</Link>
+            <Link to="/confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
+            <Link to="/mentions-legales" className="hover:text-foreground transition-colors">Mentions légales</Link>
+          </nav>
+        </div>
       </div>
     </footer>
   );
