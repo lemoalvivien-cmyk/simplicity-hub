@@ -66,16 +66,26 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ── Auth (optional — if no auth, skip dossier load) ──────
-    let userId: string | null = null;
+    // ── Auth (required) ──────────────────────────────────────
     const authHeader = req.headers.get("Authorization");
-    if (authHeader) {
-      const userClient = createClient(supabaseUrl, anonKey, {
-        global: { headers: { Authorization: authHeader } },
-      });
-      const { data: { user } } = await userClient.auth.getUser();
-      userId = user?.id ?? null;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const userId: string | null = user.id;
 
     const body = await req.json();
     const { company_name, sector, target_description } = body;
