@@ -128,8 +128,7 @@ function IntroductionForm({ mission, facilitateurId, onSuccess, onCancel }: Intr
       trackEvent("intro_submitted", facilitateurId, { mission_id: mission.id, intro_id: intro.id });
 
       onSuccess();
-    } catch (err) {
-      console.error(err);
+    } catch {
       setError("Erreur lors de l'envoi. Vérifiez votre connexion et réessayez.");
     } finally {
       setLoading(false);
