@@ -332,7 +332,7 @@ export default function Pilotage() {
                   max={4}
                   step={1}
                   value={autonomyLevel}
-                  onChange={(e) => setAutonomyLevel(Number(e.target.value))}
+                  onChange={(e) => handleAutonomyChange(Number(e.target.value))}
                   className="w-full accent-primary"
                 />
                 <div className="flex justify-between">
