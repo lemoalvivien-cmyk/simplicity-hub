@@ -194,9 +194,9 @@ export default function DashboardEntreprise() {
 
         {/* ═══ 3 STAT CARDS ═══════════════════════════════════ */}
         <div className="flex gap-3">
-          <StatCard label={<GlossaryTooltip term="Mission">Missions actives</GlossaryTooltip> as unknown as string} value={activeMissionsCount} to="/missions" loading={loading} />
+          <StatCard label={<GlossaryTooltip term="Mission">Missions actives</GlossaryTooltip>} value={activeMissionsCount} to="/missions" loading={loading} />
           <StatCard
-            label={<GlossaryTooltip term="Introduction">Intros en attente</GlossaryTooltip> as unknown as string}
+            label={<GlossaryTooltip term="Introduction">Intros en attente</GlossaryTooltip>}
             value={pendingIntrosCount}
             to="/entreprise/introductions"
             urgent={pendingIntrosCount > 0}
