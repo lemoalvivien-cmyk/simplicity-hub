@@ -105,7 +105,7 @@ export default function Assistant() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-display text-2xl font-bold text-foreground">JARVIS</h1>
+                <h1 className="font-display text-2xl font-bold text-foreground">KITT IA</h1>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">
                   <Zap size={9} /> IA
                 </span>
