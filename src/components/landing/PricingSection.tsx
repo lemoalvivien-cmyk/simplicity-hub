@@ -71,12 +71,12 @@ export default function PricingSection() {
               )}
               <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
               <div className="flex items-end gap-2 mb-1">
-                <span className="font-display font-bold text-5xl text-white leading-none">8,25 €</span>
+                <span className="font-display font-bold text-5xl text-white leading-none">99 €</span>
                 <div className="pb-1.5">
-                  <p className="text-white/90 text-sm">/mois</p>
+                  <p className="text-white/90 text-sm">/an TTC</p>
                 </div>
               </div>
-              <p className="text-white/90 text-sm font-medium mb-1">99 € facturé annuellement</p>
+              <p className="text-white/75 text-sm font-medium mb-1 line-through opacity-60">soit 8,25 € / mois</p>
               <p className="text-white/75 text-xs italic">
                 Le prix d'un café par semaine. Pour une machine d'acquisition complète.
               </p>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import {
   Tag, CheckCircle2, CreditCard, Lock, ArrowRight,
@@ -10,25 +10,25 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
 
-type Step = "choose" | "promo" | "payment" | "success";
 type SuccessType = "promo" | "stripe_launch" | "stripe_standard";
 
 export default function Checkout() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { redeemPromo, startCheckout, status, launchAvailable, launchSlotsRemaining, refresh } = useSubscription();
+  const { redeemPromo, startCheckout, launchAvailable, launchSlotsRemaining, refresh } = useSubscription();
 
-  const [step, setStep] = useState<Step>("payment");
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [successType, setSuccessType] = useState<SuccessType>("stripe_launch");
+
+  // Promo code (inline on payment page)
   const [promoCode, setPromoCode] = useState("");
   const [promoStatus, setPromoStatus] = useState<"idle" | "valid" | "invalid">("idle");
   const [promoMessage, setPromoMessage] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
+
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
-  const [successType, setSuccessType] = useState<SuccessType>("promo");
 
-  const [localLaunchAvailable, setLocalLaunchAvailable] = useState(true);
   const [localSlotsRemaining, setLocalSlotsRemaining] = useState<number | null>(null);
   const [quotaLoading, setQuotaLoading] = useState(true);
   const [quotaError, setQuotaError] = useState(false);
@@ -40,7 +40,6 @@ export default function Checkout() {
       const { data, error } = await supabase.from("launch_quota").select("total_slots, used_slots").single();
       if (error || !data) throw new Error("quota fetch failed");
       const remaining = Math.max(0, data.total_slots - data.used_slots);
-      setLocalLaunchAvailable(remaining > 0);
       setLocalSlotsRemaining(remaining);
     } catch {
       if (attempt < 2) {
@@ -57,17 +56,17 @@ export default function Checkout() {
   useEffect(() => {
     if (searchParams.get("success") === "true") {
       const offerParam = searchParams.get("offer");
-      const sType = offerParam === "launch" ? "stripe_launch" : offerParam === "standard" ? "stripe_standard" : "promo";
+      const sType: SuccessType = offerParam === "launch" ? "stripe_launch" : offerParam === "standard" ? "stripe_standard" : "promo";
       setSuccessType(sType);
-      setStep("success");
+      setIsSuccess(true);
       trackEvent("checkout_success", user?.id, { offer_type: sType });
       refresh();
     }
     fetchQuota();
   }, [searchParams, refresh, user?.id]);
 
-  const effectiveLaunchAvailable = user ? launchAvailable : localLaunchAvailable;
-  const effectiveSlotsRemaining: number | null = user ? launchSlotsRemaining : localSlotsRemaining;
+  const effectiveSlotsRemaining = user ? launchSlotsRemaining : localSlotsRemaining;
+  const effectiveLaunchAvailable = user ? launchAvailable : (localSlotsRemaining !== null && localSlotsRemaining > 0);
   const showSlotCounter = !quotaLoading && !quotaError && effectiveSlotsRemaining !== null && effectiveLaunchAvailable;
 
   const checkPromo = async () => {
@@ -76,7 +75,7 @@ export default function Checkout() {
     setPromoStatus("idle");
     try {
       if (!user) {
-        navigate(`/signup?redirect=/checkout&code=${encodeURIComponent(promoCode.trim())}`);
+        window.location.href = `/signup?redirect=/checkout&code=${encodeURIComponent(promoCode.trim())}`;
         return;
       }
       const result = await redeemPromo(promoCode.trim());
@@ -85,6 +84,8 @@ export default function Checkout() {
         setPromoMessage(result.message);
         trackEvent("promo_redeemed", user?.id, { code: promoCode.trim() });
         await refresh();
+        setSuccessType("promo");
+        setIsSuccess(true);
       } else {
         setPromoStatus("invalid");
         setPromoMessage(result.message);
@@ -117,8 +118,8 @@ export default function Checkout() {
     }
   };
 
-  // ── SUCCESS SCREEN ────────────────────────────────────────
-  if (step === "success") {
+  // ── SUCCESS SCREEN ──────────────────────────────────────────
+  if (isSuccess) {
     const isPromo = successType === "promo";
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -186,174 +187,133 @@ export default function Checkout() {
     );
   }
 
+  // ── PAYMENT SCREEN ──────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <PublicNav />
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-lg w-full space-y-4">
 
-          {/* ── PROMO ──────────────────────────────────────────── */}
-          {step === "promo" && (
-            <div className="card-surface p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-accent/15 flex items-center justify-center">
-                  <Gift size={18} className="text-accent" />
-                </div>
-                <div>
-                  <h2 className="font-semibold text-foreground text-sm">Code d'accès gratuit</h2>
-                  <p className="text-xs text-muted-foreground">Entrez votre code pour activer votre accès</p>
-                </div>
+          {/* Order summary */}
+          <div className="card-surface p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                <CreditCard size={18} className="text-primary" />
               </div>
-
-              <div className="p-3 bg-accent/8 rounded-xl border border-accent/20 mb-5">
-                <p className="text-xs text-muted-foreground leading-relaxed">Les codes d'accès offrent un accès complet sans frais. Réservés aux partenaires et participants aux événements.</p>
+              <div>
+                <h2 className="font-semibold text-foreground text-sm">Récapitulatif de commande</h2>
+                <p className="text-xs text-muted-foreground">Paiement sécurisé par Stripe</p>
               </div>
+            </div>
 
-              <div className="space-y-3">
+            {/* Product line */}
+            <div className="p-4 rounded-xl border-2 border-primary/30 bg-primary/5 mb-5">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground block mb-1.5">Votre code</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={promoCode}
-                      onChange={(e) => { setPromoCode(e.target.value.toUpperCase().replace(/\s/g, "")); setPromoStatus("idle"); }}
-                      placeholder="Ex : VIP1AN-001-ALPHA"
-                      className="flex-1 px-4 py-3 rounded-xl border border-input bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
-                      onKeyDown={(e) => e.key === "Enter" && checkPromo()}
-                    />
-                    <button
-                      onClick={checkPromo}
-                      disabled={!promoCode || promoLoading}
-                      className="btn-primary px-5 py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
-                    >
-                      {promoLoading ? <Loader2 size={14} className="animate-spin" /> : "Activer"}
-                    </button>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-semibold text-foreground text-sm">WIINUP MAX — Entreprise</p>
+                    {effectiveLaunchAvailable && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-semibold">
+                        <Zap size={9} /> Offre Fondateur
+                      </span>
+                    )}
                   </div>
-                </div>
-
-                {promoStatus === "valid" && (
-                  <div className="flex items-start gap-2.5 p-3.5 bg-success-light rounded-xl border border-success/20">
-                    <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-success">Code valide ✓</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{promoMessage}</p>
-                    </div>
-                  </div>
-                )}
-                {promoStatus === "invalid" && (
-                  <div className="flex items-start gap-2.5 p-3.5 bg-destructive/8 rounded-xl border border-destructive/20">
-                    <AlertCircle size={16} className="text-destructive shrink-0 mt-0.5" />
-                    <p className="text-sm text-destructive">{promoMessage}</p>
-                  </div>
-                )}
-
-                <div className="flex gap-3 pt-1">
-                  <button
-                    onClick={() => { setStep("payment"); setPromoStatus("idle"); setPromoCode(""); }}
-                    className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  >
-                    Retour
-                  </button>
-                  {promoStatus === "valid" && (
-                    <Link to={user ? "/dashboard" : "/signup"} className="flex-1 btn-cta text-sm text-center py-3">
-                      {user ? "Accéder à mon espace" : "Créer mon compte"}
-                    </Link>
+                  <p className="text-xs text-muted-foreground">Accès complet · 1 an · Renouvellement annuel</p>
+                  {quotaLoading && (
+                    <div className="mt-1 h-3.5 w-40 animate-pulse rounded bg-muted" />
                   )}
+                  {showSlotCounter && (
+                    <p className="text-xs text-accent font-medium mt-1 flex items-center gap-1">
+                      <Clock size={10} />
+                      Plus que {effectiveSlotsRemaining} place{(effectiveSlotsRemaining ?? 0) > 1 ? "s" : ""} au tarif fondateur
+                    </p>
+                  )}
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-display text-2xl font-bold text-foreground">99 €</p>
+                  <p className="text-xs text-muted-foreground">TTC / an</p>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* ── PAYMENT ──────────────────────────────────────────── */}
-          {step === "payment" && (
-            <div className="card-surface p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <CreditCard size={18} className="text-primary" />
+            {/* Features */}
+            <div className="space-y-1.5 mb-5">
+              {[
+                "Introductions qualifiées illimitées",
+                "Agents IA OpenClaw 24h/24",
+                "ROI Dashboard complet",
+                "Accès à La Mêlée (événements)",
+                "Support prioritaire",
+                "Réseau de Facilitateurs qualifiés",
+              ].map((feature) => (
+                <div key={feature} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <CheckCircle2 size={13} className="text-success shrink-0" />
+                  {feature}
                 </div>
-                <div>
-                  <h2 className="font-semibold text-foreground text-sm">Activer votre accès</h2>
-                  <p className="text-xs text-muted-foreground">Paiement sécurisé par Stripe</p>
-                </div>
+              ))}
+            </div>
+
+            {/* Promo code field */}
+            <div className="mb-5 p-4 rounded-xl border border-border bg-muted/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Tag size={13} className="text-muted-foreground" />
+                <p className="text-xs font-medium text-foreground">Vous avez un code promo ?</p>
               </div>
-
-              <div className="p-4 rounded-xl border-2 border-primary/30 bg-primary/5 mb-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold text-foreground text-sm">WIINUP MAX — Entreprise</p>
-                      {effectiveLaunchAvailable && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-semibold">
-                          <Zap size={9} /> Offre Fondateur
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">Accès complet — introductions illimitées, ROI Dashboard, support prioritaire</p>
-                    {quotaLoading && (
-                      <div className="mt-1 h-3.5 w-40 animate-pulse rounded bg-muted" />
-                    )}
-                    {showSlotCounter && (
-                      <p className="text-xs text-accent font-medium mt-1 flex items-center gap-1">
-                        <Clock size={10} />
-                        Plus que {effectiveSlotsRemaining} place{(effectiveSlotsRemaining ?? 0) > 1 ? "s" : ""} au tarif fondateur
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="font-display text-2xl font-bold text-foreground">99 €</p>
-                    <p className="text-xs text-muted-foreground">/ an TTC</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-1.5 mb-5">
-                {[
-                  "Introductions qualifiées illimitées",
-                  "Agents IA OpenClaw 24h/24",
-                  "ROI Dashboard complet",
-                  "Accès à La Mêlée (événements)",
-                  "Support prioritaire",
-                  "Réseau de Facilitateurs qualifiés",
-                ].map((feature) => (
-                  <div key={feature} className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <CheckCircle2 size={13} className="text-success shrink-0" />
-                    {feature}
-                  </div>
-                ))}
-              </div>
-
-              {checkoutError && (
-                <div className="flex items-start gap-2 p-3 bg-destructive/8 rounded-xl border border-destructive/20 mb-4">
-                  <AlertCircle size={14} className="text-destructive shrink-0 mt-0.5" />
-                  <p className="text-xs text-destructive">{checkoutError}</p>
-                </div>
-              )}
-
-              <div className="flex gap-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => { setPromoCode(e.target.value.toUpperCase().replace(/\s/g, "")); setPromoStatus("idle"); }}
+                  placeholder="Ex : VIP1AN-001-ALPHA"
+                  className="flex-1 px-3 py-2.5 rounded-lg border border-input bg-background text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                  onKeyDown={(e) => e.key === "Enter" && checkPromo()}
+                />
                 <button
-                  onClick={handleStripeCheckout}
-                  disabled={checkoutLoading}
-                  className="w-full btn-cta text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  onClick={checkPromo}
+                  disabled={!promoCode || promoLoading}
+                  className="btn-primary px-4 py-2.5 text-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
                 >
-                  {checkoutLoading ? (
-                    <><Loader2 size={14} className="animate-spin" /> Chargement…</>
-                  ) : (
-                    <>Activer mon accès — 99 € / an <ArrowRight size={14} /></>
-                  )}
+                  {promoLoading ? <Loader2 size={12} className="animate-spin" /> : "Activer"}
                 </button>
               </div>
-
-              <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-3">
-                <Lock size={11} />
-                Paiement 100% sécurisé par Stripe
-              </div>
-
-              <p className="text-xs text-muted-foreground text-center mt-3">
-                Vous avez un code d'accès ?{" "}
-                <button onClick={() => setStep("promo")} className="text-primary hover:underline font-medium">Activer mon code</button>
-              </p>
+              {promoStatus === "valid" && (
+                <div className="flex items-start gap-2 mt-2 p-2.5 bg-success-light rounded-lg border border-success/20">
+                  <CheckCircle2 size={13} className="text-success shrink-0 mt-0.5" />
+                  <p className="text-xs text-success font-medium">{promoMessage}</p>
+                </div>
+              )}
+              {promoStatus === "invalid" && (
+                <div className="flex items-start gap-2 mt-2 p-2.5 bg-destructive/8 rounded-lg border border-destructive/20">
+                  <AlertCircle size={13} className="text-destructive shrink-0 mt-0.5" />
+                  <p className="text-xs text-destructive">{promoMessage}</p>
+                </div>
+              )}
             </div>
-          )}
+
+            {checkoutError && (
+              <div className="flex items-start gap-2 p-3 bg-destructive/8 rounded-xl border border-destructive/20 mb-4">
+                <AlertCircle size={14} className="text-destructive shrink-0 mt-0.5" />
+                <p className="text-xs text-destructive">{checkoutError}</p>
+              </div>
+            )}
+
+            <button
+              onClick={handleStripeCheckout}
+              disabled={checkoutLoading}
+              className="w-full btn-cta text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {checkoutLoading ? (
+                <><Loader2 size={14} className="animate-spin" /> Chargement…</>
+              ) : (
+                <>Payer 99 € TTC — Accès immédiat <ArrowRight size={14} /></>
+              )}
+            </button>
+
+            <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mt-3">
+              <Lock size={11} />
+              Paiement 100% sécurisé par Stripe · Annulation libre à tout moment
+            </div>
+          </div>
         </div>
       </div>
     </div>
