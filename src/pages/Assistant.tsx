@@ -22,7 +22,7 @@ export default function Assistant() {
     {
       id: 0,
       role: "assistant",
-      content: "Bonjour ! Je suis JARVIS, votre assistant business IA. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
+      content: "Bonjour ! Je suis KITT IA, votre assistant business. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
       timestamp: new Date(),
     },
   ]);
