@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, type RefObject } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, ArrowRight, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
