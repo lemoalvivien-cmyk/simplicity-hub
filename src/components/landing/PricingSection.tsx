@@ -162,7 +162,7 @@ function PricingSectionInner() {
 
 const PricingSection = forwardRef<HTMLElement>(function PricingSection(_, ref) {
   return (
-    <section ref={ref as React.RefObject<HTMLElement>} id="pricing" className="bg-background">
+    <section ref={ref as RefObject<HTMLElement>} id="pricing" className="bg-background">
       <PricingSectionInner />
     </section>
   );
