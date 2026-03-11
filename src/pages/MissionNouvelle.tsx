@@ -197,6 +197,7 @@ export default function MissionNouvelle() {
                   rows={4}
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  maxLength={2000}
                   placeholder="Décrivez le profil idéal du contact que vous cherchez..."
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition resize-none"
                 />
