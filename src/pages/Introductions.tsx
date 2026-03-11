@@ -95,7 +95,9 @@ export default function Introductions() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground mb-1">Mes introductions</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+              <GlossaryTooltip term="Introduction">Mes introductions</GlossaryTooltip>
+            </h1>
             <p className="text-sm text-muted-foreground">
               Voici l'état de chaque contact que vous avez présenté à une entreprise.
             </p>

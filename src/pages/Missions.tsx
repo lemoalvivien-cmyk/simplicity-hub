@@ -61,7 +61,7 @@ export default function Missions() {
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-              Missions disponibles
+              <GlossaryTooltip term="Mission">Missions disponibles</GlossaryTooltip>
             </h1>
             <p className="text-muted-foreground text-sm">
               {isLoading ? "Chargement…" : `${total} mission${total !== 1 ? "s" : ""} ouverte${total !== 1 ? "s" : ""} en ce moment.`}

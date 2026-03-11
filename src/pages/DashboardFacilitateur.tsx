@@ -149,8 +149,8 @@ export default function DashboardFacilitateur() {
 
           {/* ═══ 3 STAT CARDS ══════════════════════════════════ */}
           <div className="flex gap-3">
-            <StatCard label="Missions dispo" value={missionsCount} to="/missions" loading={loading} />
-            <StatCard label="Intros envoyées" value={introsCount} to="/introductions" loading={loading} />
+            <StatCard label={<GlossaryTooltip term="Mission">Missions dispo</GlossaryTooltip> as unknown as string} value={missionsCount} to="/missions" loading={loading} />
+            <StatCard label={<GlossaryTooltip term="Introduction">Intros envoyées</GlossaryTooltip> as unknown as string} value={introsCount} to="/introductions" loading={loading} />
             <StatCard
               label="Gains validés"
               value={`${totalValide.toLocaleString("fr-FR")} €`}

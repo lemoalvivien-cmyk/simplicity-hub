@@ -148,7 +148,7 @@ export default function Pilotage() {
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
               <Brain size={22} className="text-primary" />
-              Mon IA
+              <GlossaryTooltip term="KITT IA">Mon IA</GlossaryTooltip>
             </h1>
             <p className="text-sm text-muted-foreground">
               Votre assistant IA travaille en arrière-plan pour vous.
