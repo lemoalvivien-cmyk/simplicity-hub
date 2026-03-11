@@ -53,6 +53,9 @@ const ProfilEntreprise = lazy(() => import("./pages/ProfilEntreprise"));
 const Facilitateurs = lazy(() => import("./pages/Facilitateurs"));
 const FacilitateurDetail = lazy(() => import("./pages/FacilitateurDetail"));
 
+// ── Lazy: public pages ───────────────────────────────────────────────────────
+const APropos = lazy(() => import("./pages/APropos"));
+
 // ── Lazy: utils ──────────────────────────────────────────────────────────────
 const Assistant = lazy(() => import("./pages/Assistant"));
 const Help = lazy(() => import("./pages/Help"));
@@ -109,6 +112,7 @@ const App = () => (
                 <Route path="/cgu" element={<CGU />} />
                 <Route path="/confidentialite" element={<Confidentialite />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
+                <Route path="/a-propos" element={<APropos />} />
 
                 {/* ── Onboarding ───────────────────────────── */}
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
