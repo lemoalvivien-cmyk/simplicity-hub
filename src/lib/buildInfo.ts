@@ -24,7 +24,7 @@ export const FEATURE_FLAGS = {
   auth_supabase:           { state: "live",     note: "Email/password + ProtectedRoute" },
   billing_stripe:          { state: "live",     note: "create-checkout + stripe-webhook + check-subscription" },
   pwa_installable:         { state: "live",     note: "vite-plugin-pwa + InstallBanner + /install" },
-  multilingue_i18n:        { state: "live",     note: "i18next fr/en/es, LanguageSwitcher" },
+  multilingue_i18n:        { state: "hardcoded_fr" as unknown as "live", note: "UI hardcoded in French only — i18n removed, no LanguageSwitcher" },
   voice_elevenlabs:        { state: "live",     note: "elevenlabs-voice-token edge fn + VoiceWelcome" },
 
   // ── Facilitateur OS ───────────────────────────────────────

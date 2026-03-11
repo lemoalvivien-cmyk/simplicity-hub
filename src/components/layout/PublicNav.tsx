@@ -153,7 +153,9 @@ export default function PublicNav() {
 /** Compact legal footer */
 export function LegalFooter() {
   return (
-    <footer className="border-t border-border bg-background/50 py-6">
+    <footer className="border-t border-border bg-background/50 py-6 pb-safe" style={{ paddingBottom: "max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom)))" }}>
+      {/* Extra bottom padding on mobile to clear sticky CTAs (bottom bar ~64px + safe area) */}
+      <div className="md:pb-0 pb-20">
       <div className="container flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
         <span>© {new Date().getFullYear()} VLM Consulting — SIRET 83512508900028</span>
         <nav className="flex items-center gap-4" aria-label="Liens légaux">

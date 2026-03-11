@@ -110,8 +110,9 @@ export default function DashboardFacilitateur() {
 
   const totalValide  = gains.filter(g => g.statut === "valide").reduce((s, g) => s + (g.montant || 0), 0);
   const totalAttendu = gains.filter(g => g.statut === "en_attente").reduce((s, g) => s + (g.montant || 0), 0);
-  const trustPct   = trustScore ?? 0;
-  const trustColor = trustPct >= 80 ? "hsl(152 62% 38%)" : trustPct >= 50 ? "hsl(218 72% 45%)" : "hsl(38 95% 50%)";
+  const trustPct        = trustScore ?? 0;
+  const trustUnknown    = trustScore === null;
+  const trustColor      = trustUnknown ? "hsl(var(--muted-foreground))" : trustPct >= 80 ? "hsl(152 62% 38%)" : trustPct >= 50 ? "hsl(218 72% 45%)" : "hsl(38 95% 50%)";
 
   return (
     <TooltipProvider>
