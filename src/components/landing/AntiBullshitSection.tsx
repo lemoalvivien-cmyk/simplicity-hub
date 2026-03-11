@@ -84,8 +84,7 @@ const allQAs = [
 
 const AntiBullshitSection = forwardRef<HTMLElement>((_, ref) => {
   return (
-    // @ts-ignore — forwardRef for section element
-    <section ref={ref} className="py-20 md:py-24 bg-muted">
+    <section ref={ref as React.RefObject<HTMLElement>} className="py-20 md:py-24 bg-muted">
     <section className="py-20 md:py-24 bg-muted">
       <div className="container max-w-2xl">
         <div className="text-center mb-10">
