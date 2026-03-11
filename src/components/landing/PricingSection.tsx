@@ -45,7 +45,7 @@ function PricingSectionInner() {
   }, []);
 
   return (
-    <section className="py-20 bg-background" id="pricing">
+    <div className="py-20 bg-background">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">Offre lancement</p>
