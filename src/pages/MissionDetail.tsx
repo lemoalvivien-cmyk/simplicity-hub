@@ -145,28 +145,33 @@ function IntroductionForm({ mission, facilitateurId, onSuccess, onCancel }: Intr
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Nom de la personne <span className="text-destructive">*</span></label>
           <input type="text" placeholder="Ex : Jean-Pierre Duval" value={form.nom} onChange={e => setForm({ ...form, nom: e.target.value })}
+            maxLength={150}
             className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Email (optionnel)</label>
             <input type="email" placeholder="email@exemple.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+              maxLength={254}
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition" />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Téléphone (optionnel)</label>
             <input type="tel" placeholder="+33 6 XX XX XX XX" value={form.telephone} onChange={e => setForm({ ...form, telephone: e.target.value })}
+              maxLength={20}
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition" />
           </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Décrivez brièvement cette personne <span className="text-destructive">*</span></label>
           <textarea rows={3} placeholder="Ex : Gérant d'une boulangerie à Lyon, utilise encore Excel pour sa compta…" value={form.contexte} onChange={e => setForm({ ...form, contexte: e.target.value })}
+            maxLength={2000}
             className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition resize-none" />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Pourquoi pensez-vous qu'elle correspond ? <span className="text-muted-foreground font-normal">(optionnel)</span></label>
           <textarea rows={2} placeholder="Ex : Elle cherche une solution depuis quelques semaines…" value={form.pourquoi} onChange={e => setForm({ ...form, pourquoi: e.target.value })}
+            maxLength={1000}
             className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition resize-none" />
         </div>
         {error && (

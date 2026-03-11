@@ -1,17 +1,18 @@
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  User, CreditCard, Bell, Shield, ChevronRight, LogOut,
-  CheckCircle2, Clock, AlertCircle, XCircle, Tag, Loader2,
+  User, CreditCard, Shield, ChevronRight, LogOut,
+  CheckCircle2, Clock, AlertCircle, XCircle, Loader2,
   ExternalLink, Zap, Gift, Calendar, Timer, ShieldCheck
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription, isAccessActive, getOfferLabel } from "@/contexts/SubscriptionContext";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Account() {
   const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const {
     status, subscriptionEnd, cancelAtPeriodEnd, accessType, offerType,
     launchAvailable, launchSlotsRemaining, loading, openBillingPortal, startCheckout
