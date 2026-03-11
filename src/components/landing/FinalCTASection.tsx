@@ -55,7 +55,7 @@ export default function FinalCTASection() {
           </span>
         </div>
 
-        <p className="mt-5 text-white/50 text-xs">
+        <p className="mt-5 text-white/70 text-xs">
           Sans engagement · Annulation libre · Support inclus à chaque étape
         </p>
       </div>

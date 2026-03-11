@@ -116,11 +116,11 @@ export default function PricingSection() {
               className="px-7 pt-7 pb-5"
               style={{ background: "var(--gradient-accent)" }}
             >
-              <p className="text-white/85 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur / Apporteur</p>
+              <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur / Apporteur</p>
               <div className="flex items-baseline gap-3 mb-1">
                 <span className="font-display font-bold text-5xl text-white">Gratuit</span>
               </div>
-              <p className="text-white/75 text-xs mt-1">Pour toujours · Sans carte bancaire · Zéro frais caché</p>
+              <p className="text-white/80 text-xs mt-1">Pour toujours · Sans carte bancaire · Zéro frais caché</p>
             </div>
 
             <div className="px-7 py-6 flex flex-col">

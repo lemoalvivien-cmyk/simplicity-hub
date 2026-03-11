@@ -62,7 +62,7 @@ export default function FacilitateurSection() {
               </p>
               <div className="flex items-baseline gap-2">
                 <p className="font-display font-bold text-white text-2xl leading-none">Gratuit</p>
-                <p className="text-white/60 text-xs">Pour toujours · Sans carte bancaire</p>
+                <p className="text-white/80 text-xs">Pour toujours · Sans carte bancaire</p>
               </div>
             </div>
             <ul className="p-6 space-y-3">
