@@ -260,6 +260,7 @@ export default function MissionNouvelle() {
                   type="text"
                   value={form.recompense}
                   onChange={e => setForm(f => ({ ...f, recompense: e.target.value }))}
+                  maxLength={200}
                   placeholder="ex : 300 € par client validé"
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
                 />
