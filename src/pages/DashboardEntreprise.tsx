@@ -11,6 +11,7 @@ import {
   ChevronDown, ChevronUp,
 } from "lucide-react";
 import { db } from "@/lib/supabase";
+import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
 import ActivationProgressBar from "@/components/activation/ActivationProgressBar";
@@ -61,7 +62,7 @@ function ActionCard({ action, onDone }: { action: UserAction; onDone: (id: strin
 }
 
 function StatCard({ label, value, to, urgent, loading }: {
-  label: string; value: string | number; to: string;
+  label: React.ReactNode; value: string | number; to: string;
   urgent?: boolean; loading: boolean;
 }) {
   return (
@@ -193,9 +194,9 @@ export default function DashboardEntreprise() {
 
         {/* ═══ 3 STAT CARDS ═══════════════════════════════════ */}
         <div className="flex gap-3">
-          <StatCard label="Missions actives" value={activeMissionsCount} to="/missions" loading={loading} />
+          <StatCard label={<GlossaryTooltip term="Mission">Missions actives</GlossaryTooltip>} value={activeMissionsCount} to="/missions" loading={loading} />
           <StatCard
-            label="Intros en attente"
+            label={<GlossaryTooltip term="Introduction">Intros en attente</GlossaryTooltip>}
             value={pendingIntrosCount}
             to="/entreprise/introductions"
             urgent={pendingIntrosCount > 0}
@@ -250,7 +251,7 @@ export default function DashboardEntreprise() {
             className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
             <span className="flex items-center gap-2">
               <Brain size={15} className="text-primary" />
-              Détails du cockpit
+              <GlossaryTooltip term="Cockpit">Détails du cockpit</GlossaryTooltip>
             </span>
             {detailsOpen ? <ChevronUp size={15} className="text-muted-foreground" /> : <ChevronDown size={15} className="text-muted-foreground" />}
           </button>

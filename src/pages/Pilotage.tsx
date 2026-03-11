@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -147,7 +148,7 @@ export default function Pilotage() {
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
               <Brain size={22} className="text-primary" />
-              Mon IA
+              <GlossaryTooltip term="KITT IA">Mon IA</GlossaryTooltip>
             </h1>
             <p className="text-sm text-muted-foreground">
               Votre assistant IA travaille en arrière-plan pour vous.
@@ -192,7 +193,9 @@ export default function Pilotage() {
             {recentJobs.length === 0 ? (
               <div className="card-surface p-8 text-center space-y-3">
                 <Brain size={36} className="mx-auto text-muted-foreground/40" />
-                <p className="font-semibold text-foreground">Votre IA travaille en arrière-plan.</p>
+                <p className="font-semibold text-foreground">
+                  <GlossaryTooltip term="OpenClaw">Votre IA</GlossaryTooltip> travaille en arrière-plan.
+                </p>
                 <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                   Les premières recommandations arrivent sous 24h. Vous serez notifié dès qu'il y a quelque chose à faire.
                 </p>

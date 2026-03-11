@@ -10,6 +10,7 @@ import {
   Plus, ShieldCheck, Info, ChevronDown, ChevronUp, ChevronRight,
 } from "lucide-react";
 import { db } from "@/lib/supabase";
+import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import VoiceWelcome from "@/components/ai/VoiceWelcome";
 import { Progress } from "@/components/ui/progress";
@@ -36,7 +37,7 @@ function StatutPill({ statut }: { statut: string | null }) {
   );
 }
 
-function StatCard({ label, value, to, loading, accent }: { label: string; value: string | number; to: string; loading: boolean; accent?: boolean }) {
+function StatCard({ label, value, to, loading, accent }: { label: React.ReactNode; value: string | number; to: string; loading: boolean; accent?: boolean }) {
   return (
     <Link to={to}
       className="flex-1 rounded-2xl p-4 border-2 transition-all hover:shadow-md"
@@ -148,8 +149,8 @@ export default function DashboardFacilitateur() {
 
           {/* ═══ 3 STAT CARDS ══════════════════════════════════ */}
           <div className="flex gap-3">
-            <StatCard label="Missions dispo" value={missionsCount} to="/missions" loading={loading} />
-            <StatCard label="Intros envoyées" value={introsCount} to="/introductions" loading={loading} />
+            <StatCard label={<GlossaryTooltip term="Mission">Missions dispo</GlossaryTooltip>} value={missionsCount} to="/missions" loading={loading} />
+            <StatCard label={<GlossaryTooltip term="Introduction">Intros envoyées</GlossaryTooltip>} value={introsCount} to="/introductions" loading={loading} />
             <StatCard
               label="Gains validés"
               value={`${totalValide.toLocaleString("fr-FR")} €`}
@@ -178,7 +179,7 @@ export default function DashboardFacilitateur() {
               className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
               <span className="flex items-center gap-2">
                 <Trophy size={15} className="text-primary" />
-                Détails du cockpit
+                <GlossaryTooltip term="Cockpit">Détails du cockpit</GlossaryTooltip>
               </span>
               {detailsOpen ? <ChevronUp size={15} className="text-muted-foreground" /> : <ChevronDown size={15} className="text-muted-foreground" />}
             </button>
@@ -345,7 +346,9 @@ export default function DashboardFacilitateur() {
                       <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "hsl(218 72% 18% / 0.08)" }}>
                         <ShieldCheck size={13} className="text-primary" />
                       </div>
-                      <h2 className="font-semibold text-foreground text-sm">Score de confiance</h2>
+                      <h2 className="font-semibold text-foreground text-sm">
+                        <GlossaryTooltip term="Score de confiance">Score de confiance</GlossaryTooltip>
+                      </h2>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Info size={13} className="text-muted-foreground cursor-help" />

@@ -6,6 +6,7 @@ import PageTitle from "@/components/ui/PageTitle";
 import ListPagination from "@/components/ui/ListPagination";
 import { Send, CheckCircle2, Clock, XCircle, ChevronRight, Plus, Loader2 } from "lucide-react";
 import { db } from "@/lib/supabase";
+import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";
@@ -94,7 +95,9 @@ export default function Introductions() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground mb-1">Mes introductions</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+              <GlossaryTooltip term="Introduction">Mes introductions</GlossaryTooltip>
+            </h1>
             <p className="text-sm text-muted-foreground">
               Voici l'état de chaque contact que vous avez présenté à une entreprise.
             </p>
