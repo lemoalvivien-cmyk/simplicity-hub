@@ -17,7 +17,6 @@ interface UserLayoutProps {
 export default function UserLayout({ children, role: roleProp, jarvisContext = "dashboard" }: UserLayoutProps) {
   const { profile } = useAuth();
 
-  // Derive role from real profile; fallback to prop or "facilitateur"
   const role: UserRole =
     roleProp ??
     (profile?.role === "entreprise" ? "entreprise"
@@ -28,22 +27,27 @@ export default function UserLayout({ children, role: roleProp, jarvisContext = "
     role === "entreprise" ? "entreprise" : "facilitateur";
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar — desktop only, 224px wide */}
       <UserNav role={role} />
-      {/* pb-20 on mobile to clear fixed bottom nav bar */}
-      <main className="flex-1 container py-8 animate-fade-in pb-20 md:pb-8">
-        {children}
-      </main>
-      <footer className="hidden md:block border-t border-border py-4">
-        <div className="container flex items-center justify-between text-xs text-muted-foreground">
-          <span>© 2026 WIINUP MAX</span>
-          <div className="flex gap-4">
-            <Link to="/confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
-            <Link to="/cgu" className="hover:text-foreground transition-colors">CGU</Link>
+
+      {/* Main content — offset by sidebar width on desktop */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-56">
+        <main className="flex-1 container py-8 animate-fade-in pb-20 md:pb-8">
+          {children}
+        </main>
+        <footer className="hidden md:block border-t border-border py-4">
+          <div className="container flex items-center justify-between text-xs text-muted-foreground">
+            <span>© 2026 WIINUP MAX</span>
+            <div className="flex gap-4">
+              <Link to="/confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
+              <Link to="/cgu" className="hover:text-foreground transition-colors">CGU</Link>
+            </div>
           </div>
-        </div>
-      </footer>
-      {/* JARVIS — assistant global flottant, hide on mobile (bottom nav conflict) */}
+        </footer>
+      </div>
+
+      {/* JARVIS — assistant global flottant, hide on mobile */}
       <div className="hidden md:block">
         <JarvisButton context={jarvisContext} userRole={jarvisRole} />
       </div>
