@@ -110,7 +110,7 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
               <Sparkles size={16} style={{ color: "hsl(var(--primary-foreground))" }} />
             </div>
             <div>
-              <p className="font-semibold text-foreground text-sm leading-none">JARVIS</p>
+            <p className="font-semibold text-foreground text-sm leading-none">KITT IA</p>
               <p className="text-xs text-muted-foreground mt-0.5">Assistant business IA</p>
             </div>
           </div>
