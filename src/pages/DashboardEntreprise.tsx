@@ -97,6 +97,7 @@ export default function DashboardEntreprise() {
   const [totalGains, setTotalGains]       = useState(0);
   const [loading, setLoading]             = useState(true);
   const [detailsOpen, setDetailsOpen]     = useState(false);
+  const [openclawReady, setOpenclawReady] = useState(false);
 
   const prenom = profile?.prenom || "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
