@@ -71,7 +71,7 @@ const allQAs = [
   },
   {
     q: "Faut-il des compétences techniques ?",
-    a: "Aucune. JARVIS vous guide à chaque étape. Si vous savez envoyer un email, vous pouvez utiliser Wiinup Max.",
+    a: "Aucune. KITT IA vous guide à chaque étape. Si vous savez envoyer un email, vous pouvez utiliser Wiinup Max.",
     tag: "faq",
   },
   {
