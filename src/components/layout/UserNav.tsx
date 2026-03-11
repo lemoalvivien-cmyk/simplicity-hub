@@ -134,8 +134,8 @@ function buildFacilitateurGroups(badges: ReturnType<typeof useBadges>): NavGroup
     {
       label: "Mon compte",
       items: [
-        { to: "/profil", label: "Mon profil", icon: UserCircle },
-        { to: "/aide",   label: "Aide",       icon: HelpCircle },
+        { to: "/profil/facilitateur", label: "Mon profil", icon: UserCircle },
+        { to: "/help",                label: "Aide",       icon: HelpCircle },
       ],
     },
   ];
