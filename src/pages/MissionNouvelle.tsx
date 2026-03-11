@@ -2,7 +2,7 @@
  * MissionNouvelle — Page de création de mission guidée.
  * Modèles préremplis + assistance JARVIS + matching immédiat après création.
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import MissionTemplates, { MissionTemplate, MISSION_TEMPLATES } from "@/components/activation/MissionTemplates";
@@ -64,7 +64,7 @@ export default function MissionNouvelle() {
 
   const isValid = form.titre.trim().length > 3 && form.description.trim().length > 10;
 
-  const savingRef = { current: false };
+  const savingRef = useRef(false);
 
   const handleSave = async () => {
     if (!user || !isValid) return;
