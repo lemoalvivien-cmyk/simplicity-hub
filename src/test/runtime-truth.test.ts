@@ -59,6 +59,7 @@ describe("analytics writer registry", () => {
     // Every event in the array should be in the claimed set or explicitly documented
     const explicitlyAllowed = new Set([
       ...CLAIMED_IN_DASHBOARD,
+      "page_view",        // src/lib/analytics.ts → usePageTracking → auto page-view on route change
       "promo_redeemed",   // src/pages/Checkout.tsx → checkPromo → result.valid
       "login_success",    // src/pages/Login.tsx → handleSubmit after successful signIn
       "signup_started",   // src/pages/Signup.tsx → handleSubmit before signUp call
