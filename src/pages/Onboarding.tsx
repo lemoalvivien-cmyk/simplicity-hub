@@ -53,6 +53,8 @@ export default function Onboarding() {
 
   const saveProfile = async (description: string) => {
     if (!user) return;
+    if (saving || savingRef.current) return; // CM2-5: double-submit guard
+    savingRef.current = true;
     setSaving(true);
     try {
       await db.from("profiles").update({ role, prenom: profile.prenom, onboarding_done: true }).eq("id", user.id);
