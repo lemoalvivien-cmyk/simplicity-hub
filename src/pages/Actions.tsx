@@ -237,10 +237,10 @@ export default function Actions() {
   const urgentes = grouped["urgente"].length;
 
   const summaryStats = [
-    { label: "Urgentes",      value: grouped["urgente"].length, dotClass: "bg-red-500" },
-    { label: "Priorité haute",value: grouped["haute"].length,   dotClass: "bg-orange-400" },
-    { label: "Normales",      value: grouped["normale"].length, dotClass: "bg-primary" },
-    { label: "Basses",        value: grouped["basse"].length,   dotClass: "bg-muted-foreground" },
+    { label: "Urgentes",      value: grouped["urgente"].length, dotColor: "hsl(var(--destructive))" },
+    { label: "Priorité haute",value: grouped["haute"].length,   dotColor: "hsl(var(--accent))" },
+    { label: "Normales",      value: grouped["normale"].length, dotColor: "hsl(var(--primary))" },
+    { label: "Basses",        value: grouped["basse"].length,   dotColor: "hsl(var(--muted-foreground))" },
   ];
 
   return (
@@ -282,9 +282,9 @@ export default function Actions() {
         {/* Summary chips */}
         {!isLoading && (
           <div className="grid grid-cols-4 gap-2 mb-5">
-            {summaryStats.map(({ label, value, dotClass }) => (
+            {summaryStats.map(({ label, value, dotColor }) => (
               <div key={label} className="card-surface p-2.5 text-center">
-                <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${dotClass}`} />
+                <div className="w-2 h-2 rounded-full mx-auto mb-1" style={{ background: dotColor }} />
                 <p className="font-display text-lg font-bold text-foreground">{value}</p>
                 <p className="text-xs text-muted-foreground leading-tight">{label}</p>
               </div>
