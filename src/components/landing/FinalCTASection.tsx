@@ -5,7 +5,7 @@ import { track } from "@/lib/landingTracking";
 
 const FinalCTASection = forwardRef<HTMLElement>(function FinalCTASection(_, ref) {
   return (
-    <section ref={ref as React.RefObject<HTMLElement>} className="hero-bg py-24 md:py-32 relative overflow-hidden">
+    <section ref={ref as RefObject<HTMLElement>} className="hero-bg py-24 md:py-32 relative overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
