@@ -355,12 +355,12 @@ export default function LeadActionsQueue({
 
                   {hasOpp && !compact && (
                     <Link
-                      to="/opportunites"
+                      to="/missions"
                       className="inline-flex items-center gap-1 text-xs font-medium mt-1"
                       style={{ color: "hsl(var(--primary))" }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <ExternalLink size={9} /> Voir l'opportunité
+                      <ExternalLink size={9} /> Voir les missions
                     </Link>
                   )}
                 </div>

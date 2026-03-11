@@ -27,7 +27,7 @@ const PRIORITY_STATUSES: QualificationStatus[] = [
 
 export default function UnifiedLeadsBlock({
   asEntreprise = false,
-  linkTo = "/opportunites",
+  linkTo = "/missions",
 }: UnifiedLeadsBlockProps) {
   const { summary, loading, error } = useLeadIntakes(asEntreprise);
 

@@ -81,7 +81,7 @@ const contactsData: ContactData[] = [
     id: 5, prenom: "Antoine", nom: "Leblanc", entreprise: "Tech Solutions",
     poste: "CEO", email: "a.leblanc@techsolutions.fr", telephone: "06 98 76 54 32",
     status: "contacte", source: "prospection",
-    liste: "Campagne Octobre", listeLien: "/campagnes/1",
+    liste: "Campagne Octobre", listeLien: "/missions",
     prochaine_action: "Relancer dans 5 jours",
     date_ajout: "Il y a 4 jours",
     historique: [
