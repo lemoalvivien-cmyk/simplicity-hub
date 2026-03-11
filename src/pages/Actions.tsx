@@ -138,16 +138,19 @@ function ActionCard({ action, onDone }: { action: UserAction; onDone: () => void
     >
       {/* Top badges */}
       <div className="flex items-center gap-2 mb-2 flex-wrap">
-        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${cfg.colorClass} ${cfg.bgClass}`}>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+          style={{ color: cfg.color, background: cfg.bg }}>
           {cfg.icon} {cfg.label}
         </span>
         {action.source === "openclaw" && (
-          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full text-violet-700 bg-violet-100">
+          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+            style={{ color: "hsl(var(--electric))", background: "hsl(var(--electric-light))" }}>
             <Zap size={10} /> OpenClaw
           </span>
         )}
         {action.source === "ai_recommendation" && (
-          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full text-indigo-700 bg-indigo-100">
+          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+            style={{ color: "hsl(var(--primary-glow))", background: "hsl(var(--secondary))" }}>
             <BarChart3 size={10} /> IA
           </span>
         )}
