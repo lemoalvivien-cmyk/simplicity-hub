@@ -82,10 +82,9 @@ const allQAs = [
   },
 ];
 
-const AntiBullshitSection = forwardRef<HTMLElement>((_, ref) => {
+const AntiBullshitSection = forwardRef<HTMLElement>(function AntiBullshitSection(_, ref) {
   return (
     <section ref={ref as React.RefObject<HTMLElement>} className="py-20 md:py-24 bg-muted">
-    <section className="py-20 md:py-24 bg-muted">
       <div className="container max-w-2xl">
         <div className="text-center mb-10">
           <p className="pill-tag mb-4 mx-auto w-fit">Questions & Réponses</p>
