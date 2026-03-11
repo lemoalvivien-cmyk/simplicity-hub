@@ -11,7 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 // ── Validated event types ────────────────────────────────────────────────────
 export const ANALYTICS_EVENTS = [
-  "page_view",
   "landing_view",
   "cta_click",
   "pricing_view",
@@ -24,11 +23,6 @@ export const ANALYTICS_EVENTS = [
   "signup_started",
   "login_success",
   "promo_redeemed",
-  "contact_added",
-  "campaign_launched",
-  "ai_used",
-  "sequence_started",
-  "apropos_view",
 ] as const;
 
 export type AnalyticsEventType = typeof ANALYTICS_EVENTS[number];
