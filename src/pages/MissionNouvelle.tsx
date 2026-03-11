@@ -182,6 +182,7 @@ export default function MissionNouvelle() {
                   type="text"
                   value={form.titre}
                   onChange={e => setForm(f => ({ ...f, titre: e.target.value }))}
+                  maxLength={120}
                   placeholder="ex : Je cherche des clients B2B dans la tech"
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
                 />
