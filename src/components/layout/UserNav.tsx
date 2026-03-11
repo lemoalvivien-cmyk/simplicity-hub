@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import NotificationBell from "@/components/NotificationBell";
 
 /* ── Types ─────────────────────────────────────────── */
