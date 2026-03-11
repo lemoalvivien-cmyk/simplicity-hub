@@ -13,15 +13,12 @@ type ContactSource = "import" | "manuel" | "introduction" | "prospection" | "tel
 
 interface Contact {
   id: string;
-  prenom: string;
-  nom: string;
-  entreprise: string;
-  poste: string;
-  email: string;
-  telephone: string;
+  prenom_nom: string;
+  entreprise: string | null;
+  email: string | null;
+  telephone: string | null;
   statut: ContactStatus;
   origine: ContactSource;
-  prochaine_action: string;
   created_at: string;
 }
 
