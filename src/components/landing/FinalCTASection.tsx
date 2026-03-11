@@ -33,10 +33,10 @@ export default function FinalCTASection() {
             prospection, réseau et suivi.
           </span>
         </h2>
-        <p className="text-white/75 text-base mb-2 max-w-sm mx-auto leading-relaxed">
+        <p className="text-white/90 text-base mb-2 max-w-sm mx-auto leading-relaxed">
           Mettez-les enfin dans le même cockpit.
         </p>
-        <p className="text-white/55 text-sm mb-10">
+        <p className="text-white/75 text-sm mb-10">
           Un système. Deux moteurs. Des résultats mesurables.
         </p>
 
