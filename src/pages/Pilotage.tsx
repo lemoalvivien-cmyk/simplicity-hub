@@ -120,6 +120,13 @@ export default function Pilotage() {
     load();
   }, [user]);
 
+  const handleAutonomyChange = async (value: number) => {
+    setAutonomyLevel(value);
+    if (user) {
+      await db.from("openclaw_config").upsert({ user_id: user.id, autonomy_level: value }, { onConflict: "user_id" });
+    }
+  };
+
   const handleKillSwitch = async (value: boolean) => {
     if (value && !killConfirm) { setKillConfirm(true); return; }
     setKillConfirm(false);
