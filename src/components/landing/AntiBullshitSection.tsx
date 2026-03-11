@@ -5,7 +5,7 @@ const allQAs = [
   // Objections
   {
     q: "Je ne suis pas du tout technique.",
-    a: "Wiinup Max est conçu pour des commerciaux et dirigeants non techniques. JARVIS vous guide à chaque étape en langage clair. Si vous savez envoyer un email, vous êtes qualifié.",
+    a: "Wiinup Max est conçu pour des commerciaux et dirigeants non techniques. KITT IA vous guide à chaque étape en langage clair. Si vous savez envoyer un email, vous êtes qualifié.",
     tag: "obj",
   },
   {
