@@ -422,10 +422,10 @@ export default function Pilotage() {
                     <span className="w-2 h-2 rounded-full bg-muted-foreground/40 shrink-0" />
                     <p className="text-xs text-muted-foreground">Gateway non connecté — l'IA analyse uniquement.</p>
                   </div>
-                  <Link to="/agents"
+                  <Link to="/pilotage"
                     className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl"
                     style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-                    Connecter le gateway <ChevronRight size={11} />
+                    En savoir plus <ChevronRight size={11} />
                   </Link>
                 </div>
               )}
