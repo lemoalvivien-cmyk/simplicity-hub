@@ -188,10 +188,11 @@ export default function UserNav({ role: roleProp }: UserNavProps) {
      : "facilitateur");
 
   const badges = useBadges(role, user?.id);
+  const gatewayReady = useGatewayReady(role === "entreprise" ? user?.id : undefined);
 
   const groups =
     role === "admin"        ? adminGroups :
-    role === "entreprise"   ? buildEntrepriseGroups(badges) :
+    role === "entreprise"   ? buildEntrepriseGroups(badges, gatewayReady) :
     buildFacilitateurGroups(badges);
 
   // Flatten for mobile bottom bar
