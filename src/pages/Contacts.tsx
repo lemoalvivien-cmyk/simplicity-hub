@@ -350,15 +350,12 @@ export default function Contacts() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">
-                      {c.entreprise}{c.poste && ` · ${c.poste}`}
+                      {c.entreprise || ""}
                     </p>
                     {seqInfo && (
                       <p className="text-xs mt-0.5 truncate text-muted-foreground">
                         📬 {seqInfo.sequence_name}
                       </p>
-                    )}
-                    {c.prochaine_action && !seqInfo && (
-                      <p className="text-xs mt-0.5 truncate" style={{ color: "hsl(var(--primary))" }}>→ {c.prochaine_action}</p>
                     )}
                   </div>
                   <div className="hidden sm:flex flex-col items-end gap-1.5 shrink-0">
