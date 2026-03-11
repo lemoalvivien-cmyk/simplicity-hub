@@ -329,7 +329,7 @@ export default function Contacts() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-semibold text-foreground">{c.prenom} {c.nom}</p>
+                      <p className="text-sm font-semibold text-foreground">{c.prenom_nom}</p>
                       <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
                         style={{ color: cfg.color, background: cfg.bg }}>
                         {cfg.icon} {cfg.label}
