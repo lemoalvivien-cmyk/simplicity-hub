@@ -64,7 +64,7 @@ export default function MissionNouvelle() {
 
   const isValid = form.titre.trim().length > 3 && form.description.trim().length > 10;
 
-  const savingRef = { current: false };
+  const savingRef = useRef(false);
 
   const handleSave = async () => {
     if (!user || !isValid) return;
