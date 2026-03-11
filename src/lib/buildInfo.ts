@@ -32,16 +32,9 @@ export const FEATURE_FLAGS = {
   introductions:           { state: "live",     note: "/introductions /introductions/:id" },
   gains:                   { state: "live",     note: "/gains, gains table" },
   contacts:                { state: "live",     note: "/contacts /contacts/import /contacts/:id" },
-  campagnes:               { state: "live",     note: "/campagnes /campagnes/:id /campagnes/nouvelle" },
   actions_todo:            { state: "live",     note: "/actions" },
-  passive_os:              { state: "live",     note: "/passive, shared_offers, offer_share_links" },
-  facilitateurs_marketplace: { state: "live",  note: "/facilitateurs /facilitateurs/:id" },
-  deal_radar:              { state: "live",     note: "/radar, deal-radar-score edge fn" },
-  reseau_graph:            { state: "live",     note: "/reseau, graph_edges table" },
-  trust_engine:            { state: "live",     note: "/trust, disputes, anti_circumvention_flags" },
   intro_proof_ledger:      { state: "live",     note: "introduction_proofs, intro_escrow tables" },
   pilotage:                { state: "live",     note: "/pilotage" },
-  studio:                  { state: "live",     note: "/studio" },
 
   // ── OpenClaw Autonomous Engine ────────────────────────────
   openclaw_agents:         { state: "live",     note: "/agents, openclaw_agents table" },
