@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, type RefObject } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { track } from "@/lib/landingTracking";
 
