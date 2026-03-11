@@ -159,3 +159,10 @@ function PricingSectionInner() {
     </section>
   );
 }
+
+const PricingSection = forwardRef<HTMLElement>(function PricingSection(_, ref) {
+  return <section ref={ref as React.RefObject<HTMLElement>} id="pricing"><PricingSectionInner /></section>;
+});
+PricingSection.displayName = "PricingSection";
+
+export default PricingSection;
