@@ -1,3 +1,5 @@
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+
 // Allowed origins — browser clients only
 const ALLOWED_ORIGINS = [
   "https://wiinupmax.com",
