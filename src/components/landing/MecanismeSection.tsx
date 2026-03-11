@@ -46,7 +46,7 @@ export default function MecanismeSection() {
                   </p>
                 </div>
               </div>
-              <p className="text-white/80 text-sm leading-relaxed">
+              <p className="text-white/95 text-sm leading-relaxed">
                 OpenClaw prospecte pendant que vous dormez. Il détecte les signaux d'intention,
                 rédige les messages, pilote vos campagnes — sans intervention manuelle.
               </p>
@@ -62,10 +62,10 @@ export default function MecanismeSection() {
                 <li key={item} className="flex items-center gap-3">
                   <span
                     className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ background: "hsl(218 72% 55%)" }}
+                    style={{ background: "hsl(218 72% 75%)" }}
                     aria-hidden="true"
                   />
-                  <span className="text-sm text-white/85">{item}</span>
+                  <span className="text-sm text-white">{item}</span>
                 </li>
               ))}
             </ul>
