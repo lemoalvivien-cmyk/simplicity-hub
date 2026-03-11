@@ -1,17 +1,18 @@
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  User, CreditCard, Bell, Shield, ChevronRight, LogOut,
-  CheckCircle2, Clock, AlertCircle, XCircle, Tag, Loader2,
+  User, CreditCard, Shield, ChevronRight, LogOut,
+  CheckCircle2, Clock, AlertCircle, XCircle, Loader2,
   ExternalLink, Zap, Gift, Calendar, Timer, ShieldCheck
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription, isAccessActive, getOfferLabel } from "@/contexts/SubscriptionContext";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Account() {
   const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const {
     status, subscriptionEnd, cancelAtPeriodEnd, accessType, offerType,
     launchAvailable, launchSlotsRemaining, loading, openBillingPortal, startCheckout
@@ -301,7 +302,7 @@ export default function Account() {
             <h2 className="font-semibold text-foreground">Autonomie & OpenClaw</h2>
           </div>
           <Link
-            to="/autonomie"
+            to="/pilotage"
             className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
             Configurer OpenClaw, la voix et les canaux
@@ -312,7 +313,7 @@ export default function Account() {
         {/* Logout */}
         <div className="border-t border-border pt-5">
           <button
-            onClick={signOut}
+            onClick={async () => { await signOut(); navigate("/login", { replace: true }); }}
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <LogOut size={15} />

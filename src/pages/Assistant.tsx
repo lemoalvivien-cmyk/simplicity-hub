@@ -22,7 +22,7 @@ export default function Assistant() {
     {
       id: 0,
       role: "assistant",
-      content: "Bonjour ! Je suis JARVIS, votre assistant business IA. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
+      content: "Bonjour ! Je suis KITT IA, votre assistant business. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
       timestamp: new Date(),
     },
   ]);
@@ -83,7 +83,7 @@ export default function Assistant() {
     setMessages([{
       id: 0,
       role: "assistant",
-      content: "Bonjour ! Je suis JARVIS, votre assistant business IA. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
+      content: "Bonjour ! Je suis KITT IA, votre assistant business. Je suis là pour vous guider, vous aider à comprendre la plateforme, et vous suggérer les meilleures actions. Par où voulez-vous commencer ?",
       timestamp: new Date(),
     }]);
     setInput("");
@@ -105,7 +105,7 @@ export default function Assistant() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-display text-2xl font-bold text-foreground">JARVIS</h1>
+                <h1 className="font-display text-2xl font-bold text-foreground">KITT IA</h1>
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700">
                   <Zap size={9} /> IA
                 </span>

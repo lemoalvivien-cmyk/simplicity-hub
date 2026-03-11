@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle2, ChevronRight, Building2, Users, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,6 +41,7 @@ export default function Onboarding() {
   });
   const [done, setDone] = useState(false);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
   const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
   const [params] = useSearchParams();
@@ -52,6 +53,8 @@ export default function Onboarding() {
 
   const saveProfile = async (description: string) => {
     if (!user) return;
+    if (saving || savingRef.current) return; // CM2-5: double-submit guard
+    savingRef.current = true;
     setSaving(true);
     try {
       await db.from("profiles").update({ role, prenom: profile.prenom, onboarding_done: true }).eq("id", user.id);
@@ -101,6 +104,7 @@ export default function Onboarding() {
     } catch {
       toast.error(t("onboarding_saving_error"));
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
