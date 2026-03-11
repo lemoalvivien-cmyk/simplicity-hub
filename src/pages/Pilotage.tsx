@@ -407,14 +407,16 @@ export default function Pilotage() {
             <div className="card-surface p-5">
               <h2 className="font-semibold text-foreground flex items-center gap-2 mb-3">
                 {openClawConnected
-                  ? <Wifi size={16} className="text-green-600" />
+                  ? <Wifi size={16} className="text-success" />
                   : <WifiOff size={16} className="text-muted-foreground" />}
                 Connexion gateway
               </h2>
               {openClawConnected ? (
-                <div className="flex items-center gap-2 rounded-xl p-3 bg-green-50 border border-green-200">
-                  <span className="w-2 h-2 rounded-full bg-green-500 shrink-0 animate-pulse" />
-                  <p className="text-xs font-medium text-green-700">Gateway connecté — l'IA est opérationnelle.</p>
+                <div className="flex items-center gap-2 rounded-xl p-3"
+                  style={{ background: "hsl(var(--success-light))", border: "1px solid hsl(var(--success) / 0.2)" }}>
+                  <span className="w-2 h-2 rounded-full shrink-0 animate-pulse"
+                    style={{ background: "hsl(var(--success))" }} />
+                  <p className="text-xs font-medium" style={{ color: "hsl(var(--success))" }}>Gateway connecté — l'IA est opérationnelle.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
