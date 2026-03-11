@@ -127,4 +127,8 @@ const AntiBullshitSection = forwardRef<HTMLElement>((_, ref) => {
       </div>
     </section>
   );
-}
+});
+
+AntiBullshitSection.displayName = "AntiBullshitSection";
+
+export default AntiBullshitSection;
