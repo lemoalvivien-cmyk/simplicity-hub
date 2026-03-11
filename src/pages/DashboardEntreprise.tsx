@@ -62,7 +62,7 @@ function ActionCard({ action, onDone }: { action: UserAction; onDone: (id: strin
 }
 
 function StatCard({ label, value, to, urgent, loading }: {
-  label: string; value: string | number; to: string;
+  label: React.ReactNode; value: string | number; to: string;
   urgent?: boolean; loading: boolean;
 }) {
   return (
