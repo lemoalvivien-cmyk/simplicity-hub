@@ -1,7 +1,4 @@
-import { Brain, Zap, MessageSquare, Activity, Link2, CheckCircle2, FlaskConical } from "lucide-react";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
+import { Brain, Zap, MessageSquare, Activity, Link2, CheckCircle2 } from "lucide-react";
 
 const features = [
   { icon: Brain, title: "OpenClaw, assistant IA", desc: "Assiste votre prospection en connexion réelle avec API externe." },

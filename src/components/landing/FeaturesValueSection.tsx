@@ -1,7 +1,4 @@
-import { Send, Brain, Zap, LayoutDashboard, TrendingUp, ShieldCheck, MessageSquare, Bell, FlaskConical } from "lucide-react";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
+import { Send, Brain, Zap, LayoutDashboard, TrendingUp, ShieldCheck, MessageSquare, Bell } from "lucide-react";
 
 const features = [
   {

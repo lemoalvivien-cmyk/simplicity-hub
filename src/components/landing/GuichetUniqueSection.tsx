@@ -1,8 +1,5 @@
-import { Brain, Target, Users, Send, TrendingUp, ShieldCheck, Shield, Smartphone, Zap, CheckCircle2, ArrowRight, FlaskConical } from "lucide-react";
+import { Brain, Target, Users, Send, TrendingUp, ShieldCheck, Shield, Smartphone, Zap, CheckCircle2, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const engines = [
   {

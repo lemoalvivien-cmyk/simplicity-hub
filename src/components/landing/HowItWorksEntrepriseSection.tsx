@@ -1,9 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, FlaskConical } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { track } from "@/lib/landingTracking";
-
-const BETA_NOTE =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
 
 const steps = [
   {

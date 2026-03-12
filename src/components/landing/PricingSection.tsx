@@ -1,11 +1,8 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, ArrowRight, Zap, Users, FlaskConical } from "lucide-react";
+import { CheckCircle2, ArrowRight, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { track } from "@/lib/landingTracking";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const entrepriseFeatures = [
   "Missions illimitées",

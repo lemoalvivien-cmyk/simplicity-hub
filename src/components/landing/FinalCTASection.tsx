@@ -1,9 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, FlaskConical } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { track } from "@/lib/landingTracking";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 export default function FinalCTASection() {
   return (

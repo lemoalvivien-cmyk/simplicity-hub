@@ -1,7 +1,4 @@
-import { Brain, Users, BarChart3, ArrowDown, FlaskConical } from "lucide-react";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
+import { Brain, Users, BarChart3, ArrowDown } from "lucide-react";
 
 export default function MecanismeSection() {
   return (
