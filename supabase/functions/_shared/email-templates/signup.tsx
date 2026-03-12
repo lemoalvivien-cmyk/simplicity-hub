@@ -3,7 +3,15 @@
 import * as React from 'npm:react@18.3.1'
 
 import {
-  Body, Button, Container, Head, Heading, Hr, Html, Link, Preview, Section, Text,
+  Body,
+  Button,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Link,
+  Preview,
+  Text,
 } from 'npm:@react-email/components@0.0.22'
 
 interface SignupEmailProps {
@@ -13,28 +21,38 @@ interface SignupEmailProps {
   confirmationUrl: string
 }
 
-export const SignupEmail = ({ siteName, siteUrl, recipient, confirmationUrl }: SignupEmailProps) => (
-  <Html lang="fr" dir="ltr">
+export const SignupEmail = ({
+  siteName,
+  siteUrl,
+  recipient,
+  confirmationUrl,
+}: SignupEmailProps) => (
+  <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirmez votre adresse email — {siteName}</Preview>
+    <Preview>Confirm your email for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={header}><Text style={brandLabel}>WIINUP MAX</Text></Section>
-        <Section style={bodyPad}>
-          <Heading style={h1}>Confirmez votre email 📬</Heading>
-          <Text style={text}>
-            Merci de rejoindre <Link href={siteUrl} style={link}><strong>{siteName}</strong></Link> — la plateforme de mise en relation B2B par apport d'affaires.
-          </Text>
-          <Text style={text}>
-            Cliquez ci-dessous pour valider <Link href={`mailto:${recipient}`} style={link}>{recipient}</Link> et accéder à votre espace.
-          </Text>
-          <Button style={button} href={confirmationUrl}>Confirmer mon email →</Button>
-          <Text style={hint}>Ce lien est valable 24 heures. Si vous n'avez pas créé de compte, ignorez cet email.</Text>
-        </Section>
-        <Hr style={divider} />
-        <Section style={footerSection}>
-          <Text style={footerText}>WIINUP MAX — La plateforme B2B d'apport d'affaires · <Link href={`${siteUrl}/confidentialite`} style={footerLink}>Confidentialité</Link></Text>
-        </Section>
+        <Heading style={h1}>Confirm your email</Heading>
+        <Text style={text}>
+          Thanks for signing up for{' '}
+          <Link href={siteUrl} style={link}>
+            <strong>{siteName}</strong>
+          </Link>
+          !
+        </Text>
+        <Text style={text}>
+          Please confirm your email address (
+          <Link href={`mailto:${recipient}`} style={link}>
+            {recipient}
+          </Link>
+          ) by clicking the button below:
+        </Text>
+        <Button style={button} href={confirmationUrl}>
+          Verify Email
+        </Button>
+        <Text style={footer}>
+          If you didn't create an account, you can safely ignore this email.
+        </Text>
       </Container>
     </Body>
   </Html>
@@ -42,18 +60,27 @@ export const SignupEmail = ({ siteName, siteUrl, recipient, confirmationUrl }: S
 
 export default SignupEmail
 
-const P = '#0f2d6b', A = '#ff6b00', T = '#0d1829', M = '#6a7796', B = '#e8ecf3'
-const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
-const container = { maxWidth: '580px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(15,45,107,0.10)' }
-const header = { background: `linear-gradient(135deg, ${P} 0%, #1a3e7a 100%)`, padding: '28px 40px', textAlign: 'center' as const }
-const brandLabel = { margin: '0', fontSize: '11px', color: '#94a3b8', letterSpacing: '3px', textTransform: 'uppercase' as const, fontWeight: '700' }
-const bodyPad = { padding: '40px 40px 0' }
-const h1 = { margin: '0 0 16px', fontSize: '26px', fontWeight: '800', color: T, lineHeight: '1.3' }
-const text = { fontSize: '15px', color: M, lineHeight: '1.7', margin: '0 0 20px' }
-const link = { color: P, textDecoration: 'underline' }
-const button = { backgroundColor: A, color: '#ffffff', fontSize: '15px', fontWeight: '700', padding: '16px 36px', borderRadius: '10px', textDecoration: 'none', display: 'inline-block', margin: '8px 0 24px' }
-const hint = { fontSize: '13px', color: M, lineHeight: '1.6', margin: '0 0 40px', textAlign: 'center' as const }
-const divider = { borderColor: B, margin: '0' }
-const footerSection = { backgroundColor: '#f8fafc', padding: '24px 40px' }
-const footerText = { margin: '0', fontSize: '12px', color: M, textAlign: 'center' as const, lineHeight: '1.7' }
-const footerLink = { color: '#64748b', textDecoration: 'none' }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
+const h1 = {
+  fontSize: '22px',
+  fontWeight: 'bold' as const,
+  color: '#000000',
+  margin: '0 0 20px',
+}
+const text = {
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
+}
+const link = { color: 'inherit', textDecoration: 'underline' }
+const button = {
+  backgroundColor: '#000000',
+  color: '#ffffff',
+  fontSize: '14px',
+  borderRadius: '8px',
+  padding: '12px 20px',
+  textDecoration: 'none',
+}
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
