@@ -268,11 +268,10 @@ export default function IntroductionsEntreprise() {
         missionIds.length > 0 ? db.from("missions").select("id, titre").in("id", missionIds) : { data: [] },
         db.from("profiles").select("id, prenom").in("id", facilitateurIds),
         db.from("gains").select("id, introduction_id").in("introduction_id", introIds),
-        // PROOF:EXECUTION_V1:action_queue_ui_real — fetches real lead_intakes with pipeline data
         db.from("lead_intakes")
           .select("id, introduction_id, qualification_status, next_best_action, dedup_status, linked_opportunity_id")
           .in("introduction_id", introIds),
-        // PROOF:EXECUTION_V1:action_queue_ui_real — fetches real lead_actions for each intro's lead
+        // Fetches real lead_actions for each intro's lead
         db.from("lead_actions")
           .select("id, lead_intake_id, action_type, status, priority")
           .in("status", ["open", "in_progress"])
