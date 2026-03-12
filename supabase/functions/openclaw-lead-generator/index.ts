@@ -11,6 +11,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const LOVABLE_API_KEY   = Deno.env.get("LOVABLE_API_KEY") ?? "";
 const SUPABASE_URL      = Deno.env.get("SUPABASE_URL") ?? "";
@@ -75,9 +76,11 @@ Deno.serve(async (req) => {
     }
 
     // Mode 2: cron / internal call passes user_id in body
+    let bodyUsed = false;
     if (!userId) {
       const body = await req.json().catch(() => ({}));
       userId = body?.user_id ?? null;
+      bodyUsed = true;
     }
 
     if (!userId) {
@@ -85,6 +88,13 @@ Deno.serve(async (req) => {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // ── Rate-limit: 100 req/min per user ────────────────────────────────────
+    const rl = await checkRateLimit(userId, "openclaw-lead-generator", 100);
+    if (!rl.allowed) {
+      console.warn("[openclaw-lead-generator] Rate limit exceeded", { userId });
+      return rateLimitResponse(corsHeaders);
     }
 
     // ── 1. Load user dossier ────────────────────────────────────────────────
@@ -181,7 +191,7 @@ Règles :
 - ai_score entre 65-92 si label Chaud/Brûlant, 40-64 si Froid/Tiède
 - Le domaine email doit correspondre à l'entreprise
 - Le contexte doit inclure un signal business réel (pas générique)
-- Le message doit mentionner l'offre ou la valeur proposée sans être commercial pousssif`;
+- Le message doit mentionner l'offre ou la valeur proposée sans être commercial poussif`;
 
     // ── 6. Call AI ────────────────────────────────────────────────────────────
     const rawAI = await callAI(systemPrompt, userPrompt);
@@ -276,16 +286,16 @@ Règles :
         model: "gemini-2.5-flash",
       },
       risque: "faible",
-    }).catch(() => null); // non-blocking
+    }).catch(() => null);
 
-    // ── 11. Notification ──────────────────────────────────────────────────────
+    // ── 11. In-app notification ───────────────────────────────────────────────
     await sb.from("notifications").insert({
       user_id: userId,
       type: "lead_openclaw",
       title: "🎯 OpenClaw a trouvé un nouveau lead",
       body: `${lead.person_name as string} chez ${lead.company_name as string} — Score ${lead.ai_score}/100 (${lead.ai_label})`,
       href: "/leads",
-    }).catch(() => null); // non-blocking
+    }).catch(() => null);
 
     return new Response(JSON.stringify({
       success: true,
@@ -298,6 +308,7 @@ Règles :
         next_best_action: lead.next_best_action,
       },
       message: `Lead généré : ${lead.person_name as string} @ ${lead.company_name as string}`,
+      rate_limit_remaining: rl.remaining,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (err) {
