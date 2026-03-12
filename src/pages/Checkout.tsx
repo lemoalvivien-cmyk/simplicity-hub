@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import {
   Tag, CheckCircle2, CreditCard, Lock, ArrowRight,
   Loader2, AlertCircle, Zap, Clock, Gift, ShieldCheck
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useSubscription, isAccessActive } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
 
@@ -14,8 +14,9 @@ type SuccessType = "promo" | "stripe_launch" | "stripe_standard";
 
 export default function Checkout() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { redeemPromo, startCheckout, launchAvailable, launchSlotsRemaining, refresh } = useSubscription();
+  const { redeemPromo, startCheckout, launchAvailable, launchSlotsRemaining, refresh, status, loading: subLoading } = useSubscription();
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [successType, setSuccessType] = useState<SuccessType>("stripe_launch");
@@ -60,10 +61,20 @@ export default function Checkout() {
       setSuccessType(sType);
       setIsSuccess(true);
       trackEvent("checkout_success", user?.id, { offer_type: sType });
+      // Refresh subscription status — webhook may already have synced by now
       refresh();
+      // Poll until active (max 12s) then redirect to dashboard
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        await refresh();
+        // Status is read from context — handled by navigate below
+        if (attempts >= 6) clearInterval(poll);
+      }, 2000);
+      return () => clearInterval(poll);
     }
     fetchQuota();
-  }, [searchParams, refresh, user?.id]);
+  }, [searchParams, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const effectiveSlotsRemaining = user ? launchSlotsRemaining : localSlotsRemaining;
   const effectiveLaunchAvailable = user ? launchAvailable : (localSlotsRemaining !== null && localSlotsRemaining > 0);
@@ -121,6 +132,11 @@ export default function Checkout() {
   // ── SUCCESS SCREEN ──────────────────────────────────────────
   if (isSuccess) {
     const isPromo = successType === "promo";
+
+    // After a Stripe payment: once subscription is confirmed active, auto-redirect to dashboard.
+    // We do NOT go to /onboarding — the user already completed it before paying.
+    const subscriptionConfirmed = isAccessActive(status) || subLoading;
+
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <PublicNav />
@@ -155,8 +171,8 @@ export default function Checkout() {
                   <div className="grid grid-cols-2 gap-3 text-left">
                     <div className="p-3.5 rounded-xl border" style={{ background: "linear-gradient(135deg, hsl(218 65% 8%), hsl(218 55% 11%))", borderColor: "hsl(218 40% 22% / 0.6)" }}>
                       <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(218 72% 65%)" }}>Moteur 1</p>
-                      <p className="font-semibold text-white text-sm">Prospection IA</p>
-                      <p className="text-white/50 text-xs mt-1">Agents OpenClaw actifs</p>
+                      <p className="font-semibold text-white text-sm">Prospection IA assistée</p>
+                      <p className="text-white/50 text-xs mt-1">OpenClaw en connexion réelle</p>
                     </div>
                     <div className="p-3.5 rounded-xl border" style={{ background: "linear-gradient(135deg, hsl(24 60% 8%), hsl(38 50% 11%))", borderColor: "hsl(24 50% 22% / 0.6)" }}>
                       <p className="text-xs font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(24 100% 65%)" }}>Moteur 2</p>
@@ -169,12 +185,17 @@ export default function Checkout() {
               )}
 
               {user ? (
-                <Link
-                  to={profile?.onboarding_done ? "/dashboard" : "/onboarding"}
-                  className="btn-cta text-sm px-8 py-4 block text-center"
+                <button
+                  onClick={() => navigate("/dashboard", { replace: true })}
+                  className="btn-cta text-sm px-8 py-4 w-full flex items-center justify-center gap-2"
+                  disabled={!isPromo && subLoading}
                 >
-                  {profile?.onboarding_done ? "Accéder à mon espace" : "Configurer mon compte"}
-                </Link>
+                  {!isPromo && subLoading ? (
+                    <><Loader2 size={14} className="animate-spin" /> Activation en cours…</>
+                  ) : (
+                    <><Zap size={14} /> Accéder à mon espace</>
+                  )}
+                </button>
               ) : (
                 <Link to="/signup" className="btn-cta text-sm px-8 py-4 block text-center">
                   Créer mon compte gratuitement

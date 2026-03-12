@@ -7,6 +7,8 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+const LAUNCH_PRICE_ID = "price_1T8GOWEG497aCUFxjNjFjk4t";
+
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
@@ -32,14 +34,13 @@ Deno.serve(async (req) => {
     const user = userData.user;
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    // Check profile role
+    // ── 1. Check profile role ─────────────────────────────────────────────
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
 
-    // Facilitators and admins are always free
     if (profile?.role === "facilitateur" || profile?.role === "admin") {
       logStep("Free role detected", { role: profile.role });
       return new Response(
@@ -49,6 +50,8 @@ Deno.serve(async (req) => {
           subscription_end: null,
           access_type: "free",
           offer_type: null,
+          launch_available: true,
+          launch_slots_remaining: 100,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
@@ -56,9 +59,7 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
 
-    // =============================================
-    // CHECK 1: Active promo code redemption (NO STRIPE)
-    // =============================================
+    // ── 2. Check active promo redemption ─────────────────────────────────
     const { data: redemption } = await supabase
       .from("promo_code_redemptions")
       .select("*")
@@ -69,8 +70,6 @@ Deno.serve(async (req) => {
 
     if (redemption) {
       logStep("Active promo redemption found", { end_at: redemption.end_at });
-
-      // Sync to subscriptions table
       await supabase.from("subscriptions").upsert(
         {
           user_id: user.id,
@@ -83,7 +82,6 @@ Deno.serve(async (req) => {
         },
         { onConflict: "user_id" }
       );
-
       return new Response(
         JSON.stringify({
           subscribed: true,
@@ -92,19 +90,64 @@ Deno.serve(async (req) => {
           access_type: "promo",
           offer_type: "promo",
           cancel_at_period_end: false,
+          launch_available: true,
+          launch_slots_remaining: 100,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
 
-    // =============================================
-    // CHECK 2: Stripe subscription
-    // =============================================
+    // ── 3. DB-first: read subscriptions table (webhook already synced it) ──
+    //    This avoids a round-trip to Stripe on every check after a webhook.
+    const { data: dbSub } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const ACTIVE_STATUSES = ["active", "trialing"];
+
+    if (dbSub && ACTIVE_STATUSES.includes(dbSub.status)) {
+      logStep("Active subscription found in DB", { status: dbSub.status, sub_id: dbSub.stripe_subscription_id });
+
+      const offerType = dbSub.stripe_price_id === LAUNCH_PRICE_ID ? "launch" : (dbSub.offer_type ?? "standard");
+
+      // Still fetch quota for display
+      const { data: quota } = await supabase
+        .from("launch_quota")
+        .select("used_slots, total_slots")
+        .limit(1)
+        .maybeSingle();
+      const remaining = Math.max(0, (quota?.total_slots ?? 100) - (quota?.used_slots ?? 0));
+
+      return new Response(
+        JSON.stringify({
+          subscribed: true,
+          status: dbSub.status,
+          subscription_end: dbSub.current_period_end,
+          cancel_at_period_end: dbSub.cancel_at_period_end ?? false,
+          access_type: "stripe",
+          offer_type: offerType,
+          launch_available: remaining > 0,
+          launch_slots_remaining: remaining,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
+
+    // ── 4. Fallback: verify live with Stripe (catches webhook delays) ─────
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
-      logStep("No Stripe key, returning none");
+      logStep("No Stripe key — returning DB state");
+      const statusVal = dbSub?.status ?? "none";
       return new Response(
-        JSON.stringify({ subscribed: false, status: "none", access_type: "none" }),
+        JSON.stringify({
+          subscribed: false,
+          status: statusVal,
+          access_type: "none",
+          launch_available: true,
+          launch_slots_remaining: 100,
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
@@ -118,8 +161,22 @@ Deno.serve(async (req) => {
         { user_id: user.id, status: "none", updated_at: now },
         { onConflict: "user_id" }
       );
+
+      const { data: quota } = await supabase
+        .from("launch_quota")
+        .select("used_slots, total_slots")
+        .limit(1)
+        .maybeSingle();
+      const remaining = Math.max(0, (quota?.total_slots ?? 100) - (quota?.used_slots ?? 0));
+
       return new Response(
-        JSON.stringify({ subscribed: false, status: "none", access_type: "none" }),
+        JSON.stringify({
+          subscribed: false,
+          status: "none",
+          access_type: "none",
+          launch_available: remaining > 0,
+          launch_slots_remaining: remaining,
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
@@ -133,18 +190,26 @@ Deno.serve(async (req) => {
       expand: ["data.default_payment_method"],
     });
 
+    const { data: quota } = await supabase
+      .from("launch_quota")
+      .select("used_slots, total_slots")
+      .limit(1)
+      .maybeSingle();
+    const remaining = Math.max(0, (quota?.total_slots ?? 100) - (quota?.used_slots ?? 0));
+
     if (subscriptions.data.length === 0) {
       await supabase.from("subscriptions").upsert(
-        {
-          user_id: user.id,
-          stripe_customer_id: customerId,
-          status: "none",
-          updated_at: now,
-        },
+        { user_id: user.id, stripe_customer_id: customerId, status: "none", updated_at: now },
         { onConflict: "user_id" }
       );
       return new Response(
-        JSON.stringify({ subscribed: false, status: "none", access_type: "none" }),
+        JSON.stringify({
+          subscribed: false,
+          status: "none",
+          access_type: "none",
+          launch_available: remaining > 0,
+          launch_slots_remaining: remaining,
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
@@ -152,13 +217,10 @@ Deno.serve(async (req) => {
     const sub = subscriptions.data[0];
     const isActive = sub.status === "active" || sub.status === "trialing";
     const subscriptionEnd = new Date(sub.current_period_end * 1000).toISOString();
-
-    // Determine offer type from price ID
-    const LAUNCH_PRICE_ID = "price_1T8GOWEG497aCUFxjNjFjk4t";
     const priceId = sub.items.data[0]?.price.id;
     const offerType = priceId === LAUNCH_PRICE_ID ? "launch" : "standard";
 
-    // Sync to database
+    // Sync live Stripe data back to DB
     await supabase.from("subscriptions").upsert(
       {
         user_id: user.id,
@@ -185,6 +247,8 @@ Deno.serve(async (req) => {
         cancel_at_period_end: sub.cancel_at_period_end,
         access_type: "stripe",
         offer_type: offerType,
+        launch_available: remaining > 0,
+        launch_slots_remaining: remaining,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
