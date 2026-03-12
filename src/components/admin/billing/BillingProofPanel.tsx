@@ -707,7 +707,6 @@ function BillingRunbookPanel({ summary }: { summary: BillingProofSummary | null 
 }
 
 // ── ReleaseDecisionBlock ───────────────────────────────────────────────────────
-// PROOF:BILLING_PROOF_CHAIN_V5:release_decision_block_billing_only
 //
 // RÈGLE ABSOLUE : Ce bloc ne peut JAMAIS émettre PRIVATE_BETA_READY de façon autonome.
 // PRIVATE_BETA_READY n'est émis que par computeReleaseGate() dans release-gate-engine.ts,
