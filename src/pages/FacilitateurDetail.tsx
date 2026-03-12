@@ -116,7 +116,7 @@ export default function FacilitateurDetail() {
       if (favRes.data) setIsFavorite(true);
 
       const intros = introsRes.data || [];
-      const validees = intros.filter((i: { statut: string }) => i.statut === "validee").length;
+      const validees = intros.filter((i: { statut: string | null }) => i.statut === "validee").length;
       const total = intros.length;
       const tauxConv = total > 0 ? Math.round((validees / total) * 100) : 0;
       const sc = Math.min(100, tauxConv + Math.min(30, total * 2) + (total >= 5 ? 20 : 0));

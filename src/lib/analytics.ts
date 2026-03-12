@@ -62,7 +62,7 @@ export function trackEvent(
       page,
       properties: properties as Record<string, unknown>,
     })
-    .then(({ error }) => {
+    .then(({ error }: { error: { message: string } | null }) => {
       if (error && import.meta.env.DEV) {
         console.warn("[analytics] insert failed:", error.message);
       }

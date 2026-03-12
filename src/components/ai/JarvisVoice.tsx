@@ -114,7 +114,7 @@ export default function JarvisVoice({ onTranscript, lastJarvisText, autoSpeak }:
     rec.interimResults = false;
     rec.maxAlternatives = 1;
 
-    rec.onresult = (e) => {
+    rec.onresult = (e: SpeechRecognitionEvent) => {
       const transcript = e.results[0][0].transcript;
       if (transcript.trim()) onTranscript(transcript.trim());
     };

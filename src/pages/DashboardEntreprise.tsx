@@ -1,7 +1,7 @@
 /**
- * Dashboard Entreprise — Hero + 3 stats + raccourcis + détails accordéon
+ * Dashboard Entreprise — React Query powered
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
@@ -10,7 +10,6 @@ import {
   CheckCircle, AlertCircle, FileText, TrendingUp, ChevronRight,
   ChevronDown, ChevronUp,
 } from "lucide-react";
-import { db } from "@/lib/supabase";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
@@ -19,11 +18,8 @@ import { useActivation } from "@/hooks/useActivation";
 import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 import { useUserActions, useMarkActionDone, type UserAction } from "@/hooks/useUserActions";
+import { useDashboardEntrepriseData } from "@/hooks/useDashboardEntrepriseData";
 import { toast } from "sonner";
-
-interface Mission { id: string; titre: string; statut: string; }
-interface Introduction { id: string; contact_nom: string; statut: string; }
-interface OpenClawBrief { id: string; summary: string; created_at: string; }
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
   appeler: Phone, envoyer: Mail, relancer: RefreshCw,
@@ -38,7 +34,7 @@ const PRIORITY_STYLES: Record<string, { label: string; style: string }> = {
 
 function ActionCard({ action, onDone }: { action: UserAction; onDone: (id: string) => void }) {
   const Icon = ACTION_ICONS[action.type] ?? Zap;
-  const prio = PRIORITY_STYLES[action.priority] ?? PRIORITY_STYLES.normale;
+  const prio = PRIORITY_STYLES[action.priority] ?? PRIORITY_STYLES["normale"];
   return (
     <div className="flex items-start gap-3 p-3 rounded-xl bg-muted hover:bg-secondary transition-colors group">
       <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: "var(--gradient-primary)" }}>
@@ -88,23 +84,26 @@ function StatCard({ label, value, to, urgent, loading }: {
 
 export default function DashboardEntreprise() {
   const { user, profile } = useAuth();
-  const [missions, setMissions]           = useState<Mission[]>([]);
-  const [introductions, setIntroductions] = useState<Introduction[]>([]);
-  const [latestBrief, setLatestBrief]     = useState<OpenClawBrief | null>(null);
-  const [aiRecoCount, setAiRecoCount]     = useState(0);
-  const [gainsCount, setGainsCount]       = useState(0);
-  const [leadsCount, setLeadsCount]       = useState(0);
-  const [totalGains, setTotalGains]       = useState(0);
-  const [loading, setLoading]             = useState(true);
-  const [detailsOpen, setDetailsOpen]     = useState(false);
-  const [openclawReady, setOpenclawReady] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
-  const prenom = profile?.prenom || "vous";
+  const prenom = profile?.prenom ?? "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
   const metrics = usePipelineMetrics();
   const actionsQuery = useUserActions(["a_faire"]);
   const topActions = (actionsQuery.data ?? []).slice(0, 5);
   const markDone = useMarkActionDone();
+
+  // ── React Query for all dashboard data ──────────────────────────────────────
+  const { data, isLoading: loading } = useDashboardEntrepriseData(user?.id);
+
+  const missions       = data?.missions       ?? [];
+  const introductions  = data?.introductions  ?? [];
+  const latestBrief    = data?.latestBrief    ?? null;
+  const aiRecoCount    = data?.aiRecoCount    ?? 0;
+  const gainsCount     = data?.gainsCount     ?? 0;
+  const totalGains     = data?.totalGains     ?? 0;
+  const leadsCount     = data?.leadsCount     ?? 0;
+  const openclawReady  = data?.openclawReady  ?? false;
 
   const handleMarkDone = (id: string) => {
     markDone.mutate(id, {
@@ -113,51 +112,10 @@ export default function DashboardEntreprise() {
     });
   };
 
-  const pendingIntrosCount = introductions.filter(i => i.statut === "en_attente").length;
-  const activeMissionsCount = missions.filter(m => m.statut === "active").length;
+  const pendingIntrosCount   = introductions.filter(i => i.statut === "en_attente").length;
+  const activeMissionsCount  = missions.filter(m => m.statut === "active").length;
+  const isLaunchMode         = !loading && missions.length === 0;
 
-  useEffect(() => {
-    if (!user) return;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const missionIds =
-          (await db.from("missions").select("id").eq("entreprise_id", user.id)).data?.map((m: { id: string }) => m.id) || [];
-
-        const [missionsRes, introsRes, briefRes, aiRecoRes, gainsRes, gainsValRes, leadsRes, configRes] = await Promise.all([
-          db.from("missions").select("id, titre, statut").eq("entreprise_id", user.id).order("created_at", { ascending: false }).limit(3),
-          missionIds.length > 0
-            ? db.from("introductions").select("id, contact_nom, statut").in("mission_id", missionIds).order("created_at", { ascending: false }).limit(3)
-            : Promise.resolve({ data: [] }),
-          db.from("openclaw_briefs" as never).select("id, summary, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
-          db.from("openclaw_recommendations").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "nouvelle").eq("ai_generated", true),
-          db.from("gains").select("id", { count: "exact", head: true }).eq("facilitateur_id", user.id).in("statut", ["valide", "recu"]),
-          db.from("gains").select("montant").eq("facilitateur_id", user.id).in("statut", ["valide", "recu"]),
-          db.from("lead_intakes").select("id", { count: "exact", head: true }).eq("user_id", user.id).neq("dedup_status", "confirmed_duplicate").in("qualification_status", ["pending_review", "ready_for_action"]),
-          db.from("openclaw_config").select("gateway_url, is_connected").eq("user_id", user.id).maybeSingle(),
-        ]);
-
-        setMissions(missionsRes.data || []);
-        setIntroductions(introsRes.data || []);
-        setLatestBrief((briefRes.data as OpenClawBrief[] | null)?.[0] ?? null);
-        setAiRecoCount(aiRecoRes.count ?? 0);
-        setGainsCount(gainsRes.count ?? 0);
-        setTotalGains(((gainsValRes.data || []) as { montant: number | null }[]).reduce((s, g) => s + (g.montant || 0), 0));
-        setLeadsCount(leadsRes.count ?? 0);
-        const cfg = configRes.data as { gateway_url: string | null; is_connected: boolean } | null;
-        setOpenclawReady(!!cfg?.gateway_url && cfg.is_connected === true);
-      } catch {
-        // silent fail
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [user]);
-
-  const isLaunchMode = !loading && missions.length === 0;
-
-  /* ─── Hero subtitle ──────────────────────────────── */
   const heroSubtitle = aiRecoCount > 0
     ? `KITT IA recommande : ${aiRecoCount} action${aiRecoCount > 1 ? "s" : ""} prioritaire${aiRecoCount > 1 ? "s" : ""}`
     : pendingIntrosCount > 0
@@ -173,10 +131,7 @@ export default function DashboardEntreprise() {
 
         {/* ═══ HERO ═══════════════════════════════════════════ */}
         <div className="rounded-2xl p-5 border-2"
-          style={{
-            borderColor: "hsl(var(--accent) / 0.6)",
-            background: "hsl(24 80% 52% / 0.06)",
-          }}>
+          style={{ borderColor: "hsl(var(--accent) / 0.6)", background: "hsl(24 80% 52% / 0.06)" }}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <h1 className="font-display font-bold text-foreground text-xl leading-tight mb-1">
@@ -216,8 +171,7 @@ export default function DashboardEntreprise() {
 
         {/* ═══ RACCOURCIS ═════════════════════════════════════ */}
         <div className="flex flex-wrap gap-2">
-          <Link to="/missions/nouvelle"
-            className="btn-cta flex items-center gap-1.5 px-5 py-2.5 text-sm">
+          <Link to="/missions/nouvelle" className="btn-cta flex items-center gap-1.5 px-5 py-2.5 text-sm">
             <Plus size={14} /> Créer une mission
           </Link>
           <Link to="/entreprise/introductions"
@@ -232,9 +186,11 @@ export default function DashboardEntreprise() {
 
         {/* ═══ LAUNCH MODE ════════════════════════════════════ */}
         {isLaunchMode && (
-          <div className="rounded-2xl p-5 border-2" style={{ borderColor: "hsl(var(--primary) / 0.5)", background: "hsl(var(--secondary))" }}>
+          <div className="rounded-2xl p-5 border-2"
+            style={{ borderColor: "hsl(var(--primary) / 0.5)", background: "hsl(var(--secondary))" }}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+              <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
+                style={{ background: "var(--gradient-primary)" }}>
                 <Sparkles size={16} className="text-white" />
               </div>
               <div>
@@ -257,7 +213,9 @@ export default function DashboardEntreprise() {
               <Brain size={15} className="text-primary" />
               <GlossaryTooltip term="Cockpit">Détails du cockpit</GlossaryTooltip>
             </span>
-            {detailsOpen ? <ChevronUp size={15} className="text-muted-foreground" /> : <ChevronDown size={15} className="text-muted-foreground" />}
+            {detailsOpen
+              ? <ChevronUp size={15} className="text-muted-foreground" />
+              : <ChevronDown size={15} className="text-muted-foreground" />}
           </button>
 
           {detailsOpen && (
@@ -274,7 +232,9 @@ export default function DashboardEntreprise() {
                   </Link>
                 </div>
                 {actionsQuery.isLoading ? (
-                  <div className="flex items-center justify-center py-6"><Loader2 size={18} className="animate-spin text-muted-foreground" /></div>
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 size={18} className="animate-spin text-muted-foreground" />
+                  </div>
                 ) : topActions.length === 0 ? (
                   <div className="text-center py-5 px-4">
                     <CheckCircle size={20} className="text-muted-foreground mx-auto mb-2" />
@@ -290,15 +250,17 @@ export default function DashboardEntreprise() {
               {/* OpenClaw */}
               <div className="p-5">
                 {openclawReady ? (
-                  <div className="rounded-2xl overflow-hidden" style={{
-                    background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
-                    border: "1px solid hsl(218 40% 22% / 0.5)"
-                  }}>
+                  <div className="rounded-2xl overflow-hidden"
+                    style={{
+                      background: "linear-gradient(135deg, hsl(218 65% 9%), hsl(218 55% 12%))",
+                      border: "1px solid hsl(218 40% 22% / 0.5)",
+                    }}>
                     <div className="p-4">
                       <OpenClawBrainWidget variant="entreprise" />
                     </div>
                     {aiRecoCount > 0 && (
-                      <Link to="/pilotage" className="flex items-center justify-between px-4 py-2.5 border-t border-white/5 hover:bg-white/5 transition-colors">
+                      <Link to="/pilotage"
+                        className="flex items-center justify-between px-4 py-2.5 border-t border-white/5 hover:bg-white/5 transition-colors">
                         <div className="flex items-center gap-2">
                           <Sparkles size={12} style={{ color: "hsl(270 80% 70%)" }} />
                           <span className="text-xs font-semibold" style={{ color: "hsl(270 80% 75%)" }}>
@@ -320,10 +282,7 @@ export default function DashboardEntreprise() {
                   </div>
                 ) : (
                   <div className="rounded-2xl p-5 flex items-start gap-4"
-                    style={{
-                      background: "hsl(var(--secondary))",
-                      border: "1px solid hsl(var(--border))",
-                    }}>
+                    style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}>
                     <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-muted">
                       <Sparkles size={16} className="text-muted-foreground" />
                     </div>
@@ -343,16 +302,20 @@ export default function DashboardEntreprise() {
                   <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
                     <Briefcase size={14} className="text-primary" /> Missions récentes
                   </h2>
-                  <Link to="/missions/nouvelle" className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline px-2 py-1 rounded-lg bg-primary/8 border border-primary/20">
+                  <Link to="/missions/nouvelle"
+                    className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline px-2 py-1 rounded-lg bg-primary/8 border border-primary/20">
                     <Plus size={11} /> Nouvelle
                   </Link>
                 </div>
                 {loading ? (
-                  <div className="flex items-center justify-center py-4"><Loader2 size={18} className="animate-spin text-muted-foreground" /></div>
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 size={18} className="animate-spin text-muted-foreground" />
+                  </div>
                 ) : missions.length === 0 ? (
                   <div className="text-center py-4">
                     <p className="text-sm text-muted-foreground mb-3">Aucune mission pour l'instant.</p>
-                    <Link to="/missions/nouvelle" className="btn-primary text-xs py-2 px-4 inline-flex items-center gap-1">
+                    <Link to="/missions/nouvelle"
+                      className="btn-primary text-xs py-2 px-4 inline-flex items-center gap-1">
                       <Plus size={12} /> Créer ma première mission
                     </Link>
                   </div>
@@ -361,18 +324,22 @@ export default function DashboardEntreprise() {
                     {missions.map(m => (
                       <Link key={m.id} to={`/missions/${m.id}`}
                         className="flex items-center gap-3 p-3 rounded-xl bg-muted hover:bg-secondary transition-colors">
-                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ background: "var(--gradient-primary)" }}>
                           <Briefcase size={12} className="text-white" />
                         </div>
                         <p className="text-sm font-medium text-foreground flex-1 truncate">{m.titre}</p>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-semibold shrink-0 ${
-                          m.statut === "active" ? "bg-success/10 text-success" : "bg-muted-foreground/10 text-muted-foreground"
+                          m.statut === "active"
+                            ? "bg-success/10 text-success"
+                            : "bg-muted-foreground/10 text-muted-foreground"
                         }`}>
                           {m.statut === "active" ? "Active" : m.statut}
                         </span>
                       </Link>
                     ))}
-                    <Link to="/missions" className="flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    <Link to="/missions"
+                      className="flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
                       Voir toutes les missions <ChevronRight size={11} />
                     </Link>
                   </div>
@@ -386,7 +353,8 @@ export default function DashboardEntreprise() {
                     <h2 className="font-semibold text-foreground text-sm flex items-center gap-2">
                       <Send size={14} className="text-primary" /> Introductions récentes
                     </h2>
-                    <Link to="/entreprise/introductions" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+                    <Link to="/entreprise/introductions"
+                      className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
                       Voir tout <ChevronRight size={11} />
                     </Link>
                   </div>
@@ -398,11 +366,13 @@ export default function DashboardEntreprise() {
                         </div>
                         <p className="text-sm font-medium text-foreground flex-1 truncate">{i.contact_nom}</p>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-semibold shrink-0 ${
-                          i.statut === "validee"     ? "bg-success/10 text-success"
+                          i.statut === "validee"      ? "bg-success/10 text-success"
                           : i.statut === "en_attente" ? "bg-primary/10 text-primary"
                           : "bg-muted-foreground/10 text-muted-foreground"
                         }`}>
-                          {i.statut === "validee" ? "Validée" : i.statut === "en_attente" ? "En attente" : i.statut}
+                          {i.statut === "validee" ? "Validée"
+                            : i.statut === "en_attente" ? "En attente"
+                            : (i.statut ?? "—")}
                         </span>
                       </div>
                     ))}
@@ -413,8 +383,10 @@ export default function DashboardEntreprise() {
               {/* Invite facilitateurs */}
               {!loading && introductions.length === 0 && !isLaunchMode && (
                 <div className="p-5">
-                  <Link to="/facilitateurs" className="flex items-center gap-3 p-4 rounded-xl bg-muted hover:bg-secondary transition-colors">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "var(--gradient-primary)" }}>
+                  <Link to="/facilitateurs"
+                    className="flex items-center gap-3 p-4 rounded-xl bg-muted hover:bg-secondary transition-colors">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: "var(--gradient-primary)" }}>
                       <Users size={16} className="text-white" />
                     </div>
                     <div className="flex-1 min-w-0">

@@ -3,42 +3,21 @@
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
+    "paths": { "@/*": ["./src/*"] },
     "skipLibCheck": true,
-    // Progressive strictness hardening — Phase 2 of 3
-    // Phase 2 (current): strictNullChecks enabled — top 10 critical null-deref fixed
-    // Phase 3 target: strict: true + noImplicitAny: true
-    // TODO: ~80 remaining non-critical strictNullChecks errors in auto-generated UI code
-    //       deferred to Phase 3. Tracked in docs/SECURITY_NOTES.md.
-    "strict": false,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
+    "strict": true,
     "useUnknownInCatchVariables": false,
     "target": "ES2020",
-    "types": [
-      "vitest/globals"
-    ],
+    "types": ["vitest/globals"],
     "useDefineForClassFields": true
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
