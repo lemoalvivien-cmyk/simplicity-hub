@@ -55,7 +55,6 @@ export default function Login() {
       setSubmitting(false);
       return;
     }
-    // PROOF: login_success → analytics_events (real write after successful signIn)
     trackEvent("login_success", null, { source: "login_form" });
     // Profile loading + redirect handled by useEffect above
   };

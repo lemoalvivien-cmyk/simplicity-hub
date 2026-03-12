@@ -1,4 +1,3 @@
-// PROOF:BILLING_PROOF_CHAIN_V3:billing_proof_panel_post_test_lock
 /**
  * BillingProofPanel — Surface admin billing proof chain
  *
@@ -110,7 +109,6 @@ function shortId(s: string | null): string {
 }
 
 // ── Pipeline State Machine ─────────────────────────────────────────────────────
-// PROOF:BILLING_PROOF_CHAIN_V3:pipeline_state_machine_post_test
 //
 // États observables depuis get_billing_proof_summary (pas de checkbox_created/webhook_missing
 // car ces états pré-completion ne sont pas disponibles sans données checkout côté Stripe).
@@ -262,7 +260,7 @@ function PremierEuroBlock({
         </div>
       )}
 
-      {/* ③ Dernière tentative observée — PROOF:BILLING_PROOF_CHAIN_V3:derniere_tentative_block */}
+      {/* ③ Dernière tentative observée */}
       {/* Visible même sans full_proof : montre le dernier event ANY (partial, broken, etc.) */}
       {!isProven && lastAnyRow && (
         <div className="mb-4 p-3 rounded-xl border border-border bg-background/60">
@@ -709,7 +707,6 @@ function BillingRunbookPanel({ summary }: { summary: BillingProofSummary | null 
 }
 
 // ── ReleaseDecisionBlock ───────────────────────────────────────────────────────
-// PROOF:BILLING_PROOF_CHAIN_V5:release_decision_block_billing_only
 //
 // RÈGLE ABSOLUE : Ce bloc ne peut JAMAIS émettre PRIVATE_BETA_READY de façon autonome.
 // PRIVATE_BETA_READY n'est émis que par computeReleaseGate() dans release-gate-engine.ts,

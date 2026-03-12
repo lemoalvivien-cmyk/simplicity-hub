@@ -87,7 +87,6 @@ export default function MissionNouvelle() {
       const missionId = data?.id ?? null;
       setCreatedMissionId(missionId);
       await trackEvent("first_mission_created");
-      // PROOF: mission_created → analytics_events (real write, dual-write with activation hook)
       analyticsTrackEvent("mission_created", user.id, { mission_id: missionId });
       setStep("success");
 

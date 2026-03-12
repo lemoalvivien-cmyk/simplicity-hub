@@ -1,6 +1,5 @@
 /**
  * runtime-truth.test.ts
- * PROOF:RUNTIME_TRUTH_V1
  *
  * Business-anchored tests that verify the unification of the runtime:
  * 1. Every event claimed by /admin/analytics has a real writer in the codebase

@@ -124,7 +124,6 @@ function IntroductionForm({ mission, facilitateurId, onSuccess, onCancel }: Intr
         validation_status: "en_attente",
       });
 
-      // PROOF: intro_submitted → analytics_events (real write)
       trackEvent("intro_submitted", facilitateurId, { mission_id: mission.id, intro_id: intro.id });
 
       onSuccess();

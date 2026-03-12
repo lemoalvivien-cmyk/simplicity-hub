@@ -1,10 +1,5 @@
-// PROOF:EXPORT_RECOVERY_V1:template_variables_present → this file
 /**
  * templateVariables — Real template variable resolution with fallback.
- * PROOF:CANONICAL_EXPORT_V1:template_variables_present → this file
- * PROOF:PREMIUM_V1:template_variable_substitution → this file
- * PROOF:PREMIUM_PROOF_V1:template_variable_substitution → this file (exportable, grep-able)
- * PROOF:PREMIUM_EXPORT_V1:template_variable_substitution → this file (export reality gate)
  *
  * Supported variables:
  *   {{first_name}}        → contact / lead first name
@@ -27,7 +22,6 @@ export interface TemplateContext {
   [key: string]: string | null | undefined;
 }
 
-// PROOF:PREMIUM_V1:template_variable_substitution — canonical variable map
 const VARIABLE_PATTERNS: Record<string, (ctx: TemplateContext) => string> = {
   "{{first_name}}":       (ctx) => ctx.first_name || "[Prénom]",
   "{{company_name}}":     (ctx) => ctx.company_name || "[Entreprise]",
@@ -41,7 +35,6 @@ const VARIABLE_PATTERNS: Record<string, (ctx: TemplateContext) => string> = {
 /**
  * Resolves all {{variable}} patterns in a template body.
  * Returns the resolved string with explicit fallback labels for missing vars.
- * PROOF:PREMIUM_V1:template_variable_substitution
  */
 export function resolveTemplateVariables(
   body: string,

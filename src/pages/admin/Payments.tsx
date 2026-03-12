@@ -1,4 +1,4 @@
-// PROOF:BILLING_PROOF_CHAIN_V1:payments_page_wired
+
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { CheckCircle2, XCircle, Clock, AlertCircle, ShieldCheck } from "lucide-react";

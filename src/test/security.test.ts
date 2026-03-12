@@ -1,6 +1,5 @@
 /**
- * Security tests — PROOF:SECURITY_TESTS_V1
- * Tests ciblés sur les gardes de sécurité critiques.
+ * Security tests — Tests ciblés sur les gardes de sécurité critiques.
  * Ces tests vérifient la logique applicative (pas les appels réseau réels).
  */
 import { describe, it, expect } from "vitest";

@@ -1,10 +1,6 @@
 /**
  * IntroductionsEntreprise — Liste des introductions reçues côté entreprise.
  * FULLY WIRED: lit et écrit dans Supabase.
- * PROOF:PIPELINE_V2:introduction_pipeline_ui → this file
- * PROOF:EXECUTION_V1:action_queue_ui_real → reads real lead_actions per intro
- * PROOF:EXECUTION_V1:intro_to_enterprise_opportunity → validate triggers opportunity promotion
- * PROOF:CONSISTENCY_V1:intro_validation_truth → validation chain: intro + gain + escrow + proof + promoteLeadToOpportunity()
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -45,7 +41,6 @@ interface IntroReçue {
   lead_dedup_status?: string | null;
   lead_intake_id?: string | null;
   lead_opportunity_id?: string | null;
-  // PROOF:EXECUTION_V1:action_queue_ui_real — real lead_action from lead_actions table
   active_lead_action?: {
     id: string;
     action_type: NextBestAction;
@@ -148,7 +143,7 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
               Opportunité créée — voir dans Mon IA
             </Link>
           )}
-          {/* PROOF:EXECUTION_V1:action_queue_ui_real — real action from lead_actions table */}
+          {/* Real action from lead_actions table */}
           {intro.active_lead_action && !intro.lead_opportunity_id && (
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
               style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}>
@@ -273,11 +268,10 @@ export default function IntroductionsEntreprise() {
         missionIds.length > 0 ? db.from("missions").select("id, titre").in("id", missionIds) : { data: [] },
         db.from("profiles").select("id, prenom").in("id", facilitateurIds),
         db.from("gains").select("id, introduction_id").in("introduction_id", introIds),
-        // PROOF:EXECUTION_V1:action_queue_ui_real — fetches real lead_intakes with pipeline data
         db.from("lead_intakes")
           .select("id, introduction_id, qualification_status, next_best_action, dedup_status, linked_opportunity_id")
           .in("introduction_id", introIds),
-        // PROOF:EXECUTION_V1:action_queue_ui_real — fetches real lead_actions for each intro's lead
+        // Fetches real lead_actions for each intro's lead
         db.from("lead_actions")
           .select("id, lead_intake_id, action_type, status, priority")
           .in("status", ["open", "in_progress"])
@@ -312,7 +306,6 @@ export default function IntroductionsEntreprise() {
       });
 
       // Build map: lead_intake_id → first open action
-      // PROOF:EXECUTION_V1:action_queue_ui_real
       const actionsMap: Record<string, { id: string; action_type: NextBestAction; status: string; priority: string }> = {};
       (actionsRes.data || []).forEach((a: { id: string; lead_intake_id: string; action_type: NextBestAction; status: string; priority: string }) => {
         if (!actionsMap[a.lead_intake_id]) actionsMap[a.lead_intake_id] = a;
@@ -355,14 +348,12 @@ export default function IntroductionsEntreprise() {
     // 4. Update introduction_proof
     await db.from("introduction_proofs").update({ validation_status: "validee", proof_status: "certifie", finalized_at: new Date().toISOString() }).eq("introduction_id", id);
 
-    // 5. PROOF:EXECUTION_V1:intro_to_enterprise_opportunity
-    // Promote lead intake to opportunity (enterprise-owned) if lead_intake_id exists
+    // 5. Promote lead intake to opportunity (enterprise-owned) if lead_intake_id exists
     const intro = intros.find(i => i.id === id);
     if (intro?.lead_intake_id) {
       await promoteLeadToOpportunity(intro.lead_intake_id);
     }
 
-    // PROOF: intro_validated → analytics_events (real write)
     trackEvent("intro_validated", user!.id, { intro_id: id });
 
     setIntros(prev => prev.map(i => i.id === id ? { ...i, statut: "validee" as Status } : i));
