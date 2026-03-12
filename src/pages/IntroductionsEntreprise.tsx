@@ -349,14 +349,12 @@ export default function IntroductionsEntreprise() {
     // 4. Update introduction_proof
     await db.from("introduction_proofs").update({ validation_status: "validee", proof_status: "certifie", finalized_at: new Date().toISOString() }).eq("introduction_id", id);
 
-    // 5. PROOF:EXECUTION_V1:intro_to_enterprise_opportunity
-    // Promote lead intake to opportunity (enterprise-owned) if lead_intake_id exists
+    // 5. Promote lead intake to opportunity (enterprise-owned) if lead_intake_id exists
     const intro = intros.find(i => i.id === id);
     if (intro?.lead_intake_id) {
       await promoteLeadToOpportunity(intro.lead_intake_id);
     }
 
-    // PROOF: intro_validated → analytics_events (real write)
     trackEvent("intro_validated", user!.id, { intro_id: id });
 
     setIntros(prev => prev.map(i => i.id === id ? { ...i, statut: "validee" as Status } : i));
