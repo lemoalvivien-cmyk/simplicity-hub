@@ -1,14 +1,6 @@
-// PROOF:EXPORT_RECOVERY_V1:lead_actions_hook_present → this file
 /**
  * useLeadActions — Fetches real lead_actions from DB for a given actor.
- * PROOF:CANONICAL_EXPORT_V1:lead_actions_hook_present → this file
- * PROOF:EXECUTION_V1:action_queue_ui_real → this file
- * PROOF:EXECUTION_V1:enterprise_action_queue → used by DashboardEntreprise
- * PROOF:SYNC_GATE_V1:lead_actions_file_present → this file
- * PROOF:EXECUTION_V1:facilitateur_action_queue → used by DashboardFacilitateur
- * PROOF:INTEGRITY_V1:action_rpc_usage → markDone / markInProgress call canonical RPC
- * PROOF:INTEGRITY_V1:canonical_action_mutation → no direct .update() on critical path
- * PROOF:CONSISTENCY_V1:action_queue_truth → reads real lead_actions table + lead_intakes join; mutations via update_lead_action_status() RPC only
+ * All status mutations go through the canonical RPC update_lead_action_status().
  */
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,8 +52,6 @@ interface UseLeadActionsReturn {
   markCancelled: (actionId: string, note?: string) => Promise<void>;
 }
 
-// PROOF:EXECUTION_V1:action_status_mutations → markDone / markInProgress / markCancelled
-// PROOF:INTEGRITY_V1:action_rpc_usage → all mutations use canonical RPC update_lead_action_status
 export function useLeadActions(statusFilter: ActionStatus[] = ["open", "in_progress"]): UseLeadActionsReturn {
   const { user } = useAuth();
   const [actions, setActions] = useState<LeadAction[]>([]);
@@ -74,8 +64,6 @@ export function useLeadActions(statusFilter: ActionStatus[] = ["open", "in_progr
 
     const load = async () => {
       setLoading(true);
-      // PROOF:EXECUTION_V1:action_queue_ui_real — reads real lead_actions table with context join
-      // PROOF:INTEGRITY_V1:action_context_ui — join with lead_intakes for business context
       const { data } = await db
         .from("lead_actions")
         .select(`
@@ -118,8 +106,6 @@ export function useLeadActions(statusFilter: ActionStatus[] = ["open", "in_progr
     return () => { cancelled = true; };
   }, [user, tick, statusFilter.join(",")]);
 
-  // PROOF:INTEGRITY_V1:canonical_action_mutation
-  // PROOF:INTEGRITY_V1:action_rpc_usage
   // All status mutations go through canonical RPC — no direct .update() calls
   const callCanonicalRpc = useCallback(async (actionId: string, newStatus: string, note?: string) => {
     if (!user) return;
