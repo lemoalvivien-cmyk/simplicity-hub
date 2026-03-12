@@ -10,6 +10,7 @@ import {
   Plus, Sparkles, Check, Phone, Mail, RefreshCw,
   CheckCircle, AlertCircle, TrendingUp, ChevronRight,
   ChevronDown, ChevronUp, CheckCircle2, Flame, Bot,
+  FileText, Briefcase, Users,
 } from "lucide-react";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
