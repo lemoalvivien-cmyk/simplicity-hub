@@ -83,11 +83,7 @@ Deno.serve(async (req) => {
   // ── Fetch pending payouts ─────────────────────────────────────────────────
   let query = supabase
     .from("payouts")
-    .select(`
-      id, facilitator_id, amount, currency, gain_id, notes,
-      stripe_connect_account_id,
-      facilitateur_profiles!inner(stripe_connect_account_id, user_id)
-    `)
+    .select("id, facilitator_id, amount, currency, gain_id, notes, stripe_connect_account_id")
     .eq("status", "pending")
     .gte("amount", minAmount);
 
