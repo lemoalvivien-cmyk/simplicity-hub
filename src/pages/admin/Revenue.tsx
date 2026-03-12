@@ -250,7 +250,7 @@ export default function AdminRevenue() {
     queryKey: ["admin-business-alerts"],
     queryFn: async () => {
       // Run the alert cycle (generate new alerts if thresholds exceeded)
-      await supabase.rpc("run_alert_cycle").catch(() => null);
+      try { await supabase.rpc("run_alert_cycle"); } catch { /* non-blocking */ }
       const { data, error } = await supabase
         .from("business_alerts")
         .select("*")
