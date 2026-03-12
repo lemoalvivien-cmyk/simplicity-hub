@@ -619,7 +619,7 @@ export default function AdminRevenue() {
                         <p className="text-xs font-mono text-muted-foreground truncate max-w-[120px]">
                           {p.facilitator_id.slice(0, 8)}…
                         </p>
-                        {isOld48h && <span className="text-xs text-yellow-600 font-semibold">⚠️ >48h</span>}
+                        {isOld48h && <span className="text-xs text-yellow-600 font-semibold">{"⚠️ >48h"}</span>}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className="font-display font-bold text-foreground">
