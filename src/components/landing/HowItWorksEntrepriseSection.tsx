@@ -90,7 +90,7 @@ export default function HowItWorksEntrepriseSection() {
 
         <div className="mt-10 text-center">
           <Link
-            to="/pricing"
+            to="/signup"
             className="btn-cta inline-flex items-center gap-2 px-8 py-4 text-base"
             onClick={() => track("cta_howitworks")}
           >
@@ -98,7 +98,7 @@ export default function HowItWorksEntrepriseSection() {
             <ArrowRight size={16} />
           </Link>
           <p className="text-[11px] text-muted-foreground mt-3">
-            Offre lancement — 99 € TTC / an · 100 premières entreprises uniquement
+            Inscription gratuite · Offre entreprise 99 € TTC / an
           </p>
         </div>
       </div>

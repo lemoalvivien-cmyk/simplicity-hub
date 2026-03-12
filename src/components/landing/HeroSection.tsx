@@ -79,7 +79,7 @@ export default function HeroSection() {
               Devenir facilitateur — Gratuit
             </Link>
             <p className="text-white/55 text-xs mt-1">
-              Premières recommandations IA sous 5 minutes
+              Inscription gratuite · Accès entreprise à 99 €/an
             </p>
           </div>
 
