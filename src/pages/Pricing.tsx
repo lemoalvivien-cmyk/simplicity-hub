@@ -150,16 +150,16 @@ export default function Pricing() {
                 ))}
               </ul>
               <Link
-                to="/checkout"
+                to="/signup"
                 className="btn-primary w-full text-center text-base py-4 block"
                 onClick={() => trackEvent("cta_click", null, { source: "pricing_enterprise", label: "launch" })}
               >
-                Démarrer maintenant — 99 €/an
+                Commencer — inscription gratuite
               </Link>
               <div className="mt-4 p-3 rounded-lg border flex items-center gap-2" style={{ background: "hsl(218 72% 18% / 0.05)", borderColor: "hsl(218 72% 18% / 0.12)" }}>
                 <Tag size={14} style={{ color: "hsl(var(--primary))" }} className="shrink-0" />
                 <p className="text-xs text-foreground">
-                  <strong>Code promo ?</strong> Saisissez-le à l'étape suivante pour obtenir votre remise.
+                  <strong>Accès entreprise à 99 €/an</strong> — déblocable après inscription depuis votre espace.
                 </p>
               </div>
             </div>
