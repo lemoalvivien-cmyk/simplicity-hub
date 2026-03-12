@@ -2,14 +2,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { track } from "@/lib/landingTracking";
 import { FlaskConical } from "lucide-react";
 
-const BETA_NOTE =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const allQAs = [
-  // Objections
   {
     q: "Je ne suis pas du tout technique.",
-    a: "Wiinup Max est conçu pour des commerciaux et dirigeants non techniques. KITT IA vous guide à chaque étape en langage clair. Si vous savez envoyer un email, vous êtes qualifié.",
+    a: "Wiinup Max est conçu pour des commerciaux et dirigeants non techniques. L'interface est guidée étape par étape, en langage clair. Si vous savez envoyer un email, vous êtes qualifié.",
     tag: "obj",
   },
   {
@@ -29,12 +28,12 @@ const allQAs = [
   },
   {
     q: "Comment je prouve ce qui m'appartient ?",
-    a: "Chaque introduction est horodatée à la seconde dès l'envoi. L'attribution est enregistrée automatiquement. Si un deal se concrétise dans 6 mois, la trace est là — défendable et incontestable.",
+    a: "Chaque introduction est horodatée à la seconde dès l'envoi. L'attribution est enregistrée dès la soumission. Si un deal se concrétise dans 6 mois, la trace est là — défendable et incontestable.",
     tag: "obj",
   },
   {
     q: "Je ne veux pas payer pour du vent.",
-    a: "Vous activez un système complet : prospection IA + réseau structuré + cockpit de suivi. L'offre de lancement est à 99 € pour la première année. Si vous n'obtenez pas plus d'introductions qualifiées qu'en faisant tout à la main, annulez.",
+    a: "Vous activez un système complet : prospection IA assistée + réseau structuré + cockpit de suivi. L'offre de lancement est à 99 € pour la première année. Si vous n'obtenez pas plus d'introductions qualifiées qu'en faisant tout à la main, annulez.",
     tag: "obj",
   },
   {
@@ -42,10 +41,9 @@ const allQAs = [
     a: "Les gains sont réels, traçables et basés sur des validations vérifiables. C'est de l'apport d'affaires — exactement ce que font les courtiers et apporteurs d'affaires professionnels. Disponible à tout le monde, pour la première fois avec des outils dignes de ce nom.",
     tag: "obj",
   },
-  // FAQ
   {
     q: "C'est quoi exactement Wiinup Max ?",
-    a: "Un cockpit d'acquisition qui combine prospection automatisée par IA (OpenClaw) et réseau d'apport d'affaires structuré (facilitateurs). Les deux remontent dans un seul tableau de bord — sans jongler entre plusieurs outils.",
+    a: "Un cockpit d'acquisition qui combine prospection IA assistée et réseau d'apport d'affaires structuré (facilitateurs). Les deux remontent dans un seul tableau de bord — sans jongler entre plusieurs outils. OpenClaw (en connexion réelle avec API externe) et les facilitateurs actifs travaillent en parallèle.",
     tag: "faq",
   },
   {
@@ -55,7 +53,7 @@ const allQAs = [
   },
   {
     q: "Quelle est la vraie différence avec un CRM ?",
-    a: "Un CRM stocke des contacts. Wiinup Max génère des opportunités. Il prospecte, structure les introductions, les valide et mesure les résultats. Ce n'est pas le même niveau d'outil.",
+    a: "Un CRM stocke des contacts. Wiinup Max génère des opportunités. Il assiste la prospection, structure les introductions, les valide et mesure les résultats. Ce n'est pas le même niveau d'outil.",
     tag: "faq",
   },
   {
@@ -75,7 +73,7 @@ const allQAs = [
   },
   {
     q: "Faut-il des compétences techniques ?",
-    a: "Aucune. KITT IA vous guide à chaque étape. Si vous savez envoyer un email, vous pouvez utiliser Wiinup Max.",
+    a: "Aucune. L'interface vous guide à chaque étape. Si vous savez envoyer un email, vous pouvez utiliser Wiinup Max.",
     tag: "faq",
   },
   {
@@ -126,17 +124,17 @@ export default function AntiBullshitSection() {
           ))}
         </Accordion>
 
-        {/* Beta disclaimer */}
+        {/* Disclaimer */}
         <div
-          className="mt-6 rounded-xl px-4 py-3 flex items-start gap-2.5"
+          className="mt-6 rounded-xl px-5 py-4 flex items-start gap-3"
           style={{
-            background: "hsl(38 95% 52% / 0.07)",
-            border: "1px solid hsl(38 95% 52% / 0.18)",
+            background: "hsl(38 95% 52% / 0.08)",
+            border: "1px solid hsl(38 95% 52% / 0.28)",
           }}
         >
-          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {BETA_NOTE}
+          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {DISCLAIMER}
           </p>
         </div>
       </div>
