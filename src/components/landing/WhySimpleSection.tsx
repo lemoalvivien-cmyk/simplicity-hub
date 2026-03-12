@@ -33,7 +33,7 @@ export default function WhySimpleSection() {
             Pourquoi c'est vraiment simple ?
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Planify est conçu pour des personnes comme vous — pas pour des développeurs.
+            Wiinup Max est conçu pour des personnes comme vous — pas pour des développeurs.
           </p>
         </div>
 
