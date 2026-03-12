@@ -26,16 +26,29 @@ Deno.serve(async (req) => {
 
     const svc = createClient(supabaseUrl, serviceKey);
 
-    // Auth
+    // ── JWT Guard: hard-fail 401 if no valid user token ───────────────────────
     const authHeader = req.headers.get("Authorization") || "";
-    let userId: string | null = null;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    if (authHeader && authHeader !== `Bearer ${anonKey}` && authHeader !== `Bearer ${serviceKey}`) {
+    let userId: string | null = null;
+    const isServiceRole = authHeader === `Bearer ${serviceKey}`;
+
+    if (!isServiceRole) {
+      const token = authHeader.replace("Bearer ", "");
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: { user } } = await userClient.auth.getUser();
-      userId = user?.id || null;
+      const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+      if (claimsError || !claimsData?.claims) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      userId = claimsData.claims.sub;
     }
 
     const proof: Record<string, unknown> = {
