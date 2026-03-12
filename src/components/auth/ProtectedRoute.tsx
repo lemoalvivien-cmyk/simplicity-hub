@@ -89,13 +89,12 @@ export default function ProtectedRoute({
   //
   //   1. Admins & facilitateurs → always allowed (free tier).
   //   2. Exempt paths (/checkout, /onboarding, /account) → always allowed.
-  //   3. localDone === true → ALWAYS allowed.
-  //      Rationale: the user just finished onboarding on this device.
-  //      If they have no subscription, /checkout will surface naturally
-  //      from within the dashboard flow — not via an auto-redirect here.
+  //   3. onboardingDone === true → ALWAYS allowed, regardless of subscription.
+  //      Rationale: new users finishing onboarding must never be bounced.
+  //      If they have no active subscription the dashboard will surface
+  //      a contextual upsell — NOT an automatic redirect from this guard.
   //      This is the definitive fix for the "new user → /checkout loop".
-  //   4. Subscription is still loading → wait (handled above).
-  //   5. Entreprise with inactive subscription → redirect to /checkout.
+  //   4. Entreprise with inactive subscription + not done → redirect to /checkout.
 
   const isExemptPath = SUBSCRIPTION_EXEMPT_PATHS.some((p) =>
     location.pathname.startsWith(p)
@@ -105,7 +104,7 @@ export default function ProtectedRoute({
     role === "entreprise" &&
     !isAccessActive(subscription.status) &&
     !isExemptPath &&
-    !localDone // ← This is the definitive guard. localDone blocks ALL /checkout bounces post-onboarding.
+    !onboardingDone // ← block only when onboarding is genuinely not done yet
   ) {
     toast.warning("Activez votre accès pour continuer.", { id: "sub-guard" });
     return <Navigate to="/checkout" replace />;
