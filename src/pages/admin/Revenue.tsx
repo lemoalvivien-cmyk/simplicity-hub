@@ -169,7 +169,7 @@ export default function AdminRevenue() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_business_health");
       if (error) throw error;
-      return data as BusinessHealth;
+      return data as unknown as BusinessHealth;
     },
     refetchInterval: 60_000,
   });
