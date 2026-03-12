@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Zap } from "lucide-react";
 import PublicNav from "@/components/layout/PublicNav";
-import HeroSection from "@/components/landing/HeroSection";
+import HeroSectionV2 from "@/components/landing/HeroSectionV2";
 import ProblemSection from "@/components/landing/ProblemSection";
 import FacilitateurPainSection from "@/components/landing/FacilitateurPainSection";
 import MecanismeSection from "@/components/landing/MecanismeSection";
@@ -13,6 +13,8 @@ import ProofSection from "@/components/landing/ProofSection";
 import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
+import GodModeTeaser from "@/components/landing/GodModeTeaser";
+import MagneticCursor from "@/components/landing/MagneticCursor";
 import { initScrollTracking, track } from "@/lib/landingTracking";
 import { trackEvent } from "@/lib/analytics";
 import { ArrowRight } from "lucide-react";
@@ -26,10 +28,13 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Global magnetic cursor — desktop only */}
+      <MagneticCursor />
+
       <PublicNav />
 
-      {/* 1 — HERO */}
-      <HeroSection />
+      {/* 1 — HERO V2 (morphing 3D + kinetic type + glassmorphism) */}
+      <HeroSectionV2 />
 
       {/* 2 — DOULEURS ENTREPRISES */}
       <ProblemSection />
@@ -40,25 +45,28 @@ export default function LandingPage() {
       {/* 4 — MÉCANISME DOUBLE MOTEUR */}
       <MecanismeSection />
 
-      {/* 5 — FONCTIONNALITÉS COMPLÈTES */}
+      {/* 5 — GOD MODE TEASER */}
+      <GodModeTeaser />
+
+      {/* 6 — FONCTIONNALITÉS COMPLÈTES */}
       <FeaturesValueSection />
 
-      {/* 6 — COMMENT ÇA MARCHE ENTREPRISE */}
+      {/* 7 — COMMENT ÇA MARCHE ENTREPRISE */}
       <HowItWorksEntrepriseSection />
 
-      {/* 7 — FACILITATEUR */}
+      {/* 8 — FACILITATEUR */}
       <FacilitateurSection />
 
-      {/* 8 — PREUVES */}
+      {/* 9 — PREUVES */}
       <ProofSection />
 
-      {/* 9 — QUESTIONS & RÉPONSES (objections + FAQ fusionnées) */}
+      {/* 10 — QUESTIONS & RÉPONSES */}
       <AntiBullshitSection />
 
-      {/* 10 — PRICING */}
+      {/* 11 — PRICING */}
       <PricingSection />
 
-      {/* 11 — CTA FINAL */}
+      {/* 12 — CTA FINAL */}
       <FinalCTASection />
 
       {/* FOOTER */}
@@ -88,7 +96,6 @@ export default function LandingPage() {
             <a href="mailto:contact@wiinupmax.com" className="hover:text-foreground transition-colors">Contact</a>
           </div>
         </div>
-        {/* Beta notice — obligatoire */}
         <div className="container mt-4 pt-4 border-t border-border/50">
           <div
             className="flex items-start gap-2.5 justify-center max-w-2xl mx-auto rounded-xl px-5 py-4"
