@@ -227,7 +227,7 @@ export default function DashboardEntreprise() {
 
         {/* ═══ GOD MODE PANEL ══════════════════════════════ */}
         {subscribed && (
-          <GodModePanel contextBrief={latestBrief?.content ?? undefined} />
+          <GodModePanel contextBrief={latestBrief ? JSON.stringify(latestBrief) : undefined} />
         )}
 
         {/* ═══ RACCOURCIS ═════════════════════════════════════ */}
