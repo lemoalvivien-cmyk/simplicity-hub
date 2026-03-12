@@ -30,7 +30,7 @@ const steps = [
   {
     num: "04",
     title: "Validez et mesurez votre ROI",
-    desc: "Acceptez ou refusez en un clic. Vos gains, taux de conversion et ROI sont calculés automatiquement. Vous savez toujours ce qui fonctionne.",
+    desc: "Acceptez ou refusez en un clic. Vos gains, taux de conversion et ROI sont calculés et affichés dans votre cockpit. Vous savez toujours ce qui fonctionne.",
     color: "hsl(24 100% 55%)",
     tag: "1 clic",
   },
@@ -114,8 +114,8 @@ export default function HowItWorksEntrepriseSection() {
           }}
         >
           <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {BETA_NOTE}
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.
           </p>
         </div>
       </div>

@@ -1,14 +1,14 @@
 import { Send, Brain, Zap, LayoutDashboard, TrendingUp, ShieldCheck, MessageSquare, Bell, FlaskConical } from "lucide-react";
 
-const BETA_NOTE =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const features = [
   {
     icon: Brain,
     name: "Prospection IA assistée",
     badge: "Entreprise",
-    what: "OpenClaw — assistant de prospection (connexion API en cours)",
+    what: "OpenClaw — suggestions de cibles et messages (connexion API en cours)",
     problem: "Vous n'avez pas le temps de prospecter et de personnaliser chaque jour.",
     impact: "Suggestions de cibles et brouillons de messages prêts à envoyer.",
     color: "hsl(218 80% 65%)",
@@ -62,7 +62,7 @@ const features = [
     icon: MessageSquare,
     name: "Assistant IA contextuel",
     badge: "Les deux",
-    what: "Copilote qui suggère la prochaine action à partir de votre pipeline",
+    what: "Suggestions de prochaine action selon l'état de votre pipeline",
     problem: "Vous ne savez pas toujours quelle action prioriser parmi toutes les tâches.",
     impact: "Des suggestions concrètes basées sur l'état réel de votre pipeline.",
     color: "hsl(262 72% 60%)",
@@ -110,7 +110,6 @@ export default function FeaturesValueSection() {
                 className="bg-card rounded-2xl p-5 border flex flex-col gap-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                 style={{ borderColor: borderAlpha }}
               >
-                {/* Header */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <div
@@ -136,10 +135,8 @@ export default function FeaturesValueSection() {
                   </span>
                 </div>
 
-                {/* Separator */}
                 <div className="h-px bg-border" />
 
-                {/* Value rows */}
                 <div className="space-y-2.5 text-xs flex-1">
                   <div>
                     <p className="text-muted-foreground/65 font-bold uppercase tracking-wide text-[9px] mb-1">
@@ -162,17 +159,17 @@ export default function FeaturesValueSection() {
           })}
         </div>
 
-        {/* Beta disclaimer */}
+        {/* Disclaimer */}
         <div
-          className="mt-6 rounded-xl px-4 py-3 flex items-start gap-2.5"
+          className="mt-6 rounded-xl px-5 py-4 flex items-start gap-3"
           style={{
-            background: "hsl(38 95% 52% / 0.07)",
-            border: "1px solid hsl(38 95% 52% / 0.18)",
+            background: "hsl(38 95% 52% / 0.08)",
+            border: "1px solid hsl(38 95% 52% / 0.28)",
           }}
         >
-          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {BETA_NOTE}
+          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {DISCLAIMER}
           </p>
         </div>
       </div>

@@ -88,11 +88,19 @@ export default function LandingPage() {
             <a href="mailto:contact@wiinupmax.com" className="hover:text-foreground transition-colors">Contact</a>
           </div>
         </div>
-        {/* Beta notice */}
+        {/* Beta notice — obligatoire */}
         <div className="container mt-4 pt-4 border-t border-border/50">
-          <p className="text-center text-[10px] text-muted-foreground/55 leading-relaxed max-w-xl mx-auto">
-            Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.
-          </p>
+          <div
+            className="flex items-start gap-2.5 justify-center max-w-2xl mx-auto rounded-xl px-5 py-4"
+            style={{
+              background: "hsl(38 95% 52% / 0.08)",
+              border: "1px solid hsl(38 95% 52% / 0.25)",
+            }}
+          >
+            <p className="text-center text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+              Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.
+            </p>
+          </div>
         </div>
       </footer>
 

@@ -1,38 +1,33 @@
-import { Brain, Target, Users, Send, TrendingUp, Bot, Radar, Shield, Smartphone, Zap, CheckCircle2, ArrowRight, Moon } from "lucide-react";
+import { Brain, Target, Users, Send, TrendingUp, ShieldCheck, Shield, Smartphone, Zap, CheckCircle2, ArrowRight, FlaskConical } from "lucide-react";
 import { Link } from "react-router-dom";
+
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const engines = [
   {
     icon: Brain,
     color: "hsl(218 72% 55%)",
     bg: "hsl(218 72% 55% / 0.12)",
-    title: "OpenClaw — Cerveau IA",
-    desc: "Vos agents prospectent, préparent et agissent pendant que vous dormez.",
-    tag: "Cerveau central",
-  },
-  {
-    icon: Radar,
-    color: "hsl(152 62% 45%)",
-    bg: "hsl(152 62% 45% / 0.12)",
-    title: "Deal Radar",
-    desc: "Détecte les opportunités business en temps réel. Signaux, scores, matching.",
-    tag: "Détection auto",
+    title: "OpenClaw — Prospection IA assistée",
+    desc: "Suggestions de cibles et brouillons de messages. En connexion réelle avec API externe.",
+    tag: "IA assistée",
   },
   {
     icon: Target,
     color: "hsl(24 100% 52%)",
     bg: "hsl(24 100% 52% / 0.12)",
-    title: "Prospection automatisée",
-    desc: "Contacts, listes, campagnes, actions. Tout organisé et priorisé par l'IA.",
-    tag: "Moteur actif",
+    title: "Suivi de prospection",
+    desc: "Contacts, listes, actions. Tout organisé et visible dans un seul tableau de bord.",
+    tag: "Centralisé",
   },
   {
     icon: Users,
     color: "hsl(38 90% 55%)",
     bg: "hsl(38 90% 55% / 0.12)",
     title: "Réseau d'apporteurs",
-    desc: "Des centaines de facilitateurs qui recommandent vos missions à leurs contacts.",
-    tag: "Réseau activé",
+    desc: "Des facilitateurs recommandent vos missions à leurs contacts qualifiés.",
+    tag: "Réseau humain",
   },
   {
     icon: Send,
@@ -43,12 +38,12 @@ const engines = [
     tag: "Tracé & prouvé",
   },
   {
-    icon: Bot,
+    icon: ShieldCheck,
     color: "hsl(210 85% 55%)",
     bg: "hsl(210 85% 55% / 0.12)",
-    title: "JARVIS — Assistant IA",
-    desc: "Priorise, conseille, améliore vos messages. Toujours disponible.",
-    tag: "IA illimitée",
+    title: "Assistant IA contextuel",
+    desc: "Suggestions de prochaine action selon l'état de votre pipeline.",
+    tag: "Suggestions",
   },
   {
     icon: TrendingUp,
@@ -92,9 +87,7 @@ export default function GuichetUniqueSection() {
               <span className="text-highlight"> des clients. Dans un seul endroit.</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-              Prospection automatisée + apport d'affaires + agents IA + Deal Radar + assistance illimitée.
-              <br className="hidden md:block" />
-              Vous n'avez plus besoin d'aller ailleurs.
+              Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
             </p>
           </div>
 
@@ -115,122 +108,31 @@ export default function GuichetUniqueSection() {
             ))}
           </div>
 
-          <div className="text-center">
+          <div className="text-center mb-6">
             <Link to="/pricing" className="btn-cta text-base px-10 py-4 gap-2 inline-flex">
               Accéder à tout ça maintenant
               <ArrowRight size={18} />
             </Link>
             <p className="text-muted-foreground text-sm mt-3">Entreprise à partir de 99 € / an · Apporteur toujours gratuit</p>
           </div>
-        </div>
-      </section>
 
-      {/* ══ MODE AUTOPILOT — POUR CEUX QUI DÉTESTENT PROSPECTER ══ */}
-      <section className="py-24 relative overflow-hidden" style={{ background: "hsl(218 65% 8%)" }}>
-        <div className="absolute inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 70% 60% at 30% 50%, hsl(218 72% 30% / 0.2) 0%, transparent 70%)"
-        }} />
-        <div className="container max-w-5xl relative z-10">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-orange-500/20 bg-orange-500/8 text-orange-400/80 text-xs font-semibold mb-6">
-                <Moon size={12} />
-                Mode Autopilot — Pour ceux qui détestent prospecter
-              </div>
-              <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-5 leading-tight">
-                Vous détestez prospecter ?<br />
-                <span style={{
-                  background: "linear-gradient(135deg, hsl(24 100% 60%), hsl(38 100% 65%))",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text"
-                }}>
-                  Très bien. On s'en occupe.
-                </span>
-              </h2>
-              <p className="text-white/60 text-lg mb-8 leading-relaxed">
-                Remplissez votre dossier une seule fois. OpenClaw prépare les campagnes, les messages, les priorités. Vous validez juste l'essentiel.
-              </p>
-              <ul className="space-y-3 mb-8">
-                {[
-                  "Vos agents travaillent pendant que vous dormez",
-                  "Vous recevez les opportunités déjà qualifiées",
-                  "Vous validez d'un clic, ou laissez passer",
-                  "Le Deal Radar trouve les cibles à votre place",
-                  "JARVIS priorise ce qui mérite vraiment votre temps",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3">
-                    <CheckCircle2 size={14} style={{ color: "hsl(152 62% 45%)" }} className="shrink-0" />
-                    <span className="text-white/75 text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link to="/pricing" className="btn-cta text-sm px-7 py-3.5 gap-2 inline-flex">
-                Activer le mode Autopilot
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-
-            {/* Mockup Autopilot */}
-            <div className="rounded-2xl overflow-hidden border border-white/10" style={{
-              background: "hsl(218 65% 12% / 0.95)",
-              boxShadow: "0 24px 60px hsl(218 72% 8% / 0.6)"
-            }}>
-              <div className="p-5 border-b border-white/8">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--gradient-electric)" }}>
-                      <Zap size={14} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-white/85 text-sm font-semibold">Mode Autopilot</p>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                        <span className="text-white/40 text-xs">Actif · OpenClaw travaille</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "hsl(152 62% 45% / 0.2)", color: "hsl(152 62% 50%)" }}>
-                    Autonomie haute
-                  </div>
-                </div>
-              </div>
-              <div className="p-5 space-y-3">
-                {[
-                  { icon: "🎯", title: "3 opportunités préparées", sub: "Par le Deal Radar · À valider", color: "hsl(24 100% 52%)", urgent: true },
-                  { icon: "📬", title: "2 messages rédigés", sub: "Prêts à envoyer · Relances LinkedIn", color: "hsl(210 85% 55%)", urgent: false },
-                  { icon: "🤝", title: "1 introduction en attente", sub: "Votre accord requis", color: "hsl(38 80% 55%)", urgent: true },
-                  { icon: "📊", title: "Brief du matin disponible", sub: "Résumé · Priorités · Plan", color: "hsl(152 62% 45%)", urgent: false },
-                ].map(({ icon, title, sub, color, urgent }) => (
-                  <div key={title} className="flex items-center gap-3 p-3 rounded-xl" style={{
-                    background: urgent ? `${color}12` : "hsl(218 50% 18% / 0.5)",
-                    border: `1px solid ${urgent ? color + "30" : "hsl(218 40% 30% / 0.2)"}`
-                  }}>
-                    <span className="text-xl shrink-0">{icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white/85 text-xs font-semibold truncate">{title}</p>
-                      <p className="text-white/40 text-xs truncate">{sub}</p>
-                    </div>
-                    {urgent && (
-                      <div className="w-2 h-2 rounded-full shrink-0 animate-pulse" style={{ background: color }} />
-                    )}
-                  </div>
-                ))}
-                <div className="pt-2">
-                  <div className="w-full py-2.5 rounded-xl text-center text-xs font-semibold" style={{
-                    background: "linear-gradient(135deg, hsl(24 100% 52%), hsl(38 100% 60%))",
-                    color: "white"
-                  }}>
-                    Tout valider en 1 clic →
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Disclaimer */}
+          <div
+            className="rounded-xl px-5 py-4 flex items-start gap-3"
+            style={{
+              background: "hsl(38 95% 52% / 0.08)",
+              border: "1px solid hsl(38 95% 52% / 0.28)",
+            }}
+          >
+            <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+              {DISCLAIMER}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ══ APPORT D'AFFAIRES — SECTION FORTE ══════════════════ */}
+      {/* ══ COMMENT ÇA MARCHE — APPORT D'AFFAIRES ══════════════════ */}
       <section className="py-24 bg-muted">
         <div className="container max-w-5xl">
           <div className="text-center mb-14">
@@ -243,7 +145,7 @@ export default function GuichetUniqueSection() {
               <span className="text-highlight">Commencez à le monétiser.</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Pas besoin d'être commercial. Vous connaissez des gens. WIINUP MAX transforme ça en revenus réels.
+              Pas besoin d'être commercial. Vous connaissez des gens. WIINUP MAX structure et trace ça en revenus réels.
             </p>
           </div>
 
@@ -260,7 +162,7 @@ export default function GuichetUniqueSection() {
                 step: "2",
                 icon: "🤝",
                 title: "Faites l'introduction",
-                desc: "En quelques secondes. JARVIS vous aide à rédiger le bon message.",
+                desc: "En quelques secondes. L'interface vous aide à rédiger le bon message.",
                 color: "hsl(24 100% 52%)",
               },
               {
@@ -286,13 +188,27 @@ export default function GuichetUniqueSection() {
 
           <div className="bg-card rounded-2xl p-6 border-2 border-accent/30 max-w-2xl mx-auto text-center">
             <div className="text-3xl mb-3">🤖</div>
-            <h3 className="font-semibold text-foreground text-base mb-2">OpenClaw vous dit qui contacter</h3>
+            <h3 className="font-semibold text-foreground text-base mb-2">OpenClaw vous suggère qui contacter</h3>
             <p className="text-muted-foreground text-sm mb-4">
-              Le Deal Radar analyse les missions et suggère les contacts de votre réseau qui correspondent le mieux. Vous n'avez plus à chercher.
+              L'assistant IA analyse les missions et suggère les contacts de votre réseau qui correspondent le mieux. Vous gardez le contrôle de chaque envoi.
             </p>
             <Link to="/signup" className="btn-cta text-sm px-7 py-3 inline-flex gap-2">
               Créer mon compte apporteur gratuit <ArrowRight size={14} />
             </Link>
+          </div>
+
+          {/* Disclaimer */}
+          <div
+            className="mt-8 rounded-xl px-5 py-4 flex items-start gap-3"
+            style={{
+              background: "hsl(38 95% 52% / 0.08)",
+              border: "1px solid hsl(38 95% 52% / 0.28)",
+            }}
+          >
+            <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+              {DISCLAIMER}
+            </p>
           </div>
         </div>
       </section>

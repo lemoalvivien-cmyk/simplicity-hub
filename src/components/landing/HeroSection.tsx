@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Shield, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, TrendingUp, Users, FlaskConical } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import { track } from "@/lib/landingTracking";
+
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const trustItems = [
   { icon: CheckCircle2, label: "Introductions traçées" },
@@ -12,7 +15,6 @@ const trustItems = [
 export default function HeroSection() {
   return (
     <section className="hero-bg pt-20 pb-16 md:pt-32 md:pb-28 relative overflow-hidden">
-      {/* Atmospheric glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -43,20 +45,17 @@ export default function HeroSection() {
               Trouvez vos prochains clients.
             </span>
             <span className="block text-[clamp(1.55rem,4.5vw,2.6rem)] text-white/85 mt-3 font-semibold">
-              Via votre réseau. Via l'IA.
+              Via votre réseau. Via l'IA assistée.
               <br className="hidden sm:block" />
               {" "}Dans un seul cockpit.
             </span>
           </h1>
 
-          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/75 mb-5 max-w-lg mx-auto leading-[1.75] font-light px-2">
-            Wiinup Max combine{" "}
-            <span className="text-white/90 font-medium">prospection pilotée par IA</span> et{" "}
-            <span className="text-white/90 font-medium">apport d'affaires structuré</span>.
-            Chaque opportunité est tracée. Chaque résultat est mesurable.
+          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/90 mb-5 max-w-lg mx-auto leading-[1.75] font-medium px-2">
+            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
 
-          <p className="text-[clamp(1rem,2.5vw,1.15rem)] text-white font-medium mb-9 max-w-lg mx-auto leading-[1.7] px-2 text-center" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
+          <p className="text-[clamp(0.9rem,2vw,1rem)] text-white/70 font-normal mb-9 max-w-lg mx-auto leading-[1.7] px-2 text-center">
             Avec Wiinup, augmentez vos revenus en toute sécurité, sans investir, sans charge mentale et sans changer vos habitudes.
           </p>
 
@@ -102,7 +101,6 @@ export default function HeroSection() {
             background: "hsl(218 65% 11% / 0.98)",
           }}
         >
-          {/* Browser chrome */}
           <div
             className="flex items-center gap-2 px-5 py-3.5 border-b"
             style={{
@@ -124,7 +122,6 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* KPI grid */}
           <div className="p-4 md:p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               { label: "Missions actives", value: "3", color: "hsl(218 72% 58%)", live: true },
@@ -158,6 +155,20 @@ export default function HeroSection() {
           </div>
           <p className="text-center text-white/20 text-[9px] px-4 pb-3 pt-1">
             Interface illustrative — données de démonstration
+          </p>
+        </div>
+
+        {/* Disclaimer */}
+        <div
+          className="mt-6 rounded-xl px-5 py-4 flex items-start gap-3"
+          style={{
+            background: "hsl(38 95% 52% / 0.1)",
+            border: "1px solid hsl(38 95% 52% / 0.3)",
+          }}
+        >
+          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {DISCLAIMER}
           </p>
         </div>
       </div>

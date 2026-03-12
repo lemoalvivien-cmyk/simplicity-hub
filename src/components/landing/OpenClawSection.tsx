@@ -1,36 +1,34 @@
-import { Brain, Zap, Radar, MessageSquare, Activity, Link2, Flame, CheckCircle2 } from "lucide-react";
+import { Brain, Zap, MessageSquare, Activity, Link2, CheckCircle2, FlaskConical } from "lucide-react";
+
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const features = [
-  { icon: Brain, title: "OpenClaw, cerveau central", desc: "Votre IA pilote la prospection automatisée 24h/24." },
-  { icon: Radar, title: "Deal Radar", desc: "Détecte les opportunités avant qu'elles soient visibles." },
-  { icon: MessageSquare, title: "Messages préparés", desc: "Packs de messages multicanaux générés automatiquement." },
-  { icon: Link2, title: "Diffusion passive", desc: "Liens traqués pour mesurer chaque clic et chaque intérêt." },
-  { icon: Flame, title: "Ce qui chauffe", desc: "Leads chauds et signaux d'intention détectés en temps réel." },
-  { icon: Activity, title: "Cockpit de pilotage", desc: "Missions, campagnes, gains — tout centralisé." },
+  { icon: Brain, title: "OpenClaw, assistant IA", desc: "Assiste votre prospection en connexion réelle avec API externe." },
+  { icon: MessageSquare, title: "Messages préparés", desc: "Brouillons de messages multicanaux à personnaliser avant envoi." },
+  { icon: Link2, title: "Diffusion structurée", desc: "Liens traqués pour mesurer chaque clic et chaque intérêt." },
+  { icon: Activity, title: "Cockpit de pilotage", desc: "Missions, introductions, gains — tout centralisé." },
 ];
 
-// Standard function component — NO forwardRef
 export default function OpenClawSection() {
   return (
     <section className="py-20 bg-muted">
       <div className="container max-w-4xl">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="pill-tag mb-5">Moteur 1 · Prospection automatisée</p>
+            <p className="pill-tag mb-5">Moteur 1 · Prospection IA assistée</p>
             <h2 className="font-display text-3xl font-bold text-foreground mb-4">
-              OpenClaw pilote votre<br />
-              <span className="text-highlight">prospection automatisée.</span>
+              OpenClaw assiste votre<br />
+              <span className="text-highlight">prospection en connexion réelle.</span>
             </h2>
             <p className="text-muted-foreground text-base mb-6 leading-relaxed">
-              OpenClaw est le cerveau central de WIINUP MAX. Il analyse vos données,
-              détecte les opportunités, prépare les messages et recommande les meilleures actions —
-              pendant que vous vous concentrez sur votre métier.
+              Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
             </p>
             <div className="space-y-2.5">
               {[
-                "OpenClaw transforme vos signaux en actions concrètes",
-                "Agent OS coordonne plusieurs agents spécialisés",
-                "Deal Radar détecte les leads avant les autres",
+                "Suggestions de cibles basées sur votre profil mission",
+                "Brouillons de messages prêts à personnaliser",
+                "Alertes de suivi pour ne laisser traîner aucun dossier",
                 "Tout remonte dans un seul cockpit",
               ].map((item) => (
                 <div key={item} className="flex items-start gap-2.5">
@@ -66,7 +64,7 @@ export default function OpenClawSection() {
               </div>
               <div>
                 <p className="font-bold text-white text-sm">OpenClaw</p>
-                <p className="text-white/40 text-xs">Prospection automatisée active</p>
+                <p className="text-white/40 text-xs">Prospection IA assistée — bêta active</p>
               </div>
               <div className="ml-auto flex items-center gap-1.5">
                 <div
@@ -74,7 +72,7 @@ export default function OpenClawSection() {
                   style={{ background: "hsl(var(--success))" }}
                   aria-hidden="true"
                 />
-                <span className="text-xs text-white/40">En cours</span>
+                <span className="text-xs text-white/40">Connecté</span>
               </div>
             </div>
             <div className="p-5 space-y-3">
@@ -102,16 +100,15 @@ export default function OpenClawSection() {
             </div>
             <div className="px-5 pb-5">
               <div
-                className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                className="flex items-start gap-2 px-3 py-2.5 rounded-xl"
                 style={{
-                  background: "hsl(var(--primary) / 0.1)",
-                  border: "1px solid hsl(var(--primary) / 0.2)",
+                  background: "hsl(38 95% 52% / 0.08)",
+                  border: "1px solid hsl(38 95% 52% / 0.25)",
                 }}
               >
-                <Zap size={12} style={{ color: "hsl(var(--primary))" }} aria-hidden="true" />
-                <p className="text-xs text-white/50">
-                  <span className="font-semibold text-white/80">Vos agents travaillent</span> pendant
-                  que votre réseau diffuse.
+                <FlaskConical size={12} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-[10px] font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+                  {DISCLAIMER}
                 </p>
               </div>
             </div>
