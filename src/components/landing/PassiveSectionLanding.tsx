@@ -137,27 +137,12 @@ export default function PassiveSectionLanding() {
           </div>
         </div>
 
-        {/* CTA */}
         <div className="text-center mt-12">
           <Link to="/signup" className="btn-cta text-base px-10 py-4 gap-2 inline-flex">
             Créer mon compte gratuit
             <ArrowRight size={18} />
           </Link>
           <p className="text-white/30 text-xs mt-3">100% gratuit pour les facilitateurs · Toujours</p>
-        </div>
-
-        {/* Disclaimer */}
-        <div
-          className="mt-8 rounded-xl px-5 py-4 flex items-start gap-3"
-          style={{
-            background: "hsl(38 95% 52% / 0.08)",
-            border: "1px solid hsl(38 95% 52% / 0.28)",
-          }}
-        >
-          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {DISCLAIMER}
-          </p>
         </div>
       </div>
     </section>

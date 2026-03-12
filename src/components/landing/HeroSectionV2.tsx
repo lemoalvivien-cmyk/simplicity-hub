@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, ChevronDown, FlaskConical, Sparkles } from "lucide-react";
+import { ArrowRight, Users, ChevronDown, Sparkles } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { track } from "@/lib/landingTracking";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
