@@ -14,8 +14,9 @@ type SuccessType = "promo" | "stripe_launch" | "stripe_standard";
 
 export default function Checkout() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { redeemPromo, startCheckout, launchAvailable, launchSlotsRemaining, refresh } = useSubscription();
+  const { redeemPromo, startCheckout, launchAvailable, launchSlotsRemaining, refresh, status, loading: subLoading } = useSubscription();
 
   const [isSuccess, setIsSuccess] = useState(false);
   const [successType, setSuccessType] = useState<SuccessType>("stripe_launch");
