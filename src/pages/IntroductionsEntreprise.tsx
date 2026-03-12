@@ -306,7 +306,6 @@ export default function IntroductionsEntreprise() {
       });
 
       // Build map: lead_intake_id → first open action
-      // PROOF:EXECUTION_V1:action_queue_ui_real
       const actionsMap: Record<string, { id: string; action_type: NextBestAction; status: string; priority: string }> = {};
       (actionsRes.data || []).forEach((a: { id: string; lead_intake_id: string; action_type: NextBestAction; status: string; priority: string }) => {
         if (!actionsMap[a.lead_intake_id]) actionsMap[a.lead_intake_id] = a;
