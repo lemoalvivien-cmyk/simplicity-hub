@@ -105,6 +105,8 @@ export default function DashboardEntreprise() {
   const totalGains     = data?.totalGains     ?? 0;
   const leadsCount     = data?.leadsCount     ?? 0;
   const openclawReady  = data?.openclawReady  ?? false;
+  const openclawLeadsThisWeek = data?.openclawLeadsThisWeek ?? 0;
+  const latestAILead   = data?.latestAILead   ?? null;
 
   const handleMarkDone = (id: string) => {
     markDone.mutate(id, {
