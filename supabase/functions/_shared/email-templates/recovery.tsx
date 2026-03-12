@@ -3,42 +3,26 @@
 import * as React from 'npm:react@18.3.1'
 
 import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Text,
+  Body, Button, Container, Head, Heading, Hr, Html, Preview, Section, Text,
 } from 'npm:@react-email/components@0.0.22'
 
-interface RecoveryEmailProps {
-  siteName: string
-  confirmationUrl: string
-}
+interface RecoveryEmailProps { siteName: string; confirmationUrl: string }
 
-export const RecoveryEmail = ({
-  siteName,
-  confirmationUrl,
-}: RecoveryEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
+  <Html lang="fr" dir="ltr">
     <Head />
-    <Preview>Reset your password for {siteName}</Preview>
+    <Preview>Réinitialisez votre mot de passe — {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Reset your password</Heading>
-        <Text style={text}>
-          We received a request to reset your password for {siteName}. Click
-          the button below to choose a new password.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Reset Password
-        </Button>
-        <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this
-          email. Your password will not be changed.
-        </Text>
+        <Section style={header}><Text style={brandLabel}>WIINUP MAX</Text></Section>
+        <Section style={bodyPad}>
+          <Heading style={h1}>Réinitialisation du mot de passe 🔒</Heading>
+          <Text style={text}>Vous avez demandé à réinitialiser votre mot de passe pour <strong style={{ color: '#0d1829' }}>{siteName}</strong>. Cliquez ci-dessous pour choisir un nouveau mot de passe.</Text>
+          <Button style={button} href={confirmationUrl}>Réinitialiser mon mot de passe →</Button>
+          <Text style={hint}>Ce lien expire dans 1 heure. Si vous n'avez pas demandé de réinitialisation, ignorez cet email.</Text>
+        </Section>
+        <Hr style={divider} />
+        <Section style={footerSection}><Text style={footerText}>WIINUP MAX — La plateforme B2B d'apport d'affaires</Text></Section>
       </Container>
     </Body>
   </Html>
@@ -46,26 +30,16 @@ export const RecoveryEmail = ({
 
 export default RecoveryEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const P = '#0f2d6b', A = '#ff6b00', T = '#0d1829', M = '#6a7796', B = '#e8ecf3'
+const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
+const container = { maxWidth: '580px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(15,45,107,0.10)' }
+const header = { background: `linear-gradient(135deg, ${P} 0%, #1a3e7a 100%)`, padding: '28px 40px', textAlign: 'center' as const }
+const brandLabel = { margin: '0', fontSize: '11px', color: '#94a3b8', letterSpacing: '3px', textTransform: 'uppercase' as const, fontWeight: '700' }
+const bodyPad = { padding: '40px 40px 0' }
+const h1 = { margin: '0 0 16px', fontSize: '26px', fontWeight: '800', color: T, lineHeight: '1.3' }
+const text = { fontSize: '15px', color: M, lineHeight: '1.7', margin: '0 0 24px' }
+const button = { backgroundColor: A, color: '#ffffff', fontSize: '15px', fontWeight: '700', padding: '16px 36px', borderRadius: '10px', textDecoration: 'none', display: 'inline-block', margin: '0 0 24px' }
+const hint = { fontSize: '13px', color: M, lineHeight: '1.6', margin: '0 0 40px', textAlign: 'center' as const }
+const divider = { borderColor: B, margin: '0' }
+const footerSection = { backgroundColor: '#f8fafc', padding: '24px 40px' }
+const footerText = { margin: '0', fontSize: '12px', color: M, textAlign: 'center' as const, lineHeight: '1.7' }
