@@ -10,19 +10,20 @@ interface ProtectedRouteProps {
   adminOnly?: boolean;
 }
 
-// Routes entreprise can access without an active subscription
+/** Routes exempt from the subscription paywall (entreprise). */
 const SUBSCRIPTION_EXEMPT_PATHS = ["/checkout", "/onboarding", "/account"];
 
 /**
- * Read the localStorage flag written by Onboarding.tsx immediately after DB save.
+ * Returns true if the user just finished onboarding in this browser session.
  *
- * This bridges the async gap between:
- *   1. DB write + localStorage flag  (synchronous, instant)
- *   2. refreshProfile() completing   (async, ~200-500 ms)
+ * The flag is written by Onboarding.tsx *before* the async refreshProfile()
+ * call, so ProtectedRoute can read it even before the DB profile has propagated
+ * into React state.
  *
- * Without this, ProtectedRoute can re-render between (1) and (2) and see
- * profile.onboarding_done === false, then incorrectly bounce an entreprise user
- * to /checkout before they have a subscription.
+ * IMPORTANT: this flag is NEVER cleared automatically. It acts as a
+ * "this device has completed onboarding" marker so that:
+ *   - even across hard refreshes the user won't be bounced to /checkout
+ *   - it complements (not replaces) profile.onboarding_done from the DB
  */
 function getLocalOnboardingDone(): boolean {
   try {
@@ -40,12 +41,10 @@ export default function ProtectedRoute({
   const subscription = useSubscription();
   const location = useLocation();
 
-  // Re-validate session when tab regains focus to catch expired tokens
+  // Re-validate session on tab focus to catch expired tokens.
   useEffect(() => {
     const handleFocus = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         await supabase.auth.signOut();
       }
@@ -54,7 +53,7 @@ export default function ProtectedRoute({
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
-  // Wait for both auth AND subscription to finish loading
+  // Wait for both auth AND subscription to finish loading.
   if (loading || subscription.loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -75,34 +74,38 @@ export default function ProtectedRoute({
   }
 
   // ── ONBOARDING GUARD ────────────────────────────────────────────────────────
-  // Combine the DB flag with the localStorage fallback to handle the brief async
-  // window between DB write and refreshProfile() completing.
+  // onboardingDone = DB truth OR localStorage fallback (race-condition bridge).
   const localDone = getLocalOnboardingDone();
-  const onboardingDone = profile?.onboarding_done || localDone;
+  const onboardingDone = profile?.onboarding_done === true || localDone;
 
-  if (profile && !onboardingDone && !adminOnly) {
+  if (profile !== null && !onboardingDone && !adminOnly) {
     if (!location.pathname.startsWith("/onboarding")) {
       return <Navigate to="/onboarding" replace />;
     }
   }
 
   // ── SUBSCRIPTION GUARD ──────────────────────────────────────────────────────
-  // Rules:
-  //   • Facilitateurs and admins — always free.
-  //   • Entreprise — needs active subscription.
-  //   • EXCEPTION: if onboarding was JUST completed (localStorage flag is set
-  //     but DB profile hasn't refreshed yet), skip the guard entirely.
-  //     The user will reach the dashboard; the subscription prompt will appear
-  //     there if they truly have no subscription, but after onboarding the
-  //     checkout flow is intentional — don't intercept with an auto-redirect.
-  //   • EXCEPTION: exempt paths (/checkout, /onboarding, /account).
+  // Rules (evaluated in order, first match wins):
+  //
+  //   1. Admins & facilitateurs → always allowed (free tier).
+  //   2. Exempt paths (/checkout, /onboarding, /account) → always allowed.
+  //   3. localDone === true → ALWAYS allowed.
+  //      Rationale: the user just finished onboarding on this device.
+  //      If they have no subscription, /checkout will surface naturally
+  //      from within the dashboard flow — not via an auto-redirect here.
+  //      This is the definitive fix for the "new user → /checkout loop".
+  //   4. Subscription is still loading → wait (handled above).
+  //   5. Entreprise with inactive subscription → redirect to /checkout.
+
+  const isExemptPath = SUBSCRIPTION_EXEMPT_PATHS.some((p) =>
+    location.pathname.startsWith(p)
+  );
 
   if (
     role === "entreprise" &&
     !isAccessActive(subscription.status) &&
-    // ↓ Key fix: if localDone is true we just finished onboarding — never bounce
-    !localDone &&
-    !SUBSCRIPTION_EXEMPT_PATHS.some((p) => location.pathname.startsWith(p))
+    !isExemptPath &&
+    !localDone // ← This is the definitive guard. localDone blocks ALL /checkout bounces post-onboarding.
   ) {
     toast.warning("Activez votre accès pour continuer.", { id: "sub-guard" });
     return <Navigate to="/checkout" replace />;
