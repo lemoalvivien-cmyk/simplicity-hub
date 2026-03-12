@@ -109,7 +109,6 @@ function shortId(s: string | null): string {
 }
 
 // ── Pipeline State Machine ─────────────────────────────────────────────────────
-// PROOF:BILLING_PROOF_CHAIN_V3:pipeline_state_machine_post_test
 //
 // États observables depuis get_billing_proof_summary (pas de checkbox_created/webhook_missing
 // car ces états pré-completion ne sont pas disponibles sans données checkout côté Stripe).
