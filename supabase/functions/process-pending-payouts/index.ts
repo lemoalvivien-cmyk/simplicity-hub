@@ -114,10 +114,16 @@ Deno.serve(async (req) => {
   let totalPaid = 0;
 
   for (const payout of pendingPayouts ?? []) {
-    const connectAccountId =
-      payout.stripe_connect_account_id ||
-      (payout.facilitateur_profiles as { stripe_connect_account_id: string | null })
-        ?.stripe_connect_account_id;
+    // Fetch the stripe connect account from facilitateur_profiles if not on payout
+    let connectAccountId = payout.stripe_connect_account_id;
+    if (!connectAccountId) {
+      const { data: facProfile } = await supabase
+        .from("facilitateur_profiles")
+        .select("stripe_connect_account_id")
+        .eq("user_id", payout.facilitator_id)
+        .maybeSingle();
+      connectAccountId = facProfile?.stripe_connect_account_id ?? null;
+    }
 
     // ── No Stripe Connect account — skip ───────────────────────────────────
     if (!connectAccountId) {
