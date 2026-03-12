@@ -117,3 +117,9 @@ verify_jwt = false
 [functions.business-alert-dispatcher]
 verify_jwt = false
 
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.notify-gain-paye]
+verify_jwt = false
+
