@@ -2,7 +2,7 @@ const points = [
   {
     icon: "🙅",
     title: "Zéro compétence technique nécessaire",
-    desc: "Si vous savez utiliser votre e-mail, vous savez utiliser Planify.",
+    desc: "Si vous savez utiliser votre e-mail, vous savez utiliser Wiinup Max.",
   },
   {
     icon: "🧑‍🏫",
@@ -33,7 +33,7 @@ export default function WhySimpleSection() {
             Pourquoi c'est vraiment simple ?
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Planify est conçu pour des personnes comme vous — pas pour des développeurs.
+            Wiinup Max est conçu pour des personnes comme vous — pas pour des développeurs.
           </p>
         </div>
 
