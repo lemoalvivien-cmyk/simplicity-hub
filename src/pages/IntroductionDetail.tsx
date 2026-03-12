@@ -67,8 +67,10 @@ export default function IntroductionDetail() {
         missionTitre = mission?.titre ?? null;
       }
 
+      const raw = introRes.data;
       setIntro({
-        ...introRes.data,
+        ...raw,
+        statut: toStatus(raw.statut),
         mission_titre: missionTitre,
         gain_montant: gainRes.data?.montant ?? null,
         gain_statut: gainRes.data?.statut ?? null,
