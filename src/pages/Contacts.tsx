@@ -106,10 +106,11 @@ export default function Contacts() {
 
     // Load sequence info for contacts
     if (data && data.length > 0) {
-      const contactIds = data.map((c: Contact) => c.id);
+      const typed = data as unknown as Contact[];
+      const contactIds = typed.map((c) => c.id);
 
       // Load AI scores from lead_intakes (matched by email)
-      const emails = data.filter((c: Contact) => c.email).map((c: Contact) => c.email as string);
+      const emails = typed.filter((c) => c.email).map((c) => c.email as string);
       if (emails.length > 0) {
         const { data: intakes } = await supabase
           .from("lead_intakes")

@@ -137,9 +137,9 @@ export function useOpenClawRuns() {
       db.from("openclaw_memory").select("*").eq("user_id", user.id)
         .order("confidence", { ascending: false }).limit(10),
     ]);
-    setRuns(runsRes.data || []);
-    setSessions(sessionsRes.data || []);
-    setMemory(memRes.data || []);
+    setRuns((runsRes.data || []) as unknown as OpenClawRun[]);
+    setSessions((sessionsRes.data || []) as unknown as OpenClawSession[]);
+    setMemory((memRes.data || []) as unknown as OpenClawMemoryEntry[]);
     setLoading(false);
   }, [user]);
 
