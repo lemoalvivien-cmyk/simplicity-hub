@@ -67,7 +67,7 @@ export default function HeroSection() {
               className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
               onClick={() => track("cta_hero_enterprise")}
             >
-              Démarrer — 99 €/an
+              Créer mon compte — gratuit
               <ArrowRight size={17} />
             </Link>
             <Link
@@ -79,7 +79,7 @@ export default function HeroSection() {
               Devenir facilitateur — Gratuit
             </Link>
             <p className="text-white/55 text-xs mt-1">
-              Premières recommandations IA sous 5 minutes
+              Inscription gratuite · Accès entreprise à 99 €/an
             </p>
           </div>
 

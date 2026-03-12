@@ -97,11 +97,11 @@ export default function PricingSection() {
                 ))}
               </ul>
               <Link
-                to="/pricing"
+                to="/signup"
                 className="btn-cta w-full text-center flex items-center justify-center gap-2 py-4"
                 onClick={() => track("cta_pricing_enterprise")}
               >
-                Lancer ma première mission — 99 €
+                Commencer — inscription gratuite
                 <ArrowRight size={16} />
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">

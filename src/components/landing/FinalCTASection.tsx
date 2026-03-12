@@ -42,11 +42,11 @@ export default function FinalCTASection() {
 
         <div className="flex flex-col items-center gap-3">
           <Link
-            to="/pricing"
+            to="/signup"
             className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
             onClick={() => track("cta_final_enterprise")}
           >
-            Démarrer ma première mission — 99 €/an
+            Démarrer ma première mission
             <ArrowRight size={17} />
           </Link>
           <span className="flex items-center gap-1.5 text-white/60 text-xs">
