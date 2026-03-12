@@ -1,128 +1,81 @@
 project_id = "usnriklfiagazpffsqew"
 
-# ── JWT VERIFICATION STRATEGY ─────────────────────────────────────────────────
-# Lovable Cloud uses ES256 JWT signing. The Supabase gateway's built-in
-# verify_jwt uses HS256 and rejects ES256 tokens with "Invalid JWT".
-# ALL functions use verify_jwt = false and validate JWTs in-code via
-# supabase.auth.getUser(token) — this is the correct security pattern.
-# ─────────────────────────────────────────────────────────────────────────────
-
-# ── PUBLIC ENDPOINTS (no user JWT at all) ────────────────────────────────────
-# stripe-webhook : Stripe sends events using HMAC signature, not user JWTs
-[functions.stripe-webhook]
-verify_jwt = false
-
-# track-click : public share links, anonymous access required
-[functions.track-click]
-verify_jwt = false
-
-# ── AUTHENTICATED ENDPOINTS — JWT validated in-code via getUser(token) ────────
-
-[functions.create-checkout]
-verify_jwt = false
-
-[functions.check-subscription]
-verify_jwt = false
-
-[functions.customer-portal]
-verify_jwt = false
-
-[functions.redeem-promo]
-verify_jwt = false
-
-[functions.openclaw-healthcheck]
-verify_jwt = false
-
-[functions.openclaw-gateway]
-verify_jwt = false
-
-[functions.openclaw-dossier-sync]
-verify_jwt = false
-
-[functions.openclaw-kill-switch]
-verify_jwt = false
-
-[functions.openclaw-validate]
-verify_jwt = false
-
-[functions.openclaw-generate]
-verify_jwt = false
-
-[functions.openclaw-status]
-verify_jwt = false
-
-[functions.elevenlabs-voice-token]
-verify_jwt = false
-
-[functions.deal-radar-score]
-verify_jwt = false
-
-[functions.openclaw-generate-packs]
-verify_jwt = false
-
-[functions.openclaw-channel-probe]
-verify_jwt = false
-
-[functions.openclaw-job-executor]
-verify_jwt = false
-
-[functions.openclaw-scheduler]
-verify_jwt = false
-
-[functions.openclaw-event-bus]
-verify_jwt = false
-
-[functions.openclaw-smoke-test]
-verify_jwt = false
-
-[functions.openclaw-channel-dispatch]
-verify_jwt = false
-
-[functions.openclaw-graph-engine]
-verify_jwt = false
-
-[functions.send-reactivation-email]
-verify_jwt = false
-
-[functions.ai-prospection]
-verify_jwt = false
-
-[functions.ai-lead-scoring]
-verify_jwt = false
-
-[functions.ai-matching]
-verify_jwt = false
-
-[functions.ai-opportunity-analysis]
-verify_jwt = false
-
-[functions.ai-jarvis]
-verify_jwt = false
-
-[functions.ai-sequence-generator]
-verify_jwt = false
-
-[functions.elevenlabs-tts]
-verify_jwt = false
-
-[functions.openclaw-lead-generator]
-verify_jwt = false
-
-[functions.process-pending-payouts]
-verify_jwt = false
-
-[functions.notify-intro-validated]
-verify_jwt = false
-
-[functions.business-alert-dispatcher]
-verify_jwt = false
-
-[functions.send-welcome-email]
-verify_jwt = false
-
-[functions.notify-gain-paye]
-verify_jwt = false
-
-[functions.process-email-queue]
-verify_jwt = false
-
+[functions]
+  [functions.ai-jarvis]
+    verify_jwt = false
+  [functions.ai-lead-scoring]
+    verify_jwt = false
+  [functions.ai-matching]
+    verify_jwt = false
+  [functions.ai-opportunity-analysis]
+    verify_jwt = false
+  [functions.ai-prospection]
+    verify_jwt = false
+  [functions.ai-sequence-generator]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.business-alert-dispatcher]
+    verify_jwt = false
+  [functions.check-subscription]
+    verify_jwt = false
+  [functions.create-checkout]
+    verify_jwt = false
+  [functions.customer-portal]
+    verify_jwt = false
+  [functions.deal-radar-score]
+    verify_jwt = false
+  [functions.elevenlabs-tts]
+    verify_jwt = false
+  [functions.elevenlabs-voice-token]
+    verify_jwt = false
+  [functions.notify-gain-paye]
+    verify_jwt = false
+  [functions.notify-intro-validated]
+    verify_jwt = false
+  [functions.openclaw-channel-dispatch]
+    verify_jwt = false
+  [functions.openclaw-channel-probe]
+    verify_jwt = false
+  [functions.openclaw-dossier-sync]
+    verify_jwt = false
+  [functions.openclaw-event-bus]
+    verify_jwt = false
+  [functions.openclaw-gateway]
+    verify_jwt = false
+  [functions.openclaw-generate]
+    verify_jwt = false
+  [functions.openclaw-generate-packs]
+    verify_jwt = false
+  [functions.openclaw-graph-engine]
+    verify_jwt = false
+  [functions.openclaw-healthcheck]
+    verify_jwt = false
+  [functions.openclaw-job-executor]
+    verify_jwt = false
+  [functions.openclaw-kill-switch]
+    verify_jwt = false
+  [functions.openclaw-lead-generator]
+    verify_jwt = false
+  [functions.openclaw-scheduler]
+    verify_jwt = false
+  [functions.openclaw-smoke-test]
+    verify_jwt = false
+  [functions.openclaw-status]
+    verify_jwt = false
+  [functions.openclaw-validate]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = false
+  [functions.process-pending-payouts]
+    verify_jwt = false
+  [functions.redeem-promo]
+    verify_jwt = false
+  [functions.send-reactivation-email]
+    verify_jwt = false
+  [functions.send-welcome-email]
+    verify_jwt = false
+  [functions.stripe-webhook]
+    verify_jwt = false
+  [functions.track-click]
+    verify_jwt = false
