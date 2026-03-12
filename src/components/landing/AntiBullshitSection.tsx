@@ -119,20 +119,6 @@ export default function AntiBullshitSection() {
             </AccordionItem>
           ))}
         </Accordion>
-
-        {/* Disclaimer */}
-        <div
-          className="mt-6 rounded-xl px-5 py-4 flex items-start gap-3"
-          style={{
-            background: "hsl(38 95% 52% / 0.08)",
-            border: "1px solid hsl(38 95% 52% / 0.28)",
-          }}
-        >
-          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {DISCLAIMER}
-          </p>
-        </div>
       </div>
     </section>
   );

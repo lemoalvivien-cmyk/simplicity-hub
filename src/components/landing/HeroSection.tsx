@@ -1,10 +1,7 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Shield, TrendingUp, Users, FlaskConical } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, TrendingUp, Users } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import { track } from "@/lib/landingTracking";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const trustItems = [
   { icon: CheckCircle2, label: "Introductions traçées" },

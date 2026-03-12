@@ -95,20 +95,7 @@ export default function OpenClawSection() {
                 </div>
               ))}
             </div>
-            <div className="px-5 pb-5">
-              <div
-                className="flex items-start gap-2 px-3 py-2.5 rounded-xl"
-                style={{
-                  background: "hsl(38 95% 52% / 0.08)",
-                  border: "1px solid hsl(38 95% 52% / 0.25)",
-                }}
-              >
-                <FlaskConical size={12} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-                <p className="text-[10px] font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-                  {DISCLAIMER}
-                </p>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>

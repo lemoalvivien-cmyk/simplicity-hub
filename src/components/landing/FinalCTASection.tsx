@@ -55,20 +55,6 @@ export default function FinalCTASection() {
         <p className="text-white/70 text-xs mb-6">
           Sans engagement · Annulation libre · Support inclus à chaque étape
         </p>
-
-        {/* Disclaimer */}
-        <div
-          className="rounded-xl px-5 py-4 flex items-start gap-3 text-left"
-          style={{
-            background: "hsl(38 95% 52% / 0.1)",
-            border: "1px solid hsl(38 95% 52% / 0.3)",
-          }}
-        >
-          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {DISCLAIMER}
-          </p>
-        </div>
       </div>
     </section>
   );
