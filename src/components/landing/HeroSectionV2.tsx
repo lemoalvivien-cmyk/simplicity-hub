@@ -119,11 +119,7 @@ export default function HeroSectionV2() {
 
   const [sphereX, setSphereX] = useState(0);
   const [sphereY, setSphereY] = useState(0);
-  const [prefersReduced, setPrefersReduced] = useState(false);
-
-  useEffect(() => {
-    setPrefersReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
+  const prefersReduced = usePrefersReducedMotion();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (prefersReduced) return;
