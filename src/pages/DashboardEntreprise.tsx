@@ -88,6 +88,8 @@ function StatCard({ label, value, to, urgent, loading }: {
 export default function DashboardEntreprise() {
   const { user, profile } = useAuth();
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [generatingLead, setGeneratingLead] = useState(false);
+  const queryClient = useQueryClient();
 
   const prenom = profile?.prenom ?? "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
@@ -115,6 +117,40 @@ export default function DashboardEntreprise() {
       onSuccess: () => toast.success("Action marquée comme terminée ✓"),
       onError:   () => toast.error("Erreur lors de la mise à jour"),
     });
+  };
+
+  // ── Generate 1 OpenClaw AI lead on demand ───────────────────────────────────
+  const handleGenerateLead = async () => {
+    if (!user?.id) return;
+    setGeneratingLead(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/openclaw-lead-generator`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+      const json = await res.json();
+      if (json.success && json.lead) {
+        toast.success(
+          `🎯 Lead généré : ${json.lead.person_name} @ ${json.lead.company_name} — Score ${json.lead.ai_score}/100`
+        );
+        queryClient.invalidateQueries({ queryKey: ["dashboard-entreprise", user.id] });
+      } else if (json.skipped) {
+        toast.info(json.reason ?? "Aucun lead généré pour le moment.");
+      } else {
+        toast.error(json.error ?? "Erreur lors de la génération.");
+      }
+    } catch {
+      toast.error("Erreur réseau — réessayez dans un instant.");
+    } finally {
+      setGeneratingLead(false);
+    }
   };
 
   const { status: subStatus, subscribed, offerType, accessType } = useSubscription();
