@@ -287,7 +287,7 @@ export default function HeroSectionV2() {
             >
               <FlaskConical size={12} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" />
               <p className="text-[10.5px] font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-                Bêta privée — fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.
+                Bêta privée — IA assistée réelle avec API externe. Les résultats dépendent de votre réseau et de votre engagement.
               </p>
             </motion.div>
           </div>
