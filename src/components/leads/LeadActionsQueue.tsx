@@ -1,4 +1,3 @@
-// PROOF:EXPORT_RECOVERY_V1:lead_actions_queue_present → this file
 /**
  * LeadActionsQueue — Actions pipeline avec badge IA, modal brouillon email,
  * boutons Exécuter / Ignorer.
