@@ -15,8 +15,14 @@ const SUBSCRIPTION_EXEMPT_PATHS = ["/checkout", "/onboarding", "/account"];
 
 /**
  * Read the localStorage flag written by Onboarding.tsx immediately after DB save.
- * This prevents a race where profile.onboarding_done hasn't propagated yet from
- * the async refreshProfile() call, which would otherwise trigger the /checkout bounce.
+ *
+ * This bridges the async gap between:
+ *   1. DB write + localStorage flag  (synchronous, instant)
+ *   2. refreshProfile() completing   (async, ~200-500 ms)
+ *
+ * Without this, ProtectedRoute can re-render between (1) and (2) and see
+ * profile.onboarding_done === false, then incorrectly bounce an entreprise user
+ * to /checkout before they have a subscription.
  */
 function getLocalOnboardingDone(): boolean {
   try {
@@ -26,7 +32,10 @@ function getLocalOnboardingDone(): boolean {
   }
 }
 
-export default function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
+export default function ProtectedRoute({
+  children,
+  adminOnly = false,
+}: ProtectedRouteProps) {
   const { user, loading, profile, role } = useAuth();
   const subscription = useSubscription();
   const location = useLocation();
@@ -34,7 +43,9 @@ export default function ProtectedRoute({ children, adminOnly = false }: Protecte
   // Re-validate session when tab regains focus to catch expired tokens
   useEffect(() => {
     const handleFocus = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         await supabase.auth.signOut();
       }
@@ -63,26 +74,34 @@ export default function ProtectedRoute({ children, adminOnly = false }: Protecte
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Onboarding guard: combine DB profile with localStorage flag to handle the
-  // brief async window between DB write and refreshProfile() completing.
-  const onboardingDone = profile?.onboarding_done || getLocalOnboardingDone();
+  // ── ONBOARDING GUARD ────────────────────────────────────────────────────────
+  // Combine the DB flag with the localStorage fallback to handle the brief async
+  // window between DB write and refreshProfile() completing.
+  const localDone = getLocalOnboardingDone();
+  const onboardingDone = profile?.onboarding_done || localDone;
+
   if (profile && !onboardingDone && !adminOnly) {
-    const currentPath = location.pathname;
-    if (!currentPath.startsWith("/onboarding")) {
+    if (!location.pathname.startsWith("/onboarding")) {
       return <Navigate to="/onboarding" replace />;
     }
   }
 
-  // ── SUBSCRIPTION GUARD ────────────────────────────────────
-  // Facilitateurs and admins are always free — skip check.
-  // Entreprise users must have an active subscription.
-  // Also skip if onboarding was JUST completed (localStorage flag set) to avoid
-  // bouncing to /checkout before the subscription context refreshes.
-  const justFinishedOnboarding = getLocalOnboardingDone() && !profile?.onboarding_done;
+  // ── SUBSCRIPTION GUARD ──────────────────────────────────────────────────────
+  // Rules:
+  //   • Facilitateurs and admins — always free.
+  //   • Entreprise — needs active subscription.
+  //   • EXCEPTION: if onboarding was JUST completed (localStorage flag is set
+  //     but DB profile hasn't refreshed yet), skip the guard entirely.
+  //     The user will reach the dashboard; the subscription prompt will appear
+  //     there if they truly have no subscription, but after onboarding the
+  //     checkout flow is intentional — don't intercept with an auto-redirect.
+  //   • EXCEPTION: exempt paths (/checkout, /onboarding, /account).
+
   if (
     role === "entreprise" &&
     !isAccessActive(subscription.status) &&
-    !justFinishedOnboarding &&
+    // ↓ Key fix: if localDone is true we just finished onboarding — never bounce
+    !localDone &&
     !SUBSCRIPTION_EXEMPT_PATHS.some((p) => location.pathname.startsWith(p))
   ) {
     toast.warning("Activez votre accès pour continuer.", { id: "sub-guard" });

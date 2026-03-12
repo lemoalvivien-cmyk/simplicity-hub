@@ -1,7 +1,32 @@
+/**
+ * Onboarding — 2-step profile wizard
+ *
+ * Architecture notes
+ * ──────────────────
+ * • StepIdentity, StepSectorGoal, StepDone are defined as TOP-LEVEL functions
+ *   (module scope) so React never unmounts/remounts them on parent re-renders.
+ *   This is the ONLY reliable fix for the "focus lost after each keystroke" bug.
+ *
+ * • All change-handlers in the parent are useCallback with [] deps so their
+ *   references are stable across re-renders — child props never change identity.
+ *
+ * • After saveProfile() succeeds:
+ *     1. localStorage flag set (prevents ProtectedRoute /checkout bounce)
+ *     2. refreshProfile() awaited (profile.onboarding_done is now true in React)
+ *     3. navigate() with replace:true → /dashboard/entreprise or /dashboard/facilitateur
+ *   No intermediate "done" screen is shown between save and redirect, which
+ *   removed the previous window where ProtectedRoute could re-evaluate and bounce.
+ */
+
 import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  CheckCircle2, ChevronRight, Building2, Users, ArrowRight, Loader2,
+  CheckCircle2,
+  ChevronRight,
+  Building2,
+  Users,
+  ArrowRight,
+  Loader2,
   Search,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
 
-// ── Types ─────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────────
 type Role = "entreprise" | "facilitateur" | null;
 type Cible = "B2B" | "B2C" | "Les deux" | "";
 
@@ -29,44 +54,42 @@ const TOTAL_STEPS = 2;
 const INPUT_CLASS =
   "w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition placeholder:text-muted-foreground/60";
 
-// ── Shared sub-components ─────────────────────────────────────
-function ProgressBar({ current, total }: { current: number; total: number }) {
-  return (
-    <div className="h-1 bg-muted">
-      <div
-        className="h-full transition-all duration-500"
-        style={{ width: `${(current / total) * 100}%`, background: "var(--gradient-accent)" }}
-      />
-    </div>
-  );
-}
-
-// ── SECTOR SELECT with search ─────────────────────────────────
+// ── Secteurs ───────────────────────────────────────────────────────────────────
 const ENTREPRISE_SECTORS = [
   "SaaS / Tech",
   "Cybersécurité",
   "Intelligence artificielle",
+  "Data / Analytics",
+  "Cloud / Infrastructure",
   "E-commerce",
+  "Marketplace",
   "Marketing digital",
-  "Immobilier",
+  "Publicité / Adtech",
+  "Immobilier résidentiel",
   "Immobilier commercial",
+  "PropTech",
   "Finance / Assurance",
   "Banque / Fintech",
+  "Gestion de patrimoine",
   "RH / Recrutement",
   "Formation / E-learning",
   "Santé / MedTech",
+  "Pharma / Biotech",
   "Industrie / Manufacturing",
   "Transport / Logistique",
   "Énergie / Greentech",
+  "Cleantech / ESG",
   "Juridique / LegalTech",
   "Conseil / Management",
   "Retail / Distribution",
   "Hôtellerie / Tourisme",
-  "Restauration",
+  "Restauration / FoodTech",
   "Événementiel",
   "Médias / Communication",
   "BTP / Construction",
   "Agriculture / AgriTech",
+  "Sport / Bien-être",
+  "Art / Culture",
   "Autre",
 ];
 
@@ -88,15 +111,14 @@ const FACILITATEUR_SECTORS = [
   "Autre",
 ];
 
-function SectorSearch({
-  options,
-  value,
-  onChange,
-}: {
+// ── SectorSearch — module-level to prevent remount ────────────────────────────
+interface SectorSearchProps {
   options: string[];
   value: string;
   onChange: (v: string) => void;
-}) {
+}
+
+function SectorSearch({ options, value, onChange }: SectorSearchProps) {
   const [query, setQuery] = useState("");
   const filtered = query.trim()
     ? options.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
@@ -130,14 +152,47 @@ function SectorSearch({
           </button>
         ))}
         {filtered.length === 0 && (
-          <p className="col-span-2 text-xs text-muted-foreground py-2 text-center">Aucun résultat</p>
+          <p className="col-span-2 text-xs text-muted-foreground py-2 text-center">
+            Aucun résultat
+          </p>
         )}
       </div>
     </div>
   );
 }
 
-// ── STEP 1 — extracted as top-level component to prevent remount ──
+// ── ProgressBar ───────────────────────────────────────────────────────────────
+function ProgressBar({ current, total }: { current: number; total: number }) {
+  return (
+    <div className="h-1 bg-muted">
+      <div
+        className="h-full transition-all duration-500"
+        style={{
+          width: `${(current / total) * 100}%`,
+          background: "var(--gradient-accent)",
+        }}
+      />
+    </div>
+  );
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+function OnboardingSkeleton() {
+  return (
+    <div className="w-full max-w-md animate-pulse">
+      <div className="h-3 w-24 bg-muted rounded mb-4" />
+      <div className="h-7 w-56 bg-muted rounded mb-2" />
+      <div className="h-4 w-64 bg-muted rounded mb-6" />
+      <div className="h-20 bg-muted rounded-2xl mb-3" />
+      <div className="h-20 bg-muted rounded-2xl mb-5" />
+      <div className="h-12 bg-muted rounded-xl mb-3" />
+      <div className="h-12 bg-muted rounded-xl mb-5" />
+      <div className="h-14 bg-muted rounded-xl" />
+    </div>
+  );
+}
+
+// ── STEP 1 — TOP-LEVEL to guarantee stable identity across parent re-renders ──
 interface Step1Props {
   role: Role;
   prenom: string;
@@ -148,8 +203,17 @@ interface Step1Props {
   onNext: () => void;
 }
 
-function StepIdentity({ role, prenom, nomEntite, onRoleChange, onPrenomChange, onNomEntiteChange, onNext }: Step1Props) {
-  const step1Valid = role !== null && prenom.trim().length > 1 && nomEntite.trim().length > 1;
+function StepIdentity({
+  role,
+  prenom,
+  nomEntite,
+  onRoleChange,
+  onPrenomChange,
+  onNomEntiteChange,
+  onNext,
+}: Step1Props) {
+  const step1Valid =
+    role !== null && prenom.trim().length > 1 && nomEntite.trim().length > 1;
 
   return (
     <div className="w-full max-w-md animate-fade-in">
@@ -157,8 +221,12 @@ function StepIdentity({ role, prenom, nomEntite, onRoleChange, onPrenomChange, o
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
           Étape 1 sur {TOTAL_STEPS}
         </p>
-        <h1 className="font-display text-2xl font-bold text-foreground mb-1">Bienvenue sur Wiinup Max</h1>
-        <p className="text-muted-foreground text-sm">Configurons votre espace en 2 minutes.</p>
+        <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+          Bienvenue sur Wiinup Max
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Configurons votre espace en 2 minutes.
+        </p>
       </div>
 
       {/* Role cards */}
@@ -167,7 +235,9 @@ function StepIdentity({ role, prenom, nomEntite, onRoleChange, onPrenomChange, o
           type="button"
           onClick={() => onRoleChange("entreprise")}
           className={`w-full text-left rounded-2xl border-2 p-4 transition-all ${
-            role === "entreprise" ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/40"
+            role === "entreprise"
+              ? "border-primary bg-primary/5"
+              : "border-border bg-card hover:border-primary/40"
           }`}
         >
           <div className="flex items-center gap-3">
@@ -177,9 +247,13 @@ function StepIdentity({ role, prenom, nomEntite, onRoleChange, onPrenomChange, o
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <p className="font-semibold text-foreground text-sm">Entreprise</p>
-                {role === "entreprise" && <CheckCircle2 size={16} className="text-primary shrink-0" />}
+                {role === "entreprise" && (
+                  <CheckCircle2 size={16} className="text-primary shrink-0" />
+                )}
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">Je cherche des clients via le réseau et l'IA</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Je cherche des clients via le réseau et l'IA
+              </p>
             </div>
           </div>
         </button>
@@ -188,7 +262,9 @@ function StepIdentity({ role, prenom, nomEntite, onRoleChange, onPrenomChange, o
           type="button"
           onClick={() => onRoleChange("facilitateur")}
           className={`w-full text-left rounded-2xl border-2 p-4 transition-all ${
-            role === "facilitateur" ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/40"
+            role === "facilitateur"
+              ? "border-primary bg-primary/5"
+              : "border-border bg-card hover:border-primary/40"
           }`}
         >
           <div className="flex items-center gap-3">
@@ -197,10 +273,16 @@ function StepIdentity({ role, prenom, nomEntite, onRoleChange, onPrenomChange, o
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-foreground text-sm">Apporteur / Facilitateur</p>
-                {role === "facilitateur" && <CheckCircle2 size={16} className="text-primary shrink-0" />}
+                <p className="font-semibold text-foreground text-sm">
+                  Apporteur / Facilitateur
+                </p>
+                {role === "facilitateur" && (
+                  <CheckCircle2 size={16} className="text-primary shrink-0" />
+                )}
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">Je mets en relation et je gagne des commissions</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Je mets en relation et je gagne des commissions
+              </p>
             </div>
           </div>
         </button>
@@ -210,7 +292,10 @@ function StepIdentity({ role, prenom, nomEntite, onRoleChange, onPrenomChange, o
       <div className="space-y-3 mb-6">
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">
-            Votre prénom <span className="text-muted-foreground font-normal">(comment on vous appelle)</span>
+            Votre prénom{" "}
+            <span className="text-muted-foreground font-normal">
+              (comment on vous appelle)
+            </span>
           </label>
           <input
             type="text"
@@ -219,16 +304,25 @@ function StepIdentity({ role, prenom, nomEntite, onRoleChange, onPrenomChange, o
             onChange={(e) => onPrenomChange(e.target.value)}
             className={INPUT_CLASS}
             autoComplete="given-name"
+            autoFocus
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">
-            {role === "entreprise" ? "Nom de l'entreprise" : "Votre nom / structure"}
-            <span className="text-muted-foreground font-normal ml-1">(visible sur votre profil)</span>
+            {role === "entreprise"
+              ? "Nom de l'entreprise"
+              : "Votre nom / structure"}
+            <span className="text-muted-foreground font-normal ml-1">
+              (visible sur votre profil)
+            </span>
           </label>
           <input
             type="text"
-            placeholder={role === "entreprise" ? "ex : Acme SAS" : "ex : Jean Martin Consulting"}
+            placeholder={
+              role === "entreprise"
+                ? "ex : Acme SAS"
+                : "ex : Jean Martin Consulting"
+            }
             value={nomEntite}
             onChange={(e) => onNomEntiteChange(e.target.value)}
             className={INPUT_CLASS}
@@ -252,7 +346,7 @@ function StepIdentity({ role, prenom, nomEntite, onRoleChange, onPrenomChange, o
   );
 }
 
-// ── STEP 2 — extracted as top-level component to prevent remount ──
+// ── STEP 2 — TOP-LEVEL to guarantee stable identity across parent re-renders ──
 interface Step2Props {
   role: Role;
   secteur: string;
@@ -267,11 +361,18 @@ interface Step2Props {
 }
 
 function StepSectorGoal({
-  role, secteur, objectif, cible, saving,
-  onSecteurChange, onObjectifChange, onCibleChange, onSave, onBack,
+  role,
+  secteur,
+  objectif,
+  cible,
+  saving,
+  onSecteurChange,
+  onObjectifChange,
+  onCibleChange,
+  onSave,
+  onBack,
 }: Step2Props) {
   const isEntreprise = role === "entreprise";
-
   const sectorOptions = isEntreprise ? ENTREPRISE_SECTORS : FACILITATEUR_SECTORS;
 
   const goals = isEntreprise
@@ -302,8 +403,12 @@ function StepSectorGoal({
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
           Étape 2 sur {TOTAL_STEPS}
         </p>
-        <h1 className="font-display text-2xl font-bold text-foreground mb-1">Votre activité</h1>
-        <p className="text-muted-foreground text-sm">Ces infos aident à trouver les bonnes opportunités.</p>
+        <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+          Votre activité
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Ces infos aident à trouver les bonnes opportunités.
+        </p>
       </div>
 
       <div className="space-y-5 mb-6">
@@ -312,14 +417,21 @@ function StepSectorGoal({
           <label className="block text-sm font-medium text-foreground mb-2">
             {isEntreprise ? "Secteur d'activité" : "Domaine de réseau"}
           </label>
-          <SectorSearch options={sectorOptions} value={secteur} onChange={onSecteurChange} />
+          <SectorSearch
+            options={sectorOptions}
+            value={secteur}
+            onChange={onSecteurChange}
+          />
         </div>
 
         {/* Cible commerciale — entreprise only */}
         {isEntreprise && (
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Cible commerciale <span className="text-muted-foreground font-normal">(qui achetez-vous ?)</span>
+              Cible commerciale{" "}
+              <span className="text-muted-foreground font-normal">
+                (à qui vendez-vous ?)
+              </span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               {cibles.map(({ value, label, desc }) => (
@@ -334,7 +446,9 @@ function StepSectorGoal({
                   }`}
                 >
                   <span className="font-semibold text-foreground">{label}</span>
-                  <span className="text-xs text-muted-foreground leading-tight">{desc}</span>
+                  <span className="text-xs text-muted-foreground leading-tight">
+                    {desc}
+                  </span>
                 </button>
               ))}
             </div>
@@ -344,7 +458,8 @@ function StepSectorGoal({
         {/* Objectif */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
-            Objectif principal <span className="text-muted-foreground font-normal">(un seul)</span>
+            Objectif principal{" "}
+            <span className="text-muted-foreground font-normal">(un seul)</span>
           </label>
           <div className="space-y-2">
             {goals.map((g) => (
@@ -359,7 +474,9 @@ function StepSectorGoal({
                 }`}
               >
                 <span>{g}</span>
-                {objectif === g && <CheckCircle2 size={15} className="text-primary shrink-0" />}
+                {objectif === g && (
+                  <CheckCircle2 size={15} className="text-primary shrink-0" />
+                )}
               </button>
             ))}
           </div>
@@ -373,9 +490,13 @@ function StepSectorGoal({
         className="btn-cta w-full py-4 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         {saving ? (
-          <><Loader2 size={16} className="animate-spin" /> Enregistrement…</>
+          <>
+            <Loader2 size={16} className="animate-spin" /> Enregistrement…
+          </>
         ) : (
-          <>Terminer et accéder à mon espace <ArrowRight size={16} /></>
+          <>
+            Terminer et accéder à mon espace <ArrowRight size={16} />
+          </>
         )}
       </button>
       <button
@@ -390,60 +511,7 @@ function StepSectorGoal({
   );
 }
 
-// ── DONE SCREEN ───────────────────────────────────────────────
-interface DoneProps { role: Role; prenom: string; onNavigate: (path: string) => void; }
-
-function StepDone({ role, prenom, onNavigate }: DoneProps) {
-  const isEntreprise = role === "entreprise";
-  const name = prenom || "vous";
-  return (
-    <div className="w-full max-w-md animate-fade-in text-center">
-      <div
-        className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
-        style={{ background: "hsl(var(--success) / 0.15)" }}
-      >
-        <CheckCircle2 size={32} style={{ color: "hsl(var(--success))" }} />
-      </div>
-      <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-        Bienvenue, {name} ! 🎉
-      </h1>
-      <p className="text-muted-foreground text-sm mb-7">
-        {isEntreprise
-          ? "Votre espace entreprise est prêt. OpenClaw démarre la prospection."
-          : "Votre profil facilitateur est actif. Explorez les missions disponibles."}
-      </p>
-      <div className="card-surface p-5 mb-6 text-left space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tout est prêt</p>
-        {[
-          "Profil créé et sécurisé",
-          isEntreprise ? "OpenClaw activé — prospection en cours" : "Accès aux missions débloqué",
-          "Assistant KITT IA disponible",
-        ].map((item) => (
-          <div key={item} className="flex items-center gap-3">
-            <CheckCircle2 size={15} style={{ color: "hsl(var(--success))" }} />
-            <span className="text-sm text-foreground">{item}</span>
-          </div>
-        ))}
-      </div>
-      <button
-        type="button"
-        onClick={() => onNavigate(isEntreprise ? "/dashboard/entreprise" : "/dashboard/facilitateur")}
-        className="btn-cta w-full py-4 mb-3"
-      >
-        Accéder à mon espace <ArrowRight size={16} />
-      </button>
-      <button
-        type="button"
-        onClick={() => onNavigate("/missions")}
-        className="w-full px-4 py-3 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
-      >
-        {isEntreprise ? "Créer ma première mission" : "Voir les missions disponibles"}
-      </button>
-    </div>
-  );
-}
-
-// ── MAIN PAGE ─────────────────────────────────────────────────
+// ── MAIN PAGE ─────────────────────────────────────────────────────────────────
 export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<Role>(null);
@@ -452,59 +520,81 @@ export default function Onboarding() {
   const [secteur, setSecteur] = useState("");
   const [objectif, setObjectif] = useState("");
   const [cible, setCible] = useState<Cible>("");
-  const [done, setDone] = useState(false);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
+
   const navigate = useNavigate();
-  const { user, refreshProfile } = useAuth();
+  const { user, loading: authLoading, refreshProfile } = useAuth();
   const subscription = useSubscription();
 
-  // Stable callbacks — prevent re-renders from destroying child focus
+  // ── Stable callbacks ── deps are always [] so identities never change ────────
   const handleRoleChange = useCallback((r: Role) => setRole(r), []);
   const handlePrenomChange = useCallback((v: string) => setPrenom(v), []);
   const handleNomEntiteChange = useCallback((v: string) => setNomEntite(v), []);
   const handleSecteurChange = useCallback((v: string) => setSecteur(v), []);
   const handleObjectifChange = useCallback((v: string) => setObjectif(v), []);
   const handleCibleChange = useCallback((v: Cible) => setCible(v), []);
-
   const handleNext = useCallback(() => setStep(2), []);
   const handleBack = useCallback(() => setStep(1), []);
 
   const saveProfile = useCallback(async () => {
     if (!user) return;
-    if (saving || savingRef.current) return;
+    if (savingRef.current) return;
     savingRef.current = true;
     setSaving(true);
+
     try {
-      await db
+      // ── 1. Persist profile ─────────────────────────────────────────────────
+      const { error: profileErr } = await db
         .from("profiles")
-        .update({ role, prenom, onboarding_done: true })
+        .update({
+          role,
+          prenom,
+          onboarding_done: true,
+          target_market: role === "entreprise" ? cible || null : null,
+          objectif: objectif || null,
+        } as Parameters<ReturnType<typeof db.from>["update"]>[0])
         .eq("id", user.id);
 
+      if (profileErr) throw profileErr;
+
+      // ── 2. Persist role-specific data ──────────────────────────────────────
       if (role === "entreprise") {
-        await db.from("entreprise_profiles").upsert(
-          { user_id: user.id, nom_entreprise: nomEntite, secteur, cible_client: cible || null },
-          { onConflict: "user_id" }
-        );
+        const { error: epErr } = await db
+          .from("entreprise_profiles")
+          .upsert(
+            {
+              user_id: user.id,
+              nom_entreprise: nomEntite,
+              secteur,
+              cible_client: cible || null,
+            },
+            { onConflict: "user_id" }
+          );
+        if (epErr) throw epErr;
       } else if (role === "facilitateur") {
-        await db.from("facilitateur_profiles").upsert(
-          { user_id: user.id, secteur },
-          { onConflict: "user_id" }
-        );
+        const { error: fpErr } = await db
+          .from("facilitateur_profiles")
+          .upsert({ user_id: user.id, secteur }, { onConflict: "user_id" });
+        if (fpErr) throw fpErr;
       }
 
-      // Persist locally so ProtectedRoute doesn't bounce during the async refreshProfile
+      // ── 3. Set localStorage flag BEFORE refreshProfile() so ProtectedRoute
+      //       never evaluates the entreprise subscription guard with stale data.
       try {
         localStorage.setItem("onboarding_done", "true");
         localStorage.setItem("onboarding_role", role ?? "");
-      } catch { /* storage may be unavailable */ }
+      } catch {
+        /* storage may be unavailable in private mode */
+      }
 
-      trackEvent("onboarding_done", user.id, { role: role ?? "unknown", cible });
+      // ── 4. Refresh auth profile so role is available in ProtectedRoute ─────
       await refreshProfile();
 
-      // Only fire OpenClaw if the user has an active subscription
-      const hasAccess = isAccessActive(subscription.status);
+      trackEvent("onboarding_done", user.id, { role: role ?? "unknown", cible });
 
+      // ── 5. Fire OpenClaw background tasks (non-blocking) ──────────────────
+      const hasAccess = isAccessActive(subscription.status);
       if (role === "entreprise" && hasAccess) {
         const { count: missionCount } = await db
           .from("missions")
@@ -513,49 +603,88 @@ export default function Onboarding() {
 
         const calls: Promise<unknown>[] = [
           supabase.functions.invoke("openclaw-dossier-sync", { body: { force: true } }),
-          supabase.functions.invoke("openclaw-job-executor", { body: { job_type: "daily_brief_generate" } }),
-          supabase.functions.invoke("openclaw-scheduler", { body: { tick_type: "welcome_scan", user_id: user.id } }),
+          supabase.functions.invoke("openclaw-job-executor", {
+            body: { job_type: "daily_brief_generate" },
+          }),
+          supabase.functions.invoke("openclaw-scheduler", {
+            body: { tick_type: "welcome_scan", user_id: user.id },
+          }),
         ];
         if ((missionCount ?? 0) > 0) {
-          calls.push(supabase.functions.invoke("openclaw-job-executor", { body: { job_type: "radar_scan" } }));
+          calls.push(
+            supabase.functions.invoke("openclaw-job-executor", {
+              body: { job_type: "radar_scan" },
+            })
+          );
         }
         Promise.allSettled(calls).catch(() => {});
-        toast.success("Le cerveau WiinupMax analyse votre profil. Vos premières recommandations arrivent…");
+        toast.success(
+          "Le cerveau WiinupMax analyse votre profil. Vos premières recommandations arrivent…"
+        );
       } else if (role === "facilitateur") {
         supabase.functions
-          .invoke("openclaw-scheduler", { body: { tick_type: "welcome_scan", user_id: user.id } })
+          .invoke("openclaw-scheduler", {
+            body: { tick_type: "welcome_scan", user_id: user.id },
+          })
           .catch(() => {});
       }
 
-      setDone(true);
-    } catch {
-      savingRef.current = false;
-      toast.error("Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.");
-    } finally {
+      // ── 6. Navigate — replace so the Back button never returns to /onboarding
+      const dest =
+        role === "entreprise" ? "/dashboard/entreprise" : "/dashboard/facilitateur";
+      navigate(dest, { replace: true });
+    } catch (err) {
       savingRef.current = false;
       setSaving(false);
+      console.error("[Onboarding] saveProfile error", err);
+      toast.error("Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.");
     }
-  }, [user, saving, role, prenom, nomEntite, secteur, cible, subscription.status, refreshProfile]);
+    // NOTE: savingRef is intentionally NOT reset on success — prevents double-submit
+  }, [
+    user,
+    role,
+    prenom,
+    nomEntite,
+    secteur,
+    cible,
+    objectif,
+    subscription.status,
+    refreshProfile,
+    navigate,
+  ]);
 
-  const handleNavigate = useCallback((path: string) => navigate(path), [navigate]);
+  // ── Loading state ─────────────────────────────────────────────────────────
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="border-b border-border">
+          <div className="container flex items-center h-14">
+            <span className="font-display font-bold text-foreground">WIINUP MAX</span>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <OnboardingSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
       <div className="border-b border-border">
         <div className="container flex items-center justify-between h-14">
           <span className="font-display font-bold text-foreground">WIINUP MAX</span>
-          {!done && (
-            <span className="text-xs text-muted-foreground">
-              Étape {step} sur {TOTAL_STEPS}
-            </span>
-          )}
+          <span className="text-xs text-muted-foreground">
+            Étape {step} sur {TOTAL_STEPS}
+          </span>
         </div>
       </div>
-      {!done && <ProgressBar current={step} total={TOTAL_STEPS} />}
+
+      <ProgressBar current={step} total={TOTAL_STEPS} />
+
       <div className="flex-1 flex items-center justify-center p-6">
-        {done ? (
-          <StepDone role={role} prenom={prenom} onNavigate={handleNavigate} />
-        ) : step === 1 ? (
+        {step === 1 ? (
           <StepIdentity
             role={role}
             prenom={prenom}
