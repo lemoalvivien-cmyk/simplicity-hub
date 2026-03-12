@@ -104,3 +104,6 @@ verify_jwt = false
 
 [functions.elevenlabs-tts]
 verify_jwt = false
+
+[functions.openclaw-lead-generator]
+verify_jwt = false
