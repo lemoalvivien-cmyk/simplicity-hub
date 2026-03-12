@@ -316,6 +316,51 @@ export type Database = {
         }
         Relationships: []
       }
+      business_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          email_sent: boolean
+          id: string
+          message: string
+          resolved: boolean
+          resolved_at: string | null
+          severity: string
+          threshold: number | null
+          title: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          email_sent?: boolean
+          id?: string
+          message: string
+          resolved?: boolean
+          resolved_at?: string | null
+          severity?: string
+          threshold?: number | null
+          title: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          email_sent?: boolean
+          id?: string
+          message?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          severity?: string
+          threshold?: number | null
+          title?: string
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: []
+      }
       campagnes: {
         Row: {
           canal_principal: string | null
@@ -4734,6 +4779,7 @@ export type Database = {
           zone_score: number
         }[]
       }
+      generate_business_alerts: { Args: never; Returns: number }
       generate_payouts_from_validated_gains: { Args: never; Returns: number }
       get_automation_engine_health: { Args: never; Returns: Json }
       get_automation_rule_threshold: {
@@ -4763,6 +4809,27 @@ export type Database = {
         }[]
       }
       get_billing_proof_summary: { Args: never; Returns: Json }
+      get_business_health: { Args: never; Returns: Json }
+      get_daily_timeseries: {
+        Args: { p_days?: number }
+        Returns: {
+          day: string
+          intros_validees: number
+          leads_openclaw: number
+          payouts_paid: number
+          revenue_eur: number
+        }[]
+      }
+      get_revenue_timeseries: {
+        Args: { p_days?: number }
+        Returns: {
+          leads_openclaw: number
+          payouts_paid: number
+          period: string
+          revenue_eur: number
+          subs_active: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
