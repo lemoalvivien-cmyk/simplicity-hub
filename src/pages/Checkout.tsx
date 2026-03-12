@@ -261,7 +261,7 @@ export default function Checkout() {
             <div className="space-y-1.5 mb-5">
               {[
                 "Introductions qualifiées illimitées",
-                "Agents IA OpenClaw 24h/24",
+                "Prospection IA assistée — OpenClaw en connexion réelle",
                 "ROI Dashboard complet",
                 "Accès à La Mêlée (événements)",
                 "Support prioritaire",

@@ -5,10 +5,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
+  Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
   Plus, Briefcase, Users, Sparkles, Check, Phone, Mail, RefreshCw,
   CheckCircle, AlertCircle, FileText, TrendingUp, ChevronRight,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, CheckCircle2, Flame,
 } from "lucide-react";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +19,7 @@ import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 import { useUserActions, useMarkActionDone, type UserAction } from "@/hooks/useUserActions";
 import { useDashboardEntrepriseData } from "@/hooks/useDashboardEntrepriseData";
+import { useSubscription, getOfferLabel } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
@@ -112,12 +113,14 @@ export default function DashboardEntreprise() {
     });
   };
 
+  const { status: subStatus, subscribed, offerType, accessType } = useSubscription();
+
   const pendingIntrosCount   = introductions.filter(i => i.statut === "en_attente").length;
   const activeMissionsCount  = missions.filter(m => m.statut === "active").length;
   const isLaunchMode         = !loading && missions.length === 0;
 
   const heroSubtitle = aiRecoCount > 0
-    ? `KITT IA recommande : ${aiRecoCount} action${aiRecoCount > 1 ? "s" : ""} prioritaire${aiRecoCount > 1 ? "s" : ""}`
+    ? `Prospection IA : ${aiRecoCount} action${aiRecoCount > 1 ? "s" : ""} à traiter`
     : pendingIntrosCount > 0
     ? `${pendingIntrosCount} introduction${pendingIntrosCount > 1 ? "s" : ""} en attente de validation`
     : "Tout est à jour. Créez une nouvelle mission pour activer le moteur.";
@@ -169,6 +172,17 @@ export default function DashboardEntreprise() {
           />
         </div>
 
+        {/* ═══ STATUT ABONNEMENT RÉEL ═════════════════════════ */}
+        {subscribed && (
+          <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border"
+            style={{ background: "hsl(var(--success-light))", borderColor: "hsl(var(--success) / 0.3)" }}>
+            <CheckCircle2 size={14} style={{ color: "hsl(var(--success))" }} className="shrink-0" />
+            <p className="text-xs font-semibold" style={{ color: "hsl(var(--success))" }}>
+              Abonnement actif — {getOfferLabel(offerType, accessType)}
+            </p>
+          </div>
+        )}
+
         {/* ═══ RACCOURCIS ═════════════════════════════════════ */}
         <div className="flex flex-wrap gap-2">
           <Link to="/missions/nouvelle" className="btn-cta flex items-center gap-1.5 px-5 py-2.5 text-sm">
@@ -180,24 +194,33 @@ export default function DashboardEntreprise() {
           </Link>
           <Link to="/pilotage"
             className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold border border-border text-foreground hover:bg-muted transition-colors">
-            <Sparkles size={14} /> Parler à KITT IA
+            <Sparkles size={14} /> Mon IA
           </Link>
         </div>
 
-        {/* ═══ LAUNCH MODE ════════════════════════════════════ */}
+        {/* ═══ LAUNCH MODE (première action suggérée) ═══════════ */}
         {isLaunchMode && (
           <div className="rounded-2xl p-5 border-2"
             style={{ borderColor: "hsl(var(--primary) / 0.5)", background: "hsl(var(--secondary))" }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
                 style={{ background: "var(--gradient-primary)" }}>
-                <Sparkles size={16} className="text-white" />
+                <Flame size={16} className="text-white" />
               </div>
               <div>
-                <p className="font-bold text-foreground text-sm">Publiez votre première mission</p>
-                <p className="text-muted-foreground text-xs">En 3 minutes, des facilitateurs peuvent vous apporter des clients</p>
+                <p className="font-bold text-foreground text-sm">Première action suggérée</p>
+                <p className="text-muted-foreground text-xs">
+                  {leadsCount > 0
+                    ? `OpenClaw a identifié ${leadsCount} cible${leadsCount > 1 ? "s" : ""} — consultez votre pipeline`
+                    : "Créez votre première mission pour activer le réseau de facilitateurs"}
+                </p>
               </div>
             </div>
+            {leadsCount > 0 && (
+              <Link to="/pilotage" className="btn-cta w-full text-center block py-3 text-sm mb-2">
+                <Sparkles size={14} className="inline mr-1" /> Voir les cibles OpenClaw
+              </Link>
+            )}
             <Link to="/missions/nouvelle" className="btn-cta w-full text-center block py-3.5 text-sm">
               <Plus size={14} className="inline mr-1" /> Créer ma première mission
             </Link>

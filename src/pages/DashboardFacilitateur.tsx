@@ -1,6 +1,3 @@
-/**
- * Dashboard Facilitateur — React Query powered
- */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
@@ -151,6 +148,27 @@ export default function DashboardFacilitateur() {
               accent={totalValide > 0}
             />
           </div>
+
+          {/* ═══ PREMIÈRE ACTION SUGGÉRÉE ══════════════════════ */}
+          {!loading && introsCount === 0 && missionsCount > 0 && (
+            <div className="rounded-2xl p-4 border-2 flex items-center gap-3"
+              style={{ borderColor: "hsl(var(--primary) / 0.4)", background: "hsl(var(--secondary))" }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "var(--gradient-primary)" }}>
+                <Sparkles size={14} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">Première action suggérée</p>
+                <p className="text-xs text-muted-foreground">
+                  {missionsCount} mission{missionsCount > 1 ? "s" : ""} ouverte{missionsCount > 1 ? "s" : ""} — faites votre première introduction pour gagner
+                </p>
+              </div>
+              <Link to="/missions" className="shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl"
+                style={{ background: "hsl(var(--primary))", color: "white" }}>
+                Voir <ArrowRight size={11} />
+              </Link>
+            </div>
+          )}
 
           {/* ═══ RACCOURCIS ════════════════════════════════════ */}
           <div className="flex flex-wrap gap-2">
