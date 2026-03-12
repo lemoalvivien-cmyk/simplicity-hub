@@ -175,6 +175,30 @@ export type Database = {
         }
         Relationships: []
       }
+      api_rate_limits: {
+        Row: {
+          function_name: string
+          id: string
+          request_count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          function_name: string
+          id?: string
+          request_count?: number
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          function_name?: string
+          id?: string
+          request_count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       automation_engine_log: {
         Row: {
           context: Json
@@ -4590,6 +4614,14 @@ export type Database = {
         Returns: Json
       }
       apply_lead_policy: { Args: { p_intake_id: string }; Returns: undefined }
+      check_rate_limit: {
+        Args: {
+          p_function_name: string
+          p_max_per_min?: number
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       claim_next_job: {
         Args: {
           p_lock_owner?: string
@@ -4606,6 +4638,7 @@ export type Database = {
           trigger_source: string
         }[]
       }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
       complete_job_execution: {
         Args: {
           p_actions: number
