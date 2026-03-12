@@ -51,6 +51,14 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Reject requests from non-allowed origins immediately (before any work).
+  const origin = req.headers.get("origin") ?? "";
+  if (origin !== "" && !isOriginAllowed(origin)) {
+    return new Response(JSON.stringify({ error: "Origin not allowed" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 403,
+    });
+  }
 
   try {
     logStep("Function started");
