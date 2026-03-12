@@ -3,12 +3,13 @@
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
   Plus, Briefcase, Users, Sparkles, Check, Phone, Mail, RefreshCw,
   CheckCircle, AlertCircle, FileText, TrendingUp, ChevronRight,
-  ChevronDown, ChevronUp, CheckCircle2, Flame,
+  ChevronDown, ChevronUp, CheckCircle2, Flame, Bot,
 } from "lucide-react";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +21,7 @@ import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 import { useUserActions, useMarkActionDone, type UserAction } from "@/hooks/useUserActions";
 import { useDashboardEntrepriseData } from "@/hooks/useDashboardEntrepriseData";
 import { useSubscription, getOfferLabel } from "@/contexts/SubscriptionContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
@@ -86,6 +88,8 @@ function StatCard({ label, value, to, urgent, loading }: {
 export default function DashboardEntreprise() {
   const { user, profile } = useAuth();
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [generatingLead, setGeneratingLead] = useState(false);
+  const queryClient = useQueryClient();
 
   const prenom = profile?.prenom ?? "vous";
   const { stepsCompleted, nextStep } = useActivation("entreprise");
@@ -105,12 +109,48 @@ export default function DashboardEntreprise() {
   const totalGains     = data?.totalGains     ?? 0;
   const leadsCount     = data?.leadsCount     ?? 0;
   const openclawReady  = data?.openclawReady  ?? false;
+  const openclawLeadsThisWeek = data?.openclawLeadsThisWeek ?? 0;
+  const latestAILead   = data?.latestAILead   ?? null;
 
   const handleMarkDone = (id: string) => {
     markDone.mutate(id, {
       onSuccess: () => toast.success("Action marquée comme terminée ✓"),
       onError:   () => toast.error("Erreur lors de la mise à jour"),
     });
+  };
+
+  // ── Generate 1 OpenClaw AI lead on demand ───────────────────────────────────
+  const handleGenerateLead = async () => {
+    if (!user?.id) return;
+    setGeneratingLead(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/openclaw-lead-generator`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
+      const json = await res.json();
+      if (json.success && json.lead) {
+        toast.success(
+          `🎯 Lead généré : ${json.lead.person_name} @ ${json.lead.company_name} — Score ${json.lead.ai_score}/100`
+        );
+        queryClient.invalidateQueries({ queryKey: ["dashboard-entreprise", user.id] });
+      } else if (json.skipped) {
+        toast.info(json.reason ?? "Aucun lead généré pour le moment.");
+      } else {
+        toast.error(json.error ?? "Erreur lors de la génération.");
+      }
+    } catch {
+      toast.error("Erreur réseau — réessayez dans un instant.");
+    } finally {
+      setGeneratingLead(false);
+    }
   };
 
   const { status: subStatus, subscribed, offerType, accessType } = useSubscription();
@@ -272,6 +312,38 @@ export default function DashboardEntreprise() {
 
               {/* OpenClaw */}
               <div className="p-5">
+                {/* ── OpenClaw AI Lead Counter ─────────────────────────────── */}
+                {subscribed && (
+                  <div className="mb-4 flex items-center justify-between gap-3 px-4 py-3 rounded-xl border"
+                    style={{ background: "hsl(218 65% 9% / 0.5)", borderColor: "hsl(218 40% 22% / 0.4)" }}>
+                    <div className="flex items-center gap-2.5">
+                      <Bot size={14} style={{ color: "hsl(270 80% 70%)" }} className="shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold" style={{ color: "hsl(270 80% 80%)" }}>
+                          {openclawLeadsThisWeek === 0
+                            ? "OpenClaw prêt à générer des leads"
+                            : `OpenClaw a généré ${openclawLeadsThisWeek} lead${openclawLeadsThisWeek > 1 ? "s" : ""} cette semaine`}
+                        </p>
+                        {latestAILead && (
+                          <p className="text-xs text-white/40 mt-0.5">
+                            Dernier : {latestAILead.person_name} @ {latestAILead.company_name}
+                            {" "}— Score {latestAILead.ai_score}/100 ({latestAILead.ai_label})
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleGenerateLead}
+                      disabled={generatingLead}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-60"
+                      style={{ background: "hsl(270 70% 55%)", color: "white" }}>
+                      {generatingLead
+                        ? <><Loader2 size={11} className="animate-spin" /> Génération...</>
+                        : <><Sparkles size={11} /> Générer</>}
+                    </button>
+                  </div>
+                )}
+
                 {openclawReady ? (
                   <div className="rounded-2xl overflow-hidden"
                     style={{
