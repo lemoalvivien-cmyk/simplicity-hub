@@ -17,12 +17,12 @@ const corsHeaders = {
 }
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirm your email',
-  invite: "You've been invited",
-  magiclink: 'Your login link',
-  recovery: 'Reset your password',
-  email_change: 'Confirm your new email',
-  reauthentication: 'Your verification code',
+  signup:           'Confirmez votre email — WIINUP MAX',
+  invite:           'Vous avez été invité — WIINUP MAX',
+  magiclink:        'Votre lien de connexion — WIINUP MAX',
+  recovery:         'Réinitialisez votre mot de passe — WIINUP MAX',
+  email_change:     'Confirmez votre nouvel email — WIINUP MAX',
+  reauthentication: 'Votre code de vérification — WIINUP MAX',
 }
 
 // Template mapping
@@ -35,11 +35,13 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   reauthentication: ReauthenticationEmail,
 }
 
-// Configuration
-const SITE_NAME = "wiinupmax"
+// Configuration — tous les emails partent de @wiinupmax.com via notify.wiinupmax.com
+// Fallback Lovable désactivé : si LOVABLE_API_KEY absent → erreur 500, jamais de fallback silencieux.
+const SITE_NAME = "WIINUP MAX"
 const SENDER_DOMAIN = "notify.wiinupmax.com"
 const ROOT_DOMAIN = "wiinupmax.com"
-const FROM_DOMAIN = "wiinupmax.com" // Domain shown in From address (may be root or sender subdomain)
+const FROM_NAME = "WIINUP MAX"
+const FROM_ADDRESS = `noreply@wiinupmax.com`
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
@@ -256,9 +258,9 @@ async function handleWebhook(req: Request): Promise<Response> {
       run_id,
       message_id: messageId,
       to: payload.data.email,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      from: `${FROM_NAME} <${FROM_ADDRESS}>`,
       sender_domain: SENDER_DOMAIN,
-      subject: EMAIL_SUBJECTS[emailType] || 'Notification',
+      subject: EMAIL_SUBJECTS[emailType] || `Notification — ${SITE_NAME}`,
       html,
       text,
       purpose: 'transactional',
