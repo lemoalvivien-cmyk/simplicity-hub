@@ -1,7 +1,4 @@
-import { Brain, Users, Zap, MessageSquare, Link2, Send, TrendingUp, Shield, FlaskConical } from "lucide-react";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
+import { Brain, Users, Zap, MessageSquare, Link2, Send, TrendingUp, Shield } from "lucide-react";
 
 const moteur1Features = [
   { icon: Brain, label: "OpenClaw — assistant IA de prospection" },
