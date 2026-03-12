@@ -122,6 +122,20 @@ export default function ProofSection() {
             Chaque action, chaque intro, chaque gain — enregistré, tracé, prouvable. Pas de zones grises.
           </p>
         </div>
+
+        {/* Beta disclaimer */}
+        <div
+          className="mt-5 rounded-xl px-4 py-3 flex items-start gap-2.5"
+          style={{
+            background: "hsl(38 95% 52% / 0.07)",
+            border: "1px solid hsl(38 95% 52% / 0.18)",
+          }}
+        >
+          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {BETA_NOTE}
+          </p>
+        </div>
       </div>
     </section>
   );
