@@ -100,7 +100,7 @@ export default function Contacts() {
     }
 
     const { data, count } = await q;
-    setContacts(data || []);
+    setContacts((data || []) as unknown as Contact[]);
     setTotalContacts(count ?? 0);
     setLoading(false);
 
