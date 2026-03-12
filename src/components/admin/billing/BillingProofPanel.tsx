@@ -260,7 +260,7 @@ function PremierEuroBlock({
         </div>
       )}
 
-      {/* ③ Dernière tentative observée — PROOF:BILLING_PROOF_CHAIN_V3:derniere_tentative_block */}
+      {/* ③ Dernière tentative observée */}
       {/* Visible même sans full_proof : montre le dernier event ANY (partial, broken, etc.) */}
       {!isProven && lastAnyRow && (
         <div className="mb-4 p-3 rounded-xl border border-border bg-background/60">
