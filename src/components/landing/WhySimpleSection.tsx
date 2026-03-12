@@ -2,7 +2,7 @@ const points = [
   {
     icon: "🙅",
     title: "Zéro compétence technique nécessaire",
-    desc: "Si vous savez utiliser votre e-mail, vous savez utiliser Planify.",
+    desc: "Si vous savez utiliser votre e-mail, vous savez utiliser Wiinup Max.",
   },
   {
     icon: "🧑‍🏫",
