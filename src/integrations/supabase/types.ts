@@ -579,6 +579,7 @@ export type Database = {
           response_rate: number | null
           secteur: string | null
           statut: string | null
+          stripe_connect_account_id: string | null
           total_reviews: number | null
           types_contacts: string | null
           updated_at: string
@@ -597,6 +598,7 @@ export type Database = {
           response_rate?: number | null
           secteur?: string | null
           statut?: string | null
+          stripe_connect_account_id?: string | null
           total_reviews?: number | null
           types_contacts?: string | null
           updated_at?: string
@@ -615,6 +617,7 @@ export type Database = {
           response_rate?: number | null
           secteur?: string | null
           statut?: string | null
+          stripe_connect_account_id?: string | null
           total_reviews?: number | null
           types_contacts?: string | null
           updated_at?: string
@@ -3782,7 +3785,10 @@ export type Database = {
           reference: string | null
           requested_at: string
           status: string
+          stripe_connect_account_id: string | null
+          stripe_transfer_id: string | null
           updated_at: string
+          withdrawal_requested_at: string | null
         }
         Insert: {
           amount?: number
@@ -3801,7 +3807,10 @@ export type Database = {
           reference?: string | null
           requested_at?: string
           status?: string
+          stripe_connect_account_id?: string | null
+          stripe_transfer_id?: string | null
           updated_at?: string
+          withdrawal_requested_at?: string | null
         }
         Update: {
           amount?: number
@@ -3820,7 +3829,10 @@ export type Database = {
           reference?: string | null
           requested_at?: string
           status?: string
+          stripe_connect_account_id?: string | null
+          stripe_transfer_id?: string | null
           updated_at?: string
+          withdrawal_requested_at?: string | null
         }
         Relationships: [
           {

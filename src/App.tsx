@@ -66,6 +66,7 @@ const AdminOverview = lazy(() => import("./pages/admin/Overview"));
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
 const AdminPayments = lazy(() => import("./pages/admin/Payments"));
 const AdminPromoCodes = lazy(() => import("./pages/admin/PromoCodes"));
+const AdminRevenue = lazy(() => import("./pages/admin/Revenue"));
 
 // ── Skeleton fallback ────────────────────────────────────────────────────────
 function PageSkeleton() {
@@ -156,6 +157,7 @@ const App = () => (
                 <Route path="/admin/users" element={<ProtectedRoute adminOnly><AdminUsers /></ProtectedRoute>} />
                 <Route path="/admin/payments" element={<ProtectedRoute adminOnly><AdminPayments /></ProtectedRoute>} />
                 <Route path="/admin/promo-codes" element={<ProtectedRoute adminOnly><AdminPromoCodes /></ProtectedRoute>} />
+                <Route path="/admin/revenue" element={<ProtectedRoute adminOnly><AdminRevenue /></ProtectedRoute>} />
 
                 {/* ── 404 ──────────────────────────────────── */}
                 <Route path="*" element={<NotFound />} />
