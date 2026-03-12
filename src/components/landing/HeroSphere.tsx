@@ -1,5 +1,5 @@
-import { useRef, useMemo } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useRef, useMemo, forwardRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 // ─── Perlin noise (Ken Perlin improved) ────────────────────────────────────
@@ -41,10 +41,8 @@ function noise(x: number, y: number, z: number): number {
 // ─── Organic morphing sphere ────────────────────────────────────────────────
 function OrganicSphere({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
-
-  const geometry = useMemo(() => new THREE.IcosahedronGeometry(1.7, 80), []);
+  const geometry = useMemo(() => new THREE.IcosahedronGeometry(1.7, 64), []);
   const basePositions = useMemo(() => Float32Array.from(geometry.attributes.position.array), [geometry]);
-
   const material = useMemo(() => new THREE.MeshStandardMaterial({
     color: new THREE.Color().setHSL(0.606, 0.72, 0.28),
     roughness: 0.08,
@@ -63,19 +61,15 @@ function OrganicSphere({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
       const ox = basePositions[i], oy = basePositions[i + 1], oz = basePositions[i + 2];
       const len = Math.sqrt(ox * ox + oy * oy + oz * oz);
       const nx = ox / len, ny = oy / len, nz = oz / len;
-
-      // Layered FBM noise — 3 octaves
+      // 3-octave FBM
       const n1 = noise(nx * 1.8 + t * 0.28, ny * 1.8 + t * 0.22, nz * 1.8 + t * 0.24);
       const n2 = noise(nx * 3.5 + t * 0.14, ny * 3.5 - t * 0.11, nz * 3.5 + t * 0.18) * 0.45;
       const n3 = noise(nx * 6.2 - t * 0.09, ny * 6.2 + t * 0.07, nz * 6.2 - t * 0.12) * 0.2;
       const disp = 1 + (n1 + n2 + n3) * 0.3;
-
-      // Mouse influence: warp surface toward cursor
       arr[i]     = nx * len * disp + mouseX * 0.18 * ny;
       arr[i + 1] = ny * len * disp + mouseY * 0.18 * nx;
       arr[i + 2] = nz * len * disp + mouseX * 0.05 * nz;
     }
-
     pos.needsUpdate = true;
     meshRef.current.geometry.computeVertexNormals();
     meshRef.current.rotation.y = t * 0.10 + mouseX * 0.5;
@@ -85,27 +79,37 @@ function OrganicSphere({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
   return <mesh ref={meshRef} geometry={geometry} material={material} castShadow />;
 }
 
-// ─── Orbital glowing rings ──────────────────────────────────────────────────
+// ─── Orbital ring — imperative ref to avoid forwardRef warning ──────────────
 function Ring({ radius, thickness, color, speed, axis }: {
-  radius: number; thickness: number; color: number; speed: number; axis: 'x'|'y'|'z';
+  radius: number; thickness: number; color: number; speed: number; axis: "x" | "y" | "z";
 }) {
   const geo = useMemo(() => new THREE.TorusGeometry(radius, thickness, 8, 128), [radius, thickness]);
   const mat = useMemo(() => new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 }), [color]);
-  const ref = useRef<THREE.Mesh>(null);
+  // Use a plain object ref instead of THREE.Mesh ref to avoid R3F forwardRef warning
+  const ref = useRef<THREE.Mesh | null>(null);
+
   useFrame(({ clock }) => {
-    if (!ref.current) return;
+    const m = ref.current;
+    if (!m) return;
     const t = clock.getElapsedTime() * speed;
-    if (axis === 'x') ref.current.rotation.x = t;
-    if (axis === 'y') ref.current.rotation.y = t;
-    if (axis === 'z') { ref.current.rotation.z = t; ref.current.rotation.x = Math.sin(clock.getElapsedTime() * 0.3) * 0.4; }
+    if (axis === "x") m.rotation.x = t;
+    else if (axis === "y") m.rotation.y = t;
+    else { m.rotation.z = t; m.rotation.x = Math.sin(clock.getElapsedTime() * 0.3) * 0.4; }
   });
-  return <mesh ref={ref} geometry={geo} material={mat} />;
+
+  return (
+    <mesh
+      ref={ref}
+      geometry={geo}
+      material={mat}
+    />
+  );
 }
 
 // ─── Energy particle field ──────────────────────────────────────────────────
 function ParticleField() {
   const ref = useRef<THREE.Points>(null);
-  const COUNT = 240;
+  const COUNT = 220;
 
   const { positions, colors } = useMemo(() => {
     const positions = new Float32Array(COUNT * 3);
@@ -117,7 +121,6 @@ function ParticleField() {
       positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = r * Math.cos(phi);
-      // Vary between blue-glow and amber
       const t = Math.random();
       colors[i * 3]     = t > 0.7 ? 1.0 : 0.22;
       colors[i * 3 + 1] = t > 0.7 ? 0.42 : 0.48;
@@ -142,32 +145,33 @@ function ParticleField() {
 
   return (
     <points ref={ref} geometry={geo}>
-      <pointsMaterial size={0.03} vertexColors transparent opacity={0.75} sizeAttenuation />
+      <pointsMaterial size={0.03} vertexColors transparent opacity={0.7} sizeAttenuation />
     </points>
   );
 }
 
-// ─── Scan line (holographic effect) ────────────────────────────────────────
+// ─── Scan line (holographic) ────────────────────────────────────────────────
 function ScanLine() {
-  const ref = useRef<THREE.Mesh>(null);
+  const ref = useRef<THREE.Mesh | null>(null);
+  const mat = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: 0x3a9bd5, transparent: true, opacity: 0.08, side: THREE.DoubleSide }),
+    []
+  );
+  const geo = useMemo(() => new THREE.PlaneGeometry(6, 0.015), []);
+
   useFrame(({ clock }) => {
-    if (!ref.current) return;
-    ref.current.position.y = Math.sin(clock.getElapsedTime() * 0.8) * 2.2;
-    (ref.current.material as THREE.MeshBasicMaterial).opacity =
+    const m = ref.current;
+    if (!m) return;
+    m.position.y = Math.sin(clock.getElapsedTime() * 0.8) * 2.2;
+    (m.material as THREE.MeshBasicMaterial).opacity =
       0.06 + Math.abs(Math.sin(clock.getElapsedTime() * 0.8)) * 0.08;
   });
-  return (
-    <mesh ref={ref}>
-      <planeGeometry args={[6, 0.015]} />
-      <meshBasicMaterial color={0x3a9bd5} transparent opacity={0.08} side={THREE.DoubleSide} />
-    </mesh>
-  );
+
+  return <mesh ref={ref} geometry={geo} material={mat} />;
 }
 
-interface Props {
-  mouseX?: number;
-  mouseY?: number;
-}
+// ─── Export ─────────────────────────────────────────────────────────────────
+interface Props { mouseX?: number; mouseY?: number; }
 
 export default function HeroSphere({ mouseX = 0, mouseY = 0 }: Props) {
   return (
@@ -183,7 +187,6 @@ export default function HeroSphere({ mouseX = 0, mouseY = 0 }: Props) {
       <pointLight position={[4, 5, 3]} intensity={0.9} color={0x3a7bd5} />
       <pointLight position={[0, -7, 2]} intensity={0.6} color={0x1a2a6a} />
       <pointLight position={[0, 0, 4]} intensity={0.4} color={0xffffff} />
-
       <OrganicSphere mouseX={mouseX} mouseY={mouseY} />
       <Ring radius={2.4} thickness={0.022} color={0xff6b00} speed={0.22} axis="z" />
       <Ring radius={2.9} thickness={0.014} color={0x3a7bd5} speed={-0.15} axis="y" />
