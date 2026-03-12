@@ -1,23 +1,26 @@
 /**
- * PassiveSectionLanding — Section "Facilitateur Passif" pour la landing
- * "Monétisez votre réseau sans effort inutile."
+ * PassiveSectionLanding — Section "Facilitateur" pour la landing
+ * "Monétisez votre réseau."
  */
 import { Link } from "react-router-dom";
-import { ArrowRight, Upload, Share2, Link2, TrendingUp, Moon, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Upload, Share2, Link2, TrendingUp, FlaskConical, CheckCircle2 } from "lucide-react";
+
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const steps = [
   {
     icon: Upload,
     num: "01",
     title: "Importez votre réseau",
-    desc: "CSV ou Excel en 30 secondes. Vos meilleurs contacts sont déjà dans le système.",
+    desc: "CSV ou Excel en 30 secondes. Vos meilleurs contacts sont disponibles dans le système.",
     color: "hsl(218 72% 55%)",
   },
   {
     icon: Share2,
     num: "02",
     title: "Choisissez une offre",
-    desc: "Parcourez les offres préparées par les entreprises. OpenClaw prépare les messages.",
+    desc: "Parcourez les offres des entreprises. OpenClaw (IA assistée) vous propose des brouillons à personnaliser.",
     color: "hsl(24 100% 52%)",
   },
   {
@@ -37,8 +40,8 @@ const steps = [
 ];
 
 const proofPoints = [
-  "Votre réseau travaille pendant que vous vivez",
-  "OpenClaw prépare les textes à votre place",
+  "Votre réseau génère des opportunités tracées",
+  "OpenClaw prépare des brouillons à personnaliser",
   "Chaque introduction est certifiée et prouvée",
   "100% gratuit pour les facilitateurs — toujours",
 ];
@@ -55,8 +58,7 @@ export default function PassiveSectionLanding() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/15 bg-white/5 text-white/75 text-xs font-semibold mb-8">
-            <Moon size={12} style={{ color: "hsl(24 100% 65%)" }} />
-            Passive Facilitator OS
+            Réseau structuré & traçable
           </div>
           <h2 className="font-display font-bold text-white text-3xl md:text-4xl lg:text-5xl leading-tight mb-5">
             Monétisez votre réseau<br />
@@ -65,11 +67,10 @@ export default function PassiveSectionLanding() {
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text"
-            }}>sans effort inutile.</span>
+            }}>avec traçabilité complète.</span>
           </h2>
           <p className="text-white/55 text-lg max-w-2xl mx-auto leading-relaxed">
-            Importez votre réseau, laissez l'IA préparer le reste.<br className="hidden md:block" />
-            Vous validez l'essentiel — le système fait le travail.
+            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
         </div>
 
@@ -113,12 +114,12 @@ export default function PassiveSectionLanding() {
           }}>
             <div className="flex items-center gap-2 mb-4 pb-3 border-b" style={{ borderColor: "hsl(218 40% 25% / 0.4)" }}>
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-white/50 text-xs font-semibold">OpenClaw · Pack prêt</span>
+              <span className="text-white/50 text-xs font-semibold">OpenClaw · Brouillon prêt à personnaliser</span>
             </div>
             <div className="space-y-2.5">
               {[
-                { icon: "💬", label: "WhatsApp court", status: "✓ Copié" },
-                { icon: "📧", label: "Email professionnel", status: "✓ Prêt" },
+                { icon: "💬", label: "WhatsApp court", status: "✓ Brouillon" },
+                { icon: "📧", label: "Email professionnel", status: "✓ Brouillon" },
                 { icon: "🔗", label: "Lien traqué unique", status: "✓ Actif" },
                 { icon: "📊", label: "Suivi des clics", status: "3 clics" },
               ].map(({ icon, label, status }) => (
@@ -132,9 +133,8 @@ export default function PassiveSectionLanding() {
               ))}
             </div>
             <div className="mt-4 p-3 rounded-xl flex items-center gap-2" style={{ background: "hsl(24 100% 52% / 0.1)", border: "1px solid hsl(24 100% 52% / 0.2)" }}>
-              <Sparkles size={12} style={{ color: "hsl(24 100% 65%)" }} />
               <p className="text-xs" style={{ color: "hsl(24 80% 65%)" }}>
-                "Ce facilitateur est parfaitement aligné avec cette mission."
+                IA assistée — vous validez chaque message avant envoi.
               </p>
             </div>
           </div>
@@ -147,6 +147,20 @@ export default function PassiveSectionLanding() {
             <ArrowRight size={18} />
           </Link>
           <p className="text-white/30 text-xs mt-3">100% gratuit pour les facilitateurs · Toujours</p>
+        </div>
+
+        {/* Disclaimer */}
+        <div
+          className="mt-8 rounded-xl px-5 py-4 flex items-start gap-3"
+          style={{
+            background: "hsl(38 95% 52% / 0.08)",
+            border: "1px solid hsl(38 95% 52% / 0.28)",
+          }}
+        >
+          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {DISCLAIMER}
+          </p>
         </div>
       </div>
     </section>

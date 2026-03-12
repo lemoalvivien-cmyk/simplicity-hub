@@ -1,10 +1,13 @@
-import { CheckCircle2 } from "lucide-react";
+import { FlaskConical } from "lucide-react";
+
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const benefits = [
   {
     emoji: "🧭",
     title: "Tout est au même endroit.",
-    desc: "Vos dossiers, vos tâches, vos messages. Organisés automatiquement. Vous n'avez rien à faire.",
+    desc: "Vos dossiers, vos tâches, vos messages. Centralisés dans un seul cockpit. Vous gardez le contrôle à chaque étape.",
   },
   {
     emoji: "⚡",
@@ -27,7 +30,7 @@ export default function BenefitsSection() {
             Ce que ça change
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">
-            Avec Planify, travailler devient simple.
+            Avec Wiinup Max, travailler devient simple.
           </h2>
         </div>
 
@@ -39,6 +42,20 @@ export default function BenefitsSection() {
               <p className="text-muted-foreground text-sm leading-relaxed">{desc}</p>
             </div>
           ))}
+        </div>
+
+        {/* Disclaimer */}
+        <div
+          className="mt-6 rounded-xl px-5 py-4 flex items-start gap-3"
+          style={{
+            background: "hsl(38 95% 52% / 0.08)",
+            border: "1px solid hsl(38 95% 52% / 0.28)",
+          }}
+        >
+          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {DISCLAIMER}
+          </p>
         </div>
       </div>
     </section>
