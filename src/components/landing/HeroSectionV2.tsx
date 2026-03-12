@@ -1,67 +1,120 @@
-import { useRef, useState, useEffect, Suspense } from "react";
+import { useRef, useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, ChevronDown, FlaskConical } from "lucide-react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { ArrowRight, Users, ChevronDown, FlaskConical, Sparkles } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { track } from "@/lib/landingTracking";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 
-// Lazy-load the heavy 3D sphere
-import { lazy } from "react";
 const HeroSphere = lazy(() => import("./HeroSphere"));
 
-const MotionDiv = motion.div;
-const MotionH1 = motion.h1;
-const MotionP = motion.p;
+// ─── Spring bounce easing = cubic-bezier(0.34, 1.56, 0.64, 1) ─────────────
+const BOUNCE = { type: "spring" as const, stiffness: 260, damping: 18 };
+const EASE_POWER = { ease: [0.22, 1, 0.36, 1] as const, duration: 0.75 };
 
-// Kinetic variable headline — cycles through word variants
-const HEADLINE_VARIANTS = [
-  "vos revenus",
-  "votre réseau",
-  "votre pipeline",
-  "vos opportunités",
-];
+// ─── Kinetic headline word cycling ────────────────────────────────────────
+const WORDS = ["vos revenus", "votre réseau", "votre pipeline", "vos opportunités", "votre avenir"];
 
 function KineticWord() {
   const [idx, setIdx] = useState(0);
   useEffect(() => {
-    const interval = setInterval(() => setIdx((i) => (i + 1) % HEADLINE_VARIANTS.length), 2400);
-    return () => clearInterval(interval);
+    const id = setInterval(() => setIdx(i => (i + 1) % WORDS.length), 2600);
+    return () => clearInterval(id);
   }, []);
-
   return (
-    <span
-      className="relative inline-block overflow-hidden"
-      style={{ verticalAlign: "bottom" }}
-    >
-      <motion.span
-        key={idx}
-        initial={{ y: "100%", opacity: 0 }}
-        animate={{ y: "0%", opacity: 1 }}
-        exit={{ y: "-100%", opacity: 0 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="block"
-        style={{
-          background: "linear-gradient(135deg, hsl(var(--accent)), hsl(38 100% 74%))",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}
-      >
-        {HEADLINE_VARIANTS[idx]}
-      </motion.span>
+    <span className="relative inline-block overflow-hidden align-bottom" style={{ minWidth: "12ch" }}>
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={idx}
+          initial={{ y: "110%", opacity: 0, skewY: 4 }}
+          animate={{ y: "0%", opacity: 1, skewY: 0 }}
+          exit={{ y: "-110%", opacity: 0, skewY: -4 }}
+          transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+          className="block"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--accent)), hsl(38 100% 74%))",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            willChange: "transform, opacity",
+          }}
+        >
+          {WORDS[idx]}
+        </motion.span>
+      </AnimatePresence>
     </span>
   );
 }
 
+// ─── Animated stat card (floating glassmorphism) ───────────────────────────
+function StatCard({
+  label, value, color, delay, className
+}: {
+  label: string; value: string; color: string; delay: number; className: string;
+}) {
+  const [hov, setHov] = useState(false);
+  return (
+    <motion.div
+      className={`absolute ${className} px-4 py-3 rounded-2xl`}
+      initial={{ opacity: 0, scale: 0.8, y: 12 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ ...BOUNCE, delay }}
+      whileHover={{ scale: 1.06, y: -3 }}
+      onHoverStart={() => setHov(true)}
+      onHoverEnd={() => setHov(false)}
+      style={{
+        background: "hsl(218 55% 13% / 0.82)",
+        border: `1px solid ${hov ? color.replace(")", " / 0.5)") : color.replace(")", " / 0.22)")}`,
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        boxShadow: hov
+          ? `0 12px 40px hsl(218 72% 5% / 0.6), 0 0 0 1px ${color.replace(")", " / 0.2)")}`
+          : `0 8px 32px hsl(218 72% 5% / 0.5)`,
+        willChange: "transform",
+        transition: "border-color 0.25s, box-shadow 0.25s",
+      }}
+    >
+      <p className="text-[10px] font-medium text-white/50 mb-0.5">{label}</p>
+      <p className="font-display font-bold text-2xl leading-none" style={{ color }}>{value}</p>
+    </motion.div>
+  );
+}
+
+// ─── Glowing trust pill ────────────────────────────────────────────────────
+function TrustPill({ label, i }: { label: string; i: number }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <motion.span
+      initial={{ opacity: 0, scale: 0.85, x: -8 }}
+      animate={{ opacity: 1, scale: 1, x: 0 }}
+      transition={{ ...BOUNCE, delay: 0.55 + i * 0.07 }}
+      whileHover={{ scale: 1.07 }}
+      onHoverStart={() => setHov(true)}
+      onHoverEnd={() => setHov(false)}
+      className="px-3.5 py-1.5 rounded-full text-[11px] font-semibold cursor-default"
+      style={{
+        background: hov ? "hsl(218 55% 22% / 0.8)" : "hsl(218 55% 18% / 0.55)",
+        border: `1px solid ${hov ? "hsl(218 55% 40% / 0.5)" : "hsl(218 55% 33% / 0.3)"}`,
+        color: "hsl(var(--primary-glow))",
+        backdropFilter: "blur(8px)",
+        transition: "background 0.2s, border-color 0.2s",
+        willChange: "transform",
+      }}
+    >
+      {label}
+    </motion.span>
+  );
+}
+
+// ─── Main component ────────────────────────────────────────────────────────
 export default function HeroSectionV2() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const smoothX = useSpring(mouseX, { stiffness: 60, damping: 20 });
-  const smoothY = useSpring(mouseY, { stiffness: 60, damping: 20 });
+  const smoothX = useSpring(mouseX, { stiffness: 55, damping: 22 });
+  const smoothY = useSpring(mouseY, { stiffness: 55, damping: 22 });
 
-  const bgX = useTransform(smoothX, [-1, 1], ["-8px", "8px"]);
-  const bgY = useTransform(smoothY, [-1, 1], ["-8px", "8px"]);
+  const bgX = useTransform(smoothX, [-1, 1], ["-10px", "10px"]);
+  const bgY = useTransform(smoothY, [-1, 1], ["-10px", "10px"]);
 
   const [sphereX, setSphereX] = useState(0);
   const [sphereY, setSphereY] = useState(0);
@@ -83,195 +136,192 @@ export default function HeroSectionV2() {
     setSphereY(-ny);
   };
 
+  const PILLS = ["Introductions traçées", "Gains protégés", "IA assistée réelle", "Résultats mesurables"];
+
   return (
     <section
       ref={containerRef}
       className="relative min-h-screen flex flex-col overflow-hidden"
       onMouseMove={handleMouseMove}
       style={{
-        background:
-          "linear-gradient(160deg, hsl(218 72% 5%) 0%, hsl(218 72% 10%) 45%, hsl(218 65% 14%) 100%)",
+        background: "linear-gradient(155deg, hsl(218 72% 4%) 0%, hsl(218 72% 9%) 50%, hsl(218 65% 13%) 100%)",
       }}
     >
-      {/* Animated background grid */}
-      <MotionDiv
+      {/* ── Parallax grid ─────────────────────────────────────── */}
+      <motion.div
         className="absolute inset-0 pointer-events-none"
         style={{ x: bgX, y: bgY }}
         aria-hidden="true"
       >
         <div
-          className="absolute inset-0 opacity-[0.035]"
+          className="absolute inset-0 opacity-[0.032]"
           style={{
             backgroundImage:
               "linear-gradient(hsl(var(--primary-glow)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary-glow)) 1px, transparent 1px)",
             backgroundSize: "64px 64px",
           }}
         />
-      </MotionDiv>
+      </motion.div>
 
-      {/* Radial glow center */}
+      {/* ── Radial depth glows ────────────────────────────────── */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 60% 40%, hsl(218 72% 28% / 0.45) 0%, transparent 65%)",
-        }}
+        style={{ background: "radial-gradient(ellipse 90% 65% at 62% 38%, hsl(218 72% 25% / 0.42) 0%, transparent 65%)" }}
         aria-hidden="true"
       />
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 40% 40% at 62% 38%, hsl(var(--accent) / 0.07) 0%, transparent 60%)",
-        }}
+        style={{ background: "radial-gradient(ellipse 45% 42% at 64% 36%, hsl(var(--accent) / 0.065) 0%, transparent 60%)" }}
+        aria-hidden="true"
+      />
+      {/* Bottom vignette */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none"
+        style={{ background: "linear-gradient(to bottom, transparent, hsl(218 72% 4% / 0.8))" }}
         aria-hidden="true"
       />
 
-      {/* Main content */}
-      <div className="container relative z-10 flex-1 flex items-center pt-24 pb-12 md:pt-28 md:pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 w-full items-center">
+      {/* ── Main content ──────────────────────────────────────── */}
+      <div className="container relative z-10 flex-1 flex items-center pt-24 pb-16 md:pt-28 md:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 w-full items-center">
 
-          {/* Left — text */}
+          {/* LEFT ── text column */}
           <div className="flex flex-col">
+
             {/* Launch banner */}
-            <MotionDiv
-              initial={{ opacity: 0, y: -16 }}
+            <motion.div
+              initial={{ opacity: 0, y: -18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={EASE_POWER}
               className="mb-8"
             >
               <LaunchQuotaBanner variant="hero" />
-            </MotionDiv>
+            </motion.div>
 
-            {/* Kinetic headline */}
-            <MotionH1
-              className="font-display font-bold text-white leading-[1.06] tracking-tight mb-7"
-              style={{ fontSize: "clamp(2.4rem, 5.5vw, 3.8rem)" }}
-              initial={{ opacity: 0, y: 32 }}
+            {/* ── H1: kinetic headline with mandatory phrase ─── */}
+            <motion.h1
+              className="font-display font-bold text-white leading-[1.05] tracking-tight mb-6"
+              style={{ fontSize: "clamp(2.2rem, 5.2vw, 3.6rem)" }}
+              initial={{ opacity: 0, y: 36 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ ...EASE_POWER, delay: 0.08 }}
             >
               Avec Wiinup, augmentez{" "}
-              <KineticWord />{" "}
-              <span className="block mt-2 text-white/85" style={{ fontSize: "clamp(1.5rem, 3.5vw, 2.4rem)", fontWeight: 600 }}>
-                en toute sécurité, sans investir,
-                <br />
-                sans charge mentale, et sans bousculer vos habitudes.
-              </span>
-            </MotionH1>
-
-            <MotionP
-              className="text-white/75 mb-4 leading-[1.8] max-w-lg"
-              style={{ fontSize: "clamp(0.95rem, 2vw, 1.1rem)" }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.25 }}
-            >
-              Prospection IA assistée + réseau humain structuré. OpenClaw et facilitateurs actifs travaillent en parallèle. Chaque opportunité tracée. Chaque résultat mesurable.
-            </MotionP>
-
-            {/* CTAs */}
-            <MotionDiv
-              className="flex flex-col sm:flex-row gap-3 mt-4 mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.38 }}
-            >
-              <Link
-                to="/signup"
-                data-magnetic
-                className="btn-cta flex items-center justify-center gap-2 px-8 py-4 text-[0.95rem]"
-                onClick={() => track("cta_hero_enterprise")}
+              <KineticWord />
+              <motion.span
+                className="block mt-2 text-white/82"
+                style={{ fontSize: "clamp(1.35rem, 3.2vw, 2.15rem)", fontWeight: 600, lineHeight: 1.35 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...EASE_POWER, delay: 0.22 }}
               >
-                Créer mon accès — gratuit
-                <ArrowRight size={16} />
-              </Link>
-              <Link
-                to="/signup"
-                data-magnetic
-                className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold border text-white/80 hover:text-white transition-all duration-200"
-                style={{
-                  borderColor: "hsl(218 55% 35% / 0.5)",
-                  background: "hsl(218 55% 18% / 0.4)",
-                  backdropFilter: "blur(8px)",
-                }}
-                onClick={() => track("cta_hero_facilitateur")}
-              >
-                <Users size={15} />
-                Devenir facilitateur
-              </Link>
-            </MotionDiv>
+                en toute sécurité, sans investir,{" "}
+                <br className="hidden sm:block" />
+                sans charge mentale, et sans bousculer
+                <br className="hidden sm:block" />
+                vos habitudes.
+              </motion.span>
+            </motion.h1>
 
-            {/* Trust pills */}
-            <MotionDiv
-              className="flex flex-wrap gap-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.55, duration: 0.6 }}
+            {/* Sub-copy */}
+            <motion.p
+              className="text-white/72 mb-4 leading-[1.82] max-w-lg"
+              style={{ fontSize: "clamp(0.92rem, 1.9vw, 1.06rem)" }}
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...EASE_POWER, delay: 0.3 }}
             >
-              {[
-                "Introductions traçées",
-                "Gains protégés",
-                "IA assistée réelle",
-                "Résultats mesurables",
-              ].map((label) => (
-                <span
-                  key={label}
-                  className="px-3 py-1.5 rounded-full text-[11px] font-semibold"
-                  style={{
-                    background: "hsl(218 55% 20% / 0.6)",
-                    border: "1px solid hsl(218 55% 35% / 0.35)",
-                    color: "hsl(var(--primary-glow))",
-                    backdropFilter: "blur(8px)",
-                  }}
+              Prospection IA assistée + réseau humain structuré. OpenClaw et facilitateurs actifs
+              travaillent en parallèle. Chaque opportunité tracée. Chaque résultat mesurable.
+            </motion.p>
+
+            {/* ── CTAs with haptic spring hover ─────────────── */}
+            <motion.div
+              className="flex flex-col sm:flex-row gap-3 mt-5 mb-8"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...EASE_POWER, delay: 0.4 }}
+            >
+              <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
+                <Link
+                  to="/signup"
+                  data-magnetic
+                  className="btn-cta flex items-center justify-center gap-2 px-8 py-4 text-[0.95rem]"
+                  onClick={() => track("cta_hero_enterprise")}
                 >
-                  {label}
-                </span>
-              ))}
-            </MotionDiv>
+                  <Sparkles size={15} strokeWidth={2} />
+                  Créer mon accès — gratuit
+                  <ArrowRight size={15} />
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
+                <Link
+                  to="/signup"
+                  data-magnetic
+                  className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold border text-white/82 hover:text-white transition-colors duration-200"
+                  style={{
+                    borderColor: "hsl(218 55% 33% / 0.5)",
+                    background: "hsl(218 55% 17% / 0.4)",
+                    backdropFilter: "blur(10px)",
+                  }}
+                  onClick={() => track("cta_hero_facilitateur")}
+                >
+                  <Users size={14} />
+                  Devenir facilitateur
+                </Link>
+              </motion.div>
+            </motion.div>
 
-            {/* Disclaimer */}
-            <MotionDiv
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.75, duration: 0.5 }}
+            {/* ── Trust pills ───────────────────────────────── */}
+            <div className="flex flex-wrap gap-2">
+              {PILLS.map((p, i) => <TrustPill key={p} label={p} i={i} />)}
+            </div>
+
+            {/* ── Beta disclaimer ───────────────────────────── */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...EASE_POWER, delay: 0.85 }}
               className="mt-8 rounded-xl px-4 py-3.5 flex items-start gap-2.5"
               style={{
-                background: "hsl(38 95% 52% / 0.08)",
-                border: "1px solid hsl(38 95% 52% / 0.22)",
+                background: "hsl(38 95% 52% / 0.07)",
+                border: "1px solid hsl(38 95% 52% / 0.2)",
               }}
             >
-              <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" />
-              <p className="text-[11px] font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-                Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.
+              <FlaskConical size={12} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" />
+              <p className="text-[10.5px] font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+                Bêta privée — fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.
               </p>
-            </MotionDiv>
+            </motion.div>
           </div>
 
-          {/* Right — 3D sphere */}
-          <MotionDiv
+          {/* RIGHT ── 3D sphere + floating cards */}
+          <motion.div
             className="relative w-full hidden lg:flex items-center justify-center"
-            style={{ height: "520px" }}
-            initial={{ opacity: 0, scale: 0.88 }}
+            style={{ height: "540px" }}
+            initial={{ opacity: 0, scale: 0.86 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 1.15, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Glow behind sphere */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  "radial-gradient(circle at center, hsl(var(--primary-glow) / 0.18) 0%, hsl(var(--accent) / 0.06) 40%, transparent 70%)",
-                filter: "blur(20px)",
+                  "radial-gradient(circle at center, hsl(var(--primary-glow) / 0.16) 0%, hsl(var(--accent) / 0.055) 38%, transparent 68%)",
+                filter: "blur(24px)",
               }}
               aria-hidden="true"
             />
+
             <Suspense
               fallback={
                 <div className="w-full h-full flex items-center justify-center">
-                  <div
-                    className="w-40 h-40 rounded-full animate-pulse"
-                    style={{ background: "hsl(var(--primary-glow) / 0.2)" }}
+                  <motion.div
+                    className="w-44 h-44 rounded-full"
+                    animate={{ scale: [1, 1.06, 1], opacity: [0.4, 0.7, 0.4] }}
+                    transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                    style={{ background: "hsl(var(--primary-glow) / 0.18)" }}
                   />
                 </div>
               }
@@ -279,76 +329,51 @@ export default function HeroSectionV2() {
               <HeroSphere mouseX={sphereX} mouseY={sphereY} />
             </Suspense>
 
-            {/* Floating stat cards — glassmorphism */}
-            {[
-              { label: "Missions actives", value: "3", color: "hsl(var(--primary-glow))", pos: "top-8 left-0" },
-              { label: "Gains tracés", value: "2 800 €", color: "hsl(var(--accent))", pos: "bottom-16 left-0" },
-              { label: "Intros reçues", value: "12", color: "hsl(152 62% 48%)", pos: "top-20 right-0" },
-              { label: "En validation", value: "4", color: "hsl(38 95% 52%)", pos: "bottom-20 right-0" },
-            ].map((stat, i) => (
-              <MotionDiv
-                key={stat.label}
-                className={`absolute ${stat.pos} px-4 py-3 rounded-2xl`}
-                initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 + i * 0.12, duration: 0.6 }}
-                style={{
-                  background: "hsl(218 55% 14% / 0.75)",
-                  border: `1px solid ${stat.color.replace(")", " / 0.3)")}`,
-                  backdropFilter: "blur(20px)",
-                  WebkitBackdropFilter: "blur(20px)",
-                  boxShadow: `0 8px 32px hsl(218 72% 5% / 0.5), 0 0 0 1px ${stat.color.replace(")", " / 0.12)")}`,
-                }}
-              >
-                <p className="text-[10px] font-medium text-white/55 mb-1">{stat.label}</p>
-                <p
-                  className="font-display font-bold text-xl leading-none"
-                  style={{ color: stat.color }}
-                >
-                  {stat.value}
-                </p>
-              </MotionDiv>
-            ))}
-          </MotionDiv>
+            {/* Floating stat cards */}
+            <StatCard label="Missions actives"  value="3"       color="hsl(var(--primary-glow))"  delay={0.72} className="top-8 left-0" />
+            <StatCard label="Gains tracés"       value="2 800 €" color="hsl(var(--accent))"        delay={0.84} className="bottom-16 left-0" />
+            <StatCard label="Intros reçues"      value="12"      color="hsl(152 62% 52%)"           delay={0.78} className="top-20 right-0" />
+            <StatCard label="En validation"      value="4"       color="hsl(38 95% 52%)"            delay={0.9}  className="bottom-20 right-0" />
+          </motion.div>
         </div>
       </div>
 
-      {/* Mobile 3D fallback — simple animated ring */}
-      <MotionDiv
-        className="lg:hidden relative h-64 flex items-center justify-center overflow-hidden mx-auto w-full max-w-xs"
+      {/* ── Mobile ring fallback ──────────────────────────────── */}
+      <motion.div
+        className="lg:hidden relative h-56 flex items-center justify-center overflow-hidden mx-auto w-full max-w-xs"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.4, duration: 0.8 }}
+        transition={{ delay: 0.45, duration: 0.8 }}
       >
-        <div
-          className="w-40 h-40 rounded-full"
+        <motion.div
+          className="w-44 h-44 rounded-full"
+          animate={{ scale: [1, 1.07, 1] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
           style={{
-            background:
-              "radial-gradient(circle, hsl(var(--primary-glow) / 0.4) 0%, hsl(var(--primary) / 0.15) 50%, transparent 70%)",
-            boxShadow:
-              "0 0 60px hsl(var(--primary-glow) / 0.3), 0 0 0 1px hsl(var(--primary-glow) / 0.12)",
-            animation: "pulse 3s ease-in-out infinite",
+            background: "radial-gradient(circle, hsl(var(--primary-glow) / 0.38) 0%, hsl(var(--primary) / 0.12) 50%, transparent 70%)",
+            boxShadow: "0 0 65px hsl(var(--primary-glow) / 0.28), 0 0 0 1px hsl(var(--primary-glow) / 0.1)",
           }}
         />
-      </MotionDiv>
+      </motion.div>
 
-      {/* Scroll indicator */}
-      <MotionDiv
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 cursor-pointer"
-        initial={{ opacity: 0, y: 10 }}
+      {/* ── Scroll indicator ──────────────────────────────────── */}
+      <motion.div
+        className="absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 cursor-pointer"
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2, duration: 0.6 }}
-        style={{ color: "hsl(0 0% 100% / 0.3)" }}
+        transition={{ delay: 1.3, duration: 0.6 }}
+        style={{ color: "hsl(0 0% 100% / 0.28)" }}
         onClick={() => window.scrollBy({ top: window.innerHeight, behavior: "smooth" })}
+        whileHover={{ color: "hsl(0 0% 100% / 0.55)" }}
       >
-        <span className="text-[10px] font-medium tracking-widest uppercase">Scroll</span>
+        <span className="text-[9px] font-semibold tracking-[0.2em] uppercase">Scroll</span>
         <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ y: [0, 7, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <ChevronDown size={18} />
+          <ChevronDown size={17} />
         </motion.div>
-      </MotionDiv>
+      </motion.div>
     </section>
   );
 }
