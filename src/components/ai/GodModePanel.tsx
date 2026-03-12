@@ -153,8 +153,10 @@ export default function GodModePanel({ contextBrief }: GodModePanelProps) {
             >
               {/* 3 agent pills */}
               <div className="grid grid-cols-3 gap-2">
-                {["gemini", "qwen", "grok"].map((id, i) => {
-                  const labels = ["Gemini 2.5", "Qwen", "Grok"];
+                {(["gemini", "qwen", "grok"] as const).map((id, i) => {
+                  // Labels reflect actual agent persona (all powered by Gemini gateway)
+                  const labels = ["Gemini 2.5", "Réseau", "Timing"];
+                  const subtitles = ["Data & Signal", "Secteur pivot", "Urgence biz"];
                   const agent = lastSwarm?.agents.find((a) => a.id === id);
                   const color = AGENT_COLORS[id];
                   return (
@@ -173,6 +175,7 @@ export default function GodModePanel({ contextBrief }: GodModePanelProps) {
                         <Swords size={11} style={{ color }} />
                       </div>
                       <p className="text-[9px] font-bold text-center" style={{ color }}>{labels[i]}</p>
+                      <p className="text-[8px] text-center text-white/35">{subtitles[i]}</p>
                       {agent && (
                         <p className="text-[9px] text-center" style={{ color: agent.status === "success" ? "hsl(152 62% 52%)" : "hsl(0 65% 55%)" }}>
                           {agent.status === "success" ? `${agent.score ?? "—"}/100` : "⚠ err"}

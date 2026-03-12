@@ -1,4 +1,4 @@
-import { motion, useInView, useMotionValue, useSpring } from "framer-motion";
+import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
 import { Zap, Mic, Bot, Swords, Activity, ChevronRight } from "lucide-react";
 
@@ -52,6 +52,14 @@ function BentoCard({ f, i, inView }: { f: typeof FEATURES[0]; i: number; inView:
   const glowX = useSpring(mouseX, { stiffness: 120, damping: 20 });
   const glowY = useSpring(mouseY, { stiffness: 120, damping: 20 });
 
+  // useTransform makes the background string REACTIVE to MotionValue changes
+  // (direct .get() in style prop is static — never re-evaluated)
+  const glowBg = useTransform(
+    [glowX, glowY],
+    ([x, y]: number[]) =>
+      `radial-gradient(circle at ${x * 100}% ${y * 100}%, hsl(${f.glowRaw} / 0.14) 0%, transparent 55%)`
+  );
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     mouseX.set((e.clientX - r.left) / r.width);
@@ -79,11 +87,11 @@ function BentoCard({ f, i, inView }: { f: typeof FEATURES[0]; i: number; inView:
         willChange: "transform",
       }}
     >
-      {/* Dynamic glow that follows cursor */}
+      {/* Dynamic glow that follows cursor — useTransform for reactive MotionValue */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: `radial-gradient(circle at ${glowX.get() * 100}% ${glowY.get() * 100}%, hsl(${f.glowRaw} / 0.14) 0%, transparent 55%)`,
+          background: glowBg,
           opacity: hovered ? 1 : 0,
           transition: "opacity 0.3s",
         }}
