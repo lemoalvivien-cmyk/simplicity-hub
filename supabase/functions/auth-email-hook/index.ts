@@ -35,11 +35,13 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   reauthentication: ReauthenticationEmail,
 }
 
-// Configuration
-const SITE_NAME = "wiinupmax"
+// Configuration — tous les emails partent de @wiinupmax.com via notify.wiinupmax.com
+// Fallback Lovable désactivé : si LOVABLE_API_KEY absent → erreur 500, jamais de fallback silencieux.
+const SITE_NAME = "WIINUP MAX"
 const SENDER_DOMAIN = "notify.wiinupmax.com"
 const ROOT_DOMAIN = "wiinupmax.com"
-const FROM_DOMAIN = "wiinupmax.com" // Domain shown in From address (may be root or sender subdomain)
+const FROM_NAME = "WIINUP MAX"
+const FROM_ADDRESS = `noreply@wiinupmax.com`
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
