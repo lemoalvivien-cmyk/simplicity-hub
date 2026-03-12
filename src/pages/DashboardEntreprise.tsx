@@ -225,6 +225,11 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
+        {/* ═══ GOD MODE PANEL ══════════════════════════════ */}
+        {subscribed && (
+          <GodModePanel contextBrief={latestBrief?.content ?? undefined} />
+        )}
+
         {/* ═══ RACCOURCIS ═════════════════════════════════════ */}
         <div className="flex flex-wrap gap-2">
           <Link to="/missions/nouvelle" className="btn-cta flex items-center gap-1.5 px-5 py-2.5 text-sm">
