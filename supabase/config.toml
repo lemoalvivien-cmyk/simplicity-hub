@@ -114,3 +114,6 @@ verify_jwt = false
 [functions.notify-intro-validated]
 verify_jwt = false
 
+[functions.business-alert-dispatcher]
+verify_jwt = false
+
