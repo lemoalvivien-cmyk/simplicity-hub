@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import {
   Tag, CheckCircle2, CreditCard, Lock, ArrowRight,
   Loader2, AlertCircle, Zap, Clock, Gift, ShieldCheck
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useSubscription, isAccessActive } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
 
