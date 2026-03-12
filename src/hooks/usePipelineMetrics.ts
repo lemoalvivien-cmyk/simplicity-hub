@@ -16,7 +16,6 @@ export interface PipelineMetrics {
   loading: boolean;
 }
 
-// PROOF:INTEGRITY_V1:opportunity_metrics_real — all counts come from real DB queries
 export function usePipelineMetrics(): PipelineMetrics {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<Omit<PipelineMetrics, "loading">>({

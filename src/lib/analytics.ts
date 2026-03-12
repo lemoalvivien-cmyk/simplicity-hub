@@ -1,8 +1,6 @@
 /**
  * WIINUP MAX — App Analytics Runtime
- * Writes real events to `analytics_events` table (Supabase).
- *
- * PROOF:ANALYTICS_RUNTIME_V1:writer_exists — this file is the single writer to analytics_events
+ * Writes real events to `analytics_events` table.
  * Validates event_type at compile-time. Never blocks UI (fire & forget).
  * Correlates session_id / user_id / page / created_at.
  */
