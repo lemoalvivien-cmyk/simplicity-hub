@@ -87,11 +87,11 @@ function BentoCard({ f, i, inView }: { f: typeof FEATURES[0]; i: number; inView:
         willChange: "transform",
       }}
     >
-      {/* Dynamic glow that follows cursor */}
+      {/* Dynamic glow that follows cursor — useTransform for reactive MotionValue */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: `radial-gradient(circle at ${glowX.get() * 100}% ${glowY.get() * 100}%, hsl(${f.glowRaw} / 0.14) 0%, transparent 55%)`,
+          background: glowBg,
           opacity: hovered ? 1 : 0,
           transition: "opacity 0.3s",
         }}

@@ -51,10 +51,10 @@ export default function WarCaller({ contextBrief, compact = false, onClose }: Wa
 
   const conversation = useConversation({
     onConnect: () => {
-      console.log("[WarCaller] WebRTC connected");
+      // connected
     },
     onDisconnect: () => {
-      console.log("[WarCaller] Disconnected");
+      // disconnected
     },
     onMessage: (msg) => {
       // Capture transcript lines — cast to any to handle ElevenLabs union types
