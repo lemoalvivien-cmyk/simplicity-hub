@@ -106,6 +106,53 @@ export default function AdminOverview() {
       title="Vue d'ensemble"
       subtitle="Statistiques en temps réel — données directes depuis la base."
     >
+      {/* ── Checklist secrets production ────────────────────────────── */}
+      <div className="mb-5 rounded-xl border border-border bg-card overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/40">
+          <AlertTriangle size={14} className="text-accent" />
+          <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Checklist secrets production</span>
+        </div>
+        <div className="divide-y divide-border">
+          {[
+            {
+              key: "STRIPE_SECRET_KEY",
+              label: "Stripe — Clé secrète (sk_live_…)",
+              hint: "Dashboard Stripe → Developers → API keys",
+            },
+            {
+              key: "STRIPE_WEBHOOK_SECRET",
+              label: "Stripe — Webhook secret (whsec_…)",
+              hint: "Dashboard Stripe → Developers → Webhooks → endpoint → Signing secret. OBLIGATOIRE pour valider les paiements.",
+              critical: true,
+            },
+            {
+              key: "STRIPE_PRICE_ID",
+              label: "Stripe — Price ID (price_…)",
+              hint: "Dashboard Stripe → Products → Wiinup Max → Price ID",
+            },
+          ].map(({ key, label, hint, critical }) => (
+            <div key={key} className="flex items-start gap-3 px-4 py-3">
+              <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${critical ? "bg-destructive/20 text-destructive" : "bg-muted text-muted-foreground"}`}>
+                {critical
+                  ? <AlertTriangle size={10} />
+                  : <CheckCircle2 size={10} />
+                }
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-foreground font-mono">{key}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="text-[11px] text-muted-foreground/70 mt-0.5 italic">{hint}</p>
+              </div>
+              {critical && (
+                <span className="ml-auto shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-destructive/15 text-destructive uppercase tracking-wide">Critique</span>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="px-4 py-2.5 bg-muted/20 text-[11px] text-muted-foreground border-t border-border">
+          Configurer via <strong>Lovable Cloud → Secrets</strong> (icône nuage → Secrets).
+        </div>
+      </div>
       {/* Metrics */}
       {statsLoading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
