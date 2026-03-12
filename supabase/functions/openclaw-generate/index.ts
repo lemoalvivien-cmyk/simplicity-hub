@@ -42,11 +42,18 @@ async function callAI(prompt: string, systemPrompt: string): Promise<string> {
 
 // ── Auth helper ───────────────────────────────────────────────────────────────
 async function getUserFromToken(req: Request) {
-  const authHeader = req.headers.get("Authorization") ?? "";
+  const authHeader = req.headers.get("Authorization");
+  // Hard-fail 401 immediately if Authorization header is absent
+  if (!authHeader?.startsWith("Bearer ")) return null;
   const token = authHeader.replace("Bearer ", "");
-  if (!token) return null;
-  const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE);
-  const { data } = await sb.auth.getUser(token);
+  const sb = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+  const { data: claimsData, error: claimsError } = await sb.auth.getClaims(token);
+  if (claimsError || !claimsData?.claims) return null;
+  // Fetch full user from service client for profile info
+  const svc = createClient(SUPABASE_URL, SUPABASE_SERVICE);
+  const { data } = await svc.auth.admin.getUserById(claimsData.claims.sub);
   return data.user ?? null;
 }
 
@@ -55,9 +62,17 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // ── JWT Guard: hard-fail 401 if Authorization header absent or invalid ─────
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const user = await getUserFromToken(req);
-    if (!user) return new Response(JSON.stringify({ error: "Non authentifié" }), {
+    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
