@@ -3837,11 +3837,13 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          objectif: string | null
           onboarding_done: boolean
           preferred_language: string | null
           prenom: string | null
           role: string | null
           statut: string | null
+          target_market: string | null
           ui_language: string | null
           updated_at: string
         }
@@ -3849,11 +3851,13 @@ export type Database = {
           created_at?: string
           email?: string | null
           id: string
+          objectif?: string | null
           onboarding_done?: boolean
           preferred_language?: string | null
           prenom?: string | null
           role?: string | null
           statut?: string | null
+          target_market?: string | null
           ui_language?: string | null
           updated_at?: string
         }
@@ -3861,11 +3865,13 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          objectif?: string | null
           onboarding_done?: boolean
           preferred_language?: string | null
           prenom?: string | null
           role?: string | null
           statut?: string | null
+          target_market?: string | null
           ui_language?: string | null
           updated_at?: string
         }
