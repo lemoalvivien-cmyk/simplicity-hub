@@ -27,8 +27,9 @@ interface Review {
   id: string;
   rating: number;
   comment: string | null;
-  tags: string[];
-  recommended: boolean;
+  // DB returns Json (unknown shape) — normalise to string[] | null at read time
+  tags: unknown;
+  recommended: boolean | null;
   created_at: string;
 }
 

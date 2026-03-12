@@ -66,7 +66,8 @@ export default function AdminPromoCodes() {
         redemptionMap[r.promo_code_id] = { end_at: r.end_at, user_id: r.user_id };
       }
 
-      const enriched: CodeWithUser[] = (codesRes.data || []).map((c: PromoCode) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const enriched: CodeWithUser[] = ((codesRes.data || []) as any[]).map((c: PromoCode) => ({
         ...c,
         redemption_end_at: redemptionMap[c.id]?.end_at || undefined,
       }));
@@ -96,17 +97,17 @@ export default function AdminPromoCodes() {
     if (!newCode.trim()) return;
     setCreating(true);
     try {
-      const payload: Record<string, unknown> = {
+      const expires_at = newExpiry
+        ? new Date(newExpiry).toISOString()
+        : new Date(Date.now() + 730 * 24 * 60 * 60 * 1000).toISOString(); // 2 years
+
+      const { error: err } = await db.from("promo_codes").insert({
         code: newCode.toUpperCase().replace(/\s/g, ""),
         status: "actif",
         duration_months: 12,
         usage_unique: true,
-      };
-      payload.expires_at = newExpiry
-        ? new Date(newExpiry).toISOString()
-        : new Date(Date.now() + 730 * 24 * 60 * 60 * 1000).toISOString(); // 2 years
-
-      const { error: err } = await db.from("promo_codes").insert(payload);
+        expires_at,
+      });
       if (err) throw err;
       toast.success("Code créé !");
       setNewCode("");

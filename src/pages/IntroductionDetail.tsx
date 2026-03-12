@@ -13,6 +13,10 @@ import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";
+function toStatus(s: string | null): Status {
+  if (s === "en_cours" || s === "validee" || s === "refusee") return s;
+  return "en_attente";
+}
 
 interface IntroductionData {
   id: string;
@@ -63,8 +67,10 @@ export default function IntroductionDetail() {
         missionTitre = mission?.titre ?? null;
       }
 
+      const raw = introRes.data;
       setIntro({
-        ...introRes.data,
+        ...raw,
+        statut: toStatus(raw.statut),
         mission_titre: missionTitre,
         gain_montant: gainRes.data?.montant ?? null,
         gain_statut: gainRes.data?.statut ?? null,

@@ -545,15 +545,15 @@ export default function Onboarding() {
 
     try {
       // ── 1. Persist profile ─────────────────────────────────────────────────
-      const { error: profileErr } = await db
-        .from("profiles")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: profileErr } = await (db.from("profiles") as any)
         .update({
           role,
           prenom,
           onboarding_done: true,
           target_market: role === "entreprise" ? cible || null : null,
           objectif: objectif || null,
-        } as Parameters<ReturnType<typeof db.from>["update"]>[0])
+        })
         .eq("id", user.id);
 
       if (profileErr) throw profileErr;

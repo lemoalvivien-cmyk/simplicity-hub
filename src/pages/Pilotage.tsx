@@ -114,7 +114,8 @@ export default function Pilotage() {
       setKillSwitch(cfg?.kill_switch_global ?? false);
       setAutonomyLevel(cfg?.autonomy_level ?? 2);
       setValidationsPending(validRes.count ?? 0);
-      setRecs((recsRes.data ?? []) as typeof recs);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setRecs((recsRes.data ?? []) as any);
       setLoading(false);
     };
     load();
