@@ -8,28 +8,82 @@ const logStep = (step: string, details?: unknown) => {
 };
 
 // ── Pre-flight secret check ───────────────────────────────────────────────────
-// Fail immediately at cold-start if secrets are missing — avoids silent failures
-// during webhook processing when Stripe retries.
 const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
 const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
 if (!STRIPE_SECRET_KEY) {
-  console.error("[STRIPE-WEBHOOK] FATAL: STRIPE_SECRET_KEY is not set. Function will reject all requests.");
+  console.error("[STRIPE-WEBHOOK] FATAL: STRIPE_SECRET_KEY is not set.");
 }
 if (!STRIPE_WEBHOOK_SECRET) {
-  console.error("[STRIPE-WEBHOOK] FATAL: STRIPE_WEBHOOK_SECRET is not set. Function will reject all requests.");
+  console.error("[STRIPE-WEBHOOK] FATAL: STRIPE_WEBHOOK_SECRET is not set.");
 }
 
+// ── Shared helpers ────────────────────────────────────────────────────────────
+
+async function getEmailFromCustomer(
+  stripe: Stripe,
+  customerId: string
+): Promise<string | null> {
+  try {
+    const customer = await stripe.customers.retrieve(customerId);
+    if (customer.deleted) return null;
+    return (customer as Stripe.Customer).email;
+  } catch {
+    return null;
+  }
+}
+
+async function getUserIdByEmail(
+  supabase: ReturnType<typeof createClient>,
+  email: string
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
+async function upsertSubscription(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  customerId: string,
+  sub: Stripe.Subscription
+) {
+  const LAUNCH_PRICE_ID = Deno.env.get("STRIPE_PRICE_LAUNCH") ?? "price_1T8GOWEG497aCUFxjNjFjk4t";
+  const priceId = sub.items.data[0]?.price.id;
+  const offerType = priceId === LAUNCH_PRICE_ID ? "launch" : "standard";
+  const now = new Date().toISOString();
+
+  await supabase.from("subscriptions").upsert(
+    {
+      user_id: userId,
+      stripe_customer_id: customerId,
+      stripe_subscription_id: sub.id,
+      stripe_price_id: priceId,
+      status: sub.status,
+      offer_type: offerType,
+      current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+      cancel_at_period_end: sub.cancel_at_period_end,
+      updated_at: now,
+    },
+    { onConflict: "user_id" }
+  );
+
+  logStep("Subscription upserted", { userId, status: sub.status, offerType });
+}
+
+// ── Main handler ─────────────────────────────────────────────────────────────
+
 Deno.serve(async (req) => {
-  // stripe-webhook is server-to-server (Stripe → edge function).
-  // CORS is not needed. Reject browser preflight to reduce attack surface.
+  // stripe-webhook is server-to-server. Reject browser preflight.
   if (req.method === "OPTIONS") {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
-  // ── Hard-fail: both secrets MUST be present ───────────────────────────────
   if (!STRIPE_SECRET_KEY) {
-    logStep("FATAL: STRIPE_SECRET_KEY not configured");
     return new Response(
       JSON.stringify({ error: "Server misconfiguration: STRIPE_SECRET_KEY not set." }),
       { status: 500, headers: { "Content-Type": "application/json" } }
@@ -37,7 +91,6 @@ Deno.serve(async (req) => {
   }
 
   if (!STRIPE_WEBHOOK_SECRET) {
-    logStep("FATAL: STRIPE_WEBHOOK_SECRET not configured — rejecting request");
     return new Response(
       JSON.stringify({ error: "Server misconfiguration: STRIPE_WEBHOOK_SECRET not set." }),
       { status: 500, headers: { "Content-Type": "application/json" } }
@@ -56,23 +109,25 @@ Deno.serve(async (req) => {
 
     const body = await req.text();
 
-    // ── Mandatory signature header ────────────────────────────────────────────
+    // ── Mandatory signature ────────────────────────────────────────────────
     const signature = req.headers.get("stripe-signature");
     if (!signature) {
       logStep("REJECTED: Missing stripe-signature header");
       return new Response(
-        JSON.stringify({ error: "Missing stripe-signature header. Request rejected." }),
+        JSON.stringify({ error: "Missing stripe-signature header." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // ── Signature verification is mandatory — no fallback, no try/catch ───────
-    // constructEventAsync throws on invalid signature; we let it bubble to the
-    // outer catch which returns 400, signalling Stripe to retry.
-    const event = await stripe.webhooks.constructEventAsync(body, signature, STRIPE_WEBHOOK_SECRET);
+    // constructEventAsync throws on bad signature → bubbles to outer catch → 400
+    const event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature,
+      STRIPE_WEBHOOK_SECRET
+    );
     logStep("Event verified", { type: event.type, id: event.id });
 
-    // Dedup by stripe_event_id — ignoreDuplicates prevents double-processing on re-delivery
+    // ── Idempotency: dedup by stripe_event_id ─────────────────────────────
     const { data: eventRow, error: eventError } = await supabase
       .from("billing_events")
       .upsert(
@@ -95,143 +150,136 @@ Deno.serve(async (req) => {
       });
     }
 
-    const getEmailFromCustomer = async (customerId: string): Promise<string | null> => {
-      try {
-        const customer = await stripe.customers.retrieve(customerId);
-        if (customer.deleted) return null;
-        return (customer as Stripe.Customer).email;
-      } catch {
-        return null;
-      }
-    };
-
-    const getUserIdByEmail = async (email: string): Promise<string | null> => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", email)
-        .maybeSingle();
-      return data?.id ?? null;
-    };
-
-    const upsertSubscription = async (
-      userId: string,
-      customerId: string,
-      sub: Stripe.Subscription
-    ) => {
-      const now = new Date().toISOString();
-      await supabase.from("subscriptions").upsert(
-        {
-          user_id: userId,
-          stripe_customer_id: customerId,
-          stripe_subscription_id: sub.id,
-          stripe_price_id: sub.items.data[0]?.price.id,
-          status: sub.status,
-          current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
-          cancel_at_period_end: sub.cancel_at_period_end,
-          updated_at: now,
-        },
-        { onConflict: "user_id" }
-      );
-    };
-
+    // ── Event routing ─────────────────────────────────────────────────────
     switch (event.type) {
+      // ── checkout.session.completed ───────────────────────────────────────
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        logStep("Checkout completed", { sessionId: session.id });
-        if (session.mode === "subscription" && session.subscription) {
-          const customerId = session.customer as string;
-          const email = await getEmailFromCustomer(customerId);
-          if (email) {
-            const userId = session.metadata?.user_id || (await getUserIdByEmail(email));
-            if (userId) {
-              const sub = await stripe.subscriptions.retrieve(session.subscription as string);
-              await upsertSubscription(userId, customerId, sub);
+        logStep("Checkout completed", { sessionId: session.id, mode: session.mode });
 
-              // Quota consumption delegated entirely to shared quotaEngine module.
-              const consumeResult = await consumeLaunchSlotIfEligible(
-                supabase,
-                sub.id,
-                session.metadata?.offer_type,
-                sub.items.data[0]?.price.id,
-                logStep
-              );
-              logStep("Quota consume result", { consumeResult, subId: sub.id });
-              logStep("Subscription synced after checkout", { userId });
+        if (session.mode !== "subscription" || !session.subscription) break;
 
-              // 🔔 Notification: paiement confirmé
-              await supabase.from("notifications").insert({
-                user_id: userId,
-                type: "gain_valide",
-                title: "Abonnement activé avec succès",
-                body: "Votre paiement a été confirmé. Votre accès est maintenant actif.",
-                href: "/account",
-              });
-            }
-          }
-        }
+        const customerId = session.customer as string;
+        const email = await getEmailFromCustomer(stripe, customerId);
+        if (!email) { logStep("No email from customer", { customerId }); break; }
+
+        const userId = session.metadata?.user_id || (await getUserIdByEmail(supabase, email));
+        if (!userId) { logStep("No user found for email", { email }); break; }
+
+        const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+        await upsertSubscription(supabase, userId, customerId, sub);
+
+        // Quota consumption (delegated to shared module)
+        const consumeResult = await consumeLaunchSlotIfEligible(
+          supabase,
+          sub.id,
+          session.metadata?.offer_type,
+          sub.items.data[0]?.price.id,
+          logStep
+        );
+        logStep("Quota consume result", { consumeResult, subId: sub.id });
+
+        // Notification: paiement confirmé
+        await supabase.from("notifications").insert({
+          user_id: userId,
+          type: "gain_valide",
+          title: "Abonnement activé avec succès",
+          body: "Votre paiement a été confirmé. Votre accès est maintenant actif.",
+          href: "/account",
+        });
+
+        logStep("checkout.session.completed fully processed", { userId });
         break;
       }
 
+      // ── customer.subscription.created / updated ──────────────────────────
       case "customer.subscription.created":
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
-        const email = await getEmailFromCustomer(customerId);
-        if (email) {
-          const userId = sub.metadata?.user_id || (await getUserIdByEmail(email));
-          if (userId) {
-            await upsertSubscription(userId, customerId, sub);
-            logStep("Subscription upserted", { userId, status: sub.status });
-          }
-        }
+        const email = await getEmailFromCustomer(stripe, customerId);
+        if (!email) break;
+
+        const userId = sub.metadata?.user_id || (await getUserIdByEmail(supabase, email));
+        if (!userId) break;
+
+        await upsertSubscription(supabase, userId, customerId, sub);
+        logStep("subscription.updated processed", { userId, status: sub.status });
         break;
       }
 
+      // ── customer.subscription.deleted ────────────────────────────────────
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
-        const email = await getEmailFromCustomer(customerId);
-        if (email) {
-          const userId = await getUserIdByEmail(email);
-          if (userId) {
-            await supabase
-              .from("subscriptions")
-              .update({
-                status: "canceled",
-                updated_at: new Date().toISOString(),
-              })
-              .eq("user_id", userId);
-            logStep("Subscription canceled", { userId });
-          }
-        }
+        const email = await getEmailFromCustomer(stripe, customerId);
+        if (!email) break;
+
+        const userId = await getUserIdByEmail(supabase, email);
+        if (!userId) break;
+
+        await supabase
+          .from("subscriptions")
+          .update({
+            status: "canceled",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+
+        logStep("subscription.deleted processed — status=canceled", { userId });
         break;
       }
 
+      // ── invoice.paid ─────────────────────────────────────────────────────
+      // Fires on initial payment AND every renewal — always re-sync subscription
       case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice;
-        logStep("Invoice paid", { invoiceId: invoice.id });
+        const customerId = invoice.customer as string;
+        logStep("invoice.paid", { invoiceId: invoice.id, customerId });
+
+        if (!invoice.subscription) break;
+
+        const email = await getEmailFromCustomer(stripe, customerId);
+        if (!email) break;
+
+        const userId = await getUserIdByEmail(supabase, email);
+        if (!userId) break;
+
+        // Re-sync subscription state (catches renewals)
+        const sub = await stripe.subscriptions.retrieve(invoice.subscription as string);
+        await upsertSubscription(supabase, userId, customerId, sub);
+
+        logStep("invoice.paid subscription re-synced", { userId, subId: sub.id });
         break;
       }
 
+      // ── invoice.payment_failed ────────────────────────────────────────────
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-        const email = await getEmailFromCustomer(customerId);
-        if (email) {
-          const userId = await getUserIdByEmail(email);
-          if (userId) {
-            await supabase
-              .from("subscriptions")
-              .update({
-                status: "past_due",
-                updated_at: new Date().toISOString(),
-              })
-              .eq("user_id", userId);
-            logStep("Subscription marked past_due", { userId });
-          }
-        }
+        const email = await getEmailFromCustomer(stripe, customerId);
+        if (!email) break;
+
+        const userId = await getUserIdByEmail(supabase, email);
+        if (!userId) break;
+
+        await supabase
+          .from("subscriptions")
+          .update({
+            status: "past_due",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+
+        logStep("invoice.payment_failed — status=past_due", { userId });
+        break;
+      }
+
+      // ── invoice.payment_action_required ──────────────────────────────────
+      case "invoice.payment_action_required": {
+        const invoice = event.data.object as Stripe.Invoice;
+        logStep("invoice.payment_action_required", { invoiceId: invoice.id });
+        // No DB action needed — Stripe emails the customer automatically
         break;
       }
 
