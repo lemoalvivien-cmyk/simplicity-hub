@@ -66,7 +66,8 @@ export default function AdminPromoCodes() {
         redemptionMap[r.promo_code_id] = { end_at: r.end_at, user_id: r.user_id };
       }
 
-      const enriched: CodeWithUser[] = (codesRes.data || []).map((c: PromoCode) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const enriched: CodeWithUser[] = ((codesRes.data || []) as any[]).map((c: PromoCode) => ({
         ...c,
         redemption_end_at: redemptionMap[c.id]?.end_at || undefined,
       }));

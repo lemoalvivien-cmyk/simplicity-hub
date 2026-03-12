@@ -259,10 +259,24 @@ export default function IntroductionsEntreprise() {
 
       if (!introData || introData.length === 0) { setIntros([]); setLoading(false); return; }
 
+      // Raw DB row type — statut is string | null from the DB
+      type RawIntro = {
+        id: string; facilitateur_id: string; contact_nom: string;
+        contact_email: string | null; contact_telephone: string | null;
+        contexte: string | null; pertinence: string | null;
+        mission_id: string | null; statut: string | null; created_at: string;
+        entreprise_id: string | null; updated_at: string;
+      };
+
+      const toStatus = (s: string | null): Status => {
+        if (s === "en_cours" || s === "validee" || s === "refusee") return s;
+        return "en_attente";
+      };
+
       // Batch load missions, profiles, gains, and lead_intakes
-      const missionIds = [...new Set(introData.map((i: IntroReçue) => i.mission_id).filter(Boolean))];
-      const facilitateurIds = [...new Set(introData.map((i: IntroReçue) => i.facilitateur_id))];
-      const introIds = introData.map((i: IntroReçue) => i.id);
+      const missionIds = [...new Set((introData as RawIntro[]).map(i => i.mission_id).filter((v): v is string => v !== null))];
+      const facilitateurIds = [...new Set((introData as RawIntro[]).map(i => i.facilitateur_id))];
+      const introIds = (introData as RawIntro[]).map(i => i.id);
 
       const [missionsRes, profilesRes, gainsRes, leadsRes, actionsRes] = await Promise.all([
         missionIds.length > 0 ? db.from("missions").select("id, titre").in("id", missionIds) : { data: [] },
@@ -271,7 +285,6 @@ export default function IntroductionsEntreprise() {
         db.from("lead_intakes")
           .select("id, introduction_id, qualification_status, next_best_action, dedup_status, linked_opportunity_id")
           .in("introduction_id", introIds),
-        // Fetches real lead_actions for each intro's lead
         db.from("lead_actions")
           .select("id, lead_intake_id, action_type, status, priority")
           .in("status", ["open", "in_progress"])
@@ -282,10 +295,10 @@ export default function IntroductionsEntreprise() {
       (missionsRes.data || []).forEach((m: { id: string; titre: string }) => { missionsMap[m.id] = m.titre; });
 
       const profilesMap: Record<string, string> = {};
-      (profilesRes.data || []).forEach((p: { id: string; prenom: string }) => { profilesMap[p.id] = p.prenom; });
+      (profilesRes.data || []).forEach((p: { id: string; prenom: string | null }) => { if (p.prenom) profilesMap[p.id] = p.prenom; });
 
       const gainsMap: Record<string, string> = {};
-      (gainsRes.data || []).forEach((g: { id: string; introduction_id: string }) => { gainsMap[g.introduction_id] = g.id; });
+      (gainsRes.data || []).forEach((g: { id: string; introduction_id: string | null }) => { if (g.introduction_id) gainsMap[g.introduction_id] = g.id; });
 
       const leadsMap: Record<string, {
         id: string;
@@ -296,22 +309,29 @@ export default function IntroductionsEntreprise() {
       }> = {};
       (leadsRes.data || []).forEach((l: {
         id: string;
-        introduction_id: string;
-        qualification_status: QualificationStatus;
-        next_best_action: NextBestAction | null;
+        introduction_id: string | null;
+        qualification_status: string;
+        next_best_action: string | null;
         dedup_status: string;
         linked_opportunity_id: string | null;
       }) => {
-        if (l.introduction_id) leadsMap[l.introduction_id] = l;
+        if (l.introduction_id) leadsMap[l.introduction_id] = {
+          id: l.id,
+          qualification_status: l.qualification_status as QualificationStatus,
+          next_best_action: l.next_best_action as NextBestAction | null,
+          dedup_status: l.dedup_status,
+          linked_opportunity_id: l.linked_opportunity_id,
+        };
       });
 
       // Build map: lead_intake_id → first open action
       const actionsMap: Record<string, { id: string; action_type: NextBestAction; status: string; priority: string }> = {};
-      (actionsRes.data || []).forEach((a: { id: string; lead_intake_id: string; action_type: NextBestAction; status: string; priority: string }) => {
-        if (!actionsMap[a.lead_intake_id]) actionsMap[a.lead_intake_id] = a;
+      (actionsRes.data || []).forEach((a: { id: string; lead_intake_id: string; action_type: string; status: string; priority: string }) => {
+        if (!actionsMap[a.lead_intake_id]) actionsMap[a.lead_intake_id] = { ...a, action_type: a.action_type as NextBestAction };
       });
 
-      const enriched: IntroReçue[] = introData.map((i: IntroReçue) => {
+      const enriched: IntroReçue[] = (introData as RawIntro[]).map(raw => {
+        const i: IntroReçue = { ...raw, statut: toStatus(raw.statut) };
         const lead = leadsMap[i.id];
         const activeAction = lead ? actionsMap[lead.id] ?? null : null;
         return {
