@@ -1,8 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
-import { Zap } from "lucide-react";
+import { Zap, ArrowRight } from "lucide-react";
 import PublicNav from "@/components/layout/PublicNav";
-import HeroSectionV2 from "@/components/landing/HeroSectionV2";
 import ProblemSection from "@/components/landing/ProblemSection";
 import FacilitateurPainSection from "@/components/landing/FacilitateurPainSection";
 import MecanismeSection from "@/components/landing/MecanismeSection";
@@ -13,11 +12,26 @@ import ProofSection from "@/components/landing/ProofSection";
 import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
-import GodModeTeaser from "@/components/landing/GodModeTeaser";
-import MagneticCursor from "@/components/landing/MagneticCursor";
 import { initScrollTracking, track } from "@/lib/landingTracking";
 import { trackEvent } from "@/lib/analytics";
-import { ArrowRight } from "lucide-react";
+
+// ── Dynamic imports for heavy/above-fold 3D & cursor components ──────────────
+const HeroSectionV2   = lazy(() => import("@/components/landing/HeroSectionV2"));
+const MagneticCursor  = lazy(() => import("@/components/landing/MagneticCursor"));
+const GodModeTeaser   = lazy(() => import("@/components/landing/GodModeTeaser"));
+
+// ── Hero skeleton while Three.js loads ───────────────────────────────────────
+function HeroFallback() {
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ background: "linear-gradient(155deg, hsl(218 72% 4%) 0%, hsl(218 72% 9%) 50%, hsl(218 65% 13%) 100%)" }}
+    >
+      <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin"
+        style={{ borderColor: "hsl(var(--primary-glow))" }} />
+    </div>
+  );
+}
 
 export default function LandingPage() {
   useEffect(() => {
@@ -28,13 +42,18 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Global magnetic cursor — desktop only */}
-      <MagneticCursor />
+
+      {/* Global magnetic cursor — desktop pointer only, lazy-loaded */}
+      <Suspense fallback={null}>
+        <MagneticCursor />
+      </Suspense>
 
       <PublicNav />
 
-      {/* 1 — HERO V2 (morphing 3D + kinetic type + glassmorphism) */}
-      <HeroSectionV2 />
+      {/* 1 — HERO V2 (3D morphing sphere + kinetic typography) */}
+      <Suspense fallback={<HeroFallback />}>
+        <HeroSectionV2 />
+      </Suspense>
 
       {/* 2 — DOULEURS ENTREPRISES */}
       <ProblemSection />
@@ -45,8 +64,10 @@ export default function LandingPage() {
       {/* 4 — MÉCANISME DOUBLE MOTEUR */}
       <MecanismeSection />
 
-      {/* 5 — GOD MODE TEASER */}
-      <GodModeTeaser />
+      {/* 5 — GOD MODE TEASER (Triple Threat Swarm / War Caller / Auto-Pilot) */}
+      <Suspense fallback={null}>
+        <GodModeTeaser />
+      </Suspense>
 
       {/* 6 — FONCTIONNALITÉS COMPLÈTES */}
       <FeaturesValueSection />
@@ -105,7 +126,8 @@ export default function LandingPage() {
             }}
           >
             <p className="text-center text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-              Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.
+              Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe.
+              Les résultats dépendent de votre réseau et de votre suivi.
             </p>
           </div>
         </div>

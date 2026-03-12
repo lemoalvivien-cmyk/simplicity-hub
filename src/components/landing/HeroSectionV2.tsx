@@ -4,6 +4,7 @@ import { ArrowRight, Users, ChevronDown, FlaskConical, Sparkles } from "lucide-r
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { track } from "@/lib/landingTracking";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 const HeroSphere = lazy(() => import("./HeroSphere"));
 
@@ -118,11 +119,7 @@ export default function HeroSectionV2() {
 
   const [sphereX, setSphereX] = useState(0);
   const [sphereY, setSphereY] = useState(0);
-  const [prefersReduced, setPrefersReduced] = useState(false);
-
-  useEffect(() => {
-    setPrefersReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
+  const prefersReduced = usePrefersReducedMotion();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (prefersReduced) return;
