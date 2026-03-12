@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShieldCheck, FlaskConical } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 
-const BETA_NOTE =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 export default function FinalCTASection() {
   return (
@@ -36,15 +36,11 @@ export default function FinalCTASection() {
             prospection, réseau et suivi.
           </span>
         </h2>
-        <p className="text-white/90 text-base mb-2 max-w-sm mx-auto leading-relaxed">
-          Mettez-les enfin dans le même cockpit.
-        </p>
-        <p className="text-white/75 text-sm mb-4">
-          Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et
-          facilitateurs actifs travaillent en parallèle — des résultats mesurables.
+        <p className="text-white/90 text-base mb-5 max-w-sm mx-auto leading-relaxed font-medium">
+          Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
         </p>
 
-        <div className="flex flex-col items-center gap-3 mb-6">
+        <div className="flex flex-col items-center gap-3 mb-5">
           <Link
             to="/signup"
             className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
@@ -63,17 +59,17 @@ export default function FinalCTASection() {
           Sans engagement · Annulation libre · Support inclus à chaque étape
         </p>
 
-        {/* Beta disclaimer */}
+        {/* Disclaimer */}
         <div
-          className="rounded-xl px-4 py-3 flex items-start gap-2.5 text-left"
+          className="rounded-xl px-5 py-4 flex items-start gap-3 text-left"
           style={{
-            background: "hsl(38 95% 52% / 0.08)",
-            border: "1px solid hsl(38 95% 52% / 0.2)",
+            background: "hsl(38 95% 52% / 0.1)",
+            border: "1px solid hsl(38 95% 52% / 0.3)",
           }}
         >
-          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {BETA_NOTE}
+          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {DISCLAIMER}
           </p>
         </div>
       </div>

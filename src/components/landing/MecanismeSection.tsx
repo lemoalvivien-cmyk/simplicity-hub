@@ -1,7 +1,7 @@
 import { Brain, Users, BarChart3, ArrowDown, FlaskConical } from "lucide-react";
 
-const BETA_NOTE =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 export default function MecanismeSection() {
   return (
@@ -13,15 +13,10 @@ export default function MecanismeSection() {
             Un double moteur. Un seul cockpit.
           </h2>
           <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed">
-            Ce n'est pas un CRM. Ce n'est pas un outil d'emailing.{" "}
-            <strong className="text-foreground font-semibold">
-              C'est une infrastructure d'acquisition
-            </strong>{" "}
-            qui active deux sources d'opportunités en parallèle.
+            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
         </div>
 
-        {/* Two engines */}
         <div className="grid md:grid-cols-2 gap-4 mb-3">
           {/* Moteur 1 */}
           <div
@@ -49,10 +44,8 @@ export default function MecanismeSection() {
                   </p>
                 </div>
               </div>
-              <p className="text-white/95 text-sm leading-relaxed">
-                OpenClaw (en connexion réelle avec API externe) assiste votre prospection :
-                suggestions de cibles, ébauches de messages, alertes de suivi.
-                L'humain valide et envoie. L'IA prépare.
+              <p className="text-white/90 text-sm leading-relaxed">
+                OpenClaw (en connexion réelle avec API externe) vous suggère des cibles, prépare des brouillons de messages et vous alerte quand relancer. Vous validez et envoyez. L'IA assiste, l'humain décide.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
@@ -101,9 +94,9 @@ export default function MecanismeSection() {
                   </p>
                 </div>
               </div>
-              <p className="text-white/95 text-sm leading-relaxed">
+              <p className="text-white/90 text-sm leading-relaxed">
                 Un réseau de facilitateurs actifs recommande votre offre à leurs contacts qualifiés.
-                Chaque introduction est tracée, vérifiée, et prouvable.
+                Chaque introduction est tracée, vérifiée et prouvable dès l'envoi.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
@@ -150,24 +143,23 @@ export default function MecanismeSection() {
             </div>
             <p className="font-display font-bold text-white text-base">Cockpit central</p>
           </div>
-          <p className="text-white/95 text-sm max-w-md mx-auto leading-relaxed">
-            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et
-            facilitateurs actifs travaillent en parallèle — tout remonte dans un seul tableau de bord.
-            Validation, suivi, gains, priorités : visibles en un coup d'œil.
+          <p className="text-white/90 text-sm max-w-md mx-auto leading-relaxed">
+            Les deux moteurs remontent dans le même tableau de bord.
+            Validation, suivi, gains, priorités — tout est visible. Vous gardez le contrôle à chaque étape.
           </p>
         </div>
 
-        {/* Beta disclaimer */}
+        {/* Disclaimer */}
         <div
-          className="mt-5 rounded-xl px-4 py-3 flex items-start gap-2.5"
+          className="mt-5 rounded-xl px-5 py-4 flex items-start gap-3"
           style={{
-            background: "hsl(38 95% 52% / 0.07)",
-            border: "1px solid hsl(38 95% 52% / 0.18)",
+            background: "hsl(38 95% 52% / 0.08)",
+            border: "1px solid hsl(38 95% 52% / 0.28)",
           }}
         >
-          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {BETA_NOTE}
+          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {DISCLAIMER}
           </p>
         </div>
       </div>

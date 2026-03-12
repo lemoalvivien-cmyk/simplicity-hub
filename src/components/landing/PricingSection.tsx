@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { track } from "@/lib/landingTracking";
 
-const BETA_NOTE =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
+const DISCLAIMER =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const entrepriseFeatures = [
   "Missions illimitées",
@@ -60,12 +60,9 @@ export default function PricingSection() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 items-start">
-          {/* Entreprise — dominant */}
+          {/* Entreprise */}
           <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-lg flex flex-col">
-            <div
-              className="px-7 pt-7 pb-5"
-              style={{ background: "var(--gradient-primary)" }}
-            >
+            <div className="px-7 pt-7 pb-5" style={{ background: "var(--gradient-primary)" }}>
               {launchAvailable && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold mb-4">
                   <Zap size={10} />
@@ -113,12 +110,9 @@ export default function PricingSection() {
             </div>
           </div>
 
-          {/* Facilitateur — secondaire */}
+          {/* Facilitateur */}
           <div className="bg-card rounded-2xl overflow-hidden border-2 border-accent flex flex-col">
-            <div
-              className="px-7 pt-7 pb-5"
-              style={{ background: "var(--gradient-accent)" }}
-            >
+            <div className="px-7 pt-7 pb-5" style={{ background: "var(--gradient-accent)" }}>
               <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Facilitateur / Apporteur</p>
               <div className="flex items-baseline gap-3 mb-1">
                 <span className="font-display font-bold text-5xl text-white">Gratuit</span>
@@ -138,10 +132,7 @@ export default function PricingSection() {
               <Link
                 to="/signup"
                 className="w-full text-center flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-sm transition-all duration-200 border-2 hover:opacity-90"
-                style={{
-                  borderColor: "hsl(var(--accent))",
-                  color: "hsl(var(--accent))",
-                }}
+                style={{ borderColor: "hsl(var(--accent))", color: "hsl(var(--accent))" }}
                 onClick={() => track("cta_pricing_facilitator")}
               >
                 <Users size={15} />
@@ -158,17 +149,17 @@ export default function PricingSection() {
           Paiement sécurisé · Données protégées · Facturation annuelle · Aucun frais caché
         </p>
 
-        {/* Beta disclaimer */}
+        {/* Disclaimer */}
         <div
-          className="mt-4 rounded-xl px-4 py-3 flex items-start gap-2.5"
+          className="mt-4 rounded-xl px-5 py-4 flex items-start gap-3"
           style={{
-            background: "hsl(38 95% 52% / 0.07)",
-            border: "1px solid hsl(38 95% 52% / 0.18)",
+            background: "hsl(38 95% 52% / 0.08)",
+            border: "1px solid hsl(38 95% 52% / 0.28)",
           }}
         >
-          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {BETA_NOTE}
+          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {DISCLAIMER}
           </p>
         </div>
       </div>
