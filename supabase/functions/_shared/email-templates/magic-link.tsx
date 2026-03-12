@@ -3,26 +3,48 @@
 import * as React from 'npm:react@18.3.1'
 
 import {
-  Body, Button, Container, Head, Heading, Hr, Html, Preview, Section, Text,
+  Body,
+  Button,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Preview,
+  Text,
 } from 'npm:@react-email/components@0.0.22'
 
-interface MagicLinkEmailProps { siteName: string; confirmationUrl: string }
+interface MagicLinkEmailProps {
+  siteName: string
+  confirmationUrl: string
+}
 
-export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
+export const MagicLinkEmail = ({
+  siteName,
+  confirmationUrl,
+}: MagicLinkEmailProps) => (
   <Html lang="fr" dir="ltr">
     <Head />
-    <Preview>Votre lien de connexion — {siteName}</Preview>
+    <Preview>Votre lien de connexion {siteName} — valable 10 minutes</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Section style={header}><Text style={brandLabel}>WIINUP MAX</Text></Section>
-        <Section style={bodyPad}>
-          <Heading style={h1}>Votre lien de connexion ⚡</Heading>
-          <Text style={text}>Cliquez ci-dessous pour vous connecter à <strong style={{ color: '#0d1829' }}>{siteName}</strong>. Ce lien est à usage unique et expire dans 10 minutes.</Text>
-          <Button style={button} href={confirmationUrl}>Accéder à mon espace →</Button>
-          <Text style={hint}>Si vous n'avez pas demandé ce lien, ignorez cet email — votre compte reste sécurisé.</Text>
-        </Section>
-        <Hr style={divider} />
-        <Section style={footerSection}><Text style={footerText}>WIINUP MAX — La plateforme B2B d'apport d'affaires</Text></Section>
+        <div style={header}>
+          <Text style={logoText}>{siteName}</Text>
+        </div>
+        <div style={content}>
+          <Heading style={h1}>Votre lien de connexion</Heading>
+          <Text style={text}>
+            Cliquez sur le bouton ci-dessous pour vous connecter à {siteName}.
+            Ce lien est à usage unique et expire dans 10 minutes.
+          </Text>
+          <Button style={button} href={confirmationUrl}>
+            ⚡ Se connecter maintenant
+          </Button>
+          <Hr style={hr} />
+          <Text style={footer}>
+            Si vous n'avez pas demandé ce lien, ignorez cet email.
+          </Text>
+        </div>
       </Container>
     </Body>
   </Html>
@@ -30,16 +52,51 @@ export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProp
 
 export default MagicLinkEmail
 
-const P = '#0f2d6b', A = '#ff6b00', T = '#0d1829', M = '#6a7796', B = '#e8ecf3'
-const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', Arial, sans-serif" }
-const container = { maxWidth: '580px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 24px rgba(15,45,107,0.10)' }
-const header = { background: `linear-gradient(135deg, ${P} 0%, #1a3e7a 100%)`, padding: '28px 40px', textAlign: 'center' as const }
-const brandLabel = { margin: '0', fontSize: '11px', color: '#94a3b8', letterSpacing: '3px', textTransform: 'uppercase' as const, fontWeight: '700' }
-const bodyPad = { padding: '40px 40px 0' }
-const h1 = { margin: '0 0 16px', fontSize: '26px', fontWeight: '800', color: T, lineHeight: '1.3' }
-const text = { fontSize: '15px', color: M, lineHeight: '1.7', margin: '0 0 24px' }
-const button = { backgroundColor: A, color: '#ffffff', fontSize: '15px', fontWeight: '700', padding: '16px 36px', borderRadius: '10px', textDecoration: 'none', display: 'inline-block', margin: '0 0 24px' }
-const hint = { fontSize: '13px', color: M, lineHeight: '1.6', margin: '0 0 40px', textAlign: 'center' as const }
-const divider = { borderColor: B, margin: '0' }
-const footerSection = { backgroundColor: '#f8fafc', padding: '24px 40px' }
-const footerText = { margin: '0', fontSize: '12px', color: M, textAlign: 'center' as const, lineHeight: '1.7' }
+const main = {
+  backgroundColor: '#ffffff',
+  fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+}
+const container = {
+  maxWidth: '560px',
+  margin: '0 auto',
+  borderRadius: '12px',
+  overflow: 'hidden',
+  border: '1px solid #e2e8f0',
+}
+const header = {
+  backgroundColor: 'hsl(218, 72%, 18%)',
+  padding: '24px 32px',
+}
+const logoText = {
+  fontSize: '22px',
+  fontWeight: '800' as const,
+  color: '#ffffff',
+  margin: '0',
+  letterSpacing: '-0.5px',
+}
+const content = { padding: '32px 32px 24px' }
+const h1 = {
+  fontSize: '22px',
+  fontWeight: '700' as const,
+  color: 'hsl(218, 35%, 10%)',
+  margin: '0 0 16px',
+  lineHeight: '1.3',
+}
+const text = {
+  fontSize: '15px',
+  color: 'hsl(218, 15%, 40%)',
+  lineHeight: '1.6',
+  margin: '0 0 28px',
+}
+const button = {
+  backgroundColor: 'hsl(24, 100%, 52%)',
+  color: '#ffffff',
+  fontSize: '15px',
+  fontWeight: '700' as const,
+  borderRadius: '8px',
+  padding: '14px 28px',
+  textDecoration: 'none',
+  display: 'inline-block',
+}
+const hr = { borderColor: '#e2e8f0', margin: '28px 0 20px' }
+const footer = { fontSize: '12px', color: 'hsl(218, 15%, 60%)', margin: '0' }
