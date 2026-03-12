@@ -1,7 +1,4 @@
-import { Brain, Users, BarChart3, ArrowDown, FlaskConical } from "lucide-react";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
+import { Brain, Users, BarChart3, ArrowDown } from "lucide-react";
 
 export default function MecanismeSection() {
   return (
@@ -146,20 +143,6 @@ export default function MecanismeSection() {
           <p className="text-white/90 text-sm max-w-md mx-auto leading-relaxed">
             Les deux moteurs remontent dans le même tableau de bord.
             Validation, suivi, gains, priorités — tout est visible. Vous gardez le contrôle à chaque étape.
-          </p>
-        </div>
-
-        {/* Disclaimer */}
-        <div
-          className="mt-5 rounded-xl px-5 py-4 flex items-start gap-3"
-          style={{
-            background: "hsl(38 95% 52% / 0.08)",
-            border: "1px solid hsl(38 95% 52% / 0.28)",
-          }}
-        >
-          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {DISCLAIMER}
           </p>
         </div>
       </div>

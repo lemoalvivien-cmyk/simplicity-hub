@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Users, ChevronDown, FlaskConical, Sparkles } from "lucide-react";
+import { ArrowRight, Users, ChevronDown, Sparkles } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { track } from "@/lib/landingTracking";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
@@ -273,23 +273,6 @@ export default function HeroSectionV2() {
             <div className="flex flex-wrap gap-2">
               {PILLS.map((p, i) => <TrustPill key={p} label={p} i={i} />)}
             </div>
-
-            {/* ── Beta disclaimer ───────────────────────────── */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...EASE_POWER, delay: 0.85 }}
-              className="mt-8 rounded-xl px-4 py-3.5 flex items-start gap-2.5"
-              style={{
-                background: "hsl(38 95% 52% / 0.07)",
-                border: "1px solid hsl(38 95% 52% / 0.2)",
-              }}
-            >
-              <FlaskConical size={12} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" />
-              <p className="text-[10.5px] font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-                Bêta privée — IA assistée réelle avec API externe. Les résultats dépendent de votre réseau et de votre engagement.
-              </p>
-            </motion.div>
           </div>
 
           {/* RIGHT ── 3D sphere + floating cards */}

@@ -1,7 +1,4 @@
-import { ShieldCheck, CreditCard, Server, Shield, Eye, TrendingUp, Lock, BarChart3, CheckCircle2, FlaskConical } from "lucide-react";
-
-const BETA_NOTE =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
+import { ShieldCheck, CreditCard, Server, Shield, Eye, TrendingUp, Lock, BarChart3, CheckCircle2 } from "lucide-react";
 
 const trustBlocks = [
   {
@@ -120,20 +117,6 @@ export default function ProofSection() {
           <p className="text-sm text-foreground leading-relaxed">
             <strong className="font-semibold">La plateforme est conçue pour être défendable.</strong>{" "}
             Chaque action, chaque intro, chaque gain — enregistré, tracé, prouvable. Pas de zones grises.
-          </p>
-        </div>
-
-        {/* Beta disclaimer */}
-        <div
-          className="mt-5 rounded-xl px-4 py-3 flex items-start gap-2.5"
-          style={{
-            background: "hsl(38 95% 52% / 0.07)",
-            border: "1px solid hsl(38 95% 52% / 0.18)",
-          }}
-        >
-          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.
           </p>
         </div>
       </div>

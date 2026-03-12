@@ -1,10 +1,7 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Shield, TrendingUp, Users, FlaskConical } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield, TrendingUp, Users } from "lucide-react";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import { track } from "@/lib/landingTracking";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const trustItems = [
   { icon: CheckCircle2, label: "Introductions traçées" },
@@ -153,23 +150,6 @@ export default function HeroSection() {
               </div>
             ))}
           </div>
-          <p className="text-center text-white/20 text-[9px] px-4 pb-3 pt-1">
-            Interface illustrative — données de démonstration
-          </p>
-        </div>
-
-        {/* Disclaimer */}
-        <div
-          className="mt-6 rounded-xl px-5 py-4 flex items-start gap-3"
-          style={{
-            background: "hsl(38 95% 52% / 0.1)",
-            border: "1px solid hsl(38 95% 52% / 0.3)",
-          }}
-        >
-          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {DISCLAIMER}
-          </p>
         </div>
       </div>
     </section>

@@ -1,7 +1,4 @@
-import { Brain, Users, Zap, MessageSquare, Link2, Send, TrendingUp, Shield, FlaskConical } from "lucide-react";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
+import { Brain, Users, Zap, MessageSquare, Link2, Send, TrendingUp, Shield } from "lucide-react";
 
 const moteur1Features = [
   { icon: Brain, label: "OpenClaw — assistant IA de prospection" },
@@ -139,16 +136,6 @@ export default function DoubleMoteurSection() {
           </p>
         </div>
 
-        {/* Disclaimer */}
-        <div
-          className="mt-5 rounded-xl px-5 py-4 flex items-start gap-3"
-          style={{ background: "hsl(38 95% 52% / 0.08)", border: "1px solid hsl(38 95% 52% / 0.28)" }}
-        >
-          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {DISCLAIMER}
-          </p>
-        </div>
       </div>
     </section>
   );

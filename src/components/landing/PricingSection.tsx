@@ -1,11 +1,8 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, ArrowRight, Zap, Users, FlaskConical } from "lucide-react";
+import { CheckCircle2, ArrowRight, Zap, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { track } from "@/lib/landingTracking";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
 
 const entrepriseFeatures = [
   "Missions illimitées",
@@ -148,20 +145,6 @@ export default function PricingSection() {
         <p className="text-center text-xs text-muted-foreground mt-6">
           Paiement sécurisé · Données protégées · Facturation annuelle · Aucun frais caché
         </p>
-
-        {/* Disclaimer */}
-        <div
-          className="mt-4 rounded-xl px-5 py-4 flex items-start gap-3"
-          style={{
-            background: "hsl(38 95% 52% / 0.08)",
-            border: "1px solid hsl(38 95% 52% / 0.28)",
-          }}
-        >
-          <FlaskConical size={15} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-xs font-semibold leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
-            {DISCLAIMER}
-          </p>
-        </div>
       </div>
     </section>
   );
