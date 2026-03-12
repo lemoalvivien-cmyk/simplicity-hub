@@ -172,6 +172,17 @@ export default function DashboardEntreprise() {
           />
         </div>
 
+        {/* ═══ STATUT ABONNEMENT RÉEL ═════════════════════════ */}
+        {subscribed && (
+          <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border"
+            style={{ background: "hsl(var(--success-light))", borderColor: "hsl(var(--success) / 0.3)" }}>
+            <CheckCircle2 size={14} style={{ color: "hsl(var(--success))" }} className="shrink-0" />
+            <p className="text-xs font-semibold" style={{ color: "hsl(var(--success))" }}>
+              Abonnement actif — {getOfferLabel(offerType, accessType)}
+            </p>
+          </div>
+        )}
+
         {/* ═══ RACCOURCIS ═════════════════════════════════════ */}
         <div className="flex flex-wrap gap-2">
           <Link to="/missions/nouvelle" className="btn-cta flex items-center gap-1.5 px-5 py-2.5 text-sm">
@@ -183,7 +194,7 @@ export default function DashboardEntreprise() {
           </Link>
           <Link to="/pilotage"
             className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold border border-border text-foreground hover:bg-muted transition-colors">
-            <Sparkles size={14} /> Parler à KITT IA
+            <Sparkles size={14} /> Mon IA
           </Link>
         </div>
 
