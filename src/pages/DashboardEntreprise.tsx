@@ -3,12 +3,13 @@
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
   Plus, Briefcase, Users, Sparkles, Check, Phone, Mail, RefreshCw,
   CheckCircle, AlertCircle, FileText, TrendingUp, ChevronRight,
-  ChevronDown, ChevronUp, CheckCircle2, Flame,
+  ChevronDown, ChevronUp, CheckCircle2, Flame, Bot,
 } from "lucide-react";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +21,7 @@ import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 import { useUserActions, useMarkActionDone, type UserAction } from "@/hooks/useUserActions";
 import { useDashboardEntrepriseData } from "@/hooks/useDashboardEntrepriseData";
 import { useSubscription, getOfferLabel } from "@/contexts/SubscriptionContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
