@@ -60,10 +60,20 @@ export default function Checkout() {
       setSuccessType(sType);
       setIsSuccess(true);
       trackEvent("checkout_success", user?.id, { offer_type: sType });
+      // Refresh subscription status — webhook may already have synced by now
       refresh();
+      // Poll until active (max 12s) then redirect to dashboard
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        await refresh();
+        // Status is read from context — handled by navigate below
+        if (attempts >= 6) clearInterval(poll);
+      }, 2000);
+      return () => clearInterval(poll);
     }
     fetchQuota();
-  }, [searchParams, refresh, user?.id]);
+  }, [searchParams, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const effectiveSlotsRemaining = user ? launchSlotsRemaining : localSlotsRemaining;
   const effectiveLaunchAvailable = user ? launchAvailable : (localSlotsRemaining !== null && localSlotsRemaining > 0);
