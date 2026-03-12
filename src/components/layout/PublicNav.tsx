@@ -136,11 +136,11 @@ export default function PublicNav() {
                 Connexion
               </Link>
               <Link
-                to="/pricing"
+                to="/signup"
                 onClick={() => setOpen(false)}
                 className="btn-cta text-sm text-center"
               >
-                Lancer ma première mission →
+                Commencer gratuitement →
               </Link>
             </div>
           </div>
