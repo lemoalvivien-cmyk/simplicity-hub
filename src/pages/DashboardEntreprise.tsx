@@ -198,20 +198,29 @@ export default function DashboardEntreprise() {
           </Link>
         </div>
 
-        {/* ═══ LAUNCH MODE ════════════════════════════════════ */}
+        {/* ═══ LAUNCH MODE (première action suggérée) ═══════════ */}
         {isLaunchMode && (
           <div className="rounded-2xl p-5 border-2"
             style={{ borderColor: "hsl(var(--primary) / 0.5)", background: "hsl(var(--secondary))" }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-9 h-9 rounded-2xl flex items-center justify-center shrink-0"
                 style={{ background: "var(--gradient-primary)" }}>
-                <Sparkles size={16} className="text-white" />
+                <Flame size={16} className="text-white" />
               </div>
               <div>
-                <p className="font-bold text-foreground text-sm">Publiez votre première mission</p>
-                <p className="text-muted-foreground text-xs">En 3 minutes, des facilitateurs peuvent vous apporter des clients</p>
+                <p className="font-bold text-foreground text-sm">Première action suggérée</p>
+                <p className="text-muted-foreground text-xs">
+                  {leadsCount > 0
+                    ? `OpenClaw a identifié ${leadsCount} cible${leadsCount > 1 ? "s" : ""} — consultez votre pipeline`
+                    : "Créez votre première mission pour activer le réseau de facilitateurs"}
+                </p>
               </div>
             </div>
+            {leadsCount > 0 && (
+              <Link to="/pilotage" className="btn-cta w-full text-center block py-3 text-sm mb-2">
+                <Sparkles size={14} className="inline mr-1" /> Voir les cibles OpenClaw
+              </Link>
+            )}
             <Link to="/missions/nouvelle" className="btn-cta w-full text-center block py-3.5 text-sm">
               <Plus size={14} className="inline mr-1" /> Créer ma première mission
             </Link>
