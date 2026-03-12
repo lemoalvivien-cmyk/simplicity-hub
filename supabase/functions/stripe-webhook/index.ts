@@ -7,6 +7,19 @@ const logStep = (step: string, details?: unknown) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// ── Pre-flight secret check ───────────────────────────────────────────────────
+// Fail immediately at cold-start if secrets are missing — avoids silent failures
+// during webhook processing when Stripe retries.
+const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
+const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+
+if (!STRIPE_SECRET_KEY) {
+  console.error("[STRIPE-WEBHOOK] FATAL: STRIPE_SECRET_KEY is not set. Function will reject all requests.");
+}
+if (!STRIPE_WEBHOOK_SECRET) {
+  console.error("[STRIPE-WEBHOOK] FATAL: STRIPE_WEBHOOK_SECRET is not set. Function will reject all requests.");
+}
+
 Deno.serve(async (req) => {
   // stripe-webhook is server-to-server (Stripe → edge function).
   // CORS is not needed. Reject browser preflight to reduce attack surface.
@@ -14,22 +27,27 @@ Deno.serve(async (req) => {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
+  // ── Hard-fail: both secrets MUST be present ───────────────────────────────
+  if (!STRIPE_SECRET_KEY) {
+    logStep("FATAL: STRIPE_SECRET_KEY not configured");
+    return new Response(
+      JSON.stringify({ error: "Server misconfiguration: STRIPE_SECRET_KEY not set." }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  if (!STRIPE_WEBHOOK_SECRET) {
+    logStep("FATAL: STRIPE_WEBHOOK_SECRET not configured — rejecting request");
+    return new Response(
+      JSON.stringify({ error: "Server misconfiguration: STRIPE_WEBHOOK_SECRET not set." }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     logStep("Webhook received");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not set");
-    if (!webhookSecret) {
-      logStep("FATAL: STRIPE_WEBHOOK_SECRET not configured — rejecting request");
-      return new Response(
-        JSON.stringify({ error: "Webhook secret not configured. Set STRIPE_WEBHOOK_SECRET." }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-08-27.basil" });
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -37,16 +55,21 @@ Deno.serve(async (req) => {
     );
 
     const body = await req.text();
+
+    // ── Mandatory signature header ────────────────────────────────────────────
     const signature = req.headers.get("stripe-signature");
     if (!signature) {
+      logStep("REJECTED: Missing stripe-signature header");
       return new Response(
-        JSON.stringify({ error: "Missing stripe-signature header" }),
+        JSON.stringify({ error: "Missing stripe-signature header. Request rejected." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Signature verification is mandatory — no fallback.
-    const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+    // ── Signature verification is mandatory — no fallback, no try/catch ───────
+    // constructEventAsync throws on invalid signature; we let it bubble to the
+    // outer catch which returns 400, signalling Stripe to retry.
+    const event = await stripe.webhooks.constructEventAsync(body, signature, STRIPE_WEBHOOK_SECRET);
     logStep("Event verified", { type: event.type, id: event.id });
 
     // Dedup by stripe_event_id — ignoreDuplicates prevents double-processing on re-delivery
@@ -127,7 +150,6 @@ Deno.serve(async (req) => {
               await upsertSubscription(userId, customerId, sub);
 
               // Quota consumption delegated entirely to shared quotaEngine module.
-              // This is the ONLY call site — no duplicate logic in this file.
               const consumeResult = await consumeLaunchSlotIfEligible(
                 supabase,
                 sub.id,

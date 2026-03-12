@@ -9,86 +9,92 @@ verify_jwt = false
 [functions.track-click]
 verify_jwt = false
 
-# ── AUTHENTICATED ENDPOINTS — verify_jwt = true ──────────────────────────────
-# All other functions require a valid JWT (user or service-role) at the proxy level.
-
-# ── Lovable Cloud uses ES256 JWT signing — verify_jwt must be false for all
-# ── authenticated functions; JWT is validated in-code via getUser(token). ──────
+# ── ALL OTHER ENDPOINTS — verify_jwt = true ──────────────────────────────────
+# Gateway validates JWT; in-code validation via getClaims() adds a second layer.
 
 [functions.create-checkout]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-subscription]
-verify_jwt = false
+verify_jwt = true
 
 [functions.customer-portal]
-verify_jwt = false
+verify_jwt = true
 
 [functions.redeem-promo]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-healthcheck]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-gateway]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-dossier-sync]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-kill-switch]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-validate]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-generate]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-status]
-verify_jwt = false
+verify_jwt = true
 
 [functions.elevenlabs-voice-token]
-verify_jwt = false
+verify_jwt = true
 
 [functions.deal-radar-score]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-generate-packs]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-channel-probe]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-job-executor]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-scheduler]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-event-bus]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-smoke-test]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-channel-dispatch]
-verify_jwt = false
+verify_jwt = true
 
 [functions.openclaw-graph-engine]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-reactivation-email]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-prospection]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-lead-scoring]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-matching]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-opportunity-analysis]
-verify_jwt = false
+verify_jwt = true
+
+[functions.ai-jarvis]
+verify_jwt = true
+
+[functions.ai-sequence-generator]
+verify_jwt = true
+
+[functions.elevenlabs-tts]
+verify_jwt = true
