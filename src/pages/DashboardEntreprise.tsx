@@ -113,12 +113,14 @@ export default function DashboardEntreprise() {
     });
   };
 
+  const { status: subStatus, subscribed, offerType, accessType } = useSubscription();
+
   const pendingIntrosCount   = introductions.filter(i => i.statut === "en_attente").length;
   const activeMissionsCount  = missions.filter(m => m.statut === "active").length;
   const isLaunchMode         = !loading && missions.length === 0;
 
   const heroSubtitle = aiRecoCount > 0
-    ? `KITT IA recommande : ${aiRecoCount} action${aiRecoCount > 1 ? "s" : ""} prioritaire${aiRecoCount > 1 ? "s" : ""}`
+    ? `Prospection IA : ${aiRecoCount} action${aiRecoCount > 1 ? "s" : ""} à traiter`
     : pendingIntrosCount > 0
     ? `${pendingIntrosCount} introduction${pendingIntrosCount > 1 ? "s" : ""} en attente de validation`
     : "Tout est à jour. Créez une nouvelle mission pour activer le moteur.";
