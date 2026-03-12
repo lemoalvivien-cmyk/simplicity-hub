@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import {
-  Users, Tag, CreditCard, TrendingUp, ArrowUpRight,
+  Users, Tag, CreditCard, TrendingUp, ArrowUpRight, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
