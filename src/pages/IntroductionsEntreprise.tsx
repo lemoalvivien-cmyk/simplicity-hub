@@ -41,7 +41,6 @@ interface IntroReçue {
   lead_dedup_status?: string | null;
   lead_intake_id?: string | null;
   lead_opportunity_id?: string | null;
-  // PROOF:EXECUTION_V1:action_queue_ui_real — real lead_action from lead_actions table
   active_lead_action?: {
     id: string;
     action_type: NextBestAction;
