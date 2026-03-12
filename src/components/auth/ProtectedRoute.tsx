@@ -13,6 +13,19 @@ interface ProtectedRouteProps {
 // Routes entreprise can access without an active subscription
 const SUBSCRIPTION_EXEMPT_PATHS = ["/checkout", "/onboarding", "/account"];
 
+/**
+ * Read the localStorage flag written by Onboarding.tsx immediately after DB save.
+ * This prevents a race where profile.onboarding_done hasn't propagated yet from
+ * the async refreshProfile() call, which would otherwise trigger the /checkout bounce.
+ */
+function getLocalOnboardingDone(): boolean {
+  try {
+    return localStorage.getItem("onboarding_done") === "true";
+  } catch {
+    return false;
+  }
+}
+
 export default function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   const { user, loading, profile, role } = useAuth();
   const subscription = useSubscription();
@@ -50,8 +63,10 @@ export default function ProtectedRoute({ children, adminOnly = false }: Protecte
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Redirect to onboarding if not done
-  if (profile && !profile.onboarding_done && !adminOnly) {
+  // Onboarding guard: combine DB profile with localStorage flag to handle the
+  // brief async window between DB write and refreshProfile() completing.
+  const onboardingDone = profile?.onboarding_done || getLocalOnboardingDone();
+  if (profile && !onboardingDone && !adminOnly) {
     const currentPath = location.pathname;
     if (!currentPath.startsWith("/onboarding")) {
       return <Navigate to="/onboarding" replace />;
@@ -59,11 +74,15 @@ export default function ProtectedRoute({ children, adminOnly = false }: Protecte
   }
 
   // ── SUBSCRIPTION GUARD ────────────────────────────────────
-  // Facilitateurs and admins are always free — skip check
-  // Entreprise users must have an active subscription
+  // Facilitateurs and admins are always free — skip check.
+  // Entreprise users must have an active subscription.
+  // Also skip if onboarding was JUST completed (localStorage flag set) to avoid
+  // bouncing to /checkout before the subscription context refreshes.
+  const justFinishedOnboarding = getLocalOnboardingDone() && !profile?.onboarding_done;
   if (
     role === "entreprise" &&
     !isAccessActive(subscription.status) &&
+    !justFinishedOnboarding &&
     !SUBSCRIPTION_EXEMPT_PATHS.some((p) => location.pathname.startsWith(p))
   ) {
     toast.warning("Activez votre accès pour continuer.", { id: "sub-guard" });
