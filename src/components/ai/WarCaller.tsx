@@ -57,15 +57,15 @@ export default function WarCaller({ contextBrief, compact = false, onClose }: Wa
       console.log("[WarCaller] Disconnected");
     },
     onMessage: (msg) => {
-      // Capture transcript lines
-      if (msg.type === "user_transcript") {
-        const t = (msg as { user_transcription_event?: { user_transcript: string } })
-          .user_transcription_event?.user_transcript;
+      // Capture transcript lines — cast to any to handle ElevenLabs union types
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const m = msg as any;
+      if (m.type === "user_transcript") {
+        const t = m.user_transcription_event?.user_transcript as string | undefined;
         if (t) setTranscript((p) => [...p.slice(-4), `Vous: ${t}`]);
       }
-      if (msg.type === "agent_response") {
-        const r = (msg as { agent_response_event?: { agent_response: string } })
-          .agent_response_event?.agent_response;
+      if (m.type === "agent_response") {
+        const r = m.agent_response_event?.agent_response as string | undefined;
         if (r) setTranscript((p) => [...p.slice(-4), `War Caller: ${r}`]);
       }
     },
