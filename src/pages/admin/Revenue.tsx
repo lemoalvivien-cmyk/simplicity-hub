@@ -388,7 +388,7 @@ export default function AdminRevenue() {
       {/* ── Last refresh indicator ──────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
           <span className="text-xs text-muted-foreground">
             Live · auto-actualisation 60s
             {evtSummary && (
