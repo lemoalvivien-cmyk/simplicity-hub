@@ -10,15 +10,33 @@ const ALLOWED_ORIGINS = [
   "https://id-preview--7ccca0da-8e02-461c-8a27-4774fed14e51.lovable.app",
 ];
 
+function isOriginAllowed(origin: string): boolean {
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  // Allow any lovable.app preview subdomain in dev/staging
+  if (/^https:\/\/[a-z0-9-]+\.lovable\.app$/.test(origin)) return true;
+  // Allow localhost only (never 0.0.0.0 or other bindings)
+  if (/^http:\/\/localhost(:\d+)?$/.test(origin)) return true;
+  if (/^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) return true;
+  return false;
+}
+
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("origin") ?? "";
-  const isLocal = origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1");
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) || isLocal ? origin : "";
+  const allowedOrigin = isOriginAllowed(origin) ? origin : "null";
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Headers":
       "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
   };
+}
+
+function assertOrigin(req: Request): void {
+  const origin = req.headers.get("origin") ?? "";
+  // For non-browser server-to-server calls origin may be absent — allow
+  if (origin === "") return;
+  if (!isOriginAllowed(origin)) {
+    throw new Error(`Origin not allowed: ${origin}`);
+  }
 }
 
 const logStep = (step: string, details?: unknown) => {
