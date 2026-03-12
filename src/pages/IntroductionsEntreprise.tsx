@@ -143,7 +143,7 @@ function IntroCard({ intro, onValidate, onRefuse }: IntroCardProps) {
               Opportunité créée — voir dans Mon IA
             </Link>
           )}
-          {/* PROOF:EXECUTION_V1:action_queue_ui_real — real action from lead_actions table */}
+          {/* Real action from lead_actions table */}
           {intro.active_lead_action && !intro.lead_opportunity_id && (
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl"
               style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}>
