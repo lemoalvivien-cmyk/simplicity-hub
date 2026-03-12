@@ -1,13 +1,16 @@
-import { Send, Brain, Zap, LayoutDashboard, TrendingUp, ShieldCheck, MessageSquare, Bell } from "lucide-react";
+import { Send, Brain, Zap, LayoutDashboard, TrendingUp, ShieldCheck, MessageSquare, Bell, FlaskConical } from "lucide-react";
+
+const BETA_NOTE =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
 
 const features = [
   {
     icon: Brain,
-    name: "Prospection IA",
+    name: "Prospection IA assistée",
     badge: "Entreprise",
-    what: "OpenClaw — cerveau autonome de prospection",
-    problem: "Vous n'avez pas le temps de prospecter chaque jour.",
-    impact: "Prospection continue. Sans effort manuel quotidien.",
+    what: "OpenClaw — assistant de prospection (connexion API en cours)",
+    problem: "Vous n'avez pas le temps de prospecter et de personnaliser chaque jour.",
+    impact: "Suggestions de cibles et brouillons de messages prêts à envoyer.",
     color: "hsl(218 80% 65%)",
   },
   {
@@ -21,11 +24,11 @@ const features = [
   },
   {
     icon: Zap,
-    name: "Matching intelligent",
+    name: "Matching facilitateurs",
     badge: "Entreprise",
-    what: "IA identifie les meilleurs facilitateurs par mission",
+    what: "Suggestions de facilitateurs pertinents par mission",
     problem: "Vous ne savez pas qui dans votre réseau peut vous ramener des clients.",
-    impact: "Les bons apporteurs sont sélectionnés automatiquement pour chaque mission.",
+    impact: "Les apporteurs les plus adaptés sont mis en avant pour chaque mission.",
     color: "hsl(24 100% 55%)",
   },
   {
@@ -34,7 +37,7 @@ const features = [
     badge: "Les deux",
     what: "Vue unifiée de toute votre acquisition",
     problem: "Vous ne savez jamais où en est votre pipeline en temps réel.",
-    impact: "Décisions plus rapides. Pilotage en temps réel. Zéro surprise.",
+    impact: "Décisions plus rapides. Pilotage centralisé. Zéro surprise.",
     color: "hsl(218 55% 70%)",
   },
   {
@@ -57,11 +60,11 @@ const features = [
   },
   {
     icon: MessageSquare,
-    name: "Assistant JARVIS",
+    name: "Assistant IA contextuel",
     badge: "Les deux",
-    what: "Copilote IA contextuel qui connaît votre pipeline",
+    what: "Copilote qui suggère la prochaine action à partir de votre pipeline",
     problem: "Vous ne savez pas toujours quelle action prioriser parmi toutes les tâches.",
-    impact: "JARVIS analyse votre pipeline et vous dit exactement quoi faire ensuite.",
+    impact: "Des suggestions concrètes basées sur l'état réel de votre pipeline.",
     color: "hsl(262 72% 60%)",
   },
   {
@@ -157,6 +160,20 @@ export default function FeaturesValueSection() {
               </div>
             );
           })}
+        </div>
+
+        {/* Beta disclaimer */}
+        <div
+          className="mt-6 rounded-xl px-4 py-3 flex items-start gap-2.5"
+          style={{
+            background: "hsl(38 95% 52% / 0.07)",
+            border: "1px solid hsl(38 95% 52% / 0.18)",
+          }}
+        >
+          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {BETA_NOTE}
+          </p>
         </div>
       </div>
     </section>

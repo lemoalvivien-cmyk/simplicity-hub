@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck, FlaskConical } from "lucide-react";
 import { track } from "@/lib/landingTracking";
+
+const BETA_NOTE =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
 
 export default function FinalCTASection() {
   return (
@@ -36,11 +39,12 @@ export default function FinalCTASection() {
         <p className="text-white/90 text-base mb-2 max-w-sm mx-auto leading-relaxed">
           Mettez-les enfin dans le même cockpit.
         </p>
-        <p className="text-white/75 text-sm mb-10">
-          Un système. Deux moteurs. Des résultats mesurables.
+        <p className="text-white/75 text-sm mb-4">
+          Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et
+          facilitateurs actifs travaillent en parallèle — des résultats mesurables.
         </p>
 
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-3 mb-6">
           <Link
             to="/signup"
             className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
@@ -55,9 +59,23 @@ export default function FinalCTASection() {
           </span>
         </div>
 
-        <p className="mt-5 text-white/70 text-xs">
+        <p className="text-white/70 text-xs mb-6">
           Sans engagement · Annulation libre · Support inclus à chaque étape
         </p>
+
+        {/* Beta disclaimer */}
+        <div
+          className="rounded-xl px-4 py-3 flex items-start gap-2.5 text-left"
+          style={{
+            background: "hsl(38 95% 52% / 0.08)",
+            border: "1px solid hsl(38 95% 52% / 0.2)",
+          }}
+        >
+          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {BETA_NOTE}
+          </p>
+        </div>
       </div>
     </section>
   );
