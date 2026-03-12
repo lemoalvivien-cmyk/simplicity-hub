@@ -3,10 +3,7 @@
  * "Monétisez votre réseau."
  */
 import { Link } from "react-router-dom";
-import { ArrowRight, Upload, Share2, Link2, TrendingUp, FlaskConical, CheckCircle2 } from "lucide-react";
-
-const DISCLAIMER =
-  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif. Les résultats dépendent de votre réseau et de votre suivi.";
+import { ArrowRight, Upload, Share2, Link2, TrendingUp, CheckCircle2 } from "lucide-react";
 
 const steps = [
   {
