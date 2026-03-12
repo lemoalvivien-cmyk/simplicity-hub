@@ -7,9 +7,10 @@ import { supabase } from "@/integrations/supabase/client";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
-  Plus, Briefcase, Users, Sparkles, Check, Phone, Mail, RefreshCw,
-  CheckCircle, AlertCircle, FileText, TrendingUp, ChevronRight,
+  Plus, Sparkles, Check, Phone, Mail, RefreshCw,
+  CheckCircle, AlertCircle, TrendingUp, ChevronRight,
   ChevronDown, ChevronUp, CheckCircle2, Flame, Bot,
+  FileText, Briefcase, Users,
 } from "lucide-react";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +24,7 @@ import { useDashboardEntrepriseData } from "@/hooks/useDashboardEntrepriseData";
 import { useSubscription, getOfferLabel } from "@/contexts/SubscriptionContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import GodModePanel from "@/components/ai/GodModePanel";
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
   appeler: Phone, envoyer: Mail, relancer: RefreshCw,
@@ -221,6 +223,11 @@ export default function DashboardEntreprise() {
               Abonnement actif — {getOfferLabel(offerType, accessType)}
             </p>
           </div>
+        )}
+
+        {/* ═══ GOD MODE PANEL ══════════════════════════════ */}
+        {subscribed && (
+          <GodModePanel contextBrief={latestBrief ? JSON.stringify(latestBrief) : undefined} />
         )}
 
         {/* ═══ RACCOURCIS ═════════════════════════════════════ */}

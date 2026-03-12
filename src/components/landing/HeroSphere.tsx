@@ -89,6 +89,8 @@ function OrganicSphere({ mouseX, mouseY }: { mouseX: number; mouseY: number }) {
 function Ring({ radius, thickness, color, speed, axis }: {
   radius: number; thickness: number; color: number; speed: number; axis: 'x'|'y'|'z';
 }) {
+  const geo = useMemo(() => new THREE.TorusGeometry(radius, thickness, 8, 128), [radius, thickness]);
+  const mat = useMemo(() => new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5 }), [color]);
   const ref = useRef<THREE.Mesh>(null);
   useFrame(({ clock }) => {
     if (!ref.current) return;
@@ -97,12 +99,7 @@ function Ring({ radius, thickness, color, speed, axis }: {
     if (axis === 'y') ref.current.rotation.y = t;
     if (axis === 'z') { ref.current.rotation.z = t; ref.current.rotation.x = Math.sin(clock.getElapsedTime() * 0.3) * 0.4; }
   });
-  return (
-    <mesh ref={ref}>
-      <torusGeometry args={[radius, thickness, 8, 128]} />
-      <meshBasicMaterial color={color} transparent opacity={0.5} />
-    </mesh>
-  );
+  return <mesh ref={ref} geometry={geo} material={mat} />;
 }
 
 // ─── Energy particle field ──────────────────────────────────────────────────
