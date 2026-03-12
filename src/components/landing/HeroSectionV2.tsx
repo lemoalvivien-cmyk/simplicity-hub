@@ -4,6 +4,7 @@ import { ArrowRight, Users, ChevronDown, FlaskConical, Sparkles } from "lucide-r
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { track } from "@/lib/landingTracking";
 import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 const HeroSphere = lazy(() => import("./HeroSphere"));
 
