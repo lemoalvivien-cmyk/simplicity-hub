@@ -5,21 +5,25 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  ComposedChart,
 } from "recharts";
 import {
-  Euro, TrendingUp, TrendingDown, Clock, CheckCircle2, XCircle,
+  Euro, TrendingDown, Clock, CheckCircle2,
   Download, RefreshCw, Play, Filter, Loader2, Users, AlertTriangle,
-  Bell, X, ChevronDown, Zap, Target, Activity,
+  Bell, X, ChevronDown, Zap, Target, Activity, Database, ArrowUpRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-interface DailyPoint {
+// ── Types ─────────────────────────────────────────────────────────────────────
+interface AnalyticsPoint {
   day: string;
+  checkouts: number;
   revenue_eur: number;
-  payouts_paid: number;
-  leads_openclaw: number;
-  intros_validees: number;
+  leads_generated: number;
+  intros_validated: number;
+  payouts_paid_cnt: number;
+  payouts_paid_eur: number;
+  subs_created: number;
 }
 interface MonthlyPoint {
   period: string;
@@ -40,6 +44,16 @@ interface BusinessHealth {
   openclaw_today: number;
   openclaw_quota_pct: number;
   pending_gains_no_payout: number;
+  computed_at: string;
+}
+interface AnalyticsSummary {
+  total_checkouts: number;
+  total_leads: number;
+  total_intros_validated: number;
+  total_payouts_paid: number;
+  total_subs_created: number;
+  total_churned: number;
+  events_last_24h: number;
   computed_at: string;
 }
 interface BusinessAlert {
@@ -69,7 +83,7 @@ interface PayoutRow {
 type StatusFilter = "all" | "pending" | "paid" | "failed";
 type TimeRange = "7d" | "30d" | "ytd";
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (n: number) =>
   n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const fmtDate = (d: string) =>
@@ -89,7 +103,7 @@ const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> =
   processing: { label: "En cours",    color: "hsl(var(--primary))",     bg: "hsl(var(--secondary))" },
 };
 
-// ── Chart theme ──────────────────────────────────────────────────────────────
+// ── Chart colors ──────────────────────────────────────────────────────────────
 const C = {
   revenue:  "hsl(221 83% 53%)",
   payouts:  "hsl(142 72% 29%)",
@@ -109,7 +123,7 @@ const TooltipStyle = {
   },
 };
 
-// ── CSV export ───────────────────────────────────────────────────────────────
+// ── CSV export ────────────────────────────────────────────────────────────────
 function exportCSV(rows: PayoutRow[]) {
   const headers = ["id","facilitator_id","amount","currency","status","stripe_transfer_id","created_at","paid_at","failure_reason"];
   const lines = [
@@ -127,7 +141,7 @@ function exportCSV(rows: PayoutRow[]) {
   URL.revokeObjectURL(url);
 }
 
-// ── Alert banner ─────────────────────────────────────────────────────────────
+// ── Alert banner ──────────────────────────────────────────────────────────────
 function AlertBanner({ alert, onResolve }: { alert: BusinessAlert; onResolve: (id: string) => void }) {
   const cfg = SEVERITY_CFG[alert.severity] ?? SEVERITY_CFG.warning;
   return (
@@ -153,6 +167,17 @@ function AlertBanner({ alert, onResolve }: { alert: BusinessAlert; onResolve: (i
   );
 }
 
+// ── EmptyChart placeholder ────────────────────────────────────────────────────
+function EmptyChartHint({ label }: { label: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-10 gap-2 text-muted-foreground">
+      <Database size={24} className="opacity-30" />
+      <p className="text-xs">Aucune donnée pour « {label} » sur cette période.</p>
+      <p className="text-xs opacity-60">Les données s'afficheront dès qu'un événement réel est enregistré.</p>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AdminRevenue() {
   const qc = useQueryClient();
@@ -163,7 +188,7 @@ export default function AdminRevenue() {
 
   const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 365;
 
-  // ── Business health (KPIs) ────────────────────────────────────────────────
+  // ── Business health (KPIs from get_business_health) ───────────────────────
   const { data: health, isLoading: healthLoading } = useQuery<BusinessHealth>({
     queryKey: ["admin-business-health"],
     queryFn: async () => {
@@ -172,20 +197,43 @@ export default function AdminRevenue() {
       return data as unknown as BusinessHealth;
     },
     refetchInterval: 60_000,
+    staleTime: 30_000,
   });
 
-  // ── Daily time-series ─────────────────────────────────────────────────────
-  const { data: dailyData = [], isLoading: dailyLoading } = useQuery<DailyPoint[]>({
-    queryKey: ["admin-daily-timeseries", days],
+  // ── Analytics event summary (from get_analytics_event_summary) ───────────
+  const { data: evtSummary } = useQuery<AnalyticsSummary>({
+    queryKey: ["admin-analytics-summary"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_daily_timeseries", { p_days: days });
+      const { data, error } = await supabase.rpc("get_analytics_event_summary");
       if (error) throw error;
-      return (data ?? []) as DailyPoint[];
+      return data as unknown as AnalyticsSummary;
     },
     refetchInterval: 60_000,
+    staleTime: 30_000,
   });
 
-  // ── Monthly time-series ───────────────────────────────────────────────────
+  // ── Analytics timeseries (get_analytics_timeseries — our new function) ────
+  const { data: analyticsData = [], isLoading: analyticsLoading } = useQuery<AnalyticsPoint[]>({
+    queryKey: ["admin-analytics-timeseries", days],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_analytics_timeseries", { p_days: days });
+      if (error) throw error;
+      return (data ?? []).map((r: Record<string, unknown>) => ({
+        day:              String(r.day ?? ""),
+        checkouts:        Number(r.checkouts ?? 0),
+        revenue_eur:      Number(r.revenue_eur ?? 0),
+        leads_generated:  Number(r.leads_generated ?? 0),
+        intros_validated: Number(r.intros_validated ?? 0),
+        payouts_paid_cnt: Number(r.payouts_paid_cnt ?? 0),
+        payouts_paid_eur: Number(r.payouts_paid_eur ?? 0),
+        subs_created:     Number(r.subs_created ?? 0),
+      }));
+    },
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+
+  // ── Monthly timeseries (get_revenue_timeseries — existing) ───────────────
   const { data: monthlyData = [], isLoading: monthlyLoading } = useQuery<MonthlyPoint[]>({
     queryKey: ["admin-monthly-timeseries"],
     queryFn: async () => {
@@ -194,14 +242,15 @@ export default function AdminRevenue() {
       return (data ?? []) as MonthlyPoint[];
     },
     refetchInterval: 120_000,
+    staleTime: 60_000,
   });
 
   // ── Active alerts ─────────────────────────────────────────────────────────
   const { data: alerts = [], refetch: refetchAlerts } = useQuery<BusinessAlert[]>({
     queryKey: ["admin-business-alerts"],
     queryFn: async () => {
-      // First generate new alerts
-      await supabase.rpc("generate_business_alerts");
+      // Run the alert cycle (generate new alerts if thresholds exceeded)
+      try { await supabase.rpc("run_alert_cycle"); } catch { /* non-blocking */ }
       const { data, error } = await supabase
         .from("business_alerts")
         .select("*")
@@ -240,6 +289,13 @@ export default function AdminRevenue() {
     refetchAlerts();
   }, [refetchAlerts]);
 
+  // ── Send alert email ──────────────────────────────────────────────────────
+  const sendAlertEmail = useCallback(async () => {
+    const { data, error } = await supabase.functions.invoke("business-alert-dispatcher");
+    if (error) toast.error("Erreur envoi email : " + error.message);
+    else toast.success(`Email d'alerte envoyé — ${data?.sent ?? 0} alerte(s)`);
+  }, []);
+
   // ── Process payout batch ──────────────────────────────────────────────────
   const processMutation = useMutation({
     mutationFn: async (payoutIds?: string[]) => {
@@ -250,9 +306,10 @@ export default function AdminRevenue() {
       return data;
     },
     onSuccess: (data) => {
-      toast.success(`Batch : ${data.paid} payout(s) payé(s) — ${fmtEur(data.total_paid_eur)}`);
+      toast.success(`Batch : ${data.paid} payout(s) payé(s) — ${fmtEur(data.total_paid_eur ?? 0)}`);
       qc.invalidateQueries({ queryKey: ["admin-payouts"] });
       qc.invalidateQueries({ queryKey: ["admin-business-health"] });
+      qc.invalidateQueries({ queryKey: ["admin-analytics-summary"] });
       setSelected(new Set());
     },
     onError: (err) => toast.error(`Erreur : ${err instanceof Error ? err.message : String(err)}`),
@@ -264,7 +321,7 @@ export default function AdminRevenue() {
   const selectAll  = () => setSelected(new Set(payouts.filter((p) => p.status === "pending").map((p) => p.id)));
   const clearSelect = () => setSelected(new Set());
 
-  // ── KPI cards ─────────────────────────────────────────────────────────────
+  // ── KPI cards (blend health + evtSummary for richer data) ────────────────
   const kpiCards = health ? [
     {
       label: "Revenu Stripe total",
@@ -274,6 +331,7 @@ export default function AdminRevenue() {
       color: "text-blue-600",
       bg: "bg-blue-50",
       trend: null,
+      extra: evtSummary ? `${evtSummary.total_checkouts} checkout(s)` : null,
     },
     {
       label: "Abonnements actifs",
@@ -283,6 +341,7 @@ export default function AdminRevenue() {
       color: "text-cyan-600",
       bg: "bg-cyan-50",
       trend: health.new_subs_30d > 0 ? "up" : null,
+      extra: evtSummary ? `${evtSummary.total_subs_created} total créés` : null,
     },
     {
       label: "Churn rate (30j)",
@@ -292,6 +351,7 @@ export default function AdminRevenue() {
       color: health.churn_rate > 5 ? "text-destructive" : "text-green-600",
       bg: health.churn_rate > 5 ? "bg-red-50" : "bg-green-50",
       trend: health.churn_rate > 5 ? "alert" : null,
+      extra: evtSummary ? `${evtSummary.total_churned} total` : null,
     },
     {
       label: "Payouts en attente",
@@ -301,23 +361,52 @@ export default function AdminRevenue() {
       color: health.pending_48h > 0 ? "text-yellow-600" : "text-muted-foreground",
       bg: health.pending_48h > 0 ? "bg-yellow-50" : "bg-muted/30",
       trend: null,
+      extra: evtSummary ? `${evtSummary.total_payouts_paid} payé(s)` : null,
     },
     {
-      label: "OpenClaw aujourd'hui",
-      value: health.openclaw_today.toString(),
-      sub: `Quota : ${health.openclaw_quota_pct}%`,
+      label: "Leads générés (total)",
+      value: evtSummary ? evtSummary.total_leads.toString() : health.openclaw_today.toString(),
+      sub: `Aujourd'hui : ${health.openclaw_today}`,
       icon: <Zap size={16} />,
       color: health.openclaw_quota_pct > 80 ? "text-yellow-600" : "text-purple-600",
       bg: health.openclaw_quota_pct > 80 ? "bg-yellow-50" : "bg-purple-50",
       trend: null,
+      extra: evtSummary ? `${evtSummary.total_intros_validated} intros validées` : null,
     },
   ] : [];
 
-  const chartData = timeRange === "ytd" ? [] : dailyData;
-  const isChartsLoading = dailyLoading || monthlyLoading;
+  // ── Chart data helpers ────────────────────────────────────────────────────
+  const hasRevenue = analyticsData.some(d => d.revenue_eur > 0 || d.payouts_paid_eur > 0);
+  const hasLeads   = analyticsData.some(d => d.leads_generated > 0);
+  const hasIntros  = analyticsData.some(d => d.intros_validated > 0);
+  const hasSubs    = monthlyData.some(d => Number(d.subs_active) > 0);
+  const hasMRevenu = monthlyData.some(d => Number(d.revenue_eur) > 0);
 
   return (
     <AdminLayout title="Revenue Ops" subtitle="Cockpit business · live · churn · LTV · payouts Stripe Connect">
+
+      {/* ── Last refresh indicator ──────────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <span className="text-xs text-muted-foreground">
+            Live · auto-actualisation 60s
+            {evtSummary && (
+              <span className="ml-2 text-primary font-medium">
+                · {evtSummary.events_last_24h} événement(s) business /24h
+              </span>
+            )}
+          </span>
+        </div>
+        {alerts.length > 0 && (
+          <button
+            onClick={sendAlertEmail}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 border border-destructive/30 text-xs font-semibold text-destructive hover:bg-destructive/20 transition-colors"
+          >
+            <Bell size={12} /> Envoyer alerte email ({alerts.length})
+          </button>
+        )}
+      </div>
 
       {/* ── Alert banners ──────────────────────────────────────────────────── */}
       {alerts.length > 0 && (
@@ -346,10 +435,13 @@ export default function AdminRevenue() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-          {kpiCards.map(({ label, value, sub, icon, color, bg, trend }) => (
+          {kpiCards.map(({ label, value, sub, icon, color, bg, trend, extra }) => (
             <div key={label} className="stat-card relative overflow-hidden">
               {trend === "alert" && (
                 <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-destructive animate-pulse" />
+              )}
+              {trend === "up" && (
+                <ArrowUpRight size={14} className="absolute top-2 right-2 text-primary" />
               )}
               <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${bg} ${color}`}>
                 {icon}
@@ -357,6 +449,7 @@ export default function AdminRevenue() {
               <p className={`font-display text-2xl font-bold mb-0.5 ${color}`}>{value}</p>
               <p className="text-xs text-muted-foreground">{label}</p>
               <p className="text-xs text-muted-foreground/70 mt-1">{sub}</p>
+              {extra && <p className="text-xs text-muted-foreground/50 mt-0.5">{extra}</p>}
             </div>
           ))}
         </div>
@@ -364,14 +457,18 @@ export default function AdminRevenue() {
 
       {/* ── Charts section ─────────────────────────────────────────────────── */}
       <div className="card-surface mb-5 overflow-hidden">
-        {/* Header + time range */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-border">
           <div className="flex items-center gap-2">
             <Activity size={16} className="text-primary" />
-            <h2 className="font-semibold text-sm text-foreground">Graphiques live</h2>
+            <h2 className="font-semibold text-sm text-foreground">
+              Graphiques live
+              <span className="ml-2 text-xs text-muted-foreground font-normal">
+                (source : analytics_events — triggers DB temps réel)
+              </span>
+            </h2>
           </div>
           <div className="flex items-center gap-2">
-            {(["7d", "30d", "ytd"] as TimeRange[]).map((r) => (
+            {(["7d","30d","ytd"] as TimeRange[]).map((r) => (
               <button
                 key={r}
                 onClick={() => setTimeRange(r)}
@@ -385,7 +482,7 @@ export default function AdminRevenue() {
               </button>
             ))}
             <button
-              onClick={() => setShowCharts((v) => !v)}
+              onClick={() => setShowCharts(v => !v)}
               className="ml-2 p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronDown size={14} className={`transition-transform ${showCharts ? "" : "rotate-180"}`} />
@@ -395,119 +492,151 @@ export default function AdminRevenue() {
 
         {showCharts && (
           <div className="p-5 space-y-8">
-            {isChartsLoading ? (
+            {analyticsLoading || monthlyLoading ? (
               <div className="flex items-center justify-center py-24">
                 <Loader2 size={32} className="animate-spin text-muted-foreground" />
               </div>
             ) : (
               <>
-                {/* ── Chart 1: Revenu + Payouts (Area) ──────────────────────── */}
+                {/* ── Chart 1: Revenu Stripe + Payouts ──────────────────────── */}
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                    💰 Revenu Stripe & Payouts exécutés
+                    💰 Revenu Stripe & Payouts exécutés ({timeRange})
                   </p>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <AreaChart data={timeRange === "ytd" ? monthlyData.map(m => ({
-                      day: m.period,
-                      revenue_eur: Number(m.revenue_eur),
-                      payouts_paid: Number(m.payouts_paid),
-                      leads_openclaw: Number(m.leads_openclaw),
-                      intros_validees: 0,
-                    })) : chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                      <defs>
-                        <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%"  stopColor={C.revenue} stopOpacity={0.25} />
-                          <stop offset="95%" stopColor={C.revenue} stopOpacity={0} />
-                        </linearGradient>
-                        <linearGradient id="gradPayouts" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%"  stopColor={C.payouts} stopOpacity={0.25} />
-                          <stop offset="95%" stopColor={C.payouts} stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                      <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${v}€`} />
-                      <Tooltip {...TooltipStyle} formatter={(v: number, n: string) => [fmtEur(v), n === "revenue_eur" ? "Revenu" : "Payouts"]} />
-                      <Legend formatter={(v) => v === "revenue_eur" ? "Revenu Stripe" : "Payouts payés"} />
-                      <Area type="monotone" dataKey="revenue_eur" stroke={C.revenue} fill="url(#gradRevenue)" strokeWidth={2} dot={false} />
-                      <Area type="monotone" dataKey="payouts_paid" stroke={C.payouts} fill="url(#gradPayouts)" strokeWidth={2} dot={false} />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  {!hasRevenue ? (
+                    <EmptyChartHint label="Revenu / Payouts" />
+                  ) : (
+                    <ResponsiveContainer width="100%" height={200}>
+                      <AreaChart data={analyticsData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                        <defs>
+                          <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%"  stopColor={C.revenue} stopOpacity={0.25} />
+                            <stop offset="95%" stopColor={C.revenue} stopOpacity={0} />
+                          </linearGradient>
+                          <linearGradient id="gradPayouts" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%"  stopColor={C.payouts} stopOpacity={0.25} />
+                            <stop offset="95%" stopColor={C.payouts} stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                        <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${v}€`} />
+                        <Tooltip {...TooltipStyle} formatter={(v: number, n: string) => [fmtEur(v), n === "revenue_eur" ? "Revenu Stripe" : "Payouts payés"]} />
+                        <Legend formatter={(v) => v === "revenue_eur" ? "Revenu Stripe" : "Payouts payés"} />
+                        <Area type="monotone" dataKey="revenue_eur"      stroke={C.revenue} fill="url(#gradRevenue)" strokeWidth={2} dot={false} />
+                        <Area type="monotone" dataKey="payouts_paid_eur" stroke={C.payouts} fill="url(#gradPayouts)" strokeWidth={2} dot={false} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
 
-                {/* ── Chart 2: Leads OpenClaw (Bar) ───────────────────────── */}
+                {/* ── Chart 2: Leads générés ────────────────────────────────── */}
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                    🎯 Leads OpenClaw générés
+                    🎯 Leads générés (OpenClaw + imports)
                   </p>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={timeRange === "ytd" ? monthlyData.map(m => ({
-                      day: m.period,
-                      leads_openclaw: Number(m.leads_openclaw),
-                      intros_validees: 0,
-                    })) : chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                      <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
-                      <Tooltip {...TooltipStyle} formatter={(v: number) => [v, "Leads IA"]} />
-                      <Bar dataKey="leads_openclaw" fill={C.leads} radius={[4, 4, 0, 0]} name="Leads OpenClaw" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {!hasLeads ? (
+                    <EmptyChartHint label="Leads générés" />
+                  ) : (
+                    <ResponsiveContainer width="100%" height={180}>
+                      <BarChart data={analyticsData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                        <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
+                        <Tooltip {...TooltipStyle} formatter={(v: number) => [v, "Leads"]} />
+                        <Bar dataKey="leads_generated" fill={C.leads} radius={[4,4,0,0]} name="Leads générés" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
 
-                {/* ── Chart 3: Introductions validées (Line) ──────────────── */}
+                {/* ── Chart 3: Introductions validées ──────────────────────── */}
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                    ✅ Introductions validées
+                    ✅ Introductions validées + Payouts réalisés
                   </p>
-                  <ResponsiveContainer width="100%" height={160}>
-                    <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                      <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
-                      <Tooltip {...TooltipStyle} formatter={(v: number) => [v, "Introductions"]} />
-                      <Line type="monotone" dataKey="intros_validees" stroke={C.intros} strokeWidth={2} dot={false} name="Intros validées" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {!hasIntros ? (
+                    <EmptyChartHint label="Introductions validées" />
+                  ) : (
+                    <ResponsiveContainer width="100%" height={180}>
+                      <ComposedChart data={analyticsData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="day" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                        <YAxis yAxisId="left"  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
+                        <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
+                        <Tooltip {...TooltipStyle} />
+                        <Bar    yAxisId="left"  dataKey="intros_validated" fill={C.intros}  radius={[4,4,0,0]} name="Intros validées" />
+                        <Line  yAxisId="right" dataKey="payouts_paid_cnt" stroke={C.payouts} strokeWidth={2} dot={false} name="Payouts payés" />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
 
-                {/* ── Chart 4 + 5: LTV & Churn (monthly, bar) ────────────── */}
+                {/* ── Charts 4+5: Monthly KPIs (abonnements + revenu mensuel) ── */}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                       📈 Abonnements actifs (mensuel)
                     </p>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <BarChart data={monthlyData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="period" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                        <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
-                        <Tooltip {...TooltipStyle} formatter={(v: number) => [v, "Abonnements"]} />
-                        <Bar dataKey="subs_active" fill={C.subs} radius={[4, 4, 0, 0]} name="Abonnés actifs" />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {!hasSubs ? (
+                      <EmptyChartHint label="Abonnements actifs" />
+                    ) : (
+                      <ResponsiveContainer width="100%" height={160}>
+                        <BarChart data={monthlyData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="period" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                          <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} />
+                          <Tooltip {...TooltipStyle} formatter={(v: number) => [v, "Abonnements"]} />
+                          <Bar dataKey="subs_active" fill={C.subs} radius={[4,4,0,0]} name="Abonnés actifs" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                       📊 Revenu mensuel cumulé (YTD)
                     </p>
-                    <ResponsiveContainer width="100%" height={160}>
-                      <AreaChart data={monthlyData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
-                        <defs>
-                          <linearGradient id="gradMonthly" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%"  stopColor={C.revenue} stopOpacity={0.3} />
-                            <stop offset="95%" stopColor={C.revenue} stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="period" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                        <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${v}€`} />
-                        <Tooltip {...TooltipStyle} formatter={(v: number) => [fmtEur(v), "Revenu"]} />
-                        <Area type="monotone" dataKey="revenue_eur" stroke={C.revenue} fill="url(#gradMonthly)" strokeWidth={2} dot={false} name="Revenu mensuel" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                    {!hasMRevenu ? (
+                      <EmptyChartHint label="Revenu mensuel" />
+                    ) : (
+                      <ResponsiveContainer width="100%" height={160}>
+                        <AreaChart data={monthlyData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                          <defs>
+                            <linearGradient id="gradMonthly" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%"  stopColor={C.revenue} stopOpacity={0.3} />
+                              <stop offset="95%" stopColor={C.revenue} stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="period" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                          <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v) => `${v}€`} />
+                          <Tooltip {...TooltipStyle} formatter={(v: number) => [fmtEur(v), "Revenu"]} />
+                          <Area type="monotone" dataKey="revenue_eur" stroke={C.revenue} fill="url(#gradMonthly)" strokeWidth={2} dot={false} name="Revenu mensuel" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    )}
                   </div>
                 </div>
+
+                {/* ── Event summary bar ─────────────────────────────────────── */}
+                {evtSummary && (
+                  <div className="bg-muted/30 rounded-xl border border-border px-4 py-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      📡 Événements business trackés (analytics_events — total all-time)
+                    </p>
+                    <div className="flex flex-wrap gap-4 text-xs">
+                      <span>🛒 Checkouts : <strong className="text-foreground">{evtSummary.total_checkouts}</strong></span>
+                      <span>🤝 Subs créées : <strong className="text-foreground">{evtSummary.total_subs_created}</strong></span>
+                      <span>📉 Churns : <strong className="text-foreground">{evtSummary.total_churned}</strong></span>
+                      <span>🎯 Leads : <strong className="text-foreground">{evtSummary.total_leads}</strong></span>
+                      <span>✅ Intros validées : <strong className="text-foreground">{evtSummary.total_intros_validated}</strong></span>
+                      <span>💸 Payouts payés : <strong className="text-foreground">{evtSummary.total_payouts_paid}</strong></span>
+                      <span className="ml-auto opacity-60">
+                        Calculé {new Date(evtSummary.computed_at).toLocaleTimeString("fr-FR")}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -516,7 +645,7 @@ export default function AdminRevenue() {
 
       {/* ── Actions bar ────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        {(["all", "pending", "paid", "failed"] as StatusFilter[]).map((f) => (
+        {(["all","pending","paid","failed"] as StatusFilter[]).map((f) => (
           <button
             key={f}
             onClick={() => setStatusFilter(f)}
@@ -531,7 +660,13 @@ export default function AdminRevenue() {
         ))}
         <div className="ml-auto flex gap-2 flex-wrap">
           <button
-            onClick={() => { qc.invalidateQueries({ queryKey: ["admin-payouts"] }); qc.invalidateQueries({ queryKey: ["admin-business-health"] }); qc.invalidateQueries({ queryKey: ["admin-business-alerts"] }); }}
+            onClick={() => {
+              qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+              qc.invalidateQueries({ queryKey: ["admin-business-health"] });
+              qc.invalidateQueries({ queryKey: ["admin-business-alerts"] });
+              qc.invalidateQueries({ queryKey: ["admin-analytics-timeseries"] });
+              qc.invalidateQueries({ queryKey: ["admin-analytics-summary"] });
+            }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
           >
             <RefreshCw size={12} /> Actualiser
@@ -581,6 +716,7 @@ export default function AdminRevenue() {
           <div className="p-10 text-center">
             <Target size={28} className="mx-auto text-muted-foreground mb-2 opacity-40" />
             <p className="text-sm text-muted-foreground">Aucun payout{statusFilter !== "all" ? ` avec statut "${statusFilter}"` : ""}.</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Les payouts apparaissent dès qu'une introduction est validée (gain auto-généré).</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -590,7 +726,7 @@ export default function AdminRevenue() {
                   <th className="px-4 py-2.5 text-left text-xs font-semibold text-muted-foreground w-8">
                     <input
                       type="checkbox"
-                      checked={selected.size > 0 && payouts.filter((p) => p.status === "pending").every((p) => selected.has(p.id))}
+                      checked={selected.size > 0 && payouts.filter(p => p.status === "pending").every(p => selected.has(p.id))}
                       onChange={(e) => e.target.checked ? selectAll() : clearSelect()}
                       className="rounded"
                     />
@@ -607,7 +743,7 @@ export default function AdminRevenue() {
                 {payouts.map((p) => {
                   const cfg = STATUS_CFG[p.status] ?? STATUS_CFG.pending;
                   const isPending = p.status === "pending";
-                  const isOld48h = isPending && new Date(p.created_at) < new Date(Date.now() - 48*3600*1000);
+                  const isOld48h  = isPending && new Date(p.created_at) < new Date(Date.now() - 48*3600*1000);
                   return (
                     <tr key={p.id} className={`hover:bg-muted/20 transition-colors ${selected.has(p.id) ? "bg-primary/5" : ""} ${isOld48h ? "bg-yellow-50/50" : ""}`}>
                       <td className="px-4 py-3">
@@ -617,9 +753,9 @@ export default function AdminRevenue() {
                       </td>
                       <td className="px-4 py-3">
                         <p className="text-xs font-mono text-muted-foreground truncate max-w-[120px]">
-                          {p.facilitator_id.slice(0, 8)}…
+                          {p.facilitator_id.slice(0,8)}…
                         </p>
-                        {isOld48h && <span className="text-xs text-yellow-600 font-semibold">{"⚠️ >48h"}</span>}
+                        {isOld48h && <span className="text-xs text-destructive font-semibold">⚠️ &gt;48h</span>}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className="font-display font-bold text-foreground">
@@ -631,6 +767,7 @@ export default function AdminRevenue() {
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
                           style={{ color: cfg.color, background: cfg.bg }}
                         >
+                          {p.status === "paid" && <CheckCircle2 size={10} />}
                           {cfg.label}
                         </span>
                         {p.failure_reason && (
@@ -647,7 +784,7 @@ export default function AdminRevenue() {
                             rel="noopener noreferrer"
                             className="text-xs font-mono text-primary hover:underline truncate max-w-[120px] block"
                           >
-                            {p.stripe_transfer_id.slice(0, 16)}…
+                            {p.stripe_transfer_id.slice(0,16)}…
                           </a>
                         ) : (
                           <span className="text-xs text-muted-foreground">—</span>
@@ -671,7 +808,12 @@ export default function AdminRevenue() {
           <span>👥 LTV : <strong className="text-foreground">{fmtEur(health.ltv)}</strong></span>
           <span>📉 Churn 30j : <strong className={health.churn_rate > 5 ? "text-destructive" : "text-foreground"}>{health.churn_rate}%</strong></span>
           <span>⏳ Gains sans payout : <strong className="text-foreground">{health.pending_gains_no_payout}</strong></span>
-          <span className="ml-auto opacity-60">Calculé le {new Date(health.computed_at).toLocaleTimeString("fr-FR")}</span>
+          {evtSummary && (
+            <span>📡 Events /24h : <strong className="text-foreground">{evtSummary.events_last_24h}</strong></span>
+          )}
+          <span className="ml-auto opacity-60">
+            Calculé le {new Date(health.computed_at).toLocaleTimeString("fr-FR")}
+          </span>
         </div>
       )}
     </AdminLayout>
