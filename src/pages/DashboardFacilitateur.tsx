@@ -1,6 +1,3 @@
-/**
- * Dashboard Facilitateur — React Query powered
- */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
