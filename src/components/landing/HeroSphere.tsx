@@ -136,12 +136,15 @@ function ParticleField() {
     ref.current.rotation.x = t * 0.03;
   });
 
+  const geo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    g.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    return g;
+  }, [positions, colors]);
+
   return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        <bufferAttribute attach="attributes-color" args={[colors, 3]} />
-      </bufferGeometry>
+    <points ref={ref} geometry={geo}>
       <pointsMaterial size={0.03} vertexColors transparent opacity={0.75} sizeAttenuation />
     </points>
   );
