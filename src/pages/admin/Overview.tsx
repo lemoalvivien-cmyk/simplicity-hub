@@ -96,6 +96,11 @@ export default function AdminOverview() {
     { label: "Introductions", value: stats.totalIntroductions.toString(), sub: "Total soumises", icon: TrendingUp, to: "/admin/users", color: "text-primary" },
   ] : [];
 
+  // Stripe webhook secret check — only verifiable at runtime via env presence
+  const stripeWebhookConfigured = !!(
+    import.meta.env.VITE_STRIPE_WEBHOOK_SECRET_CONFIGURED !== "false"
+  );
+
   return (
     <AdminLayout
       title="Vue d'ensemble"
