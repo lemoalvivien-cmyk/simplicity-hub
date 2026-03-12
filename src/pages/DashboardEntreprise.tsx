@@ -312,6 +312,38 @@ export default function DashboardEntreprise() {
 
               {/* OpenClaw */}
               <div className="p-5">
+                {/* ── OpenClaw AI Lead Counter ─────────────────────────────── */}
+                {subscribed && (
+                  <div className="mb-4 flex items-center justify-between gap-3 px-4 py-3 rounded-xl border"
+                    style={{ background: "hsl(218 65% 9% / 0.5)", borderColor: "hsl(218 40% 22% / 0.4)" }}>
+                    <div className="flex items-center gap-2.5">
+                      <Bot size={14} style={{ color: "hsl(270 80% 70%)" }} className="shrink-0" />
+                      <div>
+                        <p className="text-xs font-bold" style={{ color: "hsl(270 80% 80%)" }}>
+                          {openclawLeadsThisWeek === 0
+                            ? "OpenClaw prêt à générer des leads"
+                            : `OpenClaw a généré ${openclawLeadsThisWeek} lead${openclawLeadsThisWeek > 1 ? "s" : ""} cette semaine`}
+                        </p>
+                        {latestAILead && (
+                          <p className="text-xs text-white/40 mt-0.5">
+                            Dernier : {latestAILead.person_name} @ {latestAILead.company_name}
+                            {" "}— Score {latestAILead.ai_score}/100 ({latestAILead.ai_label})
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleGenerateLead}
+                      disabled={generatingLead}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-60"
+                      style={{ background: "hsl(270 70% 55%)", color: "white" }}>
+                      {generatingLead
+                        ? <><Loader2 size={11} className="animate-spin" /> Génération...</>
+                        : <><Sparkles size={11} /> Générer</>}
+                    </button>
+                  </div>
+                )}
+
                 {openclawReady ? (
                   <div className="rounded-2xl overflow-hidden"
                     style={{
