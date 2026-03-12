@@ -4781,6 +4781,20 @@ export type Database = {
       }
       generate_business_alerts: { Args: never; Returns: number }
       generate_payouts_from_validated_gains: { Args: never; Returns: number }
+      get_analytics_event_summary: { Args: never; Returns: Json }
+      get_analytics_timeseries: {
+        Args: { p_days?: number }
+        Returns: {
+          checkouts: number
+          day: string
+          intros_validated: number
+          leads_generated: number
+          payouts_paid_cnt: number
+          payouts_paid_eur: number
+          revenue_eur: number
+          subs_created: number
+        }[]
+      }
       get_automation_engine_health: { Args: never; Returns: Json }
       get_automation_rule_threshold: {
         Args: { p_default?: number; p_owner_id: string; p_rule_type?: string }
@@ -4874,6 +4888,7 @@ export type Database = {
         Returns: Json
       }
       resolve_rule_owner: { Args: { p_intake_id: string }; Returns: string }
+      run_alert_cycle: { Args: never; Returns: Json }
       scan_reactivation_candidates: { Args: never; Returns: number }
       seed_default_automation_rules: {
         Args: { p_user_id: string }
@@ -4894,6 +4909,15 @@ export type Database = {
       seed_openclaw_jobs: { Args: { p_user_id: string }; Returns: undefined }
       seed_openclaw_jobs_for_user: {
         Args: { p_user_id: string }
+        Returns: undefined
+      }
+      track_business_event: {
+        Args: {
+          p_entity_id: string
+          p_event_type: string
+          p_properties?: Json
+          p_user_id: string
+        }
         Returns: undefined
       }
       update_lead_action_status:
