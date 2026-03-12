@@ -2738,6 +2738,7 @@ export type Database = {
           actions_sensibles: string | null
           activite: string | null
           angle_principal: string | null
+          autopilot_enabled: boolean
           canaux_autorises: string[] | null
           canaux_interdits: string[] | null
           cas_usage: string | null
@@ -2773,6 +2774,7 @@ export type Database = {
           actions_sensibles?: string | null
           activite?: string | null
           angle_principal?: string | null
+          autopilot_enabled?: boolean
           canaux_autorises?: string[] | null
           canaux_interdits?: string[] | null
           cas_usage?: string | null
@@ -2808,6 +2810,7 @@ export type Database = {
           actions_sensibles?: string | null
           activite?: string | null
           angle_principal?: string | null
+          autopilot_enabled?: boolean
           canaux_autorises?: string[] | null
           canaux_interdits?: string[] | null
           cas_usage?: string | null
