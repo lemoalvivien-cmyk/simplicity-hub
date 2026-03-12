@@ -30,7 +30,7 @@ const steps = [
   {
     num: "04",
     title: "Validez et mesurez votre ROI",
-    desc: "Acceptez ou refusez en un clic. Vos gains, taux de conversion et ROI sont calculés automatiquement. Vous savez toujours ce qui fonctionne.",
+    desc: "Acceptez ou refusez en un clic. Vos gains, taux de conversion et ROI sont calculés et affichés dans votre cockpit. Vous savez toujours ce qui fonctionne.",
     color: "hsl(24 100% 55%)",
     tag: "1 clic",
   },
