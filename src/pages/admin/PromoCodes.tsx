@@ -97,17 +97,17 @@ export default function AdminPromoCodes() {
     if (!newCode.trim()) return;
     setCreating(true);
     try {
-      const payload: Record<string, unknown> = {
+      const expires_at = newExpiry
+        ? new Date(newExpiry).toISOString()
+        : new Date(Date.now() + 730 * 24 * 60 * 60 * 1000).toISOString(); // 2 years
+
+      const { error: err } = await db.from("promo_codes").insert({
         code: newCode.toUpperCase().replace(/\s/g, ""),
         status: "actif",
         duration_months: 12,
         usage_unique: true,
-      };
-      payload.expires_at = newExpiry
-        ? new Date(newExpiry).toISOString()
-        : new Date(Date.now() + 730 * 24 * 60 * 60 * 1000).toISOString(); // 2 years
-
-      const { error: err } = await db.from("promo_codes").insert(payload);
+        expires_at,
+      });
       if (err) throw err;
       toast.success("Code créé !");
       setNewCode("");
