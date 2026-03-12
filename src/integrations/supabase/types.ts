@@ -4771,6 +4771,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      seed_onboarding_data_on_activation: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       seed_openclaw_channels: {
         Args: { p_user_id: string }
         Returns: undefined
