@@ -13,6 +13,10 @@ import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
 type Status = "en_attente" | "en_cours" | "validee" | "refusee";
+function toStatus(s: string | null): Status {
+  if (s === "en_cours" || s === "validee" || s === "refusee") return s;
+  return "en_attente";
+}
 
 interface IntroductionData {
   id: string;

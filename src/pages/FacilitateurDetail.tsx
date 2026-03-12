@@ -27,8 +27,8 @@ interface Review {
   id: string;
   rating: number;
   comment: string | null;
-  tags: string[];
-  recommended: boolean;
+  tags: string[] | null;
+  recommended: boolean | null;
   created_at: string;
 }
 
