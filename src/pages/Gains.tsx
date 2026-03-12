@@ -184,7 +184,7 @@ export default function Gains() {
       // Insert one payout row per eligible gain
       const inserts = eligible.map((g) => ({
         facilitator_id: user!.id,
-        amount: g.montant,
+        amount: g.montant ?? 0,
         currency: "EUR",
         status: "pending",
         gain_id: g.id,
