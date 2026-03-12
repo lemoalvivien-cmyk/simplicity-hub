@@ -88,6 +88,12 @@ export default function LandingPage() {
             <a href="mailto:contact@wiinupmax.com" className="hover:text-foreground transition-colors">Contact</a>
           </div>
         </div>
+        {/* Beta notice */}
+        <div className="container mt-4 pt-4 border-t border-border/50">
+          <p className="text-center text-[10px] text-muted-foreground/55 leading-relaxed max-w-xl mx-auto">
+            Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.
+          </p>
+        </div>
       </footer>
 
       {/* STICKY CTA — Mobile only */}

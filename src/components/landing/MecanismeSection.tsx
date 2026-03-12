@@ -1,4 +1,7 @@
-import { Brain, Users, BarChart3, ArrowDown } from "lucide-react";
+import { Brain, Users, BarChart3, ArrowDown, FlaskConical } from "lucide-react";
+
+const BETA_NOTE =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
 
 export default function MecanismeSection() {
   return (
@@ -42,22 +45,23 @@ export default function MecanismeSection() {
                     Moteur 1
                   </p>
                   <p className="font-display font-bold text-white text-[0.95rem] leading-tight mt-0.5">
-                    Prospection pilotée par IA
+                    Prospection IA assistée
                   </p>
                 </div>
               </div>
               <p className="text-white/95 text-sm leading-relaxed">
-                OpenClaw prospecte pendant que vous dormez. Il détecte les signaux d'intention,
-                rédige les messages, pilote vos campagnes — sans intervention manuelle.
+                OpenClaw (en connexion réelle avec API externe) assiste votre prospection :
+                suggestions de cibles, ébauches de messages, alertes de suivi.
+                L'humain valide et envoie. L'IA prépare.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
               {[
-                "Agents autonomes qui prospectent 24h/24",
-                "Deal Radar — signaux d'intention détectés",
-                "Campagnes automatisées multicanal",
-                "Messages rédigés et optimisés par l'IA",
-                "Leads chauds remontés automatiquement",
+                "Suggestions de cibles basées sur votre profil",
+                "Brouillons de messages prêts à personnaliser",
+                "Alertes de suivi pour ne rien laisser traîner",
+                "Analyse de pertinence avant envoi",
+                "Tableau de bord d'activité unifié",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-3">
                   <span
@@ -128,7 +132,7 @@ export default function MecanismeSection() {
           <ArrowDown size={18} className="text-muted-foreground/30" />
         </div>
 
-        {/* Cockpit central — bridge */}
+        {/* Cockpit central */}
         <div
           className="rounded-2xl p-5 md:p-6 text-center mt-3"
           style={{
@@ -147,8 +151,23 @@ export default function MecanismeSection() {
             <p className="font-display font-bold text-white text-base">Cockpit central</p>
           </div>
           <p className="text-white/95 text-sm max-w-md mx-auto leading-relaxed">
-            Les deux moteurs remontent dans le même tableau de bord.
-            Validation, suivi, gains, priorités — tout est visible. KITT IA vous dit toujours quoi faire ensuite.
+            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et
+            facilitateurs actifs travaillent en parallèle — tout remonte dans un seul tableau de bord.
+            Validation, suivi, gains, priorités : visibles en un coup d'œil.
+          </p>
+        </div>
+
+        {/* Beta disclaimer */}
+        <div
+          className="mt-5 rounded-xl px-4 py-3 flex items-start gap-2.5"
+          style={{
+            background: "hsl(38 95% 52% / 0.07)",
+            border: "1px solid hsl(38 95% 52% / 0.18)",
+          }}
+        >
+          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {BETA_NOTE}
           </p>
         </div>
       </div>

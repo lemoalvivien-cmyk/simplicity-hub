@@ -1,16 +1,19 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, ArrowRight, Zap, Users } from "lucide-react";
+import { CheckCircle2, ArrowRight, Zap, Users, FlaskConical } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { track } from "@/lib/landingTracking";
 
+const BETA_NOTE =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
+
 const entrepriseFeatures = [
   "Missions illimitées",
   "Introductions tracées & validées",
-  "Prospection automatisée OpenClaw",
-  "Deal Radar — signaux d'intention",
+  "Prospection IA assistée (OpenClaw)",
+  "Suggestions de cibles et messages",
   "Cockpit central de suivi",
-  "Assistant KITT IA illimité",
+  "Assistant IA contextuel",
   "Marketplace de facilitateurs",
   "Gains & commissions traçables",
   "Support inclus · Mises à jour incluses",
@@ -78,7 +81,7 @@ export default function PricingSection() {
               </div>
               <p className="text-white/75 text-sm font-medium mb-1 line-through opacity-60">soit 8,25 € / mois</p>
               <p className="text-white/75 text-xs italic">
-                Le prix d'un café par semaine. Pour une machine d'acquisition complète.
+                Le prix d'un café par semaine. Pour un cockpit d'acquisition complet.
               </p>
               <p className="text-white/75 text-xs mt-2">
                 {launchAvailable
@@ -154,6 +157,20 @@ export default function PricingSection() {
         <p className="text-center text-xs text-muted-foreground mt-6">
           Paiement sécurisé · Données protégées · Facturation annuelle · Aucun frais caché
         </p>
+
+        {/* Beta disclaimer */}
+        <div
+          className="mt-4 rounded-xl px-4 py-3 flex items-start gap-2.5"
+          style={{
+            background: "hsl(38 95% 52% / 0.07)",
+            border: "1px solid hsl(38 95% 52% / 0.18)",
+          }}
+        >
+          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {BETA_NOTE}
+          </p>
+        </div>
       </div>
     </section>
   );

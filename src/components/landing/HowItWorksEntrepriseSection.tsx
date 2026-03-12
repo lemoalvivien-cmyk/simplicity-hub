@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FlaskConical } from "lucide-react";
 import { track } from "@/lib/landingTracking";
+
+const BETA_NOTE =
+  "Bêta privée – fonctionnalités IA en cours d'activation réelle avec API externe. Interface actuellement en mode illustratif.";
 
 const steps = [
   {
@@ -12,10 +15,10 @@ const steps = [
   },
   {
     num: "02",
-    title: "Activez le bon moteur",
-    desc: "OpenClaw prospecte automatiquement. Les facilitateurs envoient des introductions. Les deux remontent dans votre cockpit — sans que vous ayez à orchestrer quoi que ce soit.",
+    title: "Activez les deux moteurs",
+    desc: "L'assistant IA vous suggère des actions de prospection. Les facilitateurs envoient des introductions. Les deux remontent dans votre cockpit — vous gardez le contrôle à chaque étape.",
     color: "hsl(152 62% 45%)",
-    tag: "Automatique",
+    tag: "Assisté",
   },
   {
     num: "03",
@@ -99,6 +102,20 @@ export default function HowItWorksEntrepriseSection() {
           </Link>
           <p className="text-[11px] text-muted-foreground mt-3">
             Inscription gratuite · Offre entreprise 99 € TTC / an
+          </p>
+        </div>
+
+        {/* Beta disclaimer */}
+        <div
+          className="mt-6 rounded-xl px-4 py-3 flex items-start gap-2.5"
+          style={{
+            background: "hsl(38 95% 52% / 0.07)",
+            border: "1px solid hsl(38 95% 52% / 0.18)",
+          }}
+        >
+          <FlaskConical size={13} style={{ color: "hsl(38 95% 52%)" }} className="shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-[11px] leading-relaxed" style={{ color: "hsl(38 95% 52%)" }}>
+            {BETA_NOTE}
           </p>
         </div>
       </div>
