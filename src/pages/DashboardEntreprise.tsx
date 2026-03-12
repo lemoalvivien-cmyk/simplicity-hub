@@ -5,10 +5,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import UserLayout from "@/components/layout/UserLayout";
 import {
-  Target, Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
+  Send, ArrowRight, Zap, Loader2, Brain, ShieldAlert,
   Plus, Briefcase, Users, Sparkles, Check, Phone, Mail, RefreshCw,
   CheckCircle, AlertCircle, FileText, TrendingUp, ChevronRight,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, CheckCircle2, Flame,
 } from "lucide-react";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +19,7 @@ import OpenClawBrainWidget from "@/components/openclaw/OpenClawBrainWidget";
 import { usePipelineMetrics } from "@/hooks/usePipelineMetrics";
 import { useUserActions, useMarkActionDone, type UserAction } from "@/hooks/useUserActions";
 import { useDashboardEntrepriseData } from "@/hooks/useDashboardEntrepriseData";
+import { useSubscription, getOfferLabel } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
