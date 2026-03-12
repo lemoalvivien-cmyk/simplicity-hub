@@ -282,16 +282,7 @@ export default function GodModeTeaser() {
           ))}
         </div>
 
-        {/* Disclaimer */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
-          transition={{ delay: 0.75, duration: 0.5 }}
-          className="mt-8 text-center text-white/30 text-[11px]"
-        >
-          Bêta privée — fonctionnalités IA en cours d'activation réelle avec API externe.
-        </motion.p>
-      </div>
+        </div>
     </section>
   );
 }
