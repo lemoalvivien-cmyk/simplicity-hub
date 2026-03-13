@@ -56,6 +56,7 @@ export default function UserLayout({ children, role: roleProp, jarvisContext = "
       <div className="hidden md:block">
         <JarvisButton context={jarvisContext} userRole={jarvisRole} />
       </div>
+      </div>
     </div>
   );
 }
