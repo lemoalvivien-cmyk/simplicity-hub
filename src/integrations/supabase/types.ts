@@ -2132,6 +2132,104 @@ export type Database = {
         }
         Relationships: []
       }
+      insights_api_keys: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string
+          label: string | null
+          last_used_at: string | null
+          monthly_limit: number
+          owner_user_id: string
+          requests_this_month: number
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          key_prefix: string
+          label?: string | null
+          last_used_at?: string | null
+          monthly_limit?: number
+          owner_user_id: string
+          requests_this_month?: number
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          label?: string | null
+          last_used_at?: string | null
+          monthly_limit?: number
+          owner_user_id?: string
+          requests_this_month?: number
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      insights_api_usage: {
+        Row: {
+          api_key_id: string
+          created_at: string
+          endpoint: string
+          error_code: string | null
+          id: string
+          ip_hash: string | null
+          response_time_ms: number | null
+          signals_returned: number | null
+          tier: string
+        }
+        Insert: {
+          api_key_id: string
+          created_at?: string
+          endpoint: string
+          error_code?: string | null
+          id?: string
+          ip_hash?: string | null
+          response_time_ms?: number | null
+          signals_returned?: number | null
+          tier: string
+        }
+        Update: {
+          api_key_id?: string
+          created_at?: string
+          endpoint?: string
+          error_code?: string | null
+          id?: string
+          ip_hash?: string | null
+          response_time_ms?: number | null
+          signals_returned?: number | null
+          tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insights_api_usage_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "insights_api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       intro_escrow: {
         Row: {
           company_id: string | null
@@ -5941,6 +6039,7 @@ export type Database = {
         Args: { p_facilitator_id: string }
         Returns: undefined
       }
+      reset_insights_monthly_quota: { Args: never; Returns: undefined }
       resolve_message_template: {
         Args: { p_action_type: string; p_channel?: string; p_owner_id: string }
         Returns: Json
