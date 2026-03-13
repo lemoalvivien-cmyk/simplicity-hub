@@ -318,19 +318,19 @@ export default function APropos() {
                 icon: Heart,
                 color: "hsl(24 100% 55%)",
                 title: "L'humain d'abord",
-                desc: "La technologie ne remplace pas les relations. Elle les amplifie. Chaque fonctionnalité est pensée pour remettre l'humain au centre de la transaction.",
+                desc: "La technologie ne remplace pas les relations. Elle les amplifie. Chaque fonction est pensée pour remettre les gens au centre.",
               },
               {
                 icon: Target,
                 color: "hsl(218 72% 55%)",
-                title: "L'équité comme moteur",
-                desc: "Même outil, mêmes règles, mêmes opportunités — qu'on soit dirigeant d'une PME ou retraité de 62 ans. L'accès ne se mérite pas, il se donne.",
+                title: "La même chance pour tout le monde",
+                desc: "Mêmes outils, mêmes règles, mêmes opportunités — que vous soyez dirigeant ou retraité de 62 ans.",
               },
               {
                 icon: Handshake,
                 color: "hsl(152 62% 42%)",
-                title: "La collaboration avant tout",
-                desc: "On ne gagne pas seul. La plateforme est conçue pour que la réussite de l'un amplifie la réussite des autres. Pas de jeu à somme nulle.",
+                title: "On gagne ensemble",
+                desc: "Quand quelqu'un réussit grâce à vous, vous gagnez aussi. Pas de compétition — de la coopération.",
               },
             ].map(({ icon: Icon, color, title, desc }) => (
               <div
