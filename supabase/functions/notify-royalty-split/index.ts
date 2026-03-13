@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
       montant:              facilitateurNet,
       statut:               "confirme",
       source:               "ada_autonomous",
-      description:          `Deal ADA fermé — ${adaSession.target_name} — 7% royalty WiinupMax déduit`,
+      description:          `Deal ADA fermé — ${adaSession.target_name} — 12% royalty WiinupMax déduit (7% platform + 5% engine fee)`,
       stripe_payment_intent_id: pi.id,
     });
 
@@ -120,8 +120,8 @@ Deno.serve(async (req) => {
       facilitateur_user_id: adaSession.owner_user_id,
       montant:              royaltyAmount,
       statut:               "confirme",
-      source:               "platform_royalty_7pct",
-      description:          `Royalty plateforme 7% — Deal ADA — ${adaSession.target_name}`,
+      source:               "platform_royalty_12pct",
+      description:          `Royalty plateforme 12% — Deal ADA — ${adaSession.target_name} (7% platform + 5% engine fee swarm)`,
       stripe_payment_intent_id: pi.id,
     });
 
@@ -130,7 +130,7 @@ Deno.serve(async (req) => {
       user_id: adaSession.owner_user_id,
       type:    "gain_valide",
       title:   `💰 Deal fermé — ${adaSession.target_name}`,
-      body:    `${facilitateurNet.toLocaleString("fr-FR")} € crédités (7% royalty WiinupMax déduit). Bravo !`,
+      body:    `${facilitateurNet.toLocaleString("fr-FR")} € crédités (12% royalty WiinupMax déduit). Bravo !`,
       href:    "/gains",
     });
 
