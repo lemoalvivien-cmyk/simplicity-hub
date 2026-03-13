@@ -296,7 +296,7 @@ export default function APropos() {
           >
             <Quote size={20} className="mx-auto mb-3 opacity-40 text-white" aria-hidden="true" />
             <p className="text-white/90 text-base md:text-lg font-semibold italic max-w-xl mx-auto leading-relaxed">
-              « Recréer un équilibre financier pour tous en plaçant l'humain au cœur de l'économie. »
+              « Recréer un équilibre financier pour tous en mettant l'humain au cœur de l'économie. »
             </p>
           </div>
         </div>
