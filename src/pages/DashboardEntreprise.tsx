@@ -350,9 +350,9 @@ export default function DashboardEntreprise() {
           <button
             onClick={() => setDetailsOpen(v => !v)}
             className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
-            <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2">
               <Brain size={15} className="text-primary" />
-              <GlossaryTooltip term="Cockpit">Détails du cockpit</GlossaryTooltip>
+              Détails de mon tableau de bord
             </span>
             {detailsOpen
               ? <ChevronUp size={15} className="text-muted-foreground" />
