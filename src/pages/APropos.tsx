@@ -582,14 +582,13 @@ export default function APropos() {
           aria-hidden="true"
         />
         <div className="container max-w-xl text-center relative z-10">
-          <p
-            className="text-[10px] font-bold uppercase tracking-[0.15em] mb-5"
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] mb-5"
             style={{ color: "hsl(24 100% 62%)" }}
           >
-            La décision est là
+            Vous avez lu jusqu'ici
           </p>
           <h2 className="font-display text-[clamp(1.7rem,5vw,2.8rem)] font-bold text-white mb-4 leading-[1.1]">
-            Vous avez lu jusqu'ici.{" "}
+            Alors vous savez que{" "}
             <span
               style={{
                 background: "linear-gradient(135deg, hsl(24 100% 62%), hsl(38 100% 70%))",
@@ -598,11 +597,11 @@ export default function APropos() {
                 backgroundClip: "text",
               }}
             >
-              C'est que quelque chose résonne.
+              quelque chose vous parle.
             </span>
           </h2>
           <p className="text-white/70 text-base mb-10 max-w-sm mx-auto">
-            Rejoignez le mouvement. En tant qu'entreprise ou en tant que facilitateur.
+            Rejoignez-nous. En tant qu'entreprise ou en tant que facilitateur.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
