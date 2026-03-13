@@ -1,5 +1,15 @@
 # WIINUP MAX
 
+> ## 🔥 SÉCURITÉ CRITIQUE — À FAIRE EN PREMIER
+> **Le fichier `.env` peut être exposé sur GitHub.**
+> **Suivez immédiatement les instructions dans [`FIX_SECURITY.md`](./FIX_SECURITY.md) avant tout développement.**
+> ```bash
+> git rm --cached .env
+> git add .gitignore
+> git commit -m "SECURITY: remove .env from git history forever"
+> git push
+> ```
+
 Plateforme B2B de développement commercial par apport d'affaires et introductions qualifiées.
 
 ## Stack technique
