@@ -195,7 +195,7 @@ function BentoCard({ f, i, inView }: { f: typeof FEATURES[0]; i: number; inView:
             style={{ color: f.color, opacity: hovered ? 1 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            Activer <ChevronRight size={10} />
+            Ouvrir <ChevronRight size={10} />
           </motion.div>
         </div>
       </div>
