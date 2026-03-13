@@ -525,7 +525,7 @@ export default function RoyaltyFuturesTab() {
           >
             <ExternalLink size={10} className="text-muted-foreground" />
             <p className="text-[10px] text-muted-foreground">
-              Tokens WMAX émis sur Base L2 · Revendables sur secondary market
+              Récompenses émises sur le marché secondaire · Revendables instantanément
             </p>
           </div>
         )}
