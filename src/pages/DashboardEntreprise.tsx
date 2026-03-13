@@ -274,8 +274,8 @@ export default function DashboardEntreprise() {
                   Founder Pass — 99 €/an (100 places max)
                 </p>
                 <p className="text-sm" style={{ color: "hsl(38 100% 65%)" }}>
-                  ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm +{" "}
-                  <strong className="text-white">12&nbsp;% royalty tokenisée WMAX</strong> revendable sur secondary market.
+                  Votre assistant IA prospecte, apporte des affaires et travaille en autonomie 24h/24 +{" "}
+                  <strong className="text-white">12 % de gains reversés automatiquement</strong> sur chaque deal fermé.
                 </p>
               </div>
             </div>
