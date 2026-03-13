@@ -85,10 +85,13 @@ export default function LandingPage() {
       {/* 10 — QUESTIONS & RÉPONSES */}
       <AntiBullshitSection />
 
-      {/* 11 — PRICING */}
+      {/* 11 — POURQUOI DIFFÉRENT */}
+      <WhyDifferentSection />
+
+      {/* 12 — PRICING */}
       <PricingSection />
 
-      {/* 12 — CTA FINAL */}
+      {/* 13 — CTA FINAL */}
       <FinalCTASection />
 
       {/* FOOTER */}
