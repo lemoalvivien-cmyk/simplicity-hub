@@ -525,7 +525,7 @@ export default function RoyaltyFuturesTab() {
           >
             <ExternalLink size={10} className="text-muted-foreground" />
             <p className="text-[10px] text-muted-foreground">
-              Récompenses émises sur le marché secondaire · Revendables instantanément
+              Gains disponibles sur le marché secondaire · Revendables instantanément
             </p>
           </div>
         )}
