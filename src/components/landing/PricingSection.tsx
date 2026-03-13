@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, ArrowRight, Zap, Users } from "lucide-react";
+import { CheckCircle2, ArrowRight, Zap, Users, Flame } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { track } from "@/lib/landingTracking";
@@ -26,7 +26,6 @@ const facilitateurFeatures = [
 ];
 
 export default function PricingSection() {
-  const [launchAvailable, setLaunchAvailable] = useState(true);
   const [slotsRemaining, setSlotsRemaining] = useState(100);
 
   useEffect(() => {
@@ -36,9 +35,7 @@ export default function PricingSection() {
       .single()
       .then(({ data }) => {
         if (data) {
-          const remaining = Math.max(0, data.total_slots - data.used_slots);
-          setLaunchAvailable(remaining > 0);
-          setSlotsRemaining(remaining);
+          setSlotsRemaining(Math.max(0, data.total_slots - data.used_slots));
         }
       });
   }, []);
@@ -47,7 +44,7 @@ export default function PricingSection() {
     <section id="pricing" className="bg-background py-20">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
-          <p className="pill-tag mb-4 mx-auto w-fit">Offre lancement</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">Offre lancement exclusive</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
             Simple, honnête, transparent.
           </h2>
@@ -56,31 +53,45 @@ export default function PricingSection() {
           </p>
         </div>
 
+        {/* URGENT scarcity banner */}
+        <div
+          className="flex items-center justify-center gap-3 rounded-2xl px-5 py-3.5 mb-7 border"
+          style={{
+            background: "hsl(38 100% 52% / 0.08)",
+            borderColor: "hsl(38 100% 52% / 0.35)",
+          }}
+        >
+          <Flame size={16} style={{ color: "hsl(38 100% 60%)" }} className="shrink-0" />
+          <p className="text-sm font-semibold" style={{ color: "hsl(38 100% 68%)" }}>
+            Offre de lancement exclusive : <strong className="text-white">99 € TTC/an au lieu de 990 €</strong>
+            {" "}— ça part extrêmement vite,{" "}
+            <span style={{ color: "hsl(38 100% 75%)" }}>premier arrivé premier servi !</span>
+          </p>
+          {slotsRemaining > 0 && slotsRemaining <= 50 && (
+            <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-white/10 text-white">
+              {slotsRemaining} places restantes
+            </span>
+          )}
+        </div>
+
         <div className="grid md:grid-cols-2 gap-6 items-start">
           {/* Entreprise */}
           <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-lg flex flex-col">
             <div className="px-7 pt-7 pb-5" style={{ background: "var(--gradient-primary)" }}>
-              {launchAvailable && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold mb-4">
-                  <Zap size={10} />
-                  {slotsRemaining} place{slotsRemaining > 1 ? "s" : ""} restante{slotsRemaining > 1 ? "s" : ""} — Offre lancement
-                </div>
-              )}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold mb-4">
+                <Zap size={10} />
+                Offre de lancement — {slotsRemaining} place{slotsRemaining !== 1 ? "s" : ""} restante{slotsRemaining !== 1 ? "s" : ""}
+              </div>
               <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
               <div className="flex items-end gap-2 mb-1">
                 <span className="font-display font-bold text-5xl text-white leading-none">99 €</span>
-                <div className="pb-1.5">
+                <div className="pb-1.5 flex flex-col">
                   <p className="text-white/90 text-sm">/an TTC</p>
+                  <p className="text-white/50 text-xs line-through">990 €</p>
                 </div>
               </div>
-              <p className="text-white/75 text-sm font-medium mb-1 line-through opacity-60">soit 8,25 € / mois</p>
-              <p className="text-white/75 text-xs italic">
-                Le prix d'un café par semaine. Pour un cockpit d'acquisition complet.
-              </p>
-              <p className="text-white/75 text-xs mt-2">
-                {launchAvailable
-                  ? "Réservée aux 100 premières entreprises — accès complet immédiat"
-                  : "Abonnement annuel — accès complet, support inclus"}
+              <p className="text-white/80 text-xs font-semibold mt-1">
+                soit 8,25 € / mois · Premier arrivé premier servi
               </p>
             </div>
 
@@ -95,14 +106,15 @@ export default function PricingSection() {
               </ul>
               <Link
                 to="/signup"
-                className="btn-cta w-full text-center flex items-center justify-center gap-2 py-4"
+                className="btn-cta w-full text-center flex items-center justify-center gap-2 py-4 text-base font-bold"
                 onClick={() => track("cta_pricing_enterprise")}
               >
-                Commencer — inscription gratuite
+                <Zap size={16} />
+                Activer maintenant — 99 € TTC/an
                 <ArrowRight size={16} />
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
-                Annulation libre à tout moment · Aucun engagement
+                Annulation libre · Accès immédiat · Aucun engagement
               </p>
             </div>
           </div>
@@ -136,7 +148,7 @@ export default function PricingSection() {
                 Créer mon accès facilitateur — Gratuit
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
-                Modèle transparent d'apport d'affaires · Attribution prouvée · Paiement garanti
+                Attribution prouvée · Paiement garanti · Modèle transparent
               </p>
             </div>
           </div>

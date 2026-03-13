@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Flame } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 
 export default function FinalCTASection() {
@@ -33,17 +33,36 @@ export default function FinalCTASection() {
             prospection, réseau et suivi.
           </span>
         </h2>
+
+        {/* Pricing urgency block */}
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl mb-5 border"
+          style={{
+            background: "hsl(38 100% 52% / 0.1)",
+            borderColor: "hsl(38 100% 52% / 0.3)",
+          }}
+        >
+          <Flame size={14} style={{ color: "hsl(38 100% 65%)" }} />
+          <p className="text-sm font-semibold text-white/90">
+            Offre de lancement :{" "}
+            <span style={{ color: "hsl(38 100% 70%)" }}>99 € TTC/an au lieu de 990 €</span>
+            {" "}— premier arrivé premier servi
+          </p>
+        </div>
+
         <p className="text-white/90 text-base mb-5 max-w-sm mx-auto leading-relaxed font-medium">
-          Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+          Prospection IA assistée + réseau humain structuré. OpenClaw et facilitateurs actifs
+          travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
         </p>
 
         <div className="flex flex-col items-center gap-3 mb-5">
           <Link
             to="/signup"
-            className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
+            className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto font-bold"
             onClick={() => track("cta_final_enterprise")}
           >
-            Démarrer ma première mission
+            <Zap size={16} />
+            Activer maintenant — 99 € TTC/an
             <ArrowRight size={17} />
           </Link>
           <span className="flex items-center gap-1.5 text-white/60 text-xs">
@@ -53,7 +72,7 @@ export default function FinalCTASection() {
         </div>
 
         <p className="text-white/70 text-xs mb-6">
-          Sans engagement · Annulation libre · Support inclus à chaque étape
+          Sans engagement · Annulation libre · Support inclus · Accès immédiat
         </p>
       </div>
     </section>
