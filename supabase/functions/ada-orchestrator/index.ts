@@ -1,16 +1,27 @@
 /**
- * ADA Orchestrator — Autonomous Deal Agent State Machine
- * LangGraph-style node execution: scan → script → consent → call → negotiate → contract → oversight
+ * ADA Orchestrator v2 — Autonomous Deal Agent — 95% Autonome
+ * ─────────────────────────────────────────────────────────────────────────────
+ * State machine: scan_etg → prepare_script → bloctel_check → awaiting_consent
+ *   → voice_consent (ElevenLabs) → calling → negotiating
+ *   → awaiting_human_validation → generate_contract → awaiting_final_closing
+ *   → closed | abandoned | error
  *
+ * Sécurité : RGPD art 6.1.a, Bloctel Loi Hamon, EU AI Act art 52
+ * Royalty   : 7% automatique sur chaque deal via Silent Royalty Engine
  * POST /ada-orchestrator
- * Body: { action: "start" | "advance" | "validate" | "close" | "abandon", session_id?, target?, ... }
+ * Body: { action: "start"|"consent"|"voice_consent"|"negotiate"|"validate"|"close"|"abandon", ... }
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") ?? "";
+const SUPABASE_URL     = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_KEY      = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const LOVABLE_API_KEY  = Deno.env.get("LOVABLE_API_KEY") ?? "";
+const ELEVENLABS_KEY   = Deno.env.get("ELEVENLABS_API_KEY") ?? "";
+const STRIPE_SECRET    = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+
+// ElevenLabs voice ID for ADA (closer féminin, neutre, professionnel)
+const ADA_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"; // Sarah
 
 // ── ADA State Machine Nodes ─────────────────────────────────────────────────
 
