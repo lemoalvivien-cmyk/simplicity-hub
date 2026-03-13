@@ -2,7 +2,8 @@
 ### 🏆 Phase 1 terminée — Monopole data + exécution autonome + cash machine verrouillé
 
 > **WiinupMax est une machine de guerre B2B.**
-> Eternal Trust Graph · ADA Autonomous Agents · Insights Licensing API · Silent Royalty 7%
+> Eternal Trust Graph · ADA Autonomous Agents · Insights Licensing API · Silent Royalty 12%
+> **Founder Pass 99 €/an (100 places max)** – ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm + 12 % royalty tokenisée WMAX revendable sur secondary market.
 
 ---
 
