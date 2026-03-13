@@ -351,31 +351,31 @@ export default function RoyaltyFuturesTab() {
       {/* ── KPI grid ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <KPICard
-          label="Total royalties"
+          label="Gains totaux"
           value={`${totalRoyalties.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`}
-          sub={`${records.length} deal${records.length !== 1 ? "s" : ""} ADA`}
+          sub={`${records.length} deal${records.length !== 1 ? "s" : ""} assistants IA`}
           color="hsl(var(--primary-glow))"
           icon={TrendingUp}
         />
         <KPICard
-          label="WMAX mintés"
+          label="Récompenses converties"
           value={wmaxMinted.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
-          sub="tokens sur Base L2"
+          sub="unités sur le marché"
           color="hsl(38 95% 60%)"
           icon={Coins}
         />
         <KPICard
-          label="Valeur live WMAX"
+          label="Valeur live"
           value={`${liveValue.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`}
-          sub={`1 WMAX = ${tokenPrice.toFixed(4)} €`}
+          sub={`1 unité = ${tokenPrice.toFixed(4)} €`}
           color="hsl(152 62% 50%)"
           icon={Zap}
           pulse
         />
         <KPICard
-          label="À minter"
+          label="À convertir"
           value={wmaxPending.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
-          sub="WMAX en attente"
+          sub="récompenses en attente"
           color="hsl(var(--accent))"
           icon={Wallet}
         />
