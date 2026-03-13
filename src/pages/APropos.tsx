@@ -124,12 +124,11 @@ export default function APropos() {
                 </div>
               </div>
               <p className="text-white/80 text-sm leading-relaxed">
-                <strong className="text-white">La Prospection Automatisée.</strong>{" "}
-                OpenClaw prospecte en continu, détecte les signaux d'intention, rédige des messages personnalisés
-                et remonte les leads chauds — sans intervention manuelle.
+                <strong className="text-white">La recherche automatique.</strong>{" "}
+                Un assistant cherche pour vous en continu, repère les personnes intéressées, prépare les messages et remonte les meilleures opportunités — sans que vous ayez à intervenir.
               </p>
               <ul className="space-y-1.5">
-                {["Agents IA actifs 24h/24", "Deal Radar & signaux d'intention", "Campagnes multicanal automatisées"].map(item => (
+                {["Actif 24h/24 pour vous", "Détecte les personnes intéressées", "Prépare les messages à envoyer"].map(item => (
                   <li key={item} className="flex items-center gap-2.5 text-sm text-white/75">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" aria-hidden="true" />
                     {item}
