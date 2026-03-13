@@ -2889,6 +2889,36 @@ export type Database = {
         }
         Relationships: []
       }
+      live_cash_flow: {
+        Row: {
+          amount: number | null
+          cash_weight: number | null
+          counterparty: string | null
+          created_at: string | null
+          id: string
+          user_id: string | null
+          vector: string | null
+        }
+        Insert: {
+          amount?: number | null
+          cash_weight?: number | null
+          counterparty?: string | null
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          vector?: string | null
+        }
+        Update: {
+          amount?: number | null
+          cash_weight?: number | null
+          counterparty?: string | null
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          vector?: string | null
+        }
+        Relationships: []
+      }
       message_templates: {
         Row: {
           body: string
