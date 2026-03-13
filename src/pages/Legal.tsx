@@ -185,9 +185,9 @@ export default function Legal() {
               <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Mic className="w-5 h-5 text-primary" /> Protocole de Consentement Vocal ADA
               </h2>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                <p className="text-xs font-semibold text-amber-800 mb-1">⚠️ Cadre légal applicable</p>
-                <p className="text-xs text-amber-700">
+              <div className="bg-muted border border-border rounded-lg p-4 mb-6">
+                <p className="text-xs font-semibold text-foreground mb-1">⚠️ Cadre légal applicable</p>
+                <p className="text-xs text-muted-foreground">
                   RGPD art. 6.1.a (consentement) + art. 9 si traitement biométrique de la voix.
                   Directive IA UE 2024/1689 (art. 50 — obligation de transparence pour agents IA vocaux).
                 </p>
