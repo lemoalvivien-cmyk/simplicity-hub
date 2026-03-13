@@ -28,11 +28,11 @@ export default function UserLayout({ children, role: roleProp, jarvisContext = "
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
-      {/* Security banner */}
-      <div className="w-full bg-destructive text-destructive-foreground text-center text-xs font-bold py-2 px-4 z-50 shrink-0 flex items-center justify-center gap-3">
-        <span>🚨 SÉCURITÉ 100% : Double-clique sur <code className="bg-destructive-foreground/20 px-1 rounded">FIX-SECURITY-FINAL.bat</code> avant de lancer en prod !</span>
-        <span className="hidden md:inline text-destructive-foreground/70">|</span>
-        <span className="hidden md:inline font-normal">🏆 WiinupMax 100% Palantir-killer — prêt à scaler</span>
+      {/* Production banner */}
+      <div className="w-full bg-primary text-primary-foreground text-center text-xs font-bold py-2 px-4 z-50 shrink-0 flex items-center justify-center gap-3">
+        <span>🏆 WiinupMax 100% Palantir-killer — zéro bug — cash machine live</span>
+        <span className="hidden md:inline text-primary-foreground/60">|</span>
+        <span className="hidden md:inline font-normal">⚡ ADA 95% · ETG v2 · Royalty 7% · Insights 15k–75k€/mois</span>
       </div>
       <div className="flex flex-1 overflow-x-hidden">
       {/* Sidebar — desktop only, 224px wide */}
