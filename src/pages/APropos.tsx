@@ -253,20 +253,20 @@ export default function APropos() {
               {
                 icon: Users,
                 color: "hsl(218 72% 55%)",
-                title: "Réduire le chômage",
-                desc: "Permettre à des milliers de personnes de générer un revenu complémentaire ou principal en valorisant leurs connexions humaines existantes.",
+                title: "Aider les personnes sans emploi",
+                desc: "Permettre à des milliers de personnes de gagner un revenu en valorisant leurs contacts — sans formation spéciale, sans investissement.",
               },
               {
                 icon: Heart,
                 color: "hsl(24 100% 55%)",
-                title: "Les publics fragiles en premier",
-                desc: "Seniors, personnes en reconversion, salariés à mi-temps : WiinupMax est conçu pour ceux que l'économie traditionnelle a laissés sur le côté.",
+                title: "Les personnes fragilisées en premier",
+                desc: "Retraités, personnes en transition, salariés à temps partiel : WiinupMax est pensé pour ceux que l'économie habituelle a laissés de côté.",
               },
               {
                 icon: MapPin,
                 color: "hsl(152 62% 42%)",
-                title: "L'économie des territoires",
-                desc: "Des connexions locales qui génèrent de la valeur locale. Pas un réseau centralisé — un tissu de proximité vivant.",
+                title: "Faire vivre les territoires",
+                desc: "Des connexions locales qui créent de la valeur locale. Pas un réseau centralisé — un tissu humain vivant.",
               },
             ].map(({ icon: Icon, color, title, desc }) => (
               <div
