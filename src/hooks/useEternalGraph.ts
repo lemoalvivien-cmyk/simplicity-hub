@@ -134,7 +134,7 @@ export function useEternalGraph(autoLoad = true) {
           .limit(50),
       ]);
 
-      if (statsRes.data)   setStats(statsRes.data as ETGStats);
+      if (statsRes.data)   setStats(statsRes.data as unknown as ETGStats);
       if (oppsRes.data)    setOpportunities(oppsRes.data as ETGOpportunity[]);
       if (linksRes.data)   setLinks(linksRes.data as ETGLink[]);
       if (hiddenRes.data)  setHiddenLinks(hiddenRes.data as ETGHiddenLink[]);
