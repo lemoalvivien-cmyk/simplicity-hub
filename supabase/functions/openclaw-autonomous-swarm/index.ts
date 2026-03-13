@@ -38,6 +38,13 @@ Deno.serve(async (req: Request) => {
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
+  // ── Rate limiting ───────────────────────────────────────────────────────────
+  const rateCheck = await enforceRateLimit(user.id, "openclaw-autonomous-swarm");
+  if (rateCheck && !rateCheck.allowed) return build429(corsHeaders, "openclaw-autonomous-swarm");
+
+  const releaseTracker = trackRequest();
+  const elapsed = startTimer();
+
   try {
     const body = await req.json();
     const { user_id, tx } = body;
