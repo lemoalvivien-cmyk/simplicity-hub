@@ -5,14 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { track } from "@/lib/landingTracking";
 
 const entrepriseFeatures = [
-  "Missions illimitées",
-  "Introductions tracées & validées",
-  "Prospection IA assistée (OpenClaw)",
-  "Suggestions de cibles et messages",
-  "Cockpit central de suivi",
-  "Assistant IA contextuel",
-  "Marketplace de facilitateurs",
-  "Gains & commissions traçables",
+  "ADA prospecte en voix · 24/7 · swarm autonome",
+  "Missions illimitées · Introductions tracées & validées",
+  "OpenClaw apporte des affaires en autonomie",
+  "Exécution autonome 24/7 via swarm multi-agents",
+  "12 % royalty tokenisée WMAX · revendable sur secondary market",
+  "Cockpit central de suivi · Assistant IA contextuel",
+  "Marketplace de facilitateurs · Gains traçables",
+  "Live cash flow · Eternal Trust Graph v2",
   "Support inclus · Mises à jour incluses",
 ];
 
