@@ -94,7 +94,7 @@ export default function HowItWorksEntrepriseSection() {
             className="btn-cta inline-flex items-center gap-2 px-8 py-4 text-base"
             onClick={() => track("cta_howitworks")}
           >
-            Lancer ma première mission
+            Je veux mes premiers clients dès demain — 99 €/an
             <ArrowRight size={16} />
           </Link>
           <p className="text-[11px] text-muted-foreground mt-3">

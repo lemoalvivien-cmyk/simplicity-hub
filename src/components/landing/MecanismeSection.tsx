@@ -7,10 +7,10 @@ export default function MecanismeSection() {
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">Comment ça fonctionne</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Un double moteur. Un seul cockpit.
+            WiinupMax, c'est comme avoir deux amis exceptionnels qui travaillent pour vous en même temps.
           </h2>
           <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed">
-            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+            L'un cherche automatiquement les bonnes personnes pendant que vous dormez. L'autre vous présente des clients de confiance. Les deux ensemble dans un seul espace calme et protégé.
           </p>
         </div>
 
