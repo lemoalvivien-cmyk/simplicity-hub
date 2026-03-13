@@ -153,6 +153,7 @@ const App = () => (
                 {/* ── Utilitaires ──────────────────────────── */}
                 <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
                 <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
+                <Route path="/ada" element={<ProtectedRoute><ADAControlPanel /></ProtectedRoute>} />
                 <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
 
                 {/* ── Admin ────────────────────────────────── */}
