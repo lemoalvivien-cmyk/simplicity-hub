@@ -158,12 +158,11 @@ export default function APropos() {
                 </div>
               </div>
               <p className="text-white/80 text-sm leading-relaxed">
-                <strong className="text-white">L'Apport d'Affaires Industrialisé.</strong>{" "}
-                Un réseau de facilitateurs recommande votre offre à leurs contacts qualifiés.
-                Chaque introduction est tracée, vérifiée et prouvable.
+                <strong className="text-white">Les présentations humaines.</strong>{" "}
+                Des personnes de confiance recommandent votre offre à leurs contacts. Chaque présentation est enregistrée, vérifiée et prouvable.
               </p>
               <ul className="space-y-1.5">
-                {["Introductions vérifiées & protégées", "Gains traçables en temps réel", "Validation en un clic"].map(item => (
+                {["Présentations vérifiées et protégées", "Gains visibles en temps réel", "Validation en un seul clic"].map(item => (
                   <li key={item} className="flex items-center gap-2.5 text-sm text-white/75">
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "hsl(24 100% 60%)" }} aria-hidden="true" />
                     {item}
