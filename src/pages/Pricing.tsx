@@ -81,27 +81,27 @@ const facilitateurFeatures = [
 const faqItems = [
   {
     q: "Combien de places restent disponibles ?",
-    a: "L'offre Founder Pass est strictement limitée à 100 entreprises. Le compteur est en temps réel. Après épuisement, le prix passera à 990 €/an.",
+    a: "L'offre de démarrage est limitée à 100 entreprises. Le compteur est en temps réel. Après, le prix passe à 990 €/an.",
   },
   {
-    q: "Qu'est-ce que la royalty WMAX tokenisée 12 % ?",
-    a: "À chaque deal fermé par ADA, 12 % du montant est automatiquement tokenisé en WMAX sur Base L2 : 7 % platform fee + 5 % engine fee pour le swarm autonome. Ces tokens sont revendables sur le secondary market.",
+    q: "À quoi servent les 99 € par an ?",
+    a: "Ils donnent accès à tout : l'assistant qui cherche des clients pour vous, les présentations de vos contacts, le suivi complet et les gains automatiques. Tout inclus, sans frais cachés.",
   },
   {
-    q: "Comment fonctionne ADA en voix ElevenLabs ?",
-    a: "ADA est un agent autonome qui prospecte par téléphone avec une voix synthétique ElevenLabs ultra-réaliste, 24/7. Il négocie, qualifie, et ferme les deals en autonomie avec supervision humaine optionnelle.",
+    q: "Comment fonctionne l'assistant vocal ?",
+    a: "Il cherche des clients pour vous, prépare les messages, et vous informe au bon moment — 24h/24, sans que vous ayez à intervenir. Vous validez ou refusez en un clic.",
   },
   {
-    q: "Puis-je connecter ma banque via PSD2 ?",
-    a: "Oui. La connexion bancaire PSD2 active le Live Cash Flow et améliore le scoring ADA. Vos données bancaires ne sont jamais stockées en clair — vectorisation uniquement.",
+    q: "Puis-je connecter mon compte bancaire ?",
+    a: "Oui. La connexion bancaire vous permet de voir vos entrées d'argent en direct et d'améliorer les résultats de votre assistant. Vos données bancaires ne sont jamais stockées chez nous.",
   },
   {
     q: "Les facilitateurs paient-ils quelque chose ?",
-    a: "Non. L'accès facilitateur est gratuit pour toujours. Aucune carte bancaire requise. 0 % de commission prélevée sur vos gains.",
+    a: "Non. L'accès facilitateur est gratuit pour toujours. Aucune carte bancaire. Vous présentez des gens, vous êtes payé. On ne prend rien sur vos gains.",
   },
   {
-    q: "Mon tarif est-il garanti à vie ?",
-    a: "Oui. Si vous souscrivez pendant la période de lancement, votre tarif de 99 €/an est verrouillé à vie. Aucune surprise.",
+    q: "Mon tarif de 99 € est-il garanti à vie ?",
+    a: "Oui. Si vous vous inscrivez pendant la période de lancement, votre tarif reste à 99 €/an pour toujours. Aucune surprise.",
   },
 ];
 
