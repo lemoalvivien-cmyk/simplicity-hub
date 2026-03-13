@@ -69,6 +69,9 @@ const ADAModelDashboard = lazy(() => import("./pages/ADAModelDashboard"));
 // ── Lazy: Insights API Sales ──────────────────────────────────────────────────
 const InsightsSales = lazy(() => import("./pages/InsightsSales"));
 
+// ── Lazy: System Status ───────────────────────────────────────────────────────
+const SystemStatus = lazy(() => import("./pages/SystemStatus"));
+
 // ── Lazy: admin ──────────────────────────────────────────────────────────────
 const AdminOverview = lazy(() => import("./pages/admin/Overview"));
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
