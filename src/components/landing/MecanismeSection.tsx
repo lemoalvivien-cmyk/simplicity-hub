@@ -92,8 +92,7 @@ export default function MecanismeSection() {
                 </div>
               </div>
               <p className="text-white/90 text-sm leading-relaxed">
-                Un réseau de facilitateurs actifs recommande votre offre à leurs contacts qualifiés.
-                Chaque introduction est tracée, vérifiée et prouvable dès l'envoi.
+                Des gens de confiance qui connaissent du monde. Ils vous présentent simplement des clients qu'ils apprécient. Quand l'affaire est signée, ils reçoivent une récompense juste et automatique. Vous, vous ne gérez absolument rien.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
