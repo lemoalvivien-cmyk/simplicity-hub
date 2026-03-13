@@ -63,11 +63,11 @@ supabase/
 
 ## Monétisation
 
-- **🔥 Offre Launch exclusive** : 99 € TTC/an (au lieu de 990 €) — ça part extrêmement vite, premier arrivé premier servi !
+- **🔥 Founder Pass** : 99 € TTC/an (100 places max) — ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm + 12 % royalty tokenisée WMAX revendable sur secondary market
 - **Insights API Starter** : 15 000 € / mois
 - **Insights API Growth** : 35 000 € / mois
 - **Insights API Enterprise** : 75 000 € / mois
-- **Royalty ADA** : 7% sur chaque deal fermé automatiquement
+- **Royalty ADA** : 12% sur chaque deal fermé automatiquement (7% platform + 5% engine fee swarm)
 
 ## Développement local
 
