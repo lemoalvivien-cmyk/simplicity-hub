@@ -17,7 +17,7 @@ import { initScrollTracking, track } from "@/lib/landingTracking";
 import { trackEvent } from "@/lib/analytics";
 
 // ── Dynamic imports for heavy/above-fold 3D & cursor components ──────────────
-const HeroSectionV2   = lazy(() => import("@/components/landing/HeroSectionV2"));
+const HeroFounderPass = lazy(() => import("@/components/landing/HeroFounderPass"));
 const MagneticCursor  = lazy(() => import("@/components/landing/MagneticCursor"));
 const GodModeTeaser   = lazy(() => import("@/components/landing/GodModeTeaser"));
 
@@ -51,9 +51,9 @@ export default function LandingPage() {
 
       <PublicNav />
 
-      {/* 1 — HERO V2 (3D morphing sphere + kinetic typography) */}
+      {/* 1 — HERO FOUNDER PASS (brand + exact copy + CTAs Stripe + PSD2) */}
       <Suspense fallback={<HeroFallback />}>
-        <HeroSectionV2 />
+        <HeroFounderPass />
       </Suspense>
 
       {/* 2 — DOULEURS ENTREPRISES */}
