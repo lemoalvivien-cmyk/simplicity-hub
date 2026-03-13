@@ -337,13 +337,13 @@ export default function RoyaltyFuturesTab() {
         <Coins size={18} style={{ color: "hsl(38 95% 60%)" }} className="shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-bold text-foreground mb-0.5">
-            Mes Royalty Futures — WMAX Token (Base L2)
+            Mes gains — Récompenses automatiques
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Chaque deal fermé par ADA génère automatiquement{" "}
-            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>12 % de royalty tokenisée</span>{" "}
-            — 7 % platform fee + 5 % engine fee swarm.
-            Mintez vos tokens WMAX et revendez-les sur le secondary market Base L2.
+            Chaque deal fermé par votre assistant IA génère automatiquement{" "}
+            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>12 % de gains reversés</span>{" "}
+            — 7 % frais plateforme + 5 % moteur IA.
+            Convertissez vos récompenses et revendez-les sur le marché secondaire.
           </p>
         </div>
       </div>
@@ -351,31 +351,31 @@ export default function RoyaltyFuturesTab() {
       {/* ── KPI grid ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <KPICard
-          label="Total royalties"
+          label="Gains totaux"
           value={`${totalRoyalties.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`}
-          sub={`${records.length} deal${records.length !== 1 ? "s" : ""} ADA`}
+          sub={`${records.length} deal${records.length !== 1 ? "s" : ""} assistants IA`}
           color="hsl(var(--primary-glow))"
           icon={TrendingUp}
         />
         <KPICard
-          label="WMAX mintés"
+          label="Récompenses converties"
           value={wmaxMinted.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
-          sub="tokens sur Base L2"
+          sub="unités sur le marché"
           color="hsl(38 95% 60%)"
           icon={Coins}
         />
         <KPICard
-          label="Valeur live WMAX"
+          label="Valeur live"
           value={`${liveValue.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`}
-          sub={`1 WMAX = ${tokenPrice.toFixed(4)} €`}
+          sub={`1 unité = ${tokenPrice.toFixed(4)} €`}
           color="hsl(152 62% 50%)"
           icon={Zap}
           pulse
         />
         <KPICard
-          label="À minter"
+          label="À convertir"
           value={wmaxPending.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
-          sub="WMAX en attente"
+          sub="récompenses en attente"
           color="hsl(var(--accent))"
           icon={Wallet}
         />
@@ -393,7 +393,7 @@ export default function RoyaltyFuturesTab() {
         >
           <div className="flex items-center gap-2">
             <Bot size={14} style={{ color: "hsl(var(--primary-glow))" }} />
-            <p className="text-sm font-bold text-foreground">Historique des deals ADA</p>
+            <p className="text-sm font-bold text-foreground">Historique des deals</p>
           </div>
           <button
             onClick={handleRefresh}
@@ -415,10 +415,10 @@ export default function RoyaltyFuturesTab() {
             <div className="text-center py-10 px-5">
               <Coins size={28} className="mx-auto mb-3 text-muted-foreground/35" />
               <p className="text-sm font-semibold text-foreground mb-1">
-                Aucun deal ADA fermé pour l'instant
+                Aucun deal fermé pour l'instant
               </p>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                Vos royalties WMAX apparaîtront ici dès qu'ADA fermera son premier deal autonome.
+                Vos gains apparaîtront ici dès que votre assistant IA fermera son premier deal autonome.
               </p>
             </div>
           ) : (
@@ -451,7 +451,7 @@ export default function RoyaltyFuturesTab() {
                         className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: "hsl(152 62% 50% / 0.12)", color: "hsl(152 62% 50%)" }}
                       >
-                        Minté
+                        Converti
                       </span>
                     )}
                   </div>
@@ -463,10 +463,10 @@ export default function RoyaltyFuturesTab() {
                       </span>
                     </span>
                     <span className="text-xs font-semibold" style={{ color: "hsl(38 95% 65%)" }}>
-                      {record.royalty_12pct.toLocaleString("fr-FR")} WMAX
+                      Gains : {record.royalty_12pct.toLocaleString("fr-FR")} €
                     </span>
                     <span className="text-[10px] text-muted-foreground/60 hidden sm:inline">
-                      (7 %={record.platform_fee_7pct.toLocaleString("fr-FR")} € · 5 %={record.engine_fee_5pct.toLocaleString("fr-FR")} €)
+                      (7 % plateforme={record.platform_fee_7pct.toLocaleString("fr-FR")} € · 5 % moteur={record.engine_fee_5pct.toLocaleString("fr-FR")} €)
                     </span>
                   </div>
                 </div>
@@ -507,9 +507,9 @@ export default function RoyaltyFuturesTab() {
                     className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all disabled:opacity-40 hover:opacity-90"
                     style={{ background: "var(--gradient-primary)" }}
                   >
-                    {minting === record.id
-                      ? <><Loader2 size={11} className="animate-spin" /> Mint…</>
-                      : <><Zap size={11} /> Minter</>
+                  {minting === record.id
+                      ? <><Loader2 size={11} className="animate-spin" /> Conversion…</>
+                      : <><Zap size={11} /> Convertir</>
                     }
                   </button>
                 )}
@@ -525,7 +525,7 @@ export default function RoyaltyFuturesTab() {
           >
             <ExternalLink size={10} className="text-muted-foreground" />
             <p className="text-[10px] text-muted-foreground">
-              Tokens WMAX émis sur Base L2 · Revendables sur secondary market
+              Récompenses émises sur le marché secondaire · Revendables instantanément
             </p>
           </div>
         )}

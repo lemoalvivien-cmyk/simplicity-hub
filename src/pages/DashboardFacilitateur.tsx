@@ -124,7 +124,7 @@ export default function DashboardFacilitateur() {
                     ? <span className="inline-block w-40 h-4 rounded bg-muted animate-pulse" />
                     : missionsCount > 0
                     ? `${missionsCount} mission${missionsCount > 1 ? "s" : ""} vous attendent`
-                    : "Bienvenue sur votre cockpit de revenus."}
+                    : "Bienvenue sur votre espace de revenus."}
                 </p>
               </div>
               {requests.length > 0 && (
@@ -189,7 +189,7 @@ export default function DashboardFacilitateur() {
               className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
               <span className="flex items-center gap-2">
                 <Trophy size={15} className="text-primary" />
-                <GlossaryTooltip term="Cockpit">Détails du cockpit</GlossaryTooltip>
+                Détails de mes revenus
               </span>
               {detailsOpen
                 ? <ChevronUp size={15} className="text-muted-foreground" />

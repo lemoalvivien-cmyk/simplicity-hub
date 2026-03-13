@@ -69,14 +69,14 @@ function NewSessionForm({ onStart }: { onStart: (p: { target_name: string; targe
           style={{ background: "hsl(218 65% 8% / 0.97)", border: "1px solid hsl(218 45% 20% / 0.6)" }}
         >
           <div className="flex items-center justify-between mb-1">
-            <p className="font-bold text-white text-sm">Nouvelle session ADA</p>
+            <p className="font-bold text-white text-sm">Nouvelle session IA</p>
             <button onClick={() => setOpen(false)}><X size={14} style={{ color: "hsl(var(--muted-foreground))" }} /></button>
           </div>
           <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nom du prospect *" className="h-9 text-sm" />
           <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+33 6 XX XX XX XX" className="h-9 text-sm" />
           <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@prospect.com" className="h-9 text-sm" type="email" />
           <Button onClick={handleSubmit} size="sm" className="w-full font-bold">
-            <Bot size={14} /> Lancer l'agent ADA
+            <Bot size={14} /> Lancer mon assistant
           </Button>
         </motion.div>
       )}
@@ -183,7 +183,7 @@ function TranscriptionFeed({ transcriptions }: { transcriptions: ADATranscriptio
               }}
             >
               <p className="text-[9px] font-bold mb-0.5" style={{ color: speakerColors[t.speaker] }}>
-                {t.speaker === "agent" ? "🤖 Agent ADA" : "👤 Prospect"}
+                {t.speaker === "agent" ? "🤖 Mon assistant IA" : "👤 Prospect"}
                 {t.is_key_moment && t.key_moment_type && (
                   <span className="ml-2 px-1.5 py-0.5 rounded text-[8px]"
                     style={{ background: "hsl(38 95% 52% / 0.15)", color: "hsl(38 95% 52%)" }}>

@@ -179,8 +179,8 @@ export default function DashboardEntreprise() {
         {/* ═══ TABS ════════════════════════════════════════════ */}
         <div className="flex gap-1 p-1 rounded-2xl border border-border" style={{ background: "hsl(var(--card))" }}>
           {([
-            { key: "cockpit", label: "Cockpit", icon: Brain },
-            { key: "royalties", label: "Mes Royalty Futures", icon: Coins },
+            { key: "cockpit", label: "Mon tableau de bord", icon: Brain },
+            { key: "royalties", label: "Mes gains", icon: Coins },
           ] as const).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -274,8 +274,8 @@ export default function DashboardEntreprise() {
                   Founder Pass — 99 €/an (100 places max)
                 </p>
                 <p className="text-sm" style={{ color: "hsl(38 100% 65%)" }}>
-                  ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm +{" "}
-                  <strong className="text-white">12&nbsp;% royalty tokenisée WMAX</strong> revendable sur secondary market.
+                  Votre assistant IA prospecte, apporte des affaires et travaille en autonomie 24h/24 +{" "}
+                  <strong className="text-white">12 % de gains reversés automatiquement</strong> sur chaque deal fermé.
                 </p>
               </div>
             </div>
@@ -350,9 +350,9 @@ export default function DashboardEntreprise() {
           <button
             onClick={() => setDetailsOpen(v => !v)}
             className="w-full flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
-            <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2">
               <Brain size={15} className="text-primary" />
-              <GlossaryTooltip term="Cockpit">Détails du cockpit</GlossaryTooltip>
+              Détails de mon tableau de bord
             </span>
             {detailsOpen
               ? <ChevronUp size={15} className="text-muted-foreground" />

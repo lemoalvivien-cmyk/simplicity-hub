@@ -228,7 +228,7 @@ export default function HeroSectionV2() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.3 }}
             >
-              Founder Pass 99 €/an (100 places max) – ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm + 12&nbsp;% royalty tokenisée WMAX revendable sur secondary market.
+              Founder Pass 99 €/an (100 places max) – Votre assistant IA prospecte en voix + apporte des affaires + travaille en autonomie 24h/24 + 12&nbsp;% de gains reversés automatiquement sur chaque deal fermé.
             </motion.p>
 
             {/* ── CTAs with haptic spring hover ─────────────── */}

@@ -25,9 +25,9 @@ const INITIAL_STATUSES: StatusItem[] = [
   { id: "db",         label: "Base de données",      description: "PostgreSQL + pgvector",           icon: Database,   status: "loading" },
   { id: "auth",       label: "Authentification",      description: "JWT + RLS strict",                icon: Lock,       status: "loading" },
   { id: "etg",        label: "Eternal Trust Graph",   description: "pgvector + shortest_path_trust",  icon: Brain,      status: "loading" },
-  { id: "ada",        label: "ADA Agent Engine",      description: "Llama-3-70B + Gemini 2.5 Flash",  icon: Zap,        status: "loading" },
+  { id: "ada",        label: "Assistant IA",         description: "Gemini 2.5 Flash + voix",         icon: Zap,        status: "loading" },
   { id: "stripe",     label: "Stripe Payments",       description: "Checkout + Connect + Webhooks",   icon: CreditCard, status: "loading" },
-  { id: "royalty",    label: "Silent Royalty 7%",     description: "Webhook split auto",              icon: TrendingUp, status: "loading" },
+  { id: "royalty",    label: "Partage des gains 7 %", description: "Reversement automatique",         icon: TrendingUp, status: "loading" },
   { id: "insights",   label: "Insights API",          description: "Starter · Growth · Enterprise",   icon: BarChart3,  status: "loading" },
   { id: "security",   label: "Sécurité & RGPD",       description: "RLS + rate-limit + Bloctel",      icon: ShieldCheck,status: "loading" },
 ];
