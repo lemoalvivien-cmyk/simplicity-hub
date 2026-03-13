@@ -155,6 +155,7 @@ const App = () => (
                 <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
                 <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
                 <Route path="/ada" element={<ProtectedRoute><ADAControlPanel /></ProtectedRoute>} />
+                <Route path="/ada/model" element={<ProtectedRoute><ADAModelDashboard /></ProtectedRoute>} />
                 <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
 
                 {/* ── Admin ────────────────────────────────── */}

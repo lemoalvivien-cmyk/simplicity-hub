@@ -1,6 +1,13 @@
 project_id = "usnriklfiagazpffsqew"
 
 [functions]
+  [functions.ada-orchestrator]
+    verify_jwt = false
+  [functions.ada-voice-call]
+    verify_jwt = false
+  [functions.ada-training-pipeline]
+    verify_jwt = false
+
   [functions.etg-aggregate]
     verify_jwt = false
   [functions.etg-predict]
