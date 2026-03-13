@@ -183,7 +183,7 @@ function TranscriptionFeed({ transcriptions }: { transcriptions: ADATranscriptio
               }}
             >
               <p className="text-[9px] font-bold mb-0.5" style={{ color: speakerColors[t.speaker] }}>
-                {t.speaker === "agent" ? "🤖 Agent ADA" : "👤 Prospect"}
+                {t.speaker === "agent" ? "🤖 Mon assistant IA" : "👤 Prospect"}
                 {t.is_key_moment && t.key_moment_type && (
                   <span className="ml-2 px-1.5 py-0.5 rounded text-[8px]"
                     style={{ background: "hsl(38 95% 52% / 0.15)", color: "hsl(38 95% 52%)" }}>
