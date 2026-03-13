@@ -1,9 +1,13 @@
 /**
- * Silent Royalty Engine — 7% Platform Split
+ * Silent Royalty Engine — 12% Platform Split
  * ────────────────────────────────────────────────────────────────────
  * Triggered by stripe-webhook on payment_intent.succeeded for ADA deals.
+ * Breakdown:
+ *   - 7% platform fee (core WiinupMax)
+ *   - 5% engine fee (swarm autonome + live cash flow + WMAX secondary market)
+ *   = 12% total royalty tokenisée WMAX
  * Automatically:
- *   1. Calculates 7% royalty on deal amount
+ *   1. Calculates 12% royalty on deal amount
  *   2. Creates Stripe Transfer to platform account
  *   3. Logs in gains table with royalty breakdown
  *   4. Notifies facilitateur via notifications table
@@ -18,8 +22,8 @@ const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
 const SUPABASE_URL          = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY           = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-// Platform account that receives the 7% royalty
-const PLATFORM_ROYALTY_PCT = 0.07;
+// Platform account that receives the 12% royalty (7% platform + 5% engine fee)
+const PLATFORM_ROYALTY_PCT = 0.12;
 
 const log = (step: string, details?: unknown) => {
   console.log(`[ROYALTY-ENGINE] ${step}${details ? ` — ${JSON.stringify(details)}` : ""}`);
