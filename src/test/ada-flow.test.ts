@@ -26,13 +26,15 @@ function parseNegotiateToolCall(
   };
 }
 
-/** Compute royalty split (7% platform / 93% facilitateur) */
+/** Compute royalty split (12% platform / 88% facilitateur)
+ *  Breakdown: 7% platform fee + 5% engine fee (swarm autonome + live cash flow + WMAX secondary market)
+ */
 function computeRoyalty(dealAmount: number): {
   commission: number;
   facilitateurNet: number;
   total: number;
 } {
-  const commission = Math.round(dealAmount * 0.07 * 100) / 100;
+  const commission = Math.round(dealAmount * 0.12 * 100) / 100;
   const facilitateurNet = Math.round((dealAmount - commission) * 100) / 100;
   return { commission, facilitateurNet, total: dealAmount };
 }
