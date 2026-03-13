@@ -25,11 +25,11 @@ const SECTIONS = [
 
 function StatusBadge({ ok }: { ok: boolean }) {
   return ok ? (
-    <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-full px-2 py-0.5">
+    <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 border border-primary/20 rounded-full px-2 py-0.5">
       <CheckCircle2 className="w-3 h-3" /> Conforme
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+    <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted border border-border rounded-full px-2 py-0.5">
       <AlertTriangle className="w-3 h-3" /> En cours
     </span>
   );
