@@ -188,7 +188,7 @@ function BentoCard({ f, i, inView }: { f: typeof FEATURES[0]; i: number; inView:
               className="w-1.5 h-1.5 rounded-full animate-pulse"
               style={{ background: "hsl(152 62% 52%)", boxShadow: "0 0 6px hsl(152 62% 52%)" }}
             />
-            <span className="text-white/40 text-[10px]">Disponible en bêta</span>
+            <span className="text-white/40 text-[10px]">Disponible maintenant</span>
           </div>
           <motion.div
             className="flex items-center gap-1 text-[10px] font-semibold"
