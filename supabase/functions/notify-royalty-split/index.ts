@@ -141,10 +141,12 @@ Deno.serve(async (req) => {
       entity_id:    sessionId,
       user_id:      adaSession.owner_user_id,
       after_state: {
-        deal_amount:      dealAmount,
-        royalty_7pct:     royaltyAmount,
-        facilitateur_net: facilitateurNet,
-        stripe_pi:        pi.id,
+        deal_amount:       dealAmount,
+        royalty_12pct:     royaltyAmount,
+        platform_fee_7pct: Math.round(dealAmount * 0.07 * 100) / 100,
+        engine_fee_5pct:   Math.round(dealAmount * 0.05 * 100) / 100,
+        facilitateur_net:  facilitateurNet,
+        stripe_pi:         pi.id,
       },
     });
 

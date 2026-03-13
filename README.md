@@ -104,7 +104,8 @@ Gérées automatiquement par Lovable Cloud. Ne pas modifier `.env`.
 
 - ✅ ETG v2 : pgvector + shortest_path + hidden links
 - ✅ ADA 95% : machine d'état LangGraph · ElevenLabs · Gemini
-- ✅ Royalty 7% : webhook silent · Stripe split automatique
+- ✅ Royalty 12% : webhook silent · Stripe split automatique (7% platform + 5% engine fee)
+- ✅ WMAX Token : royalty tokenisée · Base L2 · secondary market
 - ✅ Insights API : 3 tiers · vector search · OpenAPI
 - ✅ Sécurité : RLS strict · JWT in-code · CORS hardened · CI/CD
 - ✅ RGPD · EU AI Act · Bloctel : templates + page `/legal`

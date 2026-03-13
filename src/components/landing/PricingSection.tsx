@@ -110,11 +110,11 @@ export default function PricingSection() {
                 onClick={() => track("cta_pricing_enterprise")}
               >
                 <Zap size={16} />
-                Activer maintenant — 99 € TTC/an
+                Activer le Founder Pass — 99 € TTC/an
                 <ArrowRight size={16} />
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
-                Annulation libre · Accès immédiat · Aucun engagement
+                Accès immédiat · 100 places max · Royalty WMAX tokenisée
               </p>
             </div>
           </div>
