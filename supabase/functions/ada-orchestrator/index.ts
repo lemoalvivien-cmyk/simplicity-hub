@@ -7,7 +7,8 @@
  *   → closed | abandoned | error
  *
  * Sécurité : RGPD art 6.1.a, Bloctel Loi Hamon, EU AI Act art 52
- * Royalty   : 7% automatique sur chaque deal via Silent Royalty Engine
+ * Royalty   : 12% automatique sur chaque deal via Silent Royalty Engine
+ *             (7% platform fee + 5% engine fee : swarm autonome + live cash flow + WMAX secondary market)
  * POST /ada-orchestrator
  * Body: { action: "start"|"consent"|"voice_consent"|"negotiate"|"validate"|"close"|"abandon", ... }
  */
