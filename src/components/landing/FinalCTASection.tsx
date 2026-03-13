@@ -51,8 +51,7 @@ export default function FinalCTASection() {
         </div>
 
         <p className="text-white/90 text-base mb-5 max-w-sm mx-auto leading-relaxed font-medium">
-          Prospection IA assistée + réseau humain structuré. OpenClaw et facilitateurs actifs
-          travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+          Rejoignez les entrepreneurs et facilitateurs qui ont déjà choisi la simplicité et la tranquillité. Cliquez sur le bouton qui vous correspond et commencez maintenant.
         </p>
 
         <div className="flex flex-col items-center gap-3 mb-5">
