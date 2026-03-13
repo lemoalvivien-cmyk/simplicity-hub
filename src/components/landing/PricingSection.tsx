@@ -82,7 +82,7 @@ export default function PricingSection() {
                 <Zap size={10} />
                 Offre de lancement — {slotsRemaining} place{slotsRemaining !== 1 ? "s" : ""} restante{slotsRemaining !== 1 ? "s" : ""}
               </div>
-              <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
+              <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Founder Pass</p>
               <div className="flex items-end gap-2 mb-1">
                 <span className="font-display font-bold text-5xl text-white leading-none">99 €</span>
                 <div className="pb-1.5 flex flex-col">
@@ -91,7 +91,7 @@ export default function PricingSection() {
                 </div>
               </div>
               <p className="text-white/80 text-xs font-semibold mt-1">
-                soit 8,25 € / mois · Premier arrivé premier servi
+                100 places max · Premier arrivé premier servi
               </p>
             </div>
 
