@@ -21,7 +21,7 @@ export default function FinalCTASection() {
           La décision qui change votre acquisition
         </p>
         <h2 className="font-display text-[clamp(1.9rem,5.5vw,3.1rem)] font-bold text-white mb-5 leading-[1.1]">
-          Arrêtez de séparer<br />
+          Prêt à transformer<br />
           <span
             style={{
               background: "linear-gradient(135deg, hsl(24 100% 62%), hsl(38 100% 70%))",
@@ -30,7 +30,7 @@ export default function FinalCTASection() {
               backgroundClip: "text",
             }}
           >
-            prospection, réseau et suivi.
+            vos journées en vraies opportunités ?
           </span>
         </h2>
 
