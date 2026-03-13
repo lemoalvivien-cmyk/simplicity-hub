@@ -195,7 +195,8 @@ async function nodeGenerateContract(
   amount: number,
 ): Promise<{ paymentLink: string; commission: number }> {
   const nodeStart = Date.now();
-  const commission = Math.round(amount * 0.07 * 100) / 100;
+  // 12% royalty: 7% platform fee + 5% engine fee (swarm autonome + live cash flow + WMAX secondary market)
+  const commission = Math.round(amount * 0.12 * 100) / 100;
 
   // Create a one-time price + payment link with ADA metadata
   const params = new URLSearchParams();
@@ -204,12 +205,12 @@ async function nodeGenerateContract(
   params.append("line_items[0][price_data][product_data][name]", `Deal WiinupMax — ${session.target_name}`);
   params.append(
     "line_items[0][price_data][product_data][description]",
-    `Commission plateforme 7% (${commission} €) incluse. Session ADA: ${session.id}`,
+    `Commission plateforme 12% (${commission} €) incluse. Session ADA: ${session.id}`,
   );
   params.append("line_items[0][quantity]", "1");
   // Embed ada_session_id so Silent Royalty Engine webhook picks it up
   params.append("metadata[ada_session_id]", session.id);
-  params.append("metadata[commission_7pct]", String(commission));
+  params.append("metadata[commission_12pct]", String(commission));
   params.append("metadata[owner_user_id]", session.owner_user_id);
 
   let paymentLink = "";
