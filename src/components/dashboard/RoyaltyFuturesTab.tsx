@@ -451,13 +451,13 @@ export default function RoyaltyFuturesTab() {
                         className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: "hsl(152 62% 50% / 0.12)", color: "hsl(152 62% 50%)" }}
                       >
-                        Converti
+                        Versé
                       </span>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                     <span className="text-xs text-muted-foreground">
-                      Deal :{" "}
+                      Affaire :{" "}
                       <span className="text-foreground font-medium">
                         {record.deal_amount.toLocaleString("fr-FR")} €
                       </span>
