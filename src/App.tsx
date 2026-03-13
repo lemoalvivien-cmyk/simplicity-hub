@@ -157,6 +157,7 @@ const App = () => (
                 <Route path="/ada" element={<ProtectedRoute><ADAControlPanel /></ProtectedRoute>} />
                 <Route path="/ada/model" element={<ProtectedRoute><ADAModelDashboard /></ProtectedRoute>} />
                 <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+                <Route path="/insights-sales" element={<InsightsSales />} />
 
                 {/* ── Admin ────────────────────────────────── */}
                 <Route path="/admin" element={<ProtectedRoute adminOnly><AdminOverview /></ProtectedRoute>} />
