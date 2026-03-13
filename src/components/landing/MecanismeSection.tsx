@@ -140,8 +140,8 @@ export default function MecanismeSection() {
             <p className="font-display font-bold text-white text-base">Votre espace personnel unifié</p>
           </div>
           <p className="text-white/90 text-sm max-w-md mx-auto leading-relaxed">
-            Les deux moteurs remontent dans le même tableau de bord.
-            Validation, suivi, gains, priorités — tout est visible. Vous gardez le contrôle à chaque étape.
+            Les deux ensemble dans votre espace personnel, comme un service haut de gamme.
+            Validation, suivi, gains, priorités — tout est visible et clair.
           </p>
         </div>
       </div>
