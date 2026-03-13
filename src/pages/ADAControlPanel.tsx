@@ -69,7 +69,7 @@ function NewSessionForm({ onStart }: { onStart: (p: { target_name: string; targe
           style={{ background: "hsl(218 65% 8% / 0.97)", border: "1px solid hsl(218 45% 20% / 0.6)" }}
         >
           <div className="flex items-center justify-between mb-1">
-            <p className="font-bold text-white text-sm">Nouvelle session ADA</p>
+            <p className="font-bold text-white text-sm">Nouvelle session IA</p>
             <button onClick={() => setOpen(false)}><X size={14} style={{ color: "hsl(var(--muted-foreground))" }} /></button>
           </div>
           <Input value={name} onChange={e => setName(e.target.value)} placeholder="Nom du prospect *" className="h-9 text-sm" />
