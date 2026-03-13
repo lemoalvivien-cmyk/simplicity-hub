@@ -10,8 +10,9 @@ import {
   Plus, Sparkles, Check, Phone, Mail, RefreshCw,
   CheckCircle, AlertCircle, TrendingUp, ChevronRight,
   ChevronDown, ChevronUp, CheckCircle2, Flame, Bot,
-  FileText, Briefcase, Users,
+  FileText, Briefcase, Users, Coins,
 } from "lucide-react";
+import RoyaltyFuturesTab from "@/components/dashboard/RoyaltyFuturesTab";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
