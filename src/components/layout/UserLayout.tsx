@@ -32,7 +32,7 @@ export default function UserLayout({ children, role: roleProp, jarvisContext = "
       <div className="w-full bg-primary text-primary-foreground text-center text-xs font-bold py-2 px-4 z-50 shrink-0 flex items-center justify-center gap-3 flex-wrap">
         <span>🏆 Wiinup Max — Prospection IA · Réseau facilitateurs · Gains automatiques</span>
         <span className="hidden md:inline text-primary-foreground/60">|</span>
-        <span className="hidden md:inline font-normal">⚡ Assistant IA · 12 % de gains sur chaque deal · Insights jusqu'à 75 000 €/mois</span>
+        <span className="hidden md:inline font-normal">⚡ Assistant IA · 12 % de gains sur chaque affaire signée · Réseau de facilitateurs actif</span>
       </div>
       <div className="flex flex-1 overflow-x-hidden">
       {/* Sidebar — desktop only, 224px wide */}

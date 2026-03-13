@@ -314,7 +314,7 @@ export default function RoyaltyFuturesTab() {
         toast.error(result.error ?? "Erreur lors du versement.");
       }
     } catch {
-      toast.error("Erreur réseau — réessayez.");
+      toast.error("Erreur lors du versement. Réessayez.");
     } finally {
       setMinting(null);
     }
