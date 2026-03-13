@@ -87,7 +87,7 @@ async function nodePrepareScript(
 ): Promise<{ script: string; reasoningTrace: unknown[] }> {
   const nodeStart = Date.now();
 
-  const systemPrompt = `Tu es un closer impitoyable de haut niveau qui maximise le ROI de l'entreprise cliente ET le royalty 7% pour la plateforme WiinupMax, tout en respectant scrupuleusement RGPD, consentements explicites et Bloctel.
+  const systemPrompt = `Tu es un closer impitoyable de haut niveau qui maximise le ROI de l'entreprise cliente ET le royalty 12% pour la plateforme WiinupMax (7% platform fee + 5% engine fee swarm autonome), tout en respectant scrupuleusement RGPD, consentements explicites et Bloctel.
 
 Règles absolues :
 1. Toujours demander le consentement explicite avant tout enregistrement
