@@ -722,6 +722,343 @@ export type Database = {
         }
         Relationships: []
       }
+      etg_audit_log: {
+        Row: {
+          action: string
+          after_state: Json | null
+          before_state: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          function_name: string | null
+          id: string
+          ip_hash: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          function_name?: string | null
+          id?: string
+          ip_hash?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          after_state?: Json | null
+          before_state?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          function_name?: string | null
+          id?: string
+          ip_hash?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      etg_companies: {
+        Row: {
+          canonical_id: string
+          created_at: string
+          deal_count: number
+          deal_velocity_days: number | null
+          id: string
+          revenue_signal: number | null
+          sector: string | null
+          trust_index: number
+          updated_at: string
+          zone: string | null
+        }
+        Insert: {
+          canonical_id: string
+          created_at?: string
+          deal_count?: number
+          deal_velocity_days?: number | null
+          id?: string
+          revenue_signal?: number | null
+          sector?: string | null
+          trust_index?: number
+          updated_at?: string
+          zone?: string | null
+        }
+        Update: {
+          canonical_id?: string
+          created_at?: string
+          deal_count?: number
+          deal_velocity_days?: number | null
+          id?: string
+          revenue_signal?: number | null
+          sector?: string | null
+          trust_index?: number
+          updated_at?: string
+          zone?: string | null
+        }
+        Relationships: []
+      }
+      etg_hidden_links: {
+        Row: {
+          confidence: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          inference_path: Json
+          inferred_by: string | null
+          person_a_id: string | null
+          person_b_id: string | null
+          predicted_deal_probability: number
+          strength: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          inference_path?: Json
+          inferred_by?: string | null
+          person_a_id?: string | null
+          person_b_id?: string | null
+          predicted_deal_probability?: number
+          strength?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          inference_path?: Json
+          inferred_by?: string | null
+          person_a_id?: string | null
+          person_b_id?: string | null
+          predicted_deal_probability?: number
+          strength?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "etg_hidden_links_person_a_id_fkey"
+            columns: ["person_a_id"]
+            isOneToOne: false
+            referencedRelation: "etg_persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "etg_hidden_links_person_b_id_fkey"
+            columns: ["person_b_id"]
+            isOneToOne: false
+            referencedRelation: "etg_persons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      etg_links: {
+        Row: {
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          from_id: string
+          from_type: string
+          hidden_link_strength: number
+          id: string
+          link_type: string
+          metadata: Json
+          source: string | null
+          to_id: string
+          to_type: string
+          trust_score: number
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          from_id: string
+          from_type: string
+          hidden_link_strength?: number
+          id?: string
+          link_type: string
+          metadata?: Json
+          source?: string | null
+          to_id: string
+          to_type: string
+          trust_score?: number
+          updated_at?: string
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          from_id?: string
+          from_type?: string
+          hidden_link_strength?: number
+          id?: string
+          link_type?: string
+          metadata?: Json
+          source?: string | null
+          to_id?: string
+          to_type?: string
+          trust_score?: number
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      etg_opportunities: {
+        Row: {
+          commission_estimate: number | null
+          confidence_score: number
+          created_at: string
+          deal_value_estimate: number | null
+          id: string
+          precision_delta: number
+          predicted_close_weeks_max: number
+          predicted_close_weeks_min: number
+          reasoning: string | null
+          recommended_intro_person_id: string | null
+          scoring_version: string
+          sector: string | null
+          status: string
+          target_company_id: string | null
+          target_person_id: string | null
+          trust_path: Json
+          updated_at: string
+          user_id: string
+          zone: string | null
+        }
+        Insert: {
+          commission_estimate?: number | null
+          confidence_score?: number
+          created_at?: string
+          deal_value_estimate?: number | null
+          id?: string
+          precision_delta?: number
+          predicted_close_weeks_max?: number
+          predicted_close_weeks_min?: number
+          reasoning?: string | null
+          recommended_intro_person_id?: string | null
+          scoring_version?: string
+          sector?: string | null
+          status?: string
+          target_company_id?: string | null
+          target_person_id?: string | null
+          trust_path?: Json
+          updated_at?: string
+          user_id: string
+          zone?: string | null
+        }
+        Update: {
+          commission_estimate?: number | null
+          confidence_score?: number
+          created_at?: string
+          deal_value_estimate?: number | null
+          id?: string
+          precision_delta?: number
+          predicted_close_weeks_max?: number
+          predicted_close_weeks_min?: number
+          reasoning?: string | null
+          recommended_intro_person_id?: string | null
+          scoring_version?: string
+          sector?: string | null
+          status?: string
+          target_company_id?: string | null
+          target_person_id?: string | null
+          trust_path?: Json
+          updated_at?: string
+          user_id?: string
+          zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "etg_opportunities_recommended_intro_person_id_fkey"
+            columns: ["recommended_intro_person_id"]
+            isOneToOne: false
+            referencedRelation: "etg_persons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "etg_opportunities_target_company_id_fkey"
+            columns: ["target_company_id"]
+            isOneToOne: false
+            referencedRelation: "etg_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "etg_opportunities_target_person_id_fkey"
+            columns: ["target_person_id"]
+            isOneToOne: false
+            referencedRelation: "etg_persons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      etg_persons: {
+        Row: {
+          anon_hash: string
+          created_at: string
+          deal_count: number
+          id: string
+          intro_count: number
+          language: string | null
+          last_activity_at: string | null
+          reliability_score: number
+          sector: string | null
+          total_commission: number
+          trust_index: number
+          updated_at: string
+          user_id: string | null
+          validated_count: number
+          zone: string | null
+        }
+        Insert: {
+          anon_hash: string
+          created_at?: string
+          deal_count?: number
+          id?: string
+          intro_count?: number
+          language?: string | null
+          last_activity_at?: string | null
+          reliability_score?: number
+          sector?: string | null
+          total_commission?: number
+          trust_index?: number
+          updated_at?: string
+          user_id?: string | null
+          validated_count?: number
+          zone?: string | null
+        }
+        Update: {
+          anon_hash?: string
+          created_at?: string
+          deal_count?: number
+          id?: string
+          intro_count?: number
+          language?: string | null
+          last_activity_at?: string | null
+          reliability_score?: number
+          sector?: string | null
+          total_commission?: number
+          trust_index?: number
+          updated_at?: string
+          user_id?: string | null
+          validated_count?: number
+          zone?: string | null
+        }
+        Relationships: []
+      }
       facilitateur_profiles: {
         Row: {
           avatar_url: string | null
@@ -4875,6 +5212,44 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      etg_graph_stats: { Args: { p_user_id: string }; Returns: Json }
+      etg_predict_opportunities: {
+        Args: {
+          p_limit?: number
+          p_min_confidence?: number
+          p_user_id: string
+          p_weeks_max?: number
+          p_weeks_min?: number
+        }
+        Returns: {
+          close_weeks_max: number
+          close_weeks_min: number
+          commission_estimate: number
+          confidence_score: number
+          created_at: string
+          deal_value_estimate: number
+          opportunity_id: string
+          precision_delta: number
+          reasoning: string
+          recommended_intro_id: string
+          status: string
+          target_sector: string
+          target_zone: string
+          trust_path: Json
+        }[]
+      }
+      etg_write_audit: {
+        Args: {
+          p_action: string
+          p_after?: Json
+          p_before?: Json
+          p_entity_id: string
+          p_entity_type: string
+          p_fn?: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
       find_best_access_path: {
         Args: {

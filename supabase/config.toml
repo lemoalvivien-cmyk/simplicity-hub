@@ -1,6 +1,13 @@
 project_id = "usnriklfiagazpffsqew"
 
 [functions]
+  [functions.etg-aggregate]
+    verify_jwt = false
+  [functions.etg-predict]
+    verify_jwt = false
+  [functions.etg-ingest]
+    verify_jwt = false
+
   [functions.ai-jarvis]
     verify_jwt = false
   [functions.ai-lead-scoring]
