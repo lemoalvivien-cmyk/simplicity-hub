@@ -179,8 +179,8 @@ export default function DashboardEntreprise() {
         {/* ═══ TABS ════════════════════════════════════════════ */}
         <div className="flex gap-1 p-1 rounded-2xl border border-border" style={{ background: "hsl(var(--card))" }}>
           {([
-            { key: "cockpit", label: "Cockpit", icon: Brain },
-            { key: "royalties", label: "Mes Royalty Futures", icon: Coins },
+            { key: "cockpit", label: "Mon tableau de bord", icon: Brain },
+            { key: "royalties", label: "Mes gains", icon: Coins },
           ] as const).map(({ key, label, icon: Icon }) => (
             <button
               key={key}
