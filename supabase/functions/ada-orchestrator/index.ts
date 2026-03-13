@@ -676,6 +676,7 @@ Deno.serve(async (req: Request) => {
     });
 
   } catch (err) {
+    await logFunctionError("ada-orchestrator", err);
     console.error("[ADA Orchestrator]", err);
     return new Response(JSON.stringify({ error: "Erreur interne", detail: String(err) }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },

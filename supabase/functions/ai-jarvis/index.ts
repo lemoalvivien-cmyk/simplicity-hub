@@ -181,6 +181,11 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ── Rate limiting ────────────────────────────────────────────────────────
+    const rateCheck = await enforceRateLimit(user.id, "ai-jarvis");
+    if (rateCheck && !rateCheck.allowed) return build429(corsHeaders, "ai-jarvis");
+    const releaseTracker = trackRequest();
+
     const body = await req.json();
     const {
       message,
