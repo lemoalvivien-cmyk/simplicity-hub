@@ -84,7 +84,7 @@ export default function APropos() {
           <div className="text-center mb-12">
             <p className="pill-tag mb-4 mx-auto w-fit">Le concept</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-5">
-              Une place de marché{" "}
+              Une plateforme qui{" "}
               <span
                 style={{
                   background: "linear-gradient(135deg, hsl(218 72% 55%), hsl(262 72% 60%))",
@@ -93,12 +93,12 @@ export default function APropos() {
                   backgroundClip: "text",
                 }}
               >
-                phygitale.
+                connecte tout le monde.
               </span>
             </h2>
             <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-              WiinupMax fusionne la puissance de l'intelligence artificielle avec la chaleur des connexions humaines.{" "}
-              <strong className="text-foreground font-semibold">Deux moteurs. Une seule mission : vous faire grandir.</strong>
+              WiinupMax réunit l'intelligence automatique et la chaleur des connexions humaines.{" "}
+              <strong className="text-foreground font-semibold">Deux façons de trouver des clients. Une seule plateforme simple.</strong>
             </p>
           </div>
 
