@@ -23,6 +23,7 @@ import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import CGU from "./pages/CGU";
 import Confidentialite from "./pages/Confidentialite";
+import Legal from "./pages/Legal";
 import MentionsLegales from "./pages/MentionsLegales";
 
 // ── Lazy: dashboards ─────────────────────────────────────────────────────────
