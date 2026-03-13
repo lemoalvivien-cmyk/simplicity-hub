@@ -80,8 +80,8 @@ export default function Confidentialite() {
                 <tbody className="divide-y divide-border">
                   <tr><td className="py-2 pr-4">Supabase Inc.</td><td className="py-2 pr-4">Hébergement de la base de données et authentification</td><td className="py-2">États-Unis (AWS US-East)</td></tr>
                   <tr><td className="py-2 pr-4">Stripe Inc.</td><td className="py-2 pr-4">Traitement des paiements</td><td className="py-2">États-Unis / Irlande</td></tr>
-                  <tr><td className="py-2 pr-4">OpenAI / Anthropic</td><td className="py-2 pr-4">Moteur d'intelligence artificielle générative</td><td className="py-2">États-Unis</td></tr>
-                  <tr><td className="py-2 pr-4">ElevenLabs</td><td className="py-2 pr-4">Synthèse vocale (fonctionnalité optionnelle)</td><td className="py-2">États-Unis</td></tr>
+                  <tr><td className="py-2 pr-4">Google LLC (Gemini / Vertex AI)</td><td className="py-2 pr-4">Moteur d'intelligence artificielle générative</td><td className="py-2">États-Unis (EU-Data-Boundary)</td></tr>
+                  <tr><td className="py-2 pr-4">ElevenLabs Inc.</td><td className="py-2 pr-4">Synthèse vocale (fonctionnalité optionnelle)</td><td className="py-2">États-Unis</td></tr>
                   <tr><td className="py-2 pr-4">Lovable / Builder.io</td><td className="py-2 pr-4">Infrastructure d'hébergement frontend</td><td className="py-2">États-Unis</td></tr>
                 </tbody>
               </table>
