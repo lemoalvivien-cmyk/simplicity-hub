@@ -13,6 +13,24 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  build: {
+    // Production hardening
+    sourcemap: false,        // no source maps in prod — no code leaks
+    minify: "esbuild",
+    target: "es2020",
+    rollupOptions: {
+      output: {
+        // Chunk splitting for optimal loading
+        manualChunks: {
+          vendor:  ["react", "react-dom", "react-router-dom"],
+          supabase: ["@supabase/supabase-js"],
+          ui:      ["@radix-ui/react-dialog", "@radix-ui/react-tabs", "@radix-ui/react-dropdown-menu"],
+          charts:  ["recharts"],
+          motion:  ["framer-motion"],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
@@ -23,6 +41,17 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // Cache strategy: network-first for API, cache-first for assets
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "supabase-cache",
+              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+            },
+          },
+        ],
       },
       manifest: {
         name: "WIINUP MAX",
