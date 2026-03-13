@@ -140,7 +140,7 @@ export default function PublicNav() {
                 onClick={() => setOpen(false)}
                 className="btn-cta text-sm text-center"
               >
-                Commencer gratuitement →
+                Commencer →
               </Link>
             </div>
           </div>

@@ -27,8 +27,8 @@ const STATE_META: Record<ADAState, { label: string; color: string; icon: React.E
   negotiating:             { label: "Négociation live",   color: "hsl(152 62% 52%)",             icon: MessageSquare, pulse: true },
   awaiting_human_validation: { label: "⚠ Valider l'appel", color: "hsl(38 95% 52%)",             icon: Eye },
   generating_contract:     { label: "Contrat Stripe…",   color: "hsl(210 88% 68%)",             icon: FileText,    pulse: true },
-  awaiting_final_closing:  { label: "⚡ Confirmer closing", color: "hsl(var(--accent))",          icon: Zap },
-  closed:                  { label: "Deal closé ✓",       color: "hsl(152 62% 52%)",             icon: CheckCircle2 },
+  awaiting_final_closing:  { label: "⚡ Confirmer l'affaire", color: "hsl(var(--accent))",        icon: Zap },
+  closed:                  { label: "Affaire signée ✓",    color: "hsl(152 62% 52%)",             icon: CheckCircle2 },
   abandoned:               { label: "Abandonné",          color: "hsl(0 65% 55%)",               icon: XCircle },
   error:                   { label: "Erreur",             color: "hsl(0 65% 55%)",               icon: AlertTriangle },
 };
