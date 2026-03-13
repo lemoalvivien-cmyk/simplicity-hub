@@ -306,7 +306,7 @@ export default function RoyaltyFuturesTab() {
     try {
       const result = await mintWMAXToken(user.id, record.royalty_12pct, record.id);
       if (result.success) {
-        toast.success(`✅ ${record.royalty_12pct} WMAX mintés sur Base L2 !`);
+        toast.success(`✅ ${record.royalty_12pct.toLocaleString("fr-FR")} € reçus sur votre compte !`);
         setRecords(prev => prev.map(r =>
           r.id === record.id ? { ...r, minted: true, tx_hash: result.tx_hash } : r,
         ));
