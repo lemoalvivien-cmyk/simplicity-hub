@@ -53,7 +53,7 @@ export default function APropos() {
         />
         <div className="container max-w-3xl text-center relative z-10">
           <span className="pill-tag mb-6 mx-auto w-fit inline-block">
-            La première marketplace phygitale d'acquisition client
+            La première plateforme qui connecte entreprises et présentateurs
           </span>
           <h1 className="font-display font-bold leading-[1.08] tracking-tight mb-5">
             <span
@@ -65,16 +65,15 @@ export default function APropos() {
                 backgroundClip: "text",
               }}
             >
-              Nous n'avons pas créé une plateforme.
+              Nous n'avons pas créé un outil.
             </span>
             <span className="block text-[clamp(1.6rem,4.5vw,2.6rem)] text-white/90 mt-3 font-semibold">
-              Nous avons créé un mouvement.
+              Nous avons créé quelque chose de nouveau.
             </span>
           </h1>
           <p className="text-white/75 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-            WiinupMax est née d'une conviction simple : dans un monde ultra-connecté,
-            les meilleures opportunités business ne passent pas par la pub.{" "}
-            <strong className="text-white/95 font-semibold">Elles passent par les gens.</strong>
+            WiinupMax est née d'une conviction simple : les meilleures opportunités ne viennent pas de la publicité.{" "}
+            <strong className="text-white/95 font-semibold">Elles viennent des gens.</strong>
           </p>
         </div>
       </section>
