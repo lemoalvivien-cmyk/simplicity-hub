@@ -1310,6 +1310,7 @@ export type Database = {
           created_at: string
           deal_count: number
           deal_velocity_days: number | null
+          embedding: string | null
           id: string
           revenue_signal: number | null
           sector: string | null
@@ -1322,6 +1323,7 @@ export type Database = {
           created_at?: string
           deal_count?: number
           deal_velocity_days?: number | null
+          embedding?: string | null
           id?: string
           revenue_signal?: number | null
           sector?: string | null
@@ -1334,6 +1336,7 @@ export type Database = {
           created_at?: string
           deal_count?: number
           deal_velocity_days?: number | null
+          embedding?: string | null
           id?: string
           revenue_signal?: number | null
           sector?: string | null
@@ -1466,6 +1469,7 @@ export type Database = {
           confidence_score: number
           created_at: string
           deal_value_estimate: number | null
+          embedding: string | null
           id: string
           precision_delta: number
           predicted_close_weeks_max: number
@@ -1487,6 +1491,7 @@ export type Database = {
           confidence_score?: number
           created_at?: string
           deal_value_estimate?: number | null
+          embedding?: string | null
           id?: string
           precision_delta?: number
           predicted_close_weeks_max?: number
@@ -1508,6 +1513,7 @@ export type Database = {
           confidence_score?: number
           created_at?: string
           deal_value_estimate?: number | null
+          embedding?: string | null
           id?: string
           precision_delta?: number
           predicted_close_weeks_max?: number
@@ -1553,6 +1559,7 @@ export type Database = {
           anon_hash: string
           created_at: string
           deal_count: number
+          embedding: string | null
           id: string
           intro_count: number
           language: string | null
@@ -1570,6 +1577,7 @@ export type Database = {
           anon_hash: string
           created_at?: string
           deal_count?: number
+          embedding?: string | null
           id?: string
           intro_count?: number
           language?: string | null
@@ -1587,6 +1595,7 @@ export type Database = {
           anon_hash?: string
           created_at?: string
           deal_count?: number
+          embedding?: string | null
           id?: string
           intro_count?: number
           language?: string | null
@@ -5881,6 +5890,25 @@ export type Database = {
           trust_path: Json
         }[]
       }
+      etg_vector_similar_opportunities: {
+        Args: {
+          p_limit?: number
+          p_min_confidence?: number
+          p_query_vector: string
+          p_user_id: string
+        }
+        Returns: {
+          close_weeks_max: number
+          close_weeks_min: number
+          commission_estimate: number
+          confidence_score: number
+          opportunity_id: string
+          reasoning: string
+          sector: string
+          similarity: number
+          zone: string
+        }[]
+      }
       etg_write_audit: {
         Args: {
           p_action: string
@@ -6067,6 +6095,24 @@ export type Database = {
       seed_openclaw_jobs_for_user: {
         Args: { p_user_id: string }
         Returns: undefined
+      }
+      shortest_path_trust: {
+        Args: {
+          p_from_hash: string
+          p_max_hops?: number
+          p_min_trust?: number
+          p_to_hash: string
+          p_user_id: string
+        }
+        Returns: {
+          cumulative_trust: number
+          hop: number
+          link_type: string
+          node_hash: string
+          node_id: string
+          path_ids: string[]
+          trust_score: number
+        }[]
       }
       track_business_event: {
         Args: {
