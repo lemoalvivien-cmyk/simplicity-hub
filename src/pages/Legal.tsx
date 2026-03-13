@@ -170,7 +170,7 @@ export default function Legal() {
                         <td className="px-4 py-2 font-medium text-foreground">{n}</td>
                         <td className="px-4 py-2">{r}</td>
                         <td className="px-4 py-2">{l}</td>
-                        <td className="px-4 py-2 text-green-600 font-medium">{g}</td>
+                        <td className="px-4 py-2 text-primary font-medium">{g}</td>
                       </tr>
                     ))}
                   </tbody>
