@@ -97,6 +97,273 @@ export type Database = {
           },
         ]
       }
+      ada_consent_logs: {
+        Row: {
+          consent_text: string | null
+          consent_type: string
+          consented: boolean
+          consented_at: string
+          created_at: string
+          elevenlabs_audio_ref: string | null
+          expires_at: string | null
+          id: string
+          ip_hash: string | null
+          owner_user_id: string
+          revoked_at: string | null
+          session_id: string
+          user_agent_hash: string | null
+        }
+        Insert: {
+          consent_text?: string | null
+          consent_type: string
+          consented?: boolean
+          consented_at?: string
+          created_at?: string
+          elevenlabs_audio_ref?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_hash?: string | null
+          owner_user_id: string
+          revoked_at?: string | null
+          session_id: string
+          user_agent_hash?: string | null
+        }
+        Update: {
+          consent_text?: string | null
+          consent_type?: string
+          consented?: boolean
+          consented_at?: string
+          created_at?: string
+          elevenlabs_audio_ref?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_hash?: string | null
+          owner_user_id?: string
+          revoked_at?: string | null
+          session_id?: string
+          user_agent_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ada_consent_logs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ada_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ada_node_events: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          node_input: Json | null
+          node_name: string
+          node_output: Json | null
+          owner_user_id: string
+          session_id: string
+          success: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          node_input?: Json | null
+          node_name: string
+          node_output?: Json | null
+          owner_user_id: string
+          session_id: string
+          success?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          node_input?: Json | null
+          node_name?: string
+          node_output?: Json | null
+          owner_user_id?: string
+          session_id?: string
+          success?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ada_node_events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ada_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ada_sessions: {
+        Row: {
+          adaptive_script: string | null
+          call_duration_sec: number | null
+          call_ended_at: string | null
+          call_started_at: string | null
+          commission_7pct: number | null
+          contract_amount: number | null
+          created_at: string
+          elevenlabs_call_id: string | null
+          final_closed_at: string | null
+          final_closed_by: string | null
+          human_validated_at: string | null
+          human_validated_by: string | null
+          id: string
+          negotiation_notes: string | null
+          outcome: string | null
+          owner_user_id: string
+          previous_state: Database["public"]["Enums"]["ada_state"] | null
+          reasoning_trace: Json | null
+          roi_score: number | null
+          state: Database["public"]["Enums"]["ada_state"]
+          state_entered_at: string
+          stripe_payment_link: string | null
+          target_company_id: string | null
+          target_context: Json | null
+          target_email: string | null
+          target_name: string
+          target_person_id: string | null
+          target_phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          adaptive_script?: string | null
+          call_duration_sec?: number | null
+          call_ended_at?: string | null
+          call_started_at?: string | null
+          commission_7pct?: number | null
+          contract_amount?: number | null
+          created_at?: string
+          elevenlabs_call_id?: string | null
+          final_closed_at?: string | null
+          final_closed_by?: string | null
+          human_validated_at?: string | null
+          human_validated_by?: string | null
+          id?: string
+          negotiation_notes?: string | null
+          outcome?: string | null
+          owner_user_id: string
+          previous_state?: Database["public"]["Enums"]["ada_state"] | null
+          reasoning_trace?: Json | null
+          roi_score?: number | null
+          state?: Database["public"]["Enums"]["ada_state"]
+          state_entered_at?: string
+          stripe_payment_link?: string | null
+          target_company_id?: string | null
+          target_context?: Json | null
+          target_email?: string | null
+          target_name: string
+          target_person_id?: string | null
+          target_phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          adaptive_script?: string | null
+          call_duration_sec?: number | null
+          call_ended_at?: string | null
+          call_started_at?: string | null
+          commission_7pct?: number | null
+          contract_amount?: number | null
+          created_at?: string
+          elevenlabs_call_id?: string | null
+          final_closed_at?: string | null
+          final_closed_by?: string | null
+          human_validated_at?: string | null
+          human_validated_by?: string | null
+          id?: string
+          negotiation_notes?: string | null
+          outcome?: string | null
+          owner_user_id?: string
+          previous_state?: Database["public"]["Enums"]["ada_state"] | null
+          reasoning_trace?: Json | null
+          roi_score?: number | null
+          state?: Database["public"]["Enums"]["ada_state"]
+          state_entered_at?: string
+          stripe_payment_link?: string | null
+          target_company_id?: string | null
+          target_context?: Json | null
+          target_email?: string | null
+          target_name?: string
+          target_person_id?: string | null
+          target_phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ada_sessions_target_company_id_fkey"
+            columns: ["target_company_id"]
+            isOneToOne: false
+            referencedRelation: "etg_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ada_sessions_target_person_id_fkey"
+            columns: ["target_person_id"]
+            isOneToOne: false
+            referencedRelation: "etg_persons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ada_transcriptions: {
+        Row: {
+          agent_reasoning: string | null
+          confidence: number | null
+          created_at: string
+          id: string
+          is_key_moment: boolean | null
+          key_moment_type: string | null
+          owner_user_id: string
+          segment_end_ms: number | null
+          segment_start_ms: number | null
+          session_id: string
+          speaker: string
+          text: string
+        }
+        Insert: {
+          agent_reasoning?: string | null
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          is_key_moment?: boolean | null
+          key_moment_type?: string | null
+          owner_user_id: string
+          segment_end_ms?: number | null
+          segment_start_ms?: number | null
+          session_id: string
+          speaker: string
+          text: string
+        }
+        Update: {
+          agent_reasoning?: string | null
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          is_key_moment?: boolean | null
+          key_moment_type?: string | null
+          owner_user_id?: string
+          segment_end_ms?: number | null
+          segment_start_ms?: number | null
+          session_id?: string
+          speaker?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ada_transcriptions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ada_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics_events: {
         Row: {
           created_at: string
@@ -5491,6 +5758,19 @@ export type Database = {
       }
     }
     Enums: {
+      ada_state:
+        | "idle"
+        | "scanning"
+        | "preparing_script"
+        | "awaiting_consent"
+        | "calling"
+        | "negotiating"
+        | "awaiting_human_validation"
+        | "generating_contract"
+        | "awaiting_final_closing"
+        | "closed"
+        | "abandoned"
+        | "error"
       app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
@@ -5619,6 +5899,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ada_state: [
+        "idle",
+        "scanning",
+        "preparing_script",
+        "awaiting_consent",
+        "calling",
+        "negotiating",
+        "awaiting_human_validation",
+        "generating_contract",
+        "awaiting_final_closing",
+        "closed",
+        "abandoned",
+        "error",
+      ],
       app_role: ["admin", "moderator", "user"],
     },
   },

@@ -105,6 +105,12 @@ function buildEntrepriseGroups(badges: ReturnType<typeof useBadges>, gatewayRead
       items: accueilItems,
     },
     {
+      label: "Agent ADA",
+      items: [
+        { to: "/ada", label: "ADA Control Panel", icon: Sparkles, badgeLabel: "95% Auto" },
+      ],
+    },
+    {
       label: "Missions",
       items: [
         { to: "/missions",                   label: "Mes missions",         icon: Briefcase },
