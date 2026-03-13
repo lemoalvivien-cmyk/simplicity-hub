@@ -279,7 +279,53 @@ Deno.serve(async (req) => {
       case "invoice.payment_action_required": {
         const invoice = event.data.object as Stripe.Invoice;
         logStep("invoice.payment_action_required", { invoiceId: invoice.id });
-        // No DB action needed — Stripe emails the customer automatically
+        break;
+      }
+
+      // ── payment_intent.succeeded — Silent Royalty Engine 7% ──────────────
+      case "payment_intent.succeeded": {
+        const pi = event.data.object as Stripe.PaymentIntent;
+        const adaSessionId = pi.metadata?.ada_session_id;
+        if (!adaSessionId) { logStep("PI succeeded — not ADA, skip"); break; }
+
+        const dealAmount = pi.amount / 100;
+        const royaltyAmount = Math.round(dealAmount * 0.07 * 100) / 100;
+        const facilitateurNet = Math.round((dealAmount - royaltyAmount) * 100) / 100;
+        logStep("ADA royalty split", { adaSessionId, dealAmount, royaltyAmount });
+
+        const { data: adaSession } = await supabase
+          .from("ada_sessions")
+          .select("owner_user_id, target_name")
+          .eq("id", adaSessionId)
+          .single();
+
+        if (adaSession) {
+          await supabase.from("ada_sessions").update({
+            contract_amount: dealAmount,
+            commission_7pct: royaltyAmount,
+            state: "closed",
+            final_closed_at: new Date().toISOString(),
+            final_closed_by: "stripe_webhook_auto",
+          }).eq("id", adaSessionId);
+
+          await supabase.from("notifications").insert({
+            user_id: adaSession.owner_user_id,
+            type: "gain_valide",
+            title: `💰 Deal fermé — ${adaSession.target_name}`,
+            body: `${facilitateurNet.toLocaleString("fr-FR")} € crédités (7% royalty WiinupMax déduit).`,
+            href: "/gains",
+          }).select().maybeSingle();
+
+          await supabase.from("etg_audit_log").insert({
+            action: "royalty_split_auto",
+            entity_type: "ada_session",
+            entity_id: adaSessionId,
+            user_id: adaSession.owner_user_id,
+            after_state: { deal_amount: dealAmount, royalty_7pct: royaltyAmount, facilitateur_net: facilitateurNet },
+          });
+
+          logStep("Royalty split complete", { facilitateurNet, royaltyAmount });
+        }
         break;
       }
 
