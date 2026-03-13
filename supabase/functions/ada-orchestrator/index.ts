@@ -498,10 +498,22 @@ Deno.serve(async (req: Request) => {
 
       await logNode(sb, session_id, user.id, "final_closing", { outcome }, { commission: session.commission_7pct }, 0);
 
+      // ── Closed-loop: auto-collect training sample (non-blocking) ─────────
+      try {
+        fetch(`${SUPABASE_URL}/functions/v1/ada-training-pipeline`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${SERVICE_KEY}`,
+          },
+          body: JSON.stringify({ action: "collect", session_id }),
+        }).catch(e => console.warn("[ADA Orchestrator] Training collect failed:", e));
+      } catch (_) { /* non-blocking */ }
+
       return new Response(JSON.stringify({
         success: true,
         state: "closed",
-        message: "Deal closé avec succès. Commission 7% enregistrée.",
+        message: "Deal closé avec succès. Commission 7% enregistrée. Sample IA collecté pour fine-tuning.",
       }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 

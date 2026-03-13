@@ -153,6 +153,77 @@ export type Database = {
           },
         ]
       }
+      ada_model_versions: {
+        Row: {
+          benchmark_sample_count: number | null
+          created_at: string
+          deals_predicted_correctly: number | null
+          deals_predicted_total: number | null
+          deprecated_at: string | null
+          f1_score: number | null
+          id: string
+          is_active: boolean | null
+          is_base: boolean | null
+          model_id: string
+          model_provider: string
+          notes: string | null
+          precision_score: number | null
+          promoted_at: string | null
+          recall_score: number | null
+          training_run_id: string | null
+          training_sample_count: number | null
+          version_tag: string
+        }
+        Insert: {
+          benchmark_sample_count?: number | null
+          created_at?: string
+          deals_predicted_correctly?: number | null
+          deals_predicted_total?: number | null
+          deprecated_at?: string | null
+          f1_score?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_base?: boolean | null
+          model_id: string
+          model_provider?: string
+          notes?: string | null
+          precision_score?: number | null
+          promoted_at?: string | null
+          recall_score?: number | null
+          training_run_id?: string | null
+          training_sample_count?: number | null
+          version_tag: string
+        }
+        Update: {
+          benchmark_sample_count?: number | null
+          created_at?: string
+          deals_predicted_correctly?: number | null
+          deals_predicted_total?: number | null
+          deprecated_at?: string | null
+          f1_score?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_base?: boolean | null
+          model_id?: string
+          model_provider?: string
+          notes?: string | null
+          precision_score?: number | null
+          promoted_at?: string | null
+          recall_score?: number | null
+          training_run_id?: string | null
+          training_sample_count?: number | null
+          version_tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ada_model_versions_training_run_id_fkey"
+            columns: ["training_run_id"]
+            isOneToOne: false
+            referencedRelation: "ada_training_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ada_node_events: {
         Row: {
           created_at: string
@@ -196,6 +267,47 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "ada_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ada_precision_metrics: {
+        Row: {
+          context: Json | null
+          created_at: string
+          id: string
+          measured_by: string | null
+          metric_date: string
+          model_version_id: string | null
+          precision_pct: number
+          sample_size: number
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          measured_by?: string | null
+          metric_date?: string
+          model_version_id?: string | null
+          precision_pct: number
+          sample_size?: number
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          measured_by?: string | null
+          metric_date?: string
+          model_version_id?: string | null
+          precision_pct?: number
+          sample_size?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ada_precision_metrics_model_version_id_fkey"
+            columns: ["model_version_id"]
+            isOneToOne: false
+            referencedRelation: "ada_model_versions"
             referencedColumns: ["id"]
           },
         ]
@@ -307,6 +419,170 @@ export type Database = {
             columns: ["target_person_id"]
             isOneToOne: false
             referencedRelation: "etg_persons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ada_training_runs: {
+        Row: {
+          base_model: string
+          completed_at: string | null
+          created_at: string
+          epochs: number | null
+          error_message: string | null
+          eval_loss_final: number | null
+          id: string
+          lora_alpha: number | null
+          lora_rank: number | null
+          negative_count: number
+          positive_count: number
+          sample_count: number
+          started_at: string | null
+          status: string
+          together_job_id: string | null
+          together_model_id: string | null
+          train_loss_final: number | null
+          training_time_sec: number | null
+          trigger_closing_count: number
+          triggered_by: string
+          updated_at: string
+        }
+        Insert: {
+          base_model?: string
+          completed_at?: string | null
+          created_at?: string
+          epochs?: number | null
+          error_message?: string | null
+          eval_loss_final?: number | null
+          id?: string
+          lora_alpha?: number | null
+          lora_rank?: number | null
+          negative_count?: number
+          positive_count?: number
+          sample_count?: number
+          started_at?: string | null
+          status?: string
+          together_job_id?: string | null
+          together_model_id?: string | null
+          train_loss_final?: number | null
+          training_time_sec?: number | null
+          trigger_closing_count?: number
+          triggered_by?: string
+          updated_at?: string
+        }
+        Update: {
+          base_model?: string
+          completed_at?: string | null
+          created_at?: string
+          epochs?: number | null
+          error_message?: string | null
+          eval_loss_final?: number | null
+          id?: string
+          lora_alpha?: number | null
+          lora_rank?: number | null
+          negative_count?: number
+          positive_count?: number
+          sample_count?: number
+          started_at?: string | null
+          status?: string
+          together_job_id?: string | null
+          together_model_id?: string | null
+          train_loss_final?: number | null
+          training_time_sec?: number | null
+          trigger_closing_count?: number
+          triggered_by?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ada_training_samples: {
+        Row: {
+          call_duration_sec: number | null
+          commission_7pct: number | null
+          contract_amount: number | null
+          created_at: string
+          etg_opportunities_count: number | null
+          etg_persons_count: number | null
+          fine_tuned_model_id: string | null
+          hidden_link_strength_avg: number | null
+          id: string
+          key_moments: Json | null
+          key_triggers: Json | null
+          label: string
+          negotiation_turns: number | null
+          objections_handled: number | null
+          outcome: string
+          quality_score: number | null
+          roi_score: number | null
+          script_phase_count: number | null
+          sector: string | null
+          session_hash: string
+          source_session_id: string | null
+          training_run_id: string | null
+          trust_score_avg: number | null
+          used_in_training: boolean | null
+          zone: string | null
+        }
+        Insert: {
+          call_duration_sec?: number | null
+          commission_7pct?: number | null
+          contract_amount?: number | null
+          created_at?: string
+          etg_opportunities_count?: number | null
+          etg_persons_count?: number | null
+          fine_tuned_model_id?: string | null
+          hidden_link_strength_avg?: number | null
+          id?: string
+          key_moments?: Json | null
+          key_triggers?: Json | null
+          label: string
+          negotiation_turns?: number | null
+          objections_handled?: number | null
+          outcome: string
+          quality_score?: number | null
+          roi_score?: number | null
+          script_phase_count?: number | null
+          sector?: string | null
+          session_hash: string
+          source_session_id?: string | null
+          training_run_id?: string | null
+          trust_score_avg?: number | null
+          used_in_training?: boolean | null
+          zone?: string | null
+        }
+        Update: {
+          call_duration_sec?: number | null
+          commission_7pct?: number | null
+          contract_amount?: number | null
+          created_at?: string
+          etg_opportunities_count?: number | null
+          etg_persons_count?: number | null
+          fine_tuned_model_id?: string | null
+          hidden_link_strength_avg?: number | null
+          id?: string
+          key_moments?: Json | null
+          key_triggers?: Json | null
+          label?: string
+          negotiation_turns?: number | null
+          objections_handled?: number | null
+          outcome?: string
+          quality_score?: number | null
+          roi_score?: number | null
+          script_phase_count?: number | null
+          sector?: string | null
+          session_hash?: string
+          source_session_id?: string | null
+          training_run_id?: string | null
+          trust_score_avg?: number | null
+          used_in_training?: boolean | null
+          zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ada_training_samples_source_session_id_fkey"
+            columns: ["source_session_id"]
+            isOneToOne: false
+            referencedRelation: "ada_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -5371,6 +5647,7 @@ export type Database = {
       }
     }
     Functions: {
+      ada_should_retrain: { Args: never; Returns: Json }
       admin_forensics_summary: { Args: never; Returns: Json }
       apply_automation_rules_to_lead: {
         Args: { p_intake_id: string; p_owner_id?: string }

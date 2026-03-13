@@ -62,7 +62,8 @@ const Help = lazy(() => import("./pages/Help"));
 const Account = lazy(() => import("./pages/Account"));
 
 // ── Lazy: ADA ────────────────────────────────────────────────────────────────
-const ADAControlPanel = lazy(() => import("./pages/ADAControlPanel"));
+const ADAControlPanel  = lazy(() => import("./pages/ADAControlPanel"));
+const ADAModelDashboard = lazy(() => import("./pages/ADAModelDashboard"));
 
 // ── Lazy: admin ──────────────────────────────────────────────────────────────
 const AdminOverview = lazy(() => import("./pages/admin/Overview"));
@@ -154,6 +155,7 @@ const App = () => (
                 <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
                 <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
                 <Route path="/ada" element={<ProtectedRoute><ADAControlPanel /></ProtectedRoute>} />
+                <Route path="/ada/model" element={<ProtectedRoute><ADAModelDashboard /></ProtectedRoute>} />
                 <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
 
                 {/* ── Admin ────────────────────────────────── */}
