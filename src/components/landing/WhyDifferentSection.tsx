@@ -6,9 +6,9 @@ import { track } from "@/lib/landingTracking";
 const pillars = [
   {
     icon: Network,
-    tag: "Eternal Trust Graph",
-    title: "Un réseau vivant qui apprend",
-    desc: "Chaque introduction renforcit le graphe. L'IA identifie les chemins d'accès cachés que personne d'autre ne voit — secteurs, corridors, langues, signaux d'intention.",
+    tag: "Réseau vivant",
+    title: "Un réseau qui apprend de lui-même",
+    desc: "Chaque présentation renforce le système. Il découvre les connexions cachées que personne ne voit — et vous indique le meilleur chemin pour atteindre un nouveau client.",
     gradient: "var(--gradient-primary)",
     glowColor: "hsl(var(--primary) / 0.18)",
     accentColor: "hsl(var(--primary))",
@@ -53,9 +53,9 @@ const pillars = [
   },
   {
     icon: Brain,
-    tag: "ADA — Agent Deal Accelerator",
-    title: "Une IA qui appelle et négocie",
-    desc: "ADA passe des appels, analyse les objections, s'adapte en temps réel et prédit la probabilité de closing à +92%. Elle apprend de chaque deal pour améliorer ses prédictions.",
+    tag: "Assistant vocal",
+    title: "Un assistant qui cherche et qui parle",
+    desc: "Il cherche des clients potentiels pour vous, analyse les situations, et vous informe au bon moment. Il travaille même quand vous dormez.",
     gradient: "linear-gradient(135deg, hsl(270 70% 30%), hsl(280 60% 20%))",
     glowColor: "hsl(270 70% 50% / 0.15)",
     accentColor: "hsl(270 80% 70%)",
@@ -78,16 +78,16 @@ const pillars = [
         </div>
         <div className="absolute top-2 right-4 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold"
           style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 80% 75%)", border: "1px solid hsl(270 60% 50% / 0.3)" }}>
-          <Brain size={9} /> 92% précision
+          <Brain size={9} /> 92% de précision
         </div>
       </div>
     ),
   },
   {
     icon: Coins,
-    tag: "Royalty System",
-    title: "Chaque introduction génère des revenus",
-    desc: "Facilitateurs rémunérés automatiquement. Aucune commission prélevée par la plateforme. Attribution prouvée, paiement garanti — les deux parties gagnent à chaque deal validé.",
+    tag: "Gains automatiques",
+    title: "Chaque présentation génère des revenus",
+    desc: "Les facilitateurs sont payés automatiquement. WiinupMax ne prend aucune commission sur vos gains. Vous présentez, l'affaire se signe, vous recevez votre part. C'est tout.",
     gradient: "var(--gradient-accent)",
     glowColor: "hsl(var(--accent) / 0.15)",
     accentColor: "hsl(var(--accent))",
