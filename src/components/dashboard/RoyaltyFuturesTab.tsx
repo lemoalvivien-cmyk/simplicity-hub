@@ -353,14 +353,14 @@ export default function RoyaltyFuturesTab() {
         <KPICard
           label="Gains totaux"
           value={`${totalRoyalties.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`}
-          sub={`${records.length} deal${records.length !== 1 ? "s" : ""} assistants IA`}
+          sub={`${records.length} affaire${records.length !== 1 ? "s" : ""} signée${records.length !== 1 ? "s" : ""}`}
           color="hsl(var(--primary-glow))"
           icon={TrendingUp}
         />
         <KPICard
-          label="Récompenses converties"
+          label="Gains reçus"
           value={wmaxMinted.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
-          sub="unités sur le marché"
+          sub="argent reçu"
           color="hsl(38 95% 60%)"
           icon={Coins}
         />
@@ -373,9 +373,9 @@ export default function RoyaltyFuturesTab() {
           pulse
         />
         <KPICard
-          label="À convertir"
+          label="À recevoir"
           value={wmaxPending.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
-          sub="récompenses en attente"
+          sub="en attente de versement"
           color="hsl(var(--accent))"
           icon={Wallet}
         />
