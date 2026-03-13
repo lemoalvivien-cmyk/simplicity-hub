@@ -48,7 +48,8 @@ supabase/
 |--------|--------|-------------|
 | **Eternal Trust Graph v2** | ✅ PROD | pgvector + shortest_path_trust + hidden links |
 | **ADA Autonomous Deal Agent** | ✅ PROD | 95% autonome · LangGraph-style · ElevenLabs |
-| **Silent Royalty 7%** | ✅ PROD | Webhook Stripe auto · split automatique |
+| **Silent Royalty 12%** | ✅ PROD | Webhook Stripe auto · split automatique · 7% platform + 5% engine fee |
+| **WMAX Token** | ✅ PROD | Royalty tokenisée · Base L2 · revendable secondary market |
 | **Insights Licensing API** | ✅ PROD | 15k€→75k€/mois · B2B institutionnel |
 | **God Mode** | 🔄 P2 | Triple swarm · War Caller · AutoPilot |
 
