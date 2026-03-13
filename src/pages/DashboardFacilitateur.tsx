@@ -124,7 +124,7 @@ export default function DashboardFacilitateur() {
                     ? <span className="inline-block w-40 h-4 rounded bg-muted animate-pulse" />
                     : missionsCount > 0
                     ? `${missionsCount} mission${missionsCount > 1 ? "s" : ""} vous attendent`
-                    : "Bienvenue sur votre cockpit de revenus."}
+                    : "Bienvenue sur votre espace de revenus."}
                 </p>
               </div>
               {requests.length > 0 && (
