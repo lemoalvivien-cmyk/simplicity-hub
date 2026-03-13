@@ -508,8 +508,8 @@ export default function RoyaltyFuturesTab() {
                     style={{ background: "var(--gradient-primary)" }}
                   >
                   {minting === record.id
-                      ? <><Loader2 size={11} className="animate-spin" /> Conversion…</>
-                      : <><Zap size={11} /> Convertir</>
+                      ? <><Loader2 size={11} className="animate-spin" /> En cours…</>
+                      : <><Zap size={11} /> Recevoir</>
                     }
                   </button>
                 )}
