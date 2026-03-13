@@ -439,14 +439,12 @@ export default function APropos() {
         <div className="container max-w-4xl">
           <div className="text-center mb-10">
             <p className="pill-tag mb-4 mx-auto w-fit">Communauté</p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              La Mêlée by WiinupMax.
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+              La communauté WiinupMax.
             </h2>
             <p className="text-muted-foreground text-base max-w-xl mx-auto">
-              Du networking{" "}
-              <strong className="text-foreground font-semibold">sans bullshit</strong>, en vrai,
-              dans de vraies entreprises du territoire.
-              Pas des conférences. Des séances de travail.
+              Des rencontres vraies, dans de vraies entreprises.{" "}
+              <strong className="text-foreground font-semibold">Pas des conférences. Des séances de travail.</strong>
             </p>
           </div>
 
