@@ -244,7 +244,7 @@ export default function APropos() {
           <div className="text-center mb-12">
             <p className="pill-tag mb-4 mx-auto w-fit">Mission sociale</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Une mission qui dépasse le business.
+              Une mission qui va au-delà des affaires.
             </h2>
           </div>
 
