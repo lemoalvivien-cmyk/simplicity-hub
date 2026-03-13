@@ -27,7 +27,12 @@ export default function UserLayout({ children, role: roleProp, jarvisContext = "
     role === "entreprise" ? "entreprise" : "facilitateur";
 
   return (
-    <div className="min-h-screen bg-background flex overflow-x-hidden">
+    <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
+      {/* Security banner */}
+      <div className="w-full bg-destructive text-destructive-foreground text-center text-xs font-bold py-2 px-4 z-50 shrink-0">
+        🚨 ACTION SÉCURITÉ REQUISE : suivez FIX_SECURITY.md avant d'utiliser la plateforme en prod !
+      </div>
+      <div className="flex flex-1 overflow-x-hidden">
       {/* Sidebar — desktop only, 224px wide */}
       <UserNav role={role} />
 
