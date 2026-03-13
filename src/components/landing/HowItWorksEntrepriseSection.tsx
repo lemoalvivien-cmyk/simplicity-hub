@@ -5,29 +5,29 @@ import { track } from "@/lib/landingTracking";
 const steps = [
   {
     num: "01",
-    title: "Publiez une mission",
-    desc: "Décrivez votre client idéal, votre offre et la commission pour l'apporteur. En moins de 5 minutes, votre mission est visible par tous les facilitateurs actifs.",
+    title: "Vous commencez en 2 minutes",
+    desc: "Votre nom, votre téléphone ou email. C'est tout.",
     color: "hsl(218 72% 55%)",
-    tag: "5 min",
+    tag: "2 min",
   },
   {
     num: "02",
-    title: "Activez les deux moteurs",
-    desc: "L'assistant IA vous suggère des actions de prospection. Les facilitateurs envoient des introductions. Les deux remontent dans votre cockpit — vous gardez le contrôle à chaque étape.",
+    title: "Vous dites simplement ce que vous cherchez",
+    desc: "Vous écrivez en français normal : « Je cherche des entreprises qui veulent se former » ou « Je propose des solutions pour cabinets ». L'assistant comprend tout de suite.",
     color: "hsl(152 62% 45%)",
-    tag: "Assisté",
+    tag: "Simple",
   },
   {
     num: "03",
-    title: "Recevez des introductions qualifiées",
-    desc: "Chaque introduction arrive avec contexte complet, contact, et historique. Vous voyez tout, sans chercher. Rien ne se perd.",
+    title: "Tout se met en route pour vous",
+    desc: "L'assistant intelligent trouve des clients qualifiés en quelques heures. Vos facilitateurs vous apportent des présentations précieuses. Tout arrive directement dans votre espace privé et calme.",
     color: "hsl(38 95% 50%)",
-    tag: "Temps réel",
+    tag: "Automatique",
   },
   {
     num: "04",
-    title: "Validez et mesurez votre ROI",
-    desc: "Acceptez ou refusez en un clic. Vos gains, taux de conversion et ROI sont calculés et affichés dans votre cockpit. Vous savez toujours ce qui fonctionne.",
+    title: "Vous validez et vous récoltez",
+    desc: "Un seul clic pour dire oui. Vous voyez en temps réel qui a aidé, combien ça rapporte, et l'argent arrive automatiquement sur votre compte. Beaucoup d'entrepreneurs reçoivent leurs premières introductions dès les 24 premières heures. Aussi simple que d'allumer votre téléphone le matin.",
     color: "hsl(24 100% 55%)",
     tag: "1 clic",
   },
@@ -38,10 +38,10 @@ export default function HowItWorksEntrepriseSection() {
     <section id="comment-ca-marche" className="py-20 md:py-24 bg-background scroll-mt-16">
       <div className="container max-w-2xl">
         <div className="text-center mb-12">
-          <p className="pill-tag mb-4 mx-auto w-fit">Pour les entreprises</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">Comment ça marche</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
-            De zéro à vos premières opportunités{" "}
-            <span className="text-highlight">en 4 étapes.</span>
+            En 4 étapes,{" "}
+            <span className="text-highlight">vos premiers clients arrivent.</span>
           </h2>
           <p className="text-muted-foreground text-sm md:text-base max-w-sm mx-auto">
             Pas de formation. Pas de configuration longue. Opérationnel le jour même.
@@ -94,7 +94,7 @@ export default function HowItWorksEntrepriseSection() {
             className="btn-cta inline-flex items-center gap-2 px-8 py-4 text-base"
             onClick={() => track("cta_howitworks")}
           >
-            Lancer ma première mission
+            Je veux mes premiers clients dès demain — 99 €/an
             <ArrowRight size={16} />
           </Link>
           <p className="text-[11px] text-muted-foreground mt-3">

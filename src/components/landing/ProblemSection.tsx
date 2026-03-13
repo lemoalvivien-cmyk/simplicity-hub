@@ -49,8 +49,8 @@ export default function ProblemSection() {
             Votre acquisition client fuit de partout.
           </h2>
           <p className="text-muted-foreground text-base md:text-lg max-w-lg mx-auto">
-            Pas parce que vous travaillez mal.{" "}
-            <strong className="text-foreground font-semibold">Parce que vos outils ne sont pas faits pour ça.</strong>
+            Vous perdez du temps à chercher des clients. Vos messages restent ignorés. Vos contacts pourraient vous aider… mais vous ne savez pas comment leur demander sans les déranger. Et au final, vous ne savez jamais vraiment combien ça rapporte.{" "}
+            <strong className="text-foreground font-semibold">Aujourd'hui, tout cela s'arrête. Pour de bon.</strong>
           </p>
         </div>
 

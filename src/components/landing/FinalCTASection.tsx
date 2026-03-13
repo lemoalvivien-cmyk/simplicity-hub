@@ -21,7 +21,7 @@ export default function FinalCTASection() {
           La décision qui change votre acquisition
         </p>
         <h2 className="font-display text-[clamp(1.9rem,5.5vw,3.1rem)] font-bold text-white mb-5 leading-[1.1]">
-          Arrêtez de séparer<br />
+          Prêt à transformer<br />
           <span
             style={{
               background: "linear-gradient(135deg, hsl(24 100% 62%), hsl(38 100% 70%))",
@@ -30,7 +30,7 @@ export default function FinalCTASection() {
               backgroundClip: "text",
             }}
           >
-            prospection, réseau et suivi.
+            vos journées en vraies opportunités ?
           </span>
         </h2>
 
@@ -51,18 +51,17 @@ export default function FinalCTASection() {
         </div>
 
         <p className="text-white/90 text-base mb-5 max-w-sm mx-auto leading-relaxed font-medium">
-          Prospection IA assistée + réseau humain structuré. OpenClaw et facilitateurs actifs
-          travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+          Rejoignez les entrepreneurs et facilitateurs qui ont déjà choisi la simplicité et la tranquillité. Cliquez sur le bouton qui vous correspond et commencez maintenant.
         </p>
 
         <div className="flex flex-col items-center gap-3 mb-5">
-          <Link
+        <Link
             to="/signup"
             className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto font-bold"
             onClick={() => track("cta_final_enterprise")}
           >
             <Zap size={16} />
-            Activer maintenant — 99 € TTC/an
+            Je veux mes premiers clients dès demain — 99 € TTC/an
             <ArrowRight size={17} />
           </Link>
           <span className="flex items-center gap-1.5 text-white/60 text-xs">

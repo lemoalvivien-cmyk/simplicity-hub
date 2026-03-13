@@ -7,10 +7,10 @@ export default function MecanismeSection() {
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">Comment ça fonctionne</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Un double moteur. Un seul cockpit.
+            WiinupMax, c'est comme avoir deux amis exceptionnels qui travaillent pour vous en même temps.
           </h2>
           <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed">
-            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+            L'un cherche automatiquement les bonnes personnes pendant que vous dormez. L'autre vous présente des clients de confiance. Les deux ensemble dans un seul espace calme et protégé.
           </p>
         </div>
 
@@ -42,7 +42,7 @@ export default function MecanismeSection() {
                 </div>
               </div>
               <p className="text-white/90 text-sm leading-relaxed">
-                OpenClaw (en connexion réelle avec API externe) vous suggère des cibles, prépare des brouillons de messages et vous alerte quand relancer. Vous validez et envoyez. L'IA assiste, l'humain décide.
+                Un assistant discret et efficace fouille le marché à votre place. Il trouve les personnes vraiment intéressées, prépare les messages parfaits et vous prévient au bon moment. Il continue même pendant que vous dormez.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
@@ -92,8 +92,7 @@ export default function MecanismeSection() {
                 </div>
               </div>
               <p className="text-white/90 text-sm leading-relaxed">
-                Un réseau de facilitateurs actifs recommande votre offre à leurs contacts qualifiés.
-                Chaque introduction est tracée, vérifiée et prouvable dès l'envoi.
+                Des gens de confiance qui connaissent du monde. Ils vous présentent simplement des clients qu'ils apprécient. Quand l'affaire est signée, ils reçoivent une récompense juste et automatique. Vous, vous ne gérez absolument rien.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
@@ -138,11 +137,11 @@ export default function MecanismeSection() {
             >
               <BarChart3 size={14} className="text-white" aria-hidden="true" />
             </div>
-            <p className="font-display font-bold text-white text-base">Cockpit central</p>
+            <p className="font-display font-bold text-white text-base">Votre espace personnel unifié</p>
           </div>
           <p className="text-white/90 text-sm max-w-md mx-auto leading-relaxed">
-            Les deux moteurs remontent dans le même tableau de bord.
-            Validation, suivi, gains, priorités — tout est visible. Vous gardez le contrôle à chaque étape.
+            Les deux ensemble dans votre espace personnel, comme un service haut de gamme.
+            Validation, suivi, gains, priorités — tout est visible et clair.
           </p>
         </div>
       </div>

@@ -20,27 +20,25 @@ export default function FacilitateurSection() {
           <div>
             <p className="pill-tag mb-5 w-fit">Apporteurs d'affaires</p>
             <h2 className="font-display text-3xl md:text-[2rem] font-bold text-foreground mb-4 leading-tight">
-              Votre réseau vaut de l'argent.{" "}
-              <span className="text-highlight">Maintenant vous pouvez le prouver.</span>
+              Avec Wiinup, augmentez vos revenus en toute sécurité,{" "}
+              <span className="text-highlight">aucun frais, zéro charge mentale et sans bousculer vos habitudes.</span>
             </h2>
             <p className="text-muted-foreground text-base mb-3 leading-relaxed">
-              Vous faites déjà des mises en relation. Mais c'est informel, flou, rarement payé, jamais tracé.
+              C'est gratuit pour toujours. Vous choisissez une mission qui vous plaît, vous présentez quelqu'un de votre entourage, et vous touchez votre part dès la signature.
             </p>
             <p className="text-foreground text-base mb-8 leading-relaxed font-medium">
-              Transformez-les en{" "}
-              <span className="text-highlight">gains suivis, visibles et défendables.</span>{" "}
-              Sans bricolage. Sans rien payer.
+              <span className="text-highlight">Rien à payer. Rien à apprendre. Rien à changer dans votre journée.</span>
             </p>
             <Link
               to="/signup"
               className="btn-cta inline-flex items-center gap-2 px-8 py-4 text-base"
               onClick={() => track("cta_facilitateur_section")}
             >
-              Monétiser mon réseau — Gratuit
+              Je veux gagner de l'argent facilement — Gratuit
               <ArrowRight size={16} />
             </Link>
             <p className="text-[11px] text-muted-foreground mt-3">
-              Un modèle transparent d'apport d'affaires, avec attribution prouvée et paiement garanti.
+              Gratuit pour toujours · Sans carte bancaire · Attribution prouvée et paiement garanti.
             </p>
           </div>
 

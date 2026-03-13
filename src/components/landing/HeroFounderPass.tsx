@@ -113,7 +113,7 @@ function FounderPassButton() {
       className="btn-cta flex items-center justify-center gap-2.5 px-8 py-4 text-[0.95rem] font-bold disabled:opacity-60"
     >
       <Zap size={16} strokeWidth={2.5} />
-      {loading ? "Chargement…" : "Activer Founder Pass — 99 €/an"}
+      {loading ? "Chargement…" : "Je veux mes premiers clients dès demain — 99 €/an"}
       {!loading && <ArrowRight size={15} />}
     </motion.button>
   );
@@ -266,11 +266,9 @@ export default function HeroFounderPass() {
                 className="font-display font-bold text-white leading-[1.28] tracking-tight"
                 style={{ fontSize: "clamp(1.15rem, 2.5vw, 1.6rem)" }}
               >
-                ADA prospecte en voix{" "}
-                <span style={{ color: "hsl(210 85% 72%)" }}>ElevenLabs</span>
-                {" "}+ apporte des affaires + exécute en autonomie{" "}
-                <span style={{ color: "hsl(152 62% 52%)" }}>24/7 via swarm</span>
-                {" "}+{" "}
+                WiinupMax : vos premiers clients arrivent en moins de{" "}
+                <span style={{ color: "hsl(var(--accent))" }}>24 heures</span>
+                … et vos contacts{" "}
                 <span
                   style={{
                     background: "linear-gradient(90deg, hsl(var(--accent)), hsl(38 100% 72%))",
@@ -279,9 +277,8 @@ export default function HeroFounderPass() {
                     backgroundClip: "text",
                   }}
                 >
-                  12&nbsp;% royalty tokenisée WMAX revendable sur secondary market
+                  gagnent de l'argent sans rien faire.
                 </span>
-                .
               </h1>
             </motion.div>
 
@@ -293,8 +290,7 @@ export default function HeroFounderPass() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.26 }}
             >
-              Avec Wiinup, augmentez vos revenus en toute sécurité, sans investir,
-              sans charge mentale, et sans bousculer vos habitudes.
+              Une plateforme simple et magnifique qui travaille pour vous. Elle trouve toute seule les bonnes personnes qui veulent acheter chez vous. Vos amis et connaissances vous présentent des clients prêts à signer. Tout se passe dans un seul espace calme et protégé, sans effort, sans stress, sans rien changer à votre vie.
             </motion.p>
 
             {/* CTA row */}
@@ -321,7 +317,7 @@ export default function HeroFounderPass() {
                 onClick={() => track("cta_hero_facilitateur")}
               >
                 <Users size={11} />
-                Devenir facilitateur — Gratuit
+                Je veux gagner de l'argent facilement — Gratuit pour toujours
               </Link>
               <span className="text-white/20 text-xs">·</span>
               <span className="text-white/35 text-xs">Accès immédiat · Aucune CB requise pour inscription</span>
