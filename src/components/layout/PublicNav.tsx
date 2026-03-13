@@ -94,7 +94,7 @@ export default function PublicNav() {
             Connexion
           </Link>
           <Link to="/signup" className="btn-cta text-sm px-4 py-2">
-            Commencer gratuitement →
+            Commencer →
           </Link>
         </div>
 
