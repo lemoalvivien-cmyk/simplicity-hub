@@ -282,16 +282,17 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── payment_intent.succeeded — Silent Royalty Engine 7% ──────────────
+      // ── payment_intent.succeeded — Silent Royalty Engine 12% ─────────────
+      // Breakdown: 7% platform fee + 5% engine fee (swarm autonome + live cash flow + WMAX secondary market)
       case "payment_intent.succeeded": {
         const pi = event.data.object as Stripe.PaymentIntent;
         const adaSessionId = pi.metadata?.ada_session_id;
         if (!adaSessionId) { logStep("PI succeeded — not ADA, skip"); break; }
 
         const dealAmount = pi.amount / 100;
-        const royaltyAmount = Math.round(dealAmount * 0.07 * 100) / 100;
+        const royaltyAmount = Math.round(dealAmount * 0.12 * 100) / 100;
         const facilitateurNet = Math.round((dealAmount - royaltyAmount) * 100) / 100;
-        logStep("ADA royalty split", { adaSessionId, dealAmount, royaltyAmount });
+        logStep("ADA royalty split 12%", { adaSessionId, dealAmount, royaltyAmount });
 
         const { data: adaSession } = await supabase
           .from("ada_sessions")
@@ -302,7 +303,7 @@ Deno.serve(async (req) => {
         if (adaSession) {
           await supabase.from("ada_sessions").update({
             contract_amount: dealAmount,
-            commission_7pct: royaltyAmount,
+            commission_7pct: royaltyAmount,   // column kept for schema compat — stores full 12% royalty
             state: "closed",
             final_closed_at: new Date().toISOString(),
             final_closed_by: "stripe_webhook_auto",
@@ -312,7 +313,7 @@ Deno.serve(async (req) => {
             user_id: adaSession.owner_user_id,
             type: "gain_valide",
             title: `💰 Deal fermé — ${adaSession.target_name}`,
-            body: `${facilitateurNet.toLocaleString("fr-FR")} € crédités (7% royalty WiinupMax déduit).`,
+            body: `${facilitateurNet.toLocaleString("fr-FR")} € crédités (12% royalty WiinupMax déduit).`,
             href: "/gains",
           }).select().maybeSingle();
 
@@ -321,10 +322,10 @@ Deno.serve(async (req) => {
             entity_type: "ada_session",
             entity_id: adaSessionId,
             user_id: adaSession.owner_user_id,
-            after_state: { deal_amount: dealAmount, royalty_7pct: royaltyAmount, facilitateur_net: facilitateurNet },
+            after_state: { deal_amount: dealAmount, royalty_12pct: royaltyAmount, facilitateur_net: facilitateurNet },
           });
 
-          logStep("Royalty split complete", { facilitateurNet, royaltyAmount });
+          logStep("Royalty split 12% complete", { facilitateurNet, royaltyAmount });
         }
         break;
       }

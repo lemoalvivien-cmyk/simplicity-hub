@@ -1,9 +1,13 @@
 /**
- * Silent Royalty Engine — 7% Platform Split
+ * Silent Royalty Engine — 12% Platform Split
  * ────────────────────────────────────────────────────────────────────
  * Triggered by stripe-webhook on payment_intent.succeeded for ADA deals.
+ * Breakdown:
+ *   - 7% platform fee (core WiinupMax)
+ *   - 5% engine fee (swarm autonome + live cash flow + WMAX secondary market)
+ *   = 12% total royalty tokenisée WMAX
  * Automatically:
- *   1. Calculates 7% royalty on deal amount
+ *   1. Calculates 12% royalty on deal amount
  *   2. Creates Stripe Transfer to platform account
  *   3. Logs in gains table with royalty breakdown
  *   4. Notifies facilitateur via notifications table
@@ -18,8 +22,8 @@ const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
 const SUPABASE_URL          = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY           = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-// Platform account that receives the 7% royalty
-const PLATFORM_ROYALTY_PCT = 0.07;
+// Platform account that receives the 12% royalty (7% platform + 5% engine fee)
+const PLATFORM_ROYALTY_PCT = 0.12;
 
 const log = (step: string, details?: unknown) => {
   console.log(`[ROYALTY-ENGINE] ${step}${details ? ` — ${JSON.stringify(details)}` : ""}`);
@@ -107,7 +111,7 @@ Deno.serve(async (req) => {
       montant:              facilitateurNet,
       statut:               "confirme",
       source:               "ada_autonomous",
-      description:          `Deal ADA fermé — ${adaSession.target_name} — 7% royalty WiinupMax déduit`,
+      description:          `Deal ADA fermé — ${adaSession.target_name} — 12% royalty WiinupMax déduit (7% platform + 5% engine fee)`,
       stripe_payment_intent_id: pi.id,
     });
 
@@ -116,8 +120,8 @@ Deno.serve(async (req) => {
       facilitateur_user_id: adaSession.owner_user_id,
       montant:              royaltyAmount,
       statut:               "confirme",
-      source:               "platform_royalty_7pct",
-      description:          `Royalty plateforme 7% — Deal ADA — ${adaSession.target_name}`,
+      source:               "platform_royalty_12pct",
+      description:          `Royalty plateforme 12% — Deal ADA — ${adaSession.target_name} (7% platform + 5% engine fee swarm)`,
       stripe_payment_intent_id: pi.id,
     });
 
@@ -126,7 +130,7 @@ Deno.serve(async (req) => {
       user_id: adaSession.owner_user_id,
       type:    "gain_valide",
       title:   `💰 Deal fermé — ${adaSession.target_name}`,
-      body:    `${facilitateurNet.toLocaleString("fr-FR")} € crédités (7% royalty WiinupMax déduit). Bravo !`,
+      body:    `${facilitateurNet.toLocaleString("fr-FR")} € crédités (12% royalty WiinupMax déduit). Bravo !`,
       href:    "/gains",
     });
 
@@ -137,10 +141,12 @@ Deno.serve(async (req) => {
       entity_id:    sessionId,
       user_id:      adaSession.owner_user_id,
       after_state: {
-        deal_amount:      dealAmount,
-        royalty_7pct:     royaltyAmount,
-        facilitateur_net: facilitateurNet,
-        stripe_pi:        pi.id,
+        deal_amount:       dealAmount,
+        royalty_12pct:     royaltyAmount,
+        platform_fee_7pct: Math.round(dealAmount * 0.07 * 100) / 100,
+        engine_fee_5pct:   Math.round(dealAmount * 0.05 * 100) / 100,
+        facilitateur_net:  facilitateurNet,
+        stripe_pi:         pi.id,
       },
     });
 

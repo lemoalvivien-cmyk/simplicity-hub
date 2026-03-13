@@ -5,14 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { track } from "@/lib/landingTracking";
 
 const entrepriseFeatures = [
-  "Missions illimitées",
-  "Introductions tracées & validées",
-  "Prospection IA assistée (OpenClaw)",
-  "Suggestions de cibles et messages",
-  "Cockpit central de suivi",
-  "Assistant IA contextuel",
-  "Marketplace de facilitateurs",
-  "Gains & commissions traçables",
+  "ADA prospecte en voix · 24/7 · swarm autonome",
+  "Missions illimitées · Introductions tracées & validées",
+  "OpenClaw apporte des affaires en autonomie",
+  "Exécution autonome 24/7 via swarm multi-agents",
+  "12 % royalty tokenisée WMAX · revendable sur secondary market",
+  "Cockpit central de suivi · Assistant IA contextuel",
+  "Marketplace de facilitateurs · Gains traçables",
+  "Live cash flow · Eternal Trust Graph v2",
   "Support inclus · Mises à jour incluses",
 ];
 
@@ -82,7 +82,7 @@ export default function PricingSection() {
                 <Zap size={10} />
                 Offre de lancement — {slotsRemaining} place{slotsRemaining !== 1 ? "s" : ""} restante{slotsRemaining !== 1 ? "s" : ""}
               </div>
-              <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Entreprise</p>
+              <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Founder Pass</p>
               <div className="flex items-end gap-2 mb-1">
                 <span className="font-display font-bold text-5xl text-white leading-none">99 €</span>
                 <div className="pb-1.5 flex flex-col">
@@ -91,7 +91,7 @@ export default function PricingSection() {
                 </div>
               </div>
               <p className="text-white/80 text-xs font-semibold mt-1">
-                soit 8,25 € / mois · Premier arrivé premier servi
+                100 places max · Premier arrivé premier servi
               </p>
             </div>
 
@@ -110,11 +110,11 @@ export default function PricingSection() {
                 onClick={() => track("cta_pricing_enterprise")}
               >
                 <Zap size={16} />
-                Activer maintenant — 99 € TTC/an
+                Activer le Founder Pass — 99 € TTC/an
                 <ArrowRight size={16} />
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
-                Annulation libre · Accès immédiat · Aucun engagement
+                Accès immédiat · 100 places max · Royalty WMAX tokenisée
               </p>
             </div>
           </div>

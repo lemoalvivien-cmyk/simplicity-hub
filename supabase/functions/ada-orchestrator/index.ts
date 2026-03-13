@@ -7,7 +7,8 @@
  *   → closed | abandoned | error
  *
  * Sécurité : RGPD art 6.1.a, Bloctel Loi Hamon, EU AI Act art 52
- * Royalty   : 7% automatique sur chaque deal via Silent Royalty Engine
+ * Royalty   : 12% automatique sur chaque deal via Silent Royalty Engine
+ *             (7% platform fee + 5% engine fee : swarm autonome + live cash flow + WMAX secondary market)
  * POST /ada-orchestrator
  * Body: { action: "start"|"consent"|"voice_consent"|"negotiate"|"validate"|"close"|"abandon", ... }
  */
@@ -86,7 +87,7 @@ async function nodePrepareScript(
 ): Promise<{ script: string; reasoningTrace: unknown[] }> {
   const nodeStart = Date.now();
 
-  const systemPrompt = `Tu es un closer impitoyable de haut niveau qui maximise le ROI de l'entreprise cliente ET le royalty 7% pour la plateforme WiinupMax, tout en respectant scrupuleusement RGPD, consentements explicites et Bloctel.
+  const systemPrompt = `Tu es un closer impitoyable de haut niveau qui maximise le ROI de l'entreprise cliente ET le royalty 12% pour la plateforme WiinupMax (7% platform fee + 5% engine fee swarm autonome), tout en respectant scrupuleusement RGPD, consentements explicites et Bloctel.
 
 Règles absolues :
 1. Toujours demander le consentement explicite avant tout enregistrement
@@ -194,7 +195,8 @@ async function nodeGenerateContract(
   amount: number,
 ): Promise<{ paymentLink: string; commission: number }> {
   const nodeStart = Date.now();
-  const commission = Math.round(amount * 0.07 * 100) / 100;
+  // 12% royalty: 7% platform fee + 5% engine fee (swarm autonome + live cash flow + WMAX secondary market)
+  const commission = Math.round(amount * 0.12 * 100) / 100;
 
   // Create a one-time price + payment link with ADA metadata
   const params = new URLSearchParams();
@@ -203,12 +205,12 @@ async function nodeGenerateContract(
   params.append("line_items[0][price_data][product_data][name]", `Deal WiinupMax — ${session.target_name}`);
   params.append(
     "line_items[0][price_data][product_data][description]",
-    `Commission plateforme 7% (${commission} €) incluse. Session ADA: ${session.id}`,
+    `Commission plateforme 12% (${commission} €) incluse. Session ADA: ${session.id}`,
   );
   params.append("line_items[0][quantity]", "1");
   // Embed ada_session_id so Silent Royalty Engine webhook picks it up
   params.append("metadata[ada_session_id]", session.id);
-  params.append("metadata[commission_7pct]", String(commission));
+  params.append("metadata[commission_12pct]", String(commission));
   params.append("metadata[owner_user_id]", session.owner_user_id);
 
   let paymentLink = "";
@@ -252,7 +254,7 @@ async function nodeNegotiate(
   const TOGETHER_KEY = Deno.env.get("TOGETHER_AI_API_KEY") ?? "";
 
   const systemPrompt = `Tu es ADA, un closer impitoyable de haut niveau pour WiinupMax. Tu négocies avec ${session.target_name}.
-Ton objectif : maximiser le ROI de l'entreprise cliente ET prélever 7% de royalty pour la plateforme.
+Ton objectif : maximiser le ROI de l'entreprise cliente ET prélever 12% de royalty pour la plateforme (7% platform + 5% engine fee swarm).
 Règles absolues : RGPD respecté, zéro promesse garantie, Bloctel vérifié, EU AI Act art 52 appliqué.
 Adapte-toi en temps réel : détecte les signaux d'achat, objections, hésitations.
 Réponse max 3 phrases. Ton : naturel, humain, confiant, percutant. Zéro hallucination.`;

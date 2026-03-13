@@ -2,7 +2,8 @@
 ### 🏆 Phase 1 terminée — Monopole data + exécution autonome + cash machine verrouillé
 
 > **WiinupMax est une machine de guerre B2B.**
-> Eternal Trust Graph · ADA Autonomous Agents · Insights Licensing API · Silent Royalty 7%
+> Eternal Trust Graph · ADA Autonomous Agents · Insights Licensing API · Silent Royalty 12%
+> **Founder Pass 99 €/an (100 places max)** – ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm + 12 % royalty tokenisée WMAX revendable sur secondary market.
 
 ---
 
@@ -47,7 +48,8 @@ supabase/
 |--------|--------|-------------|
 | **Eternal Trust Graph v2** | ✅ PROD | pgvector + shortest_path_trust + hidden links |
 | **ADA Autonomous Deal Agent** | ✅ PROD | 95% autonome · LangGraph-style · ElevenLabs |
-| **Silent Royalty 7%** | ✅ PROD | Webhook Stripe auto · split automatique |
+| **Silent Royalty 12%** | ✅ PROD | Webhook Stripe auto · split automatique · 7% platform + 5% engine fee |
+| **WMAX Token** | ✅ PROD | Royalty tokenisée · Base L2 · revendable secondary market |
 | **Insights Licensing API** | ✅ PROD | 15k€→75k€/mois · B2B institutionnel |
 | **God Mode** | 🔄 P2 | Triple swarm · War Caller · AutoPilot |
 
@@ -61,11 +63,11 @@ supabase/
 
 ## Monétisation
 
-- **🔥 Offre Launch exclusive** : 99 € TTC/an (au lieu de 990 €) — ça part extrêmement vite, premier arrivé premier servi !
+- **🔥 Founder Pass** : 99 € TTC/an (100 places max) — ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm + 12 % royalty tokenisée WMAX revendable sur secondary market
 - **Insights API Starter** : 15 000 € / mois
 - **Insights API Growth** : 35 000 € / mois
 - **Insights API Enterprise** : 75 000 € / mois
-- **Royalty ADA** : 7% sur chaque deal fermé automatiquement
+- **Royalty ADA** : 12% sur chaque deal fermé automatiquement (7% platform + 5% engine fee swarm)
 
 ## Développement local
 
@@ -102,7 +104,8 @@ Gérées automatiquement par Lovable Cloud. Ne pas modifier `.env`.
 
 - ✅ ETG v2 : pgvector + shortest_path + hidden links
 - ✅ ADA 95% : machine d'état LangGraph · ElevenLabs · Gemini
-- ✅ Royalty 7% : webhook silent · Stripe split automatique
+- ✅ Royalty 12% : webhook silent · Stripe split automatique (7% platform + 5% engine fee)
+- ✅ WMAX Token : royalty tokenisée · Base L2 · secondary market
 - ✅ Insights API : 3 tiers · vector search · OpenAPI
 - ✅ Sécurité : RLS strict · JWT in-code · CORS hardened · CI/CD
 - ✅ RGPD · EU AI Act · Bloctel : templates + page `/legal`

@@ -26,13 +26,15 @@ function parseNegotiateToolCall(
   };
 }
 
-/** Compute royalty split (7% platform / 93% facilitateur) */
+/** Compute royalty split (12% platform / 88% facilitateur)
+ *  Breakdown: 7% platform fee + 5% engine fee (swarm autonome + live cash flow + WMAX secondary market)
+ */
 function computeRoyalty(dealAmount: number): {
   commission: number;
   facilitateurNet: number;
   total: number;
 } {
-  const commission = Math.round(dealAmount * 0.07 * 100) / 100;
+  const commission = Math.round(dealAmount * 0.12 * 100) / 100;
   const facilitateurNet = Math.round((dealAmount - commission) * 100) / 100;
   return { commission, facilitateurNet, total: dealAmount };
 }
@@ -112,13 +114,14 @@ describe("nodeNegotiate — tool call parsing", () => {
   });
 });
 
-// ── 3. ROYALTY ENGINE — Silent 7% split integrity ─────────────────────────────
+// ── 3. ROYALTY ENGINE — Silent 12% split integrity ────────────────────────────
+// Breakdown: 7% platform fee + 5% engine fee (swarm autonome + live cash flow + WMAX secondary market)
 
-describe("computeRoyalty — Silent Royalty Engine 7%", () => {
-  it("should compute exact 7% commission on a 5000€ deal", () => {
+describe("computeRoyalty — Silent Royalty Engine 12%", () => {
+  it("should compute exact 12% commission on a 5000€ deal", () => {
     const { commission, facilitateurNet, total } = computeRoyalty(5000);
-    expect(commission).toBe(350);
-    expect(facilitateurNet).toBe(4650);
+    expect(commission).toBe(600);
+    expect(facilitateurNet).toBe(4400);
     expect(total).toBe(5000);
   });
 
@@ -138,12 +141,22 @@ describe("computeRoyalty — Silent Royalty Engine 7%", () => {
 
   it("should compute 75000€ Insights API Enterprise royalty correctly", () => {
     const { commission } = computeRoyalty(75000);
-    expect(commission).toBe(5250); // 7% of 75k
+    expect(commission).toBe(9000); // 12% of 75k
   });
 
   it("should always produce positive split values", () => {
     const { commission, facilitateurNet } = computeRoyalty(99);
     expect(commission).toBeGreaterThan(0);
     expect(facilitateurNet).toBeGreaterThan(0);
+  });
+
+  it("should correctly split 7% platform + 5% engine fee", () => {
+    const deal = 10000;
+    const platformFee = Math.round(deal * 0.07 * 100) / 100;
+    const engineFee   = Math.round(deal * 0.05 * 100) / 100;
+    const totalRoyalty = Math.round(deal * 0.12 * 100) / 100;
+    expect(platformFee + engineFee).toBeCloseTo(totalRoyalty, 2);
+    expect(platformFee).toBe(700);
+    expect(engineFee).toBe(500);
   });
 });
