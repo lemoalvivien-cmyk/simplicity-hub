@@ -38,10 +38,10 @@ export default function HowItWorksEntrepriseSection() {
     <section id="comment-ca-marche" className="py-20 md:py-24 bg-background scroll-mt-16">
       <div className="container max-w-2xl">
         <div className="text-center mb-12">
-          <p className="pill-tag mb-4 mx-auto w-fit">Pour les entreprises</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">Comment ça marche</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
-            De zéro à vos premières opportunités{" "}
-            <span className="text-highlight">en 4 étapes.</span>
+            En 4 étapes,{" "}
+            <span className="text-highlight">vos premiers clients arrivent.</span>
           </h2>
           <p className="text-muted-foreground text-sm md:text-base max-w-sm mx-auto">
             Pas de formation. Pas de configuration longue. Opérationnel le jour même.
