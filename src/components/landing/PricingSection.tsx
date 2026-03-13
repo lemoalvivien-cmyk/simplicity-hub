@@ -113,7 +113,7 @@ export default function PricingSection() {
                 <ArrowRight size={16} />
               </Link>
               <p className="text-center text-xs text-muted-foreground mt-3">
-                Accès immédiat · 100 places max · Royalty WMAX tokenisée
+                Accès immédiat · 100 places max · 12 % de gains reversés automatiquement
               </p>
             </div>
           </div>

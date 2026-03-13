@@ -76,7 +76,7 @@ function NewSessionForm({ onStart }: { onStart: (p: { target_name: string; targe
           <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+33 6 XX XX XX XX" className="h-9 text-sm" />
           <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@prospect.com" className="h-9 text-sm" type="email" />
           <Button onClick={handleSubmit} size="sm" className="w-full font-bold">
-            <Bot size={14} /> Lancer l'agent ADA
+            <Bot size={14} /> Lancer mon assistant
           </Button>
         </motion.div>
       )}
