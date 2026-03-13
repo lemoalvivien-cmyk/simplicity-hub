@@ -23,6 +23,7 @@ import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
 import CGU from "./pages/CGU";
 import Confidentialite from "./pages/Confidentialite";
+import Legal from "./pages/Legal";
 import MentionsLegales from "./pages/MentionsLegales";
 
 // ── Lazy: dashboards ─────────────────────────────────────────────────────────
@@ -120,6 +121,7 @@ const App = () => (
                 <Route path="/cgu" element={<CGU />} />
                 <Route path="/confidentialite" element={<Confidentialite />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
+                <Route path="/legal" element={<Legal />} />
                 <Route path="/a-propos" element={<APropos />} />
 
                 {/* ── Onboarding ───────────────────────────── */}
