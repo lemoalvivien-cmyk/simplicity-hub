@@ -48,8 +48,8 @@ export default function HeroSection() {
             </span>
           </h1>
 
-          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/90 mb-5 max-w-lg mx-auto leading-[1.75] font-medium px-2">
-            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/90 mb-5 max-w-xl mx-auto leading-[1.75] font-medium px-2">
+            Founder Pass 99 €/an (100 places max) – ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm + 12&nbsp;% royalty tokenisée WMAX revendable sur secondary market.
           </p>
 
           <p className="text-[clamp(0.9rem,2vw,1rem)] text-white/70 font-normal mb-9 max-w-lg mx-auto leading-[1.7] px-2 text-center">
