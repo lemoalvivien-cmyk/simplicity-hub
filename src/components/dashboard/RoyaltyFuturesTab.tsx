@@ -415,10 +415,10 @@ export default function RoyaltyFuturesTab() {
             <div className="text-center py-10 px-5">
               <Coins size={28} className="mx-auto mb-3 text-muted-foreground/35" />
               <p className="text-sm font-semibold text-foreground mb-1">
-                Aucun deal ADA fermé pour l'instant
+                Aucun deal fermé pour l'instant
               </p>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                Vos royalties WMAX apparaîtront ici dès qu'ADA fermera son premier deal autonome.
+                Vos gains apparaîtront ici dès que votre assistant IA fermera son premier deal autonome.
               </p>
             </div>
           ) : (
