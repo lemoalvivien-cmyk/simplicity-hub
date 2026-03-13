@@ -37,6 +37,8 @@ export type TrackEvent =
   | DbEvent
   | "cta_howitworks"
   | "cta_hero_facilitateur"
+  | "cta_hero_founder_pass"
+  | "cta_hero_bank_psd2"
   | "cta_facilitateur_section"
   | "cta_why_different"
   | "cta_dashboard_activate"

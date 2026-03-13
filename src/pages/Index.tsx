@@ -51,9 +51,9 @@ export default function LandingPage() {
 
       <PublicNav />
 
-      {/* 1 — HERO V2 (3D morphing sphere + kinetic typography) */}
+      {/* 1 — HERO FOUNDER PASS (brand + exact copy + CTAs Stripe + PSD2) */}
       <Suspense fallback={<HeroFallback />}>
-        <HeroSectionV2 />
+        <HeroFounderPass />
       </Suspense>
 
       {/* 2 — DOULEURS ENTREPRISES */}
