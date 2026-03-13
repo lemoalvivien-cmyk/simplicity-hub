@@ -1,13 +1,13 @@
 /**
- * useEternalGraph — Eternal Trust Graph React Hook
- * ──────────────────────────────────────────────────
- * Interface React vers les 3 Edge Functions ETG.
- * Fournit : stats, opportunités prédictives, liens, agrégation temps réel.
+ * useEternalGraph v2 — Eternal Trust Graph React Hook
+ * ────────────────────────────────────────────────────
+ * Interface React vers les Edge Functions ETG v2.
+ * Ajoute: shortest_path query + vector similarity search.
  */
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-// ── Types ─────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────
 
 export interface ETGStats {
   total_persons:      number;
@@ -53,19 +53,34 @@ export interface ETGLink {
 }
 
 export interface ETGHiddenLink {
-  id:                          string;
-  person_a_id:                 string;
-  person_b_id:                 string;
-  strength:                    number;
-  confidence:                  number;
-  predicted_deal_probability:  number;
+  id:                         string;
+  person_a_id:                string;
+  person_b_id:                string;
+  strength:                   number;
+  confidence:                 number;
+  predicted_deal_probability: number;
 }
 
-export interface ETGGraphData {
-  stats:         ETGStats | null;
-  opportunities: ETGOpportunity[];
-  links:         ETGLink[];
-  hiddenLinks:   ETGHiddenLink[];
+export interface ETGPathHop {
+  hop:              number;
+  node_id:          string;
+  node_hash:        string;
+  link_type:        string;
+  trust_score:      number;
+  cumulative_trust: number;
+  path_ids:         string[];
+}
+
+export interface ETGSimilarOpp {
+  opportunity_id:     string;
+  confidence_score:   number;
+  similarity:         number;
+  sector:             string | null;
+  zone:               string | null;
+  close_weeks_min:    number;
+  close_weeks_max:    number;
+  commission_estimate: number | null;
+  reasoning:          string | null;
 }
 
 // ── Edge Function caller ──────────────────────────────────────────
@@ -104,7 +119,7 @@ export function useEternalGraph(autoLoad = true) {
   const [links,         setLinks]         = useState<ETGLink[]>([]);
   const [hiddenLinks,   setHiddenLinks]   = useState<ETGHiddenLink[]>([]);
 
-  /** Pull current graph data from DB directly (no edge function) */
+  /** Pull current graph data directly from DB */
   const loadGraphData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -134,10 +149,10 @@ export function useEternalGraph(autoLoad = true) {
           .limit(50),
       ]);
 
-      if (statsRes.data)   setStats(statsRes.data as unknown as ETGStats);
-      if (oppsRes.data)    setOpportunities(oppsRes.data as ETGOpportunity[]);
-      if (linksRes.data)   setLinks(linksRes.data as ETGLink[]);
-      if (hiddenRes.data)  setHiddenLinks(hiddenRes.data as ETGHiddenLink[]);
+      if (statsRes.data)  setStats(statsRes.data as unknown as ETGStats);
+      if (oppsRes.data)   setOpportunities(oppsRes.data as ETGOpportunity[]);
+      if (linksRes.data)  setLinks(linksRes.data as ETGLink[]);
+      if (hiddenRes.data) setHiddenLinks(hiddenRes.data as ETGHiddenLink[]);
     } catch (e) {
       console.error("[useEternalGraph] loadGraphData", e);
       setError(String(e));
@@ -146,7 +161,7 @@ export function useEternalGraph(autoLoad = true) {
     }
   }, []);
 
-  /** Trigger full aggregation pipeline (etg-aggregate) */
+  /** Full aggregation pipeline (etg-aggregate v2 with vector enrichment) */
   const aggregate = useCallback(async () => {
     setAggregating(true);
     setError(null);
@@ -161,7 +176,7 @@ export function useEternalGraph(autoLoad = true) {
     }
   }, [loadGraphData]);
 
-  /** Generate new 6-12 week predictions (etg-predict) */
+  /** Generate predictions 6-12 weeks (etg-predict) */
   const generatePredictions = useCallback(async (weeksMin = 6, weeksMax = 12) => {
     setPredicting(true);
     setError(null);
@@ -182,7 +197,7 @@ export function useEternalGraph(autoLoad = true) {
     }
   }, [loadGraphData]);
 
-  /** Ingest a single event into the ETG (etg-ingest) */
+  /** Ingest a real-time event (etg-ingest) */
   const ingestEvent = useCallback(async (
     eventType: "introduction_validee" | "gain_confirme" | "deal_closed",
     entityId:  string,
@@ -194,7 +209,6 @@ export function useEternalGraph(autoLoad = true) {
         entity_id:  entityId,
         metadata:   metadata || {},
       });
-      // Refresh after ingest
       await loadGraphData();
       return result;
     } catch (e) {
@@ -203,6 +217,50 @@ export function useEternalGraph(autoLoad = true) {
       return null;
     }
   }, [loadGraphData]);
+
+  /** Shortest trust path between two anonymised nodes */
+  const findShortestPath = useCallback(async (
+    fromHash: string,
+    toHash:   string,
+    maxHops = 5
+  ): Promise<ETGPathHop[]> => {
+    try {
+      const result = await callETG("etg-aggregate", {
+        action:    "shortest_path",
+        from_hash: fromHash,
+        to_hash:   toHash,
+        max_hops:  maxHops,
+      });
+      return (result.path as ETGPathHop[]) || [];
+    } catch (e) {
+      console.error("[useEternalGraph] findShortestPath", e);
+      return [];
+    }
+  }, []);
+
+  /** Vector ANN similarity search on opportunities */
+  const findSimilarOpportunities = useCallback(async (
+    userId: string,
+    queryVector: number[],
+    limit = 10
+  ): Promise<ETGSimilarOpp[]> => {
+    try {
+      const { data, error: rpcErr } = await supabase.rpc(
+        "etg_vector_similar_opportunities" as never,
+        {
+          p_user_id:       userId,
+          p_query_vector:  `[${queryVector.join(",")}]`,
+          p_limit:         limit,
+          p_min_confidence: 20,
+        } as never
+      );
+      if (rpcErr) throw rpcErr;
+      return (data as ETGSimilarOpp[]) || [];
+    } catch (e) {
+      console.error("[useEternalGraph] findSimilarOpportunities", e);
+      return [];
+    }
+  }, []);
 
   /** Full refresh: aggregate → predict → load */
   const fullRefresh = useCallback(async () => {
@@ -219,29 +277,15 @@ export function useEternalGraph(autoLoad = true) {
     }
   }, [loadGraphData]);
 
-  // Auto-load on mount
   useEffect(() => {
     if (autoLoad) loadGraphData();
   }, [autoLoad, loadGraphData]);
 
-  const graphData: ETGGraphData = { stats, opportunities, links, hiddenLinks };
-
   return {
-    // State
-    loading,
-    aggregating,
-    predicting,
-    error,
-    graphData,
-    stats,
-    opportunities,
-    links,
-    hiddenLinks,
-    // Actions
-    aggregate,
-    generatePredictions,
-    ingestEvent,
-    fullRefresh,
-    loadGraphData,
+    loading, aggregating, predicting, error,
+    stats, opportunities, links, hiddenLinks,
+    aggregate, generatePredictions, ingestEvent,
+    findShortestPath, findSimilarOpportunities,
+    fullRefresh, loadGraphData,
   };
 }

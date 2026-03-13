@@ -1,24 +1,25 @@
 /**
- * etg-aggregate — Eternal Trust Graph Aggregator
- * ─────────────────────────────────────────────────
- * Anonymise et agrège en temps réel les événements métier
- * (introductions, gains, deals) pour alimenter le graphe ETG.
- *
+ * etg-aggregate v2 — Eternal Trust Graph Aggregator
+ * ─────────────────────────────────────────────────────
  * POST /etg-aggregate
- * body: { action: "aggregate_anonymous_graph" | "ingest_event" | "get_stats", ... }
+ * body: { action: "aggregate_anonymous_graph" | "get_stats" }
+ *
+ * v2: vector similarity search for hidden 6-12 week opportunities
+ *     via pgvector cosine distance on etg_opportunities.embedding
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
-// deno-lint-ignore no-explicit-any
-type AnyClient = any;
+type AnyClient = ReturnType<typeof createClient>;
 
-const SUPABASE_URL      = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const ANON_KEY          = Deno.env.get("SUPABASE_ANON_KEY")!;
+const SUPABASE_URL     = Deno.env.get("SUPABASE_URL")!;
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const ANON_KEY         = Deno.env.get("SUPABASE_ANON_KEY")!;
+const OPENAI_KEY       = Deno.env.get("OPENAI_API_KEY") || "";
 
-/** SHA-256 anonymisation helper */
+// ── SHA-256 anonymisation ─────────────────────────────────────────
+
 async function sha256(input: string): Promise<string> {
   const data   = new TextEncoder().encode(input.toLowerCase().trim());
   const buffer = await crypto.subtle.digest("SHA-256", data);
@@ -27,7 +28,33 @@ async function sha256(input: string): Promise<string> {
     .join("");
 }
 
-/** Upsert an ETG person by canonical key (email or userId) */
+// ── OpenAI embedding (text-embedding-3-small, 1536 dims) ──────────
+
+async function getEmbedding(text: string): Promise<number[] | null> {
+  if (!OPENAI_KEY || !text.trim()) return null;
+  try {
+    const res = await fetch("https://api.openai.com/v1/embeddings", {
+      method:  "POST",
+      headers: {
+        "Content-Type":  "application/json",
+        "Authorization": `Bearer ${OPENAI_KEY}`,
+      },
+      body: JSON.stringify({ model: "text-embedding-3-small", input: text.slice(0, 2000) }),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data?.[0]?.embedding ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function vecToSql(v: number[]): string {
+  return `[${v.join(",")}]`;
+}
+
+// ── Upsert helpers ────────────────────────────────────────────────
+
 async function upsertPerson(
   db: AnyClient,
   canonicalKey: string,
@@ -51,45 +78,16 @@ async function upsertPerson(
   }
 
   const { data: created } = await db.from("etg_persons").insert({
-    anon_hash:        anonHash,
-    user_id:          userId,
-    trust_index:      50,
-    reliability_score:50,
-    last_activity_at: new Date().toISOString(),
+    anon_hash:         anonHash,
+    user_id:           userId,
+    trust_index:       50,
+    reliability_score: 50,
+    last_activity_at:  new Date().toISOString(),
     ...patch,
   }).select("id").single();
   return created.id;
 }
 
-/** Upsert an ETG company by domain/name canonical key */
-async function upsertCompany(
-  db: AnyClient,
-  domainOrName: string,
-  patch: Record<string, unknown> = {}
-): Promise<string> {
-  const canonicalId = await sha256(domainOrName);
-  const { data: existing } = await db
-    .from("etg_companies")
-    .select("id")
-    .eq("canonical_id", canonicalId)
-    .maybeSingle();
-
-  if (existing) {
-    await db.from("etg_companies")
-      .update({ ...patch, updated_at: new Date().toISOString() })
-      .eq("id", existing.id);
-    return existing.id;
-  }
-
-  const { data: created } = await db.from("etg_companies").insert({
-    canonical_id: canonicalId,
-    trust_index:  50,
-    ...patch,
-  }).select("id").single();
-  return created.id;
-}
-
-/** Upsert an ETG link with weight accumulation */
 async function upsertLink(
   db: AnyClient,
   userId: string,
@@ -112,14 +110,11 @@ async function upsertLink(
     .maybeSingle();
 
   if (existing) {
-    const newWeight     = Math.min(100, existing.weight + 1);
-    const newTrust      = Math.round((existing.trust_score * 0.7) + (trustScore * 0.3));
-    const newCommission = existing.commission_amount + commissionAmount;
     await db.from("etg_links").update({
-      weight:           newWeight,
-      trust_score:      newTrust,
-      commission_amount: newCommission,
-      updated_at:       new Date().toISOString(),
+      weight:            Math.min(100, existing.weight + 1),
+      trust_score:       Math.round(existing.trust_score * 0.7 + trustScore * 0.3),
+      commission_amount: existing.commission_amount + commissionAmount,
+      updated_at:        new Date().toISOString(),
     }).eq("id", existing.id);
     return existing.id;
   }
@@ -139,9 +134,9 @@ async function upsertLink(
   return created?.id;
 }
 
-/** Infer hidden links: persons connected via ≥2 common intermediaries */
-async function inferHiddenLinks(db: AnyClient, userId: string) {
-  // Find pairs of persons sharing the same intermediary (from_id)
+// ── Infer hidden links (≥2 common intermediaries) ─────────────────
+
+async function inferHiddenLinks(db: AnyClient, userId: string): Promise<number> {
   const { data: links } = await db
     .from("etg_links")
     .select("from_id, to_id, trust_score")
@@ -151,7 +146,6 @@ async function inferHiddenLinks(db: AnyClient, userId: string) {
 
   if (!links || links.length < 2) return 0;
 
-  // Group by from_id (intermediary)
   const byIntermediary = new Map<string, { to_id: string; trust_score: number }[]>();
   for (const l of links) {
     const arr = byIntermediary.get(l.from_id) || [];
@@ -164,23 +158,22 @@ async function inferHiddenLinks(db: AnyClient, userId: string) {
     if (targets.length < 2) continue;
     for (let i = 0; i < targets.length; i++) {
       for (let j = i + 1; j < targets.length; j++) {
-        const a  = targets[i];
-        const b  = targets[j];
-        const strength    = Math.round((a.trust_score + b.trust_score) / 2);
-        const confidence  = Math.min(95, strength + 10);
-        const dealProb    = Math.min(0.9, strength / 100 * 0.85);
-        const path        = [{ intermediary, link_a: a.to_id, link_b: b.to_id }];
+        const a        = targets[i];
+        const b        = targets[j];
+        const strength = Math.round((a.trust_score + b.trust_score) / 2);
+        const conf     = Math.min(95, strength + 10);
+        const dealProb = Math.min(0.9, strength / 100 * 0.85);
 
         await db.from("etg_hidden_links").upsert({
           user_id:                    userId,
           person_a_id:                a.to_id,
           person_b_id:                b.to_id,
           strength,
-          confidence,
-          inference_path:             path,
+          confidence:                 conf,
+          inference_path:             [{ intermediary, link_a: a.to_id, link_b: b.to_id }],
           predicted_deal_probability: dealProb,
-          inferred_by:                "etg-aggregate",
-          expires_at:                 new Date(Date.now() + 30 * 86400_000).toISOString(),
+          inferred_by:                "etg-aggregate-v2",
+          expires_at:                 new Date(Date.now() + 30 * 86_400_000).toISOString(),
           updated_at:                 new Date().toISOString(),
         }, { onConflict: "user_id,person_a_id,person_b_id" });
         inferred++;
@@ -190,9 +183,53 @@ async function inferHiddenLinks(db: AnyClient, userId: string) {
   return inferred;
 }
 
-/** aggregate_anonymous_graph: full pipeline */
+// ── Vector similarity: enrich opportunities with embeddings ────────
+
+async function enrichOpportunitiesWithEmbeddings(
+  db: AnyClient,
+  userId: string
+): Promise<number> {
+  if (!OPENAI_KEY) return 0;
+
+  // Fetch opportunities without embeddings
+  const { data: opps } = await db
+    .from("etg_opportunities")
+    .select("id, sector, zone, reasoning, predicted_close_weeks_min, predicted_close_weeks_max")
+    .eq("user_id", userId)
+    .is("embedding", null)
+    .limit(20);
+
+  if (!opps || opps.length === 0) return 0;
+
+  let enriched = 0;
+  for (const opp of opps) {
+    const text = [
+      opp.sector || "",
+      opp.zone || "",
+      opp.reasoning || "",
+      `fermeture ${opp.predicted_close_weeks_min}-${opp.predicted_close_weeks_max} semaines`,
+    ].filter(Boolean).join(" · ");
+
+    const embedding = await getEmbedding(text);
+    if (!embedding) continue;
+
+    await db.rpc("etg_set_opportunity_embedding", {
+      p_id:        opp.id,
+      p_embedding: vecToSql(embedding),
+    }).catch(() => {
+      // Fallback: raw update via service role
+      return db.from("etg_opportunities")
+        .update({ embedding: vecToSql(embedding) as unknown as null })
+        .eq("id", opp.id);
+    });
+    enriched++;
+  }
+  return enriched;
+}
+
+// ── Main aggregation pipeline ─────────────────────────────────────
+
 async function aggregateAnonymousGraph(db: AnyClient, userId: string) {
-  // Pull raw introductions + gains for this user
   const [introsRes, gainsRes, facProfileRes] = await Promise.all([
     db.from("introductions")
       .select("id, facilitateur_id, entreprise_id, contact_nom, contact_email, mission_id, statut, updated_at")
@@ -206,82 +243,78 @@ async function aggregateAnonymousGraph(db: AnyClient, userId: string) {
       .maybeSingle(),
   ]);
 
-  const intros     = introsRes.data   || [];
-  const gains      = gainsRes.data    || [];
+  const intros     = introsRes.data  || [];
+  const gains      = gainsRes.data   || [];
   const facProfile = facProfileRes.data;
 
-  let personsUpserted  = 0;
-  let linksUpserted    = 0;
+  let personsUpserted = 0;
+  let linksUpserted   = 0;
 
-  // Upsert self as ETG person
+  // Upsert self
   await upsertPerson(db, userId, userId, {
-    intro_count:  intros.length,
-    deal_count:   gains.filter((g: { statut: string }) => ["valide","recu","paye"].includes(g.statut)).length,
-    sector:       facProfile?.secteur,
-    zone:         facProfile?.zone,
-    language:     facProfile?.languages?.[0],
+    intro_count: intros.length,
+    deal_count:  gains.filter((g: { statut: string }) => ["valide","recu","paye"].includes(g.statut)).length,
+    sector:      facProfile?.secteur,
+    zone:        facProfile?.zone,
+    language:    facProfile?.languages?.[0],
   });
   personsUpserted++;
 
+  const selfId = await upsertPerson(db, userId, userId);
+
   for (const intro of intros) {
-    // Upsert contact person (anonymised by email or name)
     const contactKey = intro.contact_email || `${intro.contact_nom}-${intro.mission_id}`;
     const contactId  = await upsertPerson(db, contactKey, null, { sector: facProfile?.secteur });
     personsUpserted++;
 
-    // INTRODUCED_BY link: facilitator → contact
-    await upsertLink(db, userId,
-      (await upsertPerson(db, userId, userId)), "person",
-      contactId, "person",
-      "INTRODUCED_BY",
-      intro.statut === "validee" ? 80 : 50
-    );
+    await upsertLink(db, userId, selfId, "person", contactId, "person",
+      "INTRODUCED_BY", intro.statut === "validee" ? 80 : 50);
     linksUpserted++;
 
-    // TRUSTS link: if validated
     if (intro.statut === "validee") {
-      await upsertLink(db, userId,
-        (await upsertPerson(db, userId, userId)), "person",
-        contactId, "person",
-        "TRUSTS",
-        85
-      );
+      await upsertLink(db, userId, selfId, "person", contactId, "person", "TRUSTS", 85);
       linksUpserted++;
     }
   }
 
-  // DEAL_CLOSED links for confirmed gains
   for (const gain of gains) {
     if (!["valide","recu","paye"].includes(gain.statut)) continue;
     const commission = (gain.montant || 0) * 0.07;
-    const selfId     = await upsertPerson(db, userId, userId);
-    await upsertLink(db, userId,
-      selfId, "person",
-      selfId, "person",  // self-loop represents a closed deal
-      "DEAL_CLOSED",
-      90,
-      commission,
-      "gain_confirmed"
-    );
+    await upsertLink(db, userId, selfId, "person", selfId, "person",
+      "DEAL_CLOSED", 90, commission, "gain_confirmed");
     linksUpserted++;
   }
 
   const hiddenInferred = await inferHiddenLinks(db, userId);
 
-  // Write audit
+  // v2: enrich opportunities with vector embeddings for ANN search
+  const embeddingsEnriched = await enrichOpportunitiesWithEmbeddings(db, userId);
+
   await db.from("etg_audit_log").insert({
     user_id:      userId,
-    action:       "aggregate_anonymous_graph",
+    action:       "aggregate_anonymous_graph_v2",
     entity_type:  "etg",
     before_state: null,
-    after_state:  { persons_upserted: personsUpserted, links_upserted: linksUpserted, hidden_inferred: hiddenInferred },
-    function_name:"etg-aggregate",
+    after_state: {
+      persons_upserted:     personsUpserted,
+      links_upserted:       linksUpserted,
+      hidden_inferred:      hiddenInferred,
+      embeddings_enriched:  embeddingsEnriched,
+      vector_search_ready:  embeddingsEnriched > 0,
+    },
+    function_name: "etg-aggregate-v2",
   });
 
-  return { persons_upserted: personsUpserted, links_upserted: linksUpserted, hidden_inferred: hiddenInferred };
+  return {
+    persons_upserted:    personsUpserted,
+    links_upserted:      linksUpserted,
+    hidden_inferred:     hiddenInferred,
+    embeddings_enriched: embeddingsEnriched,
+    vector_search_ready: embeddingsEnriched > 0,
+  };
 }
 
-// ── Main handler ─────────────────────────────────────────────────
+// ── Deno handler ──────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -290,18 +323,17 @@ Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization") || "";
   if (!authHeader) {
     return new Response(JSON.stringify({ error: "Missing authorization" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
-  // Validate JWT
   const userClient = createClient(SUPABASE_URL, ANON_KEY, {
     global: { headers: { Authorization: authHeader } },
   });
   const { data: { user }, error: authErr } = await userClient.auth.getUser();
   if (authErr || !user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -315,22 +347,30 @@ Deno.serve(async (req) => {
 
     if (action === "aggregate_anonymous_graph") {
       result = await aggregateAnonymousGraph(db, user.id);
-
     } else if (action === "get_stats") {
       const { data } = await db.rpc("etg_graph_stats", { p_user_id: user.id });
       result = data || {};
-
+    } else if (action === "shortest_path") {
+      const { from_hash, to_hash, max_hops = 5 } = body;
+      const { data } = await db.rpc("shortest_path_trust", {
+        p_user_id:   user.id,
+        p_from_hash: from_hash,
+        p_to_hash:   to_hash,
+        p_max_hops:  max_hops,
+        p_min_trust: 30,
+      });
+      result = { path: data || [] };
     } else {
-      result = { error: "Unknown action", available: ["aggregate_anonymous_graph", "get_stats"] };
+      result = { error: "Unknown action", available: ["aggregate_anonymous_graph", "get_stats", "shortest_path"] };
     }
 
     return new Response(JSON.stringify({ ok: true, ...result }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("[etg-aggregate]", err);
+    console.error("[etg-aggregate-v2]", err);
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
