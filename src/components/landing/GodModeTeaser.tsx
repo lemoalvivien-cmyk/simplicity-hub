@@ -168,15 +168,15 @@ function BentoCard({ f, i, inView }: { f: typeof FEATURES[0]; i: number; inView:
                 {a}
               </motion.span>
             ))}
-            <motion.div
-              className="flex items-center gap-1 text-[10px]"
+              <motion.div
+              className="flex items-center gap-1 text-[10px] font-semibold"
               style={{ color: "hsl(152 62% 52%)" }}
               initial={{ opacity: 0 }}
               animate={inView ? { opacity: 1 } : {}}
               transition={{ delay: 0.6 }}
             >
               <Activity size={10} />
-              <span className="font-semibold">Consensus actif</span>
+              <span className="font-semibold">En accord</span>
             </motion.div>
           </div>
         )}
