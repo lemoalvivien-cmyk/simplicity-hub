@@ -358,7 +358,7 @@ export default function APropos() {
           <div className="text-center mb-12">
             <p className="pill-tag mb-4 mx-auto w-fit">Les fondateurs</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Ceux qui ont tout mis en jeu.
+              Les personnes derrière WiinupMax.
             </h2>
             <p className="text-muted-foreground text-base max-w-xl mx-auto">
               WiinupMax n'est pas né dans une salle de réunion. Il est né d'une conviction personnelle
