@@ -113,7 +113,7 @@ function FounderPassButton() {
       className="btn-cta flex items-center justify-center gap-2.5 px-8 py-4 text-[0.95rem] font-bold disabled:opacity-60"
     >
       <Zap size={16} strokeWidth={2.5} />
-      {loading ? "Chargement…" : "Activer Founder Pass — 99 €/an"}
+      {loading ? "Chargement…" : "Je veux mes premiers clients dès demain — 99 €/an"}
       {!loading && <ArrowRight size={15} />}
     </motion.button>
   );
