@@ -102,12 +102,15 @@ Deno.serve(async (req: Request) => {
     });
     if (jobErr) console.warn("[swarm] job log error:", jobErr.message);
 
+    releaseTracker();
     return new Response(
-      JSON.stringify({ success: true, results }),
+      JSON.stringify({ success: true, results, duration_ms: elapsed() }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (err) {
+    releaseTracker();
+    await logFunctionError("openclaw-autonomous-swarm", err);
     console.error("[openclaw-autonomous-swarm] Error:", err);
     return new Response(
       JSON.stringify({ error: "Internal error", detail: String(err) }),
