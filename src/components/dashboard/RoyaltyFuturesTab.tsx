@@ -311,7 +311,7 @@ export default function RoyaltyFuturesTab() {
           r.id === record.id ? { ...r, minted: true, tx_hash: result.tx_hash } : r,
         ));
       } else {
-        toast.error(result.error ?? "Erreur lors du mint.");
+        toast.error(result.error ?? "Erreur lors du versement.");
       }
     } catch {
       toast.error("Erreur réseau — réessayez.");
