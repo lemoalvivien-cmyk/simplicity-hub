@@ -239,7 +239,9 @@ async function nodeGenerateContract(
   return { paymentLink, commission };
 }
 
-// ── Node: Negotiate (Real-time reasoning) ───────────────────────────────────
+// ── Node: Negotiate — Llama-3-70B via Together AI ───────────────────────────
+// Primary : Together AI (Llama-3-70B-instruct — state-of-the-art negotiation)
+// Fallback : Lovable AI Gateway (Gemini 2.5 Flash)
 async function nodeNegotiate(
   sb: ReturnType<typeof createClient>,
   session: ADASession,
@@ -247,12 +249,13 @@ async function nodeNegotiate(
   conversationHistory: { role: string; content: string }[],
 ): Promise<{ agentResponse: string; keyMomentType: string | null; suggestedAmount: number | null }> {
   const nodeStart = Date.now();
+  const TOGETHER_KEY = Deno.env.get("TOGETHER_AI_API_KEY") ?? "";
 
-  const systemPrompt = `Tu es un closer expert, agent ADA de WiinupMax. Tu négocies avec ${session.target_name}.
-Script de base disponible. Adapte-toi en temps réel.
-Détecte : signal_achat, objection, hésitation, intérêt_fort.
-Maximise ROI pour le client ET commission 7% WiinupMax.
-RGPD respecté. Réponse max 3 phrases. Naturel, humain, percutant.`;
+  const systemPrompt = `Tu es ADA, un closer impitoyable de haut niveau pour WiinupMax. Tu négocies avec ${session.target_name}.
+Ton objectif : maximiser le ROI de l'entreprise cliente ET prélever 7% de royalty pour la plateforme.
+Règles absolues : RGPD respecté, zéro promesse garantie, Bloctel vérifié, EU AI Act art 52 appliqué.
+Adapte-toi en temps réel : détecte les signaux d'achat, objections, hésitations.
+Réponse max 3 phrases. Ton : naturel, humain, confiant, percutant. Zéro hallucination.`;
 
   const messages = [
     { role: "system", content: systemPrompt },
@@ -260,47 +263,86 @@ RGPD respecté. Réponse max 3 phrases. Naturel, humain, percutant.`;
     { role: "user", content: prospectMessage },
   ];
 
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages,
-      temperature: 0.6,
-      tools: [
-        {
-          type: "function",
-          function: {
-            name: "detect_moment",
-            description: "Detect key conversational moment and extract deal amount if mentioned",
-            parameters: {
-              type: "object",
-              properties: {
-                moment_type: {
-                  type: "string",
-                  enum: ["buying_signal", "objection", "closing_attempt", "consent", "neutral", "rejection"],
-                },
-                suggested_amount_eur: { type: "number" },
-                response_text: { type: "string" },
-              },
-              required: ["moment_type", "response_text"],
+  // ── Structured output schema (tool call)
+  const tools = [
+    {
+      type: "function",
+      function: {
+        name: "detect_moment",
+        description: "Détecte le moment clé de la conversation et extrait le montant si mentionné",
+        parameters: {
+          type: "object",
+          properties: {
+            moment_type: {
+              type: "string",
+              enum: ["buying_signal", "objection", "closing_attempt", "consent", "neutral", "rejection"],
             },
+            suggested_amount_eur: { type: "number", description: "Montant du deal en euros si mentionné" },
+            response_text: { type: "string", description: "Réponse de l'agent ADA (max 3 phrases)" },
+            reasoning: { type: "string", description: "Raisonnement interne de l'agent (non envoyé au prospect)" },
           },
+          required: ["moment_type", "response_text"],
         },
-      ],
-      tool_choice: { type: "function", function: { name: "detect_moment" } },
-    }),
-  });
+      },
+    },
+  ];
 
-  const json = await response.json();
   let agentResponse = "";
   let keyMomentType: string | null = null;
   let suggestedAmount: number | null = null;
+  let modelUsed = "llama-3-70b";
 
-  try {
+  // ── Primary: Together AI Llama-3-70B
+  if (TOGETHER_KEY) {
+    try {
+      const togetherRes = await fetch("https://api.together.xyz/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${TOGETHER_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "meta-llama/Llama-3-70b-chat-hf",
+          messages,
+          temperature: 0.6,
+          max_tokens: 512,
+          tools,
+          tool_choice: { type: "function", function: { name: "detect_moment" } },
+        }),
+      });
+
+      if (togetherRes.ok) {
+        const json = await togetherRes.json();
+        const toolCall = json.choices?.[0]?.message?.tool_calls?.[0];
+        if (toolCall) {
+          const args = JSON.parse(toolCall.function.arguments);
+          agentResponse = args.response_text;
+          keyMomentType = args.moment_type;
+          suggestedAmount = args.suggested_amount_eur ?? null;
+        } else {
+          agentResponse = json.choices?.[0]?.message?.content ?? "";
+        }
+      }
+    } catch (e) {
+      console.warn("[ADA] Together AI failed, falling back to Gemini:", e);
+    }
+  }
+
+  // ── Fallback: Lovable AI Gateway (Gemini 2.5 Flash)
+  if (!agentResponse && LOVABLE_API_KEY) {
+    modelUsed = "gemini-2.5-flash";
+    const fallbackRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages,
+        temperature: 0.6,
+        tools,
+        tool_choice: { type: "function", function: { name: "detect_moment" } },
+      }),
+    });
+    const json = await fallbackRes.json();
     const toolCall = json.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall) {
       const args = JSON.parse(toolCall.function.arguments);
@@ -310,9 +352,9 @@ RGPD respecté. Réponse max 3 phrases. Naturel, humain, percutant.`;
     } else {
       agentResponse = json.choices?.[0]?.message?.content ?? "Je comprends votre position. Laissez-moi vous expliquer la valeur concrète...";
     }
-  } catch {
-    agentResponse = json.choices?.[0]?.message?.content ?? "Continuons cette discussion...";
   }
+
+  if (!agentResponse) agentResponse = "Continuons cette discussion, j'ai une proposition concrète pour vous.";
 
   // Log transcription
   await sb.from("ada_transcriptions").insert({
