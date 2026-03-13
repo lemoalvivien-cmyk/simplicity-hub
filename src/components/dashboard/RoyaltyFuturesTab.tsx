@@ -393,7 +393,7 @@ export default function RoyaltyFuturesTab() {
         >
           <div className="flex items-center gap-2">
             <Bot size={14} style={{ color: "hsl(var(--primary-glow))" }} />
-            <p className="text-sm font-bold text-foreground">Historique des deals ADA</p>
+            <p className="text-sm font-bold text-foreground">Historique des deals</p>
           </div>
           <button
             onClick={handleRefresh}
