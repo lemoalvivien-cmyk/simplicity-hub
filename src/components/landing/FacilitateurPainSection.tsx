@@ -43,11 +43,11 @@ export default function FacilitateurPainSection() {
                 backgroundClip: "text",
               }}
             >
-              Mais personne ne le voit.
+              Mais personne ne le sait.
             </span>
           </h2>
           <p className="text-muted-foreground text-base md:text-lg max-w-lg mx-auto">
-            Vous faites des mises en relation. Mais c'est informel, flou,{" "}
+            Vous présentez des gens depuis des années. Mais c'est informel, invisible,{" "}
             <strong className="text-foreground font-semibold">rarement payé.</strong>
           </p>
         </div>
