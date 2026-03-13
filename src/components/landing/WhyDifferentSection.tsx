@@ -213,7 +213,7 @@ export default function WhyDifferentSection() {
             className="btn-cta inline-flex items-center gap-2 px-8 py-4"
             onClick={() => track("cta_why_different")}
           >
-            Activer maintenant — 99 € TTC/an
+            Je veux mes premiers clients dès demain — 99 € TTC/an
             <ArrowRight size={16} />
           </Link>
         </div>
