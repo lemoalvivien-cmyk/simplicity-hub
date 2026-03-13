@@ -3,20 +3,20 @@ import { ShieldCheck, CreditCard, Server, Shield, Eye, TrendingUp, Lock, BarChar
 const trustBlocks = [
   {
     icon: ShieldCheck,
-    title: "Architecture vérifiée par audit indépendant",
-    desc: "Notre infrastructure technique suit les meilleures pratiques de sécurité. Chaque introduction, gain et transaction est tracé et immuable.",
+    title: "Vos données sont en sécurité",
+    desc: "Tout est stocké de façon sécurisée. Chaque présentation, chaque gain, chaque transaction est enregistré et ne peut pas être modifié.",
     color: "hsl(218 72% 55%)",
   },
   {
     icon: CreditCard,
-    title: "Paiements sécurisés par Stripe",
-    desc: "Toutes les transactions sont gérées par Stripe, leader mondial du paiement en ligne. Vos données bancaires ne transitent jamais par nos serveurs.",
+    title: "Les paiements sont gérés par Stripe",
+    desc: "Stripe est le système de paiement utilisé par des millions d'entreprises dans le monde. Vos informations bancaires ne passent jamais par nos serveurs.",
     color: "hsl(152 62% 45%)",
   },
   {
     icon: Server,
-    title: "Données hébergées en Europe (Supabase EU)",
-    desc: "Vos données sont stockées exclusivement sur des serveurs européens, conformément au RGPD. Souveraineté numérique garantie.",
+    title: "Vos données restent en Europe",
+    desc: "Toutes vos informations sont stockées sur des serveurs en Europe, conformément à la loi. Votre vie privée est respectée.",
     color: "hsl(24 100% 55%)",
   },
 ];
@@ -24,20 +24,20 @@ const trustBlocks = [
 const proofs = [
   {
     icon: Shield,
-    title: "Chaque intro est protégée dès l'envoi",
-    desc: "L'attribution est enregistrée instantanément. Si ça aboutit dans 6 mois, la preuve est là. Incontestable.",
+    title: "Chaque présentation est protégée dès l'envoi",
+    desc: "Votre rôle est enregistré au moment où vous envoyez la présentation. Même 6 mois plus tard, la preuve est là. Incontestable.",
     color: "hsl(38 95% 52%)",
   },
   {
     icon: Eye,
-    title: "Gains visibles en temps réel",
-    desc: "Montant, statut, date — tout est visible à tout moment. Plus de flou. Plus de relances embarrassantes.",
+    title: "Vos gains sont visibles à tout moment",
+    desc: "Montant, état, date — tout est affiché clairement. Plus de flou. Plus de questions sans réponse.",
     color: "hsl(262 72% 58%)",
   },
   {
     icon: TrendingUp,
-    title: "Score de confiance factuel",
-    desc: "Chaque facilitateur a un score calculé sur son historique réel — validations, qualité d'intro, réactivité.",
+    title: "Un score de réputation basé sur les vrais résultats",
+    desc: "Chaque facilitateur a un score calculé à partir de ce qu'il a vraiment fait — qualité des présentations, rapidité, résultats obtenus.",
     color: "hsl(218 80% 62%)",
   },
 ];
