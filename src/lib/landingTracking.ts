@@ -38,6 +38,8 @@ export type TrackEvent =
   | "cta_howitworks"
   | "cta_hero_facilitateur"
   | "cta_facilitateur_section"
+  | "cta_why_different"
+  | "cta_dashboard_activate"
   | "qa_open"
   | "scroll_25"
   | "scroll_75"

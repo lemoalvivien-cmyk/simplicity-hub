@@ -12,6 +12,7 @@ import ProofSection from "@/components/landing/ProofSection";
 import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
+import WhyDifferentSection from "@/components/landing/WhyDifferentSection";
 import { initScrollTracking, track } from "@/lib/landingTracking";
 import { trackEvent } from "@/lib/analytics";
 
@@ -84,10 +85,13 @@ export default function LandingPage() {
       {/* 10 — QUESTIONS & RÉPONSES */}
       <AntiBullshitSection />
 
-      {/* 11 — PRICING */}
+      {/* 11 — POURQUOI DIFFÉRENT */}
+      <WhyDifferentSection />
+
+      {/* 12 — PRICING */}
       <PricingSection />
 
-      {/* 12 — CTA FINAL */}
+      {/* 13 — CTA FINAL */}
       <FinalCTASection />
 
       {/* FOOTER */}

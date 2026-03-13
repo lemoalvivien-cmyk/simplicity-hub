@@ -225,6 +225,47 @@ export default function DashboardEntreprise() {
           </div>
         )}
 
+        {/* ═══ UPSELL PRICING BANNER (non-subscribed) ══════════ */}
+        {!subscribed && !loading && (
+          <div
+            className="rounded-2xl p-5 border-2 flex flex-col gap-4"
+            style={{
+              background: "linear-gradient(135deg, hsl(38 100% 52% / 0.06), hsl(24 100% 40% / 0.08))",
+              borderColor: "hsl(38 100% 52% / 0.35)",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: "linear-gradient(135deg, hsl(38 100% 52%), hsl(24 100% 48%))" }}>
+                <Flame size={17} className="text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-foreground text-sm leading-tight mb-1">
+                  Offre de lancement exclusive
+                </p>
+                <p className="text-sm" style={{ color: "hsl(38 100% 65%)" }}>
+                  <strong className="text-foreground">99 € TTC/an</strong> au lieu de 990 €{" "}
+                  — ça part extrêmement vite, premier arrivé premier servi !
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/checkout"
+              className="btn-cta w-full text-center flex items-center justify-center gap-2 py-3.5 text-sm font-bold"
+              onClick={() => {
+                import("@/lib/landingTracking").then(({ track }) => track("cta_dashboard_activate"));
+              }}
+            >
+              <Zap size={14} />
+              Activer maintenant — 99 € TTC/an
+              <ArrowRight size={14} />
+            </Link>
+            <p className="text-center text-xs text-muted-foreground -mt-2">
+              Annulation libre · Accès immédiat · Aucun frais caché
+            </p>
+          </div>
+        )}
+
         {/* ═══ GOD MODE PANEL ══════════════════════════════ */}
         {subscribed && (
           <GodModePanel contextBrief={latestBrief ? JSON.stringify(latestBrief) : undefined} />
