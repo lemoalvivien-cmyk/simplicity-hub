@@ -28,42 +28,34 @@ jobs:
       # ── Type safety ──────────────────────────────────────────────────────────
       - name: TypeScript type check
         run: npx tsc --noEmit
-        # Catches type errors without emitting files
 
       # ── Code quality ─────────────────────────────────────────────────────────
       - name: ESLint
         run: npm run lint
-        # Fails on any ESLint error (exit code 1)
 
       # ── Unit tests ───────────────────────────────────────────────────────────
       - name: Unit tests (Vitest)
         run: npm run test
-        # Runs src/test/**. Fails if any test fails.
 
       # ── Build ────────────────────────────────────────────────────────────────
       - name: Production build
         run: npm run build
-        # Proves the bundle compiles clean.
 
       # ── Quota DB-level proof (requires secrets) ───────────────────────────────
-      # This step is OPTIONAL in CI — skipped if secrets are not configured.
-      # To enable: add VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY as
-      # GitHub Actions secrets in repo Settings > Secrets.
       - name: Quota flow verification (DB-level)
         if: ${{ env.VITE_SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          # Install Deno if not available
           curl -fsSL https://deno.land/install.sh | sh
           export DENO_INSTALL="$HOME/.deno"
           export PATH="$DENO_INSTALL/bin:$PATH"
           npm run verify:quota
         continue-on-error: false
 
-      # ── Race test (requires secrets, runs after quota) ─────────────────────
-      - name: Quota race test (Gap 4 — concurrent delivery)
+      # ── Race test ─────────────────────────────────────────────────────────
+      - name: Quota race test (concurrent delivery)
         if: ${{ env.VITE_SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -78,7 +70,7 @@ jobs:
   security-audit:
     name: Security Audit
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -87,25 +79,92 @@ jobs:
           node-version: "20"
           cache: "npm"
       - run: npm ci
+
       - name: npm audit (high + critical only)
         run: npm audit --audit-level=high
-        # Fails if any high/critical CVE found in dependencies
 
-# ── MANUAL GATES (not in CI, must be run by operator before go-live) ─────────
-#
-# The following are NOT automated in this pipeline and MUST be run manually:
+      - name: Check for secrets in source
+        run: |
+          echo "🔍 Scanning for hardcoded secrets..."
+          # Fail if any private key patterns are found outside .env files
+          if grep -rn \
+            --include="*.ts" --include="*.tsx" --include="*.js" \
+            --exclude-dir=node_modules --exclude-dir=.git \
+            -E "(sk_live_|sk_test_|whsec_|service_role.*eyJ|SUPABASE_SERVICE_ROLE)" \
+            src/ supabase/functions/ 2>/dev/null | \
+            grep -v "Deno.env.get\|process.env\|import.meta.env\|// " ; then
+            echo "❌ Potential hardcoded secret found!"
+            exit 1
+          fi
+          echo "✅ No hardcoded secrets detected."
+
+      - name: Check RLS coverage (build-time)
+        run: |
+          echo "🔒 Verifying RLS guard patterns in Edge Functions..."
+          # Warn if any Edge Function is missing JWT or service-key auth guard
+          UNGUARDED=0
+          for f in supabase/functions/*/index.ts; do
+            # Skip internal/cron-only functions
+            name=$(basename $(dirname $f))
+            case "$name" in
+              stripe-webhook|auth-email-hook|track-click) continue ;;
+            esac
+            if ! grep -qE "(supabase\.auth\.getUser|SERVICE_KEY|SUPABASE_SERVICE_ROLE_KEY|Authorization)" "$f" 2>/dev/null; then
+              echo "⚠️  $f — no auth guard detected"
+              UNGUARDED=$((UNGUARDED+1))
+            fi
+          done
+          if [ $UNGUARDED -gt 0 ]; then
+            echo "⚠️  $UNGUARDED function(s) may lack auth guards. Review before go-live."
+          else
+            echo "✅ All Edge Functions have auth guards."
+          fi
+
+      - name: Check rate-limit usage
+        run: |
+          echo "⏱ Verifying rate-limit middleware usage in AI functions..."
+          AI_MISSING=0
+          for f in supabase/functions/ai-*/index.ts supabase/functions/ada-*/index.ts; do
+            [ -f "$f" ] || continue
+            if ! grep -q "checkRateLimit\|rateLimit" "$f" 2>/dev/null; then
+              echo "⚠️  $f — rate-limit not found"
+              AI_MISSING=$((AI_MISSING+1))
+            fi
+          done
+          if [ $AI_MISSING -gt 0 ]; then
+            echo "⚠️  $AI_MISSING AI function(s) missing rate-limit. Review before go-live."
+          else
+            echo "✅ Rate-limit detected in all AI functions."
+          fi
+
+      - name: CORS wildcard check
+        run: |
+          echo "🌐 Checking for CORS wildcard (*) in Edge Functions..."
+          if grep -rn \
+            --include="*.ts" \
+            --exclude-dir=node_modules \
+            'Allow-Origin.*\*' \
+            supabase/functions/ 2>/dev/null; then
+            echo "❌ Wildcard CORS detected! This is a security risk."
+            exit 1
+          fi
+          echo "✅ No wildcard CORS found."
+
+# ── MANUAL GATES (run before go-live) ────────────────────────────────────────
 #
 #   1. Gap 1 (RPC error rollback fault injection):
 #        deno run --allow-env --allow-net scripts/verify-quota-gaps.ts
-#        Requires SUPABASE_SERVICE_ROLE_KEY + execute_ddl RPC or direct psql.
 #
 #   2. Gap 3 (Stripe HTTP path + signature verification):
-#        Use Stripe CLI: stripe listen --forward-to <function-url>
-#        Then trigger: stripe trigger checkout.session.completed
-#        Verify: logs show "Event verified" + correct quota result.
+#        stripe listen --forward-to <function-url>
+#        stripe trigger checkout.session.completed
 #
 #   3. Full E2E smoke test (Stripe test mode):
-#        Create a test checkout, complete with card 4242424242424242,
-#        verify subscription row created + launch_quota incremented.
+#        Create a test checkout, complete with card 4242424242424242
+#        Verify: subscription row created + launch_quota incremented
 #
-# These are documented in docs/PRODUCTION_READYNESS.md §Manual Gates.
+#   4. Bloctel API verification (before enabling ADA outbound calls):
+#        Confirm BLOCTEL_API_KEY secret is configured
+#        Run manual call flow test with a Bloctel-registered test number
+#
+# Documented in docs/compliance.md §3 and ROADMAP.md §Phase1.
