@@ -47,12 +47,12 @@ export default function ProofSection() {
     <section className="py-20 md:py-24 bg-background">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
-          <p className="pill-tag mb-4 mx-auto w-fit">Sérieux &amp; traçabilité</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">Sérieux et transparence</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Rien ne disparaît. Tout est prouvable.
+            Ce que vous faites ici ne disparaît jamais.
           </h2>
           <p className="text-muted-foreground text-base max-w-lg mx-auto leading-relaxed">
-            Chaque action laisse une trace défendable —{" "}
+            Chaque action laisse une trace claire —{" "}
             <strong className="text-foreground font-semibold">pour les entreprises comme pour les facilitateurs.</strong>
           </p>
         </div>
