@@ -84,12 +84,12 @@ export default function AntiBullshitSection() {
     <section className="py-20 md:py-24 bg-muted">
       <div className="container max-w-2xl">
         <div className="text-center mb-10">
-          <p className="pill-tag mb-4 mx-auto w-fit">Questions & Réponses</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">Questions et réponses</p>
           <h2 className="font-display text-3xl font-bold text-foreground mb-3">
-            Vos questions. Nos réponses.
+            Vous avez des questions ? Voici les réponses.
           </h2>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-            Pas de vague. Pas d'esquive.{" "}
+            En langage simple. Sans détour.{" "}
             <a href="mailto:contact@wiinupmax.com" className="text-primary hover:underline font-medium">
               Une autre question ? Écrivez-nous.
             </a>
