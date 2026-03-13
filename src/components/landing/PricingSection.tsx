@@ -49,7 +49,7 @@ export default function PricingSection() {
             Simple, honnête, transparent.
           </h2>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
-            L'offre entreprise est payante. L'accès facilitateur est gratuit. Rien de caché.
+            Pour les entreprises : Pass Fondateur à <strong className="text-foreground">99 € par an</strong> seulement (au lieu de 990 €). Seulement 100 places disponibles. Tout est inclus. Pour les facilitateurs : <strong className="text-foreground">Gratuit pour toujours</strong>, aucune carte demandée.
           </p>
         </div>
 
