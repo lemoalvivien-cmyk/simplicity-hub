@@ -69,6 +69,9 @@ const ADAModelDashboard = lazy(() => import("./pages/ADAModelDashboard"));
 // ── Lazy: Insights API Sales ──────────────────────────────────────────────────
 const InsightsSales = lazy(() => import("./pages/InsightsSales"));
 
+// ── Lazy: System Status ───────────────────────────────────────────────────────
+const SystemStatus = lazy(() => import("./pages/SystemStatus"));
+
 // ── Lazy: admin ──────────────────────────────────────────────────────────────
 const AdminOverview = lazy(() => import("./pages/admin/Overview"));
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
@@ -163,6 +166,7 @@ const App = () => (
                 <Route path="/ada/model" element={<ProtectedRoute><ADAModelDashboard /></ProtectedRoute>} />
                 <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                 <Route path="/insights-sales" element={<InsightsSales />} />
+                <Route path="/status" element={<ProtectedRoute><SystemStatus /></ProtectedRoute>} />
 
                 {/* ── Admin ────────────────────────────────── */}
                 <Route path="/admin" element={<ProtectedRoute adminOnly><AdminOverview /></ProtectedRoute>} />
