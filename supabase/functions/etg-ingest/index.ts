@@ -10,6 +10,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { enforceRateLimit, build429, logFunctionError } from "../_shared/monitoring.ts";
 
 // deno-lint-ignore no-explicit-any
 type AnyClient = any;

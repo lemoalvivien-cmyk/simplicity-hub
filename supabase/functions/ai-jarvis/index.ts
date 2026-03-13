@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { enforceRateLimit, build429, trackRequest, logFunctionError } from "../_shared/monitoring.ts";
 
 const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const AI_MODEL = "google/gemini-2.5-flash";
@@ -179,6 +180,11 @@ Deno.serve(async (req) => {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // ── Rate limiting ────────────────────────────────────────────────────────
+    const rateCheck = await enforceRateLimit(user.id, "ai-jarvis");
+    if (rateCheck && !rateCheck.allowed) return build429(corsHeaders, "ai-jarvis");
+    const releaseTracker = trackRequest();
 
     const body = await req.json();
     const {
