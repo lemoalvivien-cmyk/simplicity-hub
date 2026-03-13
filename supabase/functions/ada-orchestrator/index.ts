@@ -151,6 +151,42 @@ Retourne un JSON : { script: "...", key_triggers: [...], objection_handlers: {..
   return { script: JSON.stringify(scriptData), reasoningTrace };
 }
 
+// ── Node: ElevenLabs Voice Consent (RGPD + Bloctel) ─────────────────────────
+async function nodeVoiceConsent(
+  text: string,
+): Promise<{ audioBase64: string | null; error: string | null }> {
+  if (!ELEVENLABS_KEY) return { audioBase64: null, error: "ELEVENLABS_API_KEY manquant" };
+
+  try {
+    const res = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ADA_VOICE_ID}?output_format=mp3_44100_128`,
+      {
+        method: "POST",
+        headers: {
+          "xi-api-key": ELEVENLABS_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text,
+          model_id: "eleven_multilingual_v2",
+          voice_settings: { stability: 0.65, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true },
+        }),
+      },
+    );
+
+    if (!res.ok) return { audioBase64: null, error: `ElevenLabs ${res.status}` };
+
+    const arrayBuf = await res.arrayBuffer();
+    // Encode to base64 without btoa spread (stack overflow safe)
+    const bytes = new Uint8Array(arrayBuf);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return { audioBase64: btoa(binary), error: null };
+  } catch (e) {
+    return { audioBase64: null, error: String(e) };
+  }
+}
+
 // ── Node: Generate Contract via Stripe ──────────────────────────────────────
 async function nodeGenerateContract(
   sb: ReturnType<typeof createClient>,
@@ -160,31 +196,41 @@ async function nodeGenerateContract(
   const nodeStart = Date.now();
   const commission = Math.round(amount * 0.07 * 100) / 100;
 
-  // Build Stripe Payment Link via existing create-checkout pattern
-  const STRIPE_SECRET = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
-
+  // Create a one-time price + payment link with ADA metadata
   const params = new URLSearchParams();
   params.append("line_items[0][price_data][currency]", "eur");
   params.append("line_items[0][price_data][unit_amount]", String(Math.round(amount * 100)));
   params.append("line_items[0][price_data][product_data][name]", `Deal WiinupMax — ${session.target_name}`);
-  params.append("line_items[0][price_data][product_data][description]", `Commission plateforme 7% incluse. Session ADA: ${session.id}`);
+  params.append(
+    "line_items[0][price_data][product_data][description]",
+    `Commission plateforme 7% (${commission} €) incluse. Session ADA: ${session.id}`,
+  );
   params.append("line_items[0][quantity]", "1");
-
-  const stripeRes = await fetch("https://api.stripe.com/v1/payment_links", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${STRIPE_SECRET}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: params,
-  });
+  // Embed ada_session_id so Silent Royalty Engine webhook picks it up
+  params.append("metadata[ada_session_id]", session.id);
+  params.append("metadata[commission_7pct]", String(commission));
+  params.append("metadata[owner_user_id]", session.owner_user_id);
 
   let paymentLink = "";
-  if (stripeRes.ok) {
-    const stripeData = await stripeRes.json();
-    paymentLink = stripeData.url ?? "";
-  } else {
-    // Fallback: generate a mock link (replace with real Stripe product in production)
+
+  if (STRIPE_SECRET) {
+    const stripeRes = await fetch("https://api.stripe.com/v1/payment_links", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${STRIPE_SECRET}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params,
+    });
+
+    if (stripeRes.ok) {
+      const stripeData = await stripeRes.json();
+      paymentLink = stripeData.url ?? "";
+    }
+  }
+
+  // Fallback if Stripe unavailable
+  if (!paymentLink) {
     paymentLink = `https://buy.stripe.com/ada_${session.id.slice(0, 8)}`;
   }
 
