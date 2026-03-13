@@ -441,12 +441,12 @@ export default function ADAModelDashboard() {
                   ))}
                 </div>
                 <div className="rounded-xl p-3 text-xs space-y-1.5" style={{ background: "hsl(218 65% 6%)", color: "hsl(var(--muted-foreground))" }}>
-                  <p className="font-bold text-white text-xs mb-2">Pipeline closed-loop</p>
-                  <p>1. Chaque deal closé via ADA → collecte automatique (anonymisé SHA-256)</p>
-                  <p>2. Curriculum learning : qualité pondérée par ROI + durée + montant</p>
-                  <p>3. Format : JSONL OpenAI Chat (compatible Together AI / OpenAI)</p>
-                  <p>4. Trigger automatique : +50 deals → LoRA fine-tune Llama-3-70B</p>
-                  <p>5. Nouveau modèle promu → précision croissante jusqu'à 92%</p>
+                  <p className="font-bold text-white text-xs mb-2">Apprentissage continu</p>
+                  <p>1. Chaque affaire signée → collecte automatique (anonymisé SHA-256)</p>
+                  <p>2. L'IA s'améliore en fonction de la qualité et des résultats réels</p>
+                  <p>3. Format structuré compatible avec les principaux moteurs IA</p>
+                  <p>4. Déclenchement automatique : +50 affaires → nouvel entraînement</p>
+                  <p>5. Nouveau modèle activé → précision croissante</p>
                 </div>
               </div>
             </motion.div>

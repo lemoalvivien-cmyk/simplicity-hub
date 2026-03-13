@@ -122,7 +122,7 @@ export default function SystemStatus() {
       const { error } = await supabase.from("etg_opportunities").select("id").limit(1);
       updateStatus("insights", {
         status: error ? "degraded" : "ok",
-        detail: error ? error.message : "Starter 15k€ · Growth 35k€ · Enterprise 75k€/mois actifs",
+        detail: error ? error.message : "Analyse des opportunités · Signaux business · Opérationnel",
       });
     } catch (e) {
       updateStatus("insights", { status: "error", detail: String(e) });

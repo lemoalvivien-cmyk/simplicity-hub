@@ -306,15 +306,15 @@ export default function RoyaltyFuturesTab() {
     try {
       const result = await mintWMAXToken(user.id, record.royalty_12pct, record.id);
       if (result.success) {
-        toast.success(`✅ ${record.royalty_12pct} WMAX mintés sur Base L2 !`);
+        toast.success(`✅ ${record.royalty_12pct.toLocaleString("fr-FR")} € reçus sur votre compte !`);
         setRecords(prev => prev.map(r =>
           r.id === record.id ? { ...r, minted: true, tx_hash: result.tx_hash } : r,
         ));
       } else {
-        toast.error(result.error ?? "Erreur lors du mint.");
+        toast.error(result.error ?? "Erreur lors du versement.");
       }
     } catch {
-      toast.error("Erreur réseau — réessayez.");
+      toast.error("Erreur lors du versement. Réessayez.");
     } finally {
       setMinting(null);
     }
@@ -336,14 +336,14 @@ export default function RoyaltyFuturesTab() {
       >
         <Coins size={18} style={{ color: "hsl(38 95% 60%)" }} className="shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-bold text-foreground mb-0.5">
-            Mes gains — Récompenses automatiques
+        <p className="text-sm font-bold text-foreground mb-0.5">
+            Mes gains
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Chaque deal fermé par votre assistant IA génère automatiquement{" "}
-            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>12 % de gains reversés</span>{" "}
+            Chaque affaire signée par votre assistant IA génère automatiquement{" "}
+            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>12 % de gains versés sur votre compte</span>{" "}
             — 7 % frais plateforme + 5 % moteur IA.
-            Convertissez vos récompenses et revendez-les sur le marché secondaire.
+            Votre argent est disponible directement sur le marché secondaire.
           </p>
         </div>
       </div>
@@ -353,14 +353,14 @@ export default function RoyaltyFuturesTab() {
         <KPICard
           label="Gains totaux"
           value={`${totalRoyalties.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`}
-          sub={`${records.length} deal${records.length !== 1 ? "s" : ""} assistants IA`}
+          sub={`${records.length} affaire${records.length !== 1 ? "s" : ""} signée${records.length !== 1 ? "s" : ""}`}
           color="hsl(var(--primary-glow))"
           icon={TrendingUp}
         />
         <KPICard
-          label="Récompenses converties"
+          label="Gains reçus"
           value={wmaxMinted.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
-          sub="unités sur le marché"
+          sub="argent reçu"
           color="hsl(38 95% 60%)"
           icon={Coins}
         />
@@ -373,9 +373,9 @@ export default function RoyaltyFuturesTab() {
           pulse
         />
         <KPICard
-          label="À convertir"
+          label="À recevoir"
           value={wmaxPending.toLocaleString("fr-FR", { minimumFractionDigits: 2 })}
-          sub="récompenses en attente"
+          sub="en attente de versement"
           color="hsl(var(--accent))"
           icon={Wallet}
         />
@@ -415,10 +415,10 @@ export default function RoyaltyFuturesTab() {
             <div className="text-center py-10 px-5">
               <Coins size={28} className="mx-auto mb-3 text-muted-foreground/35" />
               <p className="text-sm font-semibold text-foreground mb-1">
-                Aucun deal fermé pour l'instant
+                Aucune affaire signée pour l'instant
               </p>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                Vos gains apparaîtront ici dès que votre assistant IA fermera son premier deal autonome.
+                Vos gains apparaîtront ici dès que votre assistant IA finalisera sa première affaire.
               </p>
             </div>
           ) : (
@@ -451,13 +451,13 @@ export default function RoyaltyFuturesTab() {
                         className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: "hsl(152 62% 50% / 0.12)", color: "hsl(152 62% 50%)" }}
                       >
-                        Converti
+                        Versé
                       </span>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                     <span className="text-xs text-muted-foreground">
-                      Deal :{" "}
+                      Affaire :{" "}
                       <span className="text-foreground font-medium">
                         {record.deal_amount.toLocaleString("fr-FR")} €
                       </span>
@@ -508,8 +508,8 @@ export default function RoyaltyFuturesTab() {
                     style={{ background: "var(--gradient-primary)" }}
                   >
                   {minting === record.id
-                      ? <><Loader2 size={11} className="animate-spin" /> Conversion…</>
-                      : <><Zap size={11} /> Convertir</>
+                      ? <><Loader2 size={11} className="animate-spin" /> En cours…</>
+                      : <><Zap size={11} /> Recevoir</>
                     }
                   </button>
                 )}
@@ -525,7 +525,7 @@ export default function RoyaltyFuturesTab() {
           >
             <ExternalLink size={10} className="text-muted-foreground" />
             <p className="text-[10px] text-muted-foreground">
-              Récompenses émises sur le marché secondaire · Revendables instantanément
+              Gains disponibles sur le marché secondaire · Revendables instantanément
             </p>
           </div>
         )}
