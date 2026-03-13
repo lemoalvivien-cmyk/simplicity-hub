@@ -139,7 +139,7 @@ export default function WhyDifferentSection() {
       <div className="container max-w-5xl relative z-10">
         {/* Header */}
         <div className="text-center mb-14">
-          <p className="pill-tag mb-4 mx-auto w-fit">Architecture unique</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">Ce qui nous rend uniques</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight">
             Pourquoi WiinupMax est{" "}
             <span
@@ -154,8 +154,7 @@ export default function WhyDifferentSection() {
             </span>
           </h2>
           <p className="text-muted-foreground text-base max-w-lg mx-auto leading-relaxed">
-            Trois briques exclusives — aucun concurrent ne les réunit. Ensemble, elles forment
-            une arme d'acquisition que personne ne peut copier rapidement.
+            Trois choses que personne d'autre ne propose ensemble. Chacune est puissante. Les trois réunies, c'est inarrêtable.
           </p>
         </div>
 
