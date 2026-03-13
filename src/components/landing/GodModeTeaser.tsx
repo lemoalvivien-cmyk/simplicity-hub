@@ -250,15 +250,15 @@ export default function GodModeTeaser() {
               color: "hsl(var(--accent))",
             }}
           >
-            <Zap size={10} strokeWidth={2.5} />
-            God Mode — Armement IA
+          <Zap size={10} strokeWidth={2.5} />
+            Fonctionnalités avancées
           </motion.div>
 
           <h2
             className="font-display font-bold text-white leading-tight mb-4"
             style={{ fontSize: "clamp(2rem, 5vw, 3.2rem)" }}
           >
-            Trois armes.{" "}
+            Trois outils puissants.{" "}
             <span
               style={{
                 background: "linear-gradient(135deg, hsl(var(--accent)), hsl(38 100% 74%))",
@@ -267,11 +267,11 @@ export default function GodModeTeaser() {
                 backgroundClip: "text",
               }}
             >
-              Un seul cockpit.
+              Un seul endroit.
             </span>
           </h2>
           <p className="text-white/60 text-lg max-w-lg mx-auto leading-relaxed">
-            L'arsenal IA complet — prospection, voix, automation — piloté depuis Wiinup.
+            Des outils intelligents pour trouver des clients, être informé et travailler sans effort.
           </p>
         </motion.div>
 
