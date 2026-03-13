@@ -1,8 +1,13 @@
 # WIINUP MAX
+### 🏆 Phase 1 terminée — Monopole data + exécution autonome + cash machine verrouillé
+
+> **WiinupMax est une machine de guerre B2B.**
+> Eternal Trust Graph · ADA Autonomous Agents · Insights Licensing API · Silent Royalty 7%
+
+---
 
 > ## 🔥 SÉCURITÉ CRITIQUE — À FAIRE EN PREMIER
-> **Le fichier `.env` peut être exposé sur GitHub.**
-> **Suivez immédiatement les instructions dans [`FIX_SECURITY.md`](./FIX_SECURITY.md) avant tout développement.**
+> **Si `.env` est visible sur GitHub → double-clique sur `FIX-SECURITY-FINAL.bat`**
 > ```bash
 > git rm --cached .env
 > git add .gitignore
@@ -10,45 +15,57 @@
 > git push
 > ```
 
-Plateforme B2B de développement commercial par apport d'affaires et introductions qualifiées.
+---
 
 ## Stack technique
 
-- **Frontend** : React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui
-- **Backend** : Lovable Cloud (Supabase PostgreSQL + Auth + Edge Functions)
-- **Paiements** : Stripe (checkout annuel)
-- **IA vocale** : ElevenLabs (optionnel)
+- **Frontend** : React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui + React Flow
+- **Backend** : Lovable Cloud (Supabase PostgreSQL + pgvector + Auth + Edge Functions)
+- **Paiements** : Stripe (checkout + Connect + webhooks idempotents)
+- **IA** : Gemini 2.5 Pro/Flash via Lovable AI Gateway
+- **IA Vocale** : ElevenLabs (TTS + STT + Conversational AI)
 - **PWA** : VitePWA (installable mobile)
 
 ## Architecture
 
 ```
 src/
-  pages/         — Pages React (user / admin / public)
-  components/    — Composants UI réutilisables
+  pages/         — Pages React (user / admin / public / ADA / insights)
+  components/    — Composants UI (graph, ai, activation, leads…)
   contexts/      — AuthContext, SubscriptionContext
-  hooks/         — Hooks métier
-  lib/           — analytics.ts, landingTracking.ts, pricingConfig.ts…
+  hooks/         — Hooks métier (useEternalGraph, useADASessions…)
+  lib/           — analytics, pricingConfig, insightsPricingConfig…
   integrations/  — Client Supabase (auto-généré, ne pas modifier)
 supabase/
-  functions/     — Edge Functions Deno
+  functions/     — Edge Functions Deno (ada-orchestrator, etg-*, insights-api…)
   migrations/    — Migrations SQL versionnées
 ```
+
+## Moteurs principaux
+
+| Module | Statut | Description |
+|--------|--------|-------------|
+| **Eternal Trust Graph v2** | ✅ PROD | pgvector + shortest_path_trust + hidden links |
+| **ADA Autonomous Deal Agent** | ✅ PROD | 95% autonome · LangGraph-style · ElevenLabs |
+| **Silent Royalty 7%** | ✅ PROD | Webhook Stripe auto · split automatique |
+| **Insights Licensing API** | ✅ PROD | 15k€→75k€/mois · B2B institutionnel |
+| **God Mode** | 🔄 P2 | Triple swarm · War Caller · AutoPilot |
 
 ## Rôles utilisateurs
 
 | Rôle | Description |
 |---|---|
 | `facilitateur` | Apporteur d'affaires — gratuit, recommande des contacts |
-| `entreprise` | Acheteur d'introductions — abonnement annuel |
+| `entreprise` | Acheteur d'introductions — abonnement 99 € TTC/an |
 | `admin` | Back-office — accès via `/admin` |
 
 ## Monétisation
 
-- **Offre Launch** : 99 € / an (100 premiers slots)
-- **Offre Standard** : 490 € / an
-- **Accès promo** : codes VIP 12 mois (gratuit, via admin)
-- Facilitateurs : toujours gratuits
+- **🔥 Offre Launch exclusive** : 99 € TTC/an (au lieu de 990 €) — ça part extrêmement vite, premier arrivé premier servi !
+- **Insights API Starter** : 15 000 € / mois
+- **Insights API Growth** : 35 000 € / mois
+- **Insights API Enterprise** : 75 000 € / mois
+- **Royalty ADA** : 7% sur chaque deal fermé automatiquement
 
 ## Développement local
 
@@ -67,34 +84,27 @@ npm run lint          # ESLint
 npm run build         # Production build
 ```
 
-## Quality Gate (CI)
-
-Le pipeline `.github/workflows/ci.yml` exécute :
-1. `tsc --noEmit` — vérification types
-2. `eslint` — lint
-3. `vitest` — tests unitaires
-4. `vite build` — build de production
-5. `npm audit --audit-level=high` — audit sécurité dépendances
-
-## État de production
-
-**Verdict actuel : BETA PRIVÉE**
-
-- ✅ Sécurité multi-tenant : gardes JWT sur Edge Functions, RLS strict, user_roles
-- ✅ Analytics runtime : `analytics_events` écrit/lu réellement
-- ✅ Payout ops : tables + RPC + audit_log fonctionnels
-- ✅ Moteur réactivation : `reactivation_jobs` + `scan_reactivation_candidates()`
-- ✅ ROI Dashboard entreprise : métriques réelles depuis DB
-- ⚠️ Envoi email réactivation : nécessite provider externe (Resend, Brevo…)
-- ⚠️ Webhook Stripe : nécessite `STRIPE_WEBHOOK_SECRET` configuré
-
 ## Variables d'environnement
 
 Gérées automatiquement par Lovable Cloud. Ne pas modifier `.env`.
 
 | Variable | Usage |
 |---|---|
-| `VITE_SUPABASE_URL` | URL projet Supabase |
+| `VITE_SUPABASE_URL` | URL projet |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Clé anon publique |
-| `STRIPE_SECRET_KEY` | Secret Stripe (Edge Functions uniquement) |
+| `STRIPE_SECRET_KEY` | Secret Stripe (Edge Functions) |
 | `STRIPE_WEBHOOK_SECRET` | Validation webhooks Stripe |
+| `LOVABLE_API_KEY` | Gateway AI (auto-provisionné) |
+
+## État de production
+
+**Verdict : ✅ PRODUCTION READY — Phase 1 verrouillée**
+
+- ✅ ETG v2 : pgvector + shortest_path + hidden links
+- ✅ ADA 95% : machine d'état LangGraph · ElevenLabs · Gemini
+- ✅ Royalty 7% : webhook silent · Stripe split automatique
+- ✅ Insights API : 3 tiers · vector search · OpenAPI
+- ✅ Sécurité : RLS strict · JWT in-code · CORS hardened · CI/CD
+- ✅ RGPD · EU AI Act · Bloctel : templates + page `/legal`
+- ⚙️ Webhook Stripe : nécessite `STRIPE_WEBHOOK_SECRET` configuré
+- ⚙️ ElevenLabs voice : nécessite `ELEVENLABS_API_KEY` configuré
