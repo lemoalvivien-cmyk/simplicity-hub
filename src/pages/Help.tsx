@@ -8,14 +8,14 @@ const categories = [
     label: "Mon compte",
     items: [
       { q: "Comment modifier mon e-mail ou mon mot de passe ?", a: "Rendez-vous dans **Mon compte** (en haut à droite). Vous pouvez y modifier votre e-mail, votre mot de passe, et vos informations personnelles. Un e-mail de confirmation vous sera envoyé pour valider le changement." },
-      { q: "Comment annuler mon abonnement ?", a: "Dans **Mon compte → Abonnement**, cliquez sur « Annuler mon abonnement ». Votre accès restera actif jusqu'à la fin de la période déjà payée. Aucun remboursement partiel n'est effectué." },
-      { q: "Mon accès a expiré, que faire ?", a: "Si votre accès a expiré, vous pouvez le renouveler directement depuis la page **Tarifs**. Si vous avez un code d'invitation, vous pouvez l'utiliser pour activer 12 mois gratuits supplémentaires." },
+      { q: "Comment annuler mon abonnement ?", a: "Dans **Mon compte → Abonnement**, cliquez sur « Annuler mon abonnement ». Votre accès restera actif jusqu'à la fin de l'année déjà payée. Aucun remboursement partiel n'est effectué." },
+      { q: "Mon accès a expiré, que faire ?", a: "Si votre accès a expiré, vous pouvez le renouveler directement depuis la page **Tarifs**. Si vous avez un code d'invitation, vous pouvez l'utiliser pour activer 12 mois d'accès gratuit supplémentaires." },
     ],
   },
   {
     label: "Codes d'invitation",
     items: [
-      { q: "Qu'est-ce qu'un code d'invitation ?", a: "Un code d'invitation est un code unique qui vous donne **12 mois d'accès gratuit** à Planify. Chaque code est à usage unique — il ne peut être utilisé qu'une seule fois par une seule personne." },
+      { q: "Qu'est-ce qu'un code d'invitation ?", a: "Un code d'invitation est un code unique qui vous donne **12 mois d'accès gratuit** à Wiinup Max. Chaque code est à usage unique — il ne peut être utilisé qu'une seule fois par une seule personne." },
       { q: "Comment utiliser mon code d'invitation ?", a: "Sur la page de **Checkout**, choisissez l'option « J'ai un code d'invitation », entrez votre code et cliquez sur Vérifier. S'il est valide, votre accès sera activé immédiatement." },
       { q: "Mon code ne fonctionne pas, pourquoi ?", a: "Un code peut ne pas fonctionner s'il a déjà été utilisé par quelqu'un d'autre, s'il a expiré, ou s'il a été désactivé. Contactez notre support avec votre code et nous vérifierons." },
     ],
@@ -24,7 +24,7 @@ const categories = [
     label: "Paiement",
     items: [
       { q: "Quels modes de paiement acceptez-vous ?", a: "Nous acceptons toutes les cartes bancaires courantes (Visa, Mastercard, American Express) via Stripe. Les paiements sont sécurisés et chiffrés." },
-      { q: "Quand suis-je facturé ?", a: "Vous êtes facturé le jour de l'activation, puis à la même date chaque mois. Vous recevez une facture par e-mail à chaque renouvellement." },
+      { q: "Quand suis-je facturé ?", a: "Vous êtes facturé le jour de l'activation, puis à la même date chaque année. Vous recevez une facture par e-mail à chaque renouvellement." },
       { q: "Puis-je obtenir une facture TVA ?", a: "Oui. Depuis **Mon compte → Facturation**, vous pouvez télécharger toutes vos factures. Pour ajouter votre numéro de TVA, contactez notre support." },
     ],
   },
@@ -33,7 +33,7 @@ const categories = [
     items: [
       { q: "Comment accéder à l'assistant IA ?", a: "L'assistant IA est accessible depuis le menu **Aide** ou directement via la page **Assistant**. Il est disponible 24h/24, 7j/7 et répond en quelques secondes." },
       { q: "Mes données sont-elles sécurisées ?", a: "Oui. Vos données sont hébergées en Europe, chiffrées en transit et au repos. Nous ne vendons ni ne partageons vos données avec des tiers." },
-      { q: "Y a-t-il une limite d'utilisation ?", a: "Non. L'abonnement Premium vous donne un accès illimité à toutes les fonctionnalités, sans quota ni restriction." },
+      { q: "Y a-t-il une limite d'utilisation ?", a: "Non. Le Pass Fondateur vous donne un accès illimité à toutes les fonctionnalités, sans quota ni restriction." },
     ],
   },
 ];
