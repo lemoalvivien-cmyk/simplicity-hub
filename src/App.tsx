@@ -62,7 +62,8 @@ const Help = lazy(() => import("./pages/Help"));
 const Account = lazy(() => import("./pages/Account"));
 
 // ── Lazy: ADA ────────────────────────────────────────────────────────────────
-const ADAControlPanel = lazy(() => import("./pages/ADAControlPanel"));
+const ADAControlPanel  = lazy(() => import("./pages/ADAControlPanel"));
+const ADAModelDashboard = lazy(() => import("./pages/ADAModelDashboard"));
 
 // ── Lazy: admin ──────────────────────────────────────────────────────────────
 const AdminOverview = lazy(() => import("./pages/admin/Overview"));
