@@ -85,7 +85,7 @@ export default function FacilitateurPainSection() {
           }}
         >
           <p className="text-white/85 text-sm font-semibold">
-            Wiinup Max structure votre réseau et trace chaque introduction.{" "}
+            WiinupMax organise vos présentations et garde la preuve de chacune d'elles.{" "}
             <span className="text-white/60 font-normal">
               Vous êtes payé. Vous avez la preuve. Vous gardez le contrôle.
             </span>
