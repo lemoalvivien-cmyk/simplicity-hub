@@ -451,7 +451,7 @@ export default function RoyaltyFuturesTab() {
                         className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: "hsl(152 62% 50% / 0.12)", color: "hsl(152 62% 50%)" }}
                       >
-                        Minté
+                        Converti
                       </span>
                     )}
                   </div>
@@ -463,10 +463,10 @@ export default function RoyaltyFuturesTab() {
                       </span>
                     </span>
                     <span className="text-xs font-semibold" style={{ color: "hsl(38 95% 65%)" }}>
-                      {record.royalty_12pct.toLocaleString("fr-FR")} WMAX
+                      Gains : {record.royalty_12pct.toLocaleString("fr-FR")} €
                     </span>
                     <span className="text-[10px] text-muted-foreground/60 hidden sm:inline">
-                      (7 %={record.platform_fee_7pct.toLocaleString("fr-FR")} € · 5 %={record.engine_fee_5pct.toLocaleString("fr-FR")} €)
+                      (7 % plateforme={record.platform_fee_7pct.toLocaleString("fr-FR")} € · 5 % moteur={record.engine_fee_5pct.toLocaleString("fr-FR")} €)
                     </span>
                   </div>
                 </div>
