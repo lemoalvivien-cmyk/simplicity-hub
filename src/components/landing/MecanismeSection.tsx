@@ -42,7 +42,7 @@ export default function MecanismeSection() {
                 </div>
               </div>
               <p className="text-white/90 text-sm leading-relaxed">
-                OpenClaw (en connexion réelle avec API externe) vous suggère des cibles, prépare des brouillons de messages et vous alerte quand relancer. Vous validez et envoyez. L'IA assiste, l'humain décide.
+                Un assistant discret et efficace fouille le marché à votre place. Il trouve les personnes vraiment intéressées, prépare les messages parfaits et vous prévient au bon moment. Il continue même pendant que vous dormez.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
