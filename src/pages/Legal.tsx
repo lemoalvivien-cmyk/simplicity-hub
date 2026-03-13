@@ -243,9 +243,9 @@ export default function Legal() {
                 <Phone className="w-5 h-5 text-primary" /> Conformité Bloctel
               </h2>
 
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p className="text-xs font-semibold text-red-800 mb-1">🚨 Obligation légale — Loi Hamon (2014)</p>
-                <p className="text-xs text-red-700">
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-6">
+                <p className="text-xs font-semibold text-destructive mb-1">🚨 Obligation légale — Loi Hamon (2014)</p>
+                <p className="text-xs text-destructive/80">
                   Avant tout appel de prospection vers un particulier non-client, vérification obligatoire sur la liste Bloctel.
                   Amende jusqu'à <strong>75 000 €</strong> (personne physique) / <strong>375 000 €</strong> (personne morale).
                 </p>
