@@ -336,14 +336,14 @@ export default function RoyaltyFuturesTab() {
       >
         <Coins size={18} style={{ color: "hsl(38 95% 60%)" }} className="shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-bold text-foreground mb-0.5">
-            Mes gains — Récompenses automatiques
+        <p className="text-sm font-bold text-foreground mb-0.5">
+            Mes gains
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Chaque deal fermé par votre assistant IA génère automatiquement{" "}
-            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>12 % de gains reversés</span>{" "}
+            Chaque affaire signée par votre assistant IA génère automatiquement{" "}
+            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>12 % de gains versés sur votre compte</span>{" "}
             — 7 % frais plateforme + 5 % moteur IA.
-            Convertissez vos récompenses et revendez-les sur le marché secondaire.
+            Votre argent est disponible directement sur le marché secondaire.
           </p>
         </div>
       </div>
