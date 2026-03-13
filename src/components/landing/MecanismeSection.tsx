@@ -137,7 +137,7 @@ export default function MecanismeSection() {
             >
               <BarChart3 size={14} className="text-white" aria-hidden="true" />
             </div>
-            <p className="font-display font-bold text-white text-base">Cockpit central</p>
+            <p className="font-display font-bold text-white text-base">Votre espace personnel unifié</p>
           </div>
           <p className="text-white/90 text-sm max-w-md mx-auto leading-relaxed">
             Les deux moteurs remontent dans le même tableau de bord.
