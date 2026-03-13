@@ -266,11 +266,9 @@ export default function HeroFounderPass() {
                 className="font-display font-bold text-white leading-[1.28] tracking-tight"
                 style={{ fontSize: "clamp(1.15rem, 2.5vw, 1.6rem)" }}
               >
-                ADA prospecte en voix{" "}
-                <span style={{ color: "hsl(210 85% 72%)" }}>ElevenLabs</span>
-                {" "}+ apporte des affaires + exécute en autonomie{" "}
-                <span style={{ color: "hsl(152 62% 52%)" }}>24/7 via swarm</span>
-                {" "}+{" "}
+                WiinupMax : vos premiers clients arrivent en moins de{" "}
+                <span style={{ color: "hsl(var(--accent))" }}>24 heures</span>
+                … et vos contacts{" "}
                 <span
                   style={{
                     background: "linear-gradient(90deg, hsl(var(--accent)), hsl(38 100% 72%))",
@@ -279,9 +277,8 @@ export default function HeroFounderPass() {
                     backgroundClip: "text",
                   }}
                 >
-                  12&nbsp;% royalty tokenisée WMAX revendable sur secondary market
+                  gagnent de l'argent sans rien faire.
                 </span>
-                .
               </h1>
             </motion.div>
 
