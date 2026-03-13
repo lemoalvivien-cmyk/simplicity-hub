@@ -180,7 +180,7 @@ export default function APropos() {
           <div className="text-center mb-10">
             <p className="pill-tag mb-4 mx-auto w-fit">Innovation sociale</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-5">
-              Nous avons inventé{" "}
+              Nous avons créé{" "}
               <span
                 style={{
                   background: "linear-gradient(135deg, hsl(24 100% 58%), hsl(38 100% 65%))",
@@ -193,10 +193,9 @@ export default function APropos() {
               </span>
             </h2>
             <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-4">
-              Toute personne de 18 ans et plus peut, en travaillant{" "}
-              <strong className="text-foreground">15 à 20 heures par mois</strong>, générer entre{" "}
-              <strong className="text-foreground">2 000 € et 5 000 € nets par mois</strong> en tant qu'auto-entrepreneur
-              — simplement en valorisant ce qu'elle fait déjà naturellement : recommander.
+              N'importe qui peut, en travaillant{" "}
+              <strong className="text-foreground">15 à 20 heures par mois</strong>, gagner entre{" "}
+              <strong className="text-foreground">2 000 € et 5 000 € nets par mois</strong> en présentant simplement des gens qu'il connaît.
             </p>
             <p className="text-foreground font-semibold text-base">
               Il vous faut un téléphone, une connexion internet, et savoir lire. C'est tout.
