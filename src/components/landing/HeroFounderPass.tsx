@@ -317,7 +317,7 @@ export default function HeroFounderPass() {
                 onClick={() => track("cta_hero_facilitateur")}
               >
                 <Users size={11} />
-                Devenir facilitateur — Gratuit
+                Je veux gagner de l'argent facilement — Gratuit pour toujours
               </Link>
               <span className="text-white/20 text-xs">·</span>
               <span className="text-white/35 text-xs">Accès immédiat · Aucune CB requise pour inscription</span>
