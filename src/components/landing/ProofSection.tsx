@@ -115,8 +115,8 @@ export default function ProofSection() {
         >
           <Lock size={22} style={{ color: "hsl(var(--primary))", flexShrink: 0 }} aria-hidden="true" />
           <p className="text-sm text-foreground leading-relaxed">
-            <strong className="font-semibold">La plateforme est conçue pour être défendable.</strong>{" "}
-            Chaque action, chaque intro, chaque gain — enregistré, tracé, prouvable. Pas de zones grises.
+          <strong className="font-semibold">WiinupMax garde une trace de tout.</strong>{" "}
+            Chaque présentation, chaque accord, chaque gain — enregistré, protégé, vérifiable. Aucune zone grise.
           </p>
         </div>
       </div>
