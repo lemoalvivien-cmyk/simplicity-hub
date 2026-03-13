@@ -53,7 +53,7 @@ export default function APropos() {
         />
         <div className="container max-w-3xl text-center relative z-10">
           <span className="pill-tag mb-6 mx-auto w-fit inline-block">
-            La première marketplace phygitale d'acquisition client
+            La première plateforme qui connecte entreprises et présentateurs
           </span>
           <h1 className="font-display font-bold leading-[1.08] tracking-tight mb-5">
             <span
@@ -65,16 +65,15 @@ export default function APropos() {
                 backgroundClip: "text",
               }}
             >
-              Nous n'avons pas créé une plateforme.
+              Nous n'avons pas créé un outil.
             </span>
             <span className="block text-[clamp(1.6rem,4.5vw,2.6rem)] text-white/90 mt-3 font-semibold">
-              Nous avons créé un mouvement.
+              Nous avons créé quelque chose de nouveau.
             </span>
           </h1>
           <p className="text-white/75 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-            WiinupMax est née d'une conviction simple : dans un monde ultra-connecté,
-            les meilleures opportunités business ne passent pas par la pub.{" "}
-            <strong className="text-white/95 font-semibold">Elles passent par les gens.</strong>
+            WiinupMax est née d'une conviction simple : les meilleures opportunités ne viennent pas de la publicité.{" "}
+            <strong className="text-white/95 font-semibold">Elles viennent des gens.</strong>
           </p>
         </div>
       </section>
@@ -85,7 +84,7 @@ export default function APropos() {
           <div className="text-center mb-12">
             <p className="pill-tag mb-4 mx-auto w-fit">Le concept</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-5">
-              Une place de marché{" "}
+              Une plateforme qui{" "}
               <span
                 style={{
                   background: "linear-gradient(135deg, hsl(218 72% 55%), hsl(262 72% 60%))",
@@ -94,12 +93,12 @@ export default function APropos() {
                   backgroundClip: "text",
                 }}
               >
-                phygitale.
+                connecte tout le monde.
               </span>
             </h2>
             <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-              WiinupMax fusionne la puissance de l'intelligence artificielle avec la chaleur des connexions humaines.{" "}
-              <strong className="text-foreground font-semibold">Deux moteurs. Une seule mission : vous faire grandir.</strong>
+              WiinupMax réunit l'intelligence automatique et la chaleur des connexions humaines.{" "}
+              <strong className="text-foreground font-semibold">Deux façons de trouver des clients. Une seule plateforme simple.</strong>
             </p>
           </div>
 
@@ -125,12 +124,11 @@ export default function APropos() {
                 </div>
               </div>
               <p className="text-white/80 text-sm leading-relaxed">
-                <strong className="text-white">La Prospection Automatisée.</strong>{" "}
-                OpenClaw prospecte en continu, détecte les signaux d'intention, rédige des messages personnalisés
-                et remonte les leads chauds — sans intervention manuelle.
+                <strong className="text-white">La recherche automatique.</strong>{" "}
+                Un assistant cherche pour vous en continu, repère les personnes intéressées, prépare les messages et remonte les meilleures opportunités — sans que vous ayez à intervenir.
               </p>
               <ul className="space-y-1.5">
-                {["Agents IA actifs 24h/24", "Deal Radar & signaux d'intention", "Campagnes multicanal automatisées"].map(item => (
+                {["Actif 24h/24 pour vous", "Détecte les personnes intéressées", "Prépare les messages à envoyer"].map(item => (
                   <li key={item} className="flex items-center gap-2.5 text-sm text-white/75">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" aria-hidden="true" />
                     {item}
@@ -160,12 +158,11 @@ export default function APropos() {
                 </div>
               </div>
               <p className="text-white/80 text-sm leading-relaxed">
-                <strong className="text-white">L'Apport d'Affaires Industrialisé.</strong>{" "}
-                Un réseau de facilitateurs recommande votre offre à leurs contacts qualifiés.
-                Chaque introduction est tracée, vérifiée et prouvable.
+                <strong className="text-white">Les présentations humaines.</strong>{" "}
+                Des personnes de confiance recommandent votre offre à leurs contacts. Chaque présentation est enregistrée, vérifiée et prouvable.
               </p>
               <ul className="space-y-1.5">
-                {["Introductions vérifiées & protégées", "Gains traçables en temps réel", "Validation en un clic"].map(item => (
+                {["Présentations vérifiées et protégées", "Gains visibles en temps réel", "Validation en un seul clic"].map(item => (
                   <li key={item} className="flex items-center gap-2.5 text-sm text-white/75">
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "hsl(24 100% 60%)" }} aria-hidden="true" />
                     {item}
@@ -183,7 +180,7 @@ export default function APropos() {
           <div className="text-center mb-10">
             <p className="pill-tag mb-4 mx-auto w-fit">Innovation sociale</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-5">
-              Nous avons inventé{" "}
+              Nous avons créé{" "}
               <span
                 style={{
                   background: "linear-gradient(135deg, hsl(24 100% 58%), hsl(38 100% 65%))",
@@ -196,10 +193,9 @@ export default function APropos() {
               </span>
             </h2>
             <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto leading-relaxed mb-4">
-              Toute personne de 18 ans et plus peut, en travaillant{" "}
-              <strong className="text-foreground">15 à 20 heures par mois</strong>, générer entre{" "}
-              <strong className="text-foreground">2 000 € et 5 000 € nets par mois</strong> en tant qu'auto-entrepreneur
-              — simplement en valorisant ce qu'elle fait déjà naturellement : recommander.
+              N'importe qui peut, en travaillant{" "}
+              <strong className="text-foreground">15 à 20 heures par mois</strong>, gagner entre{" "}
+              <strong className="text-foreground">2 000 € et 5 000 € nets par mois</strong> en présentant simplement des gens qu'il connaît.
             </p>
             <p className="text-foreground font-semibold text-base">
               Il vous faut un téléphone, une connexion internet, et savoir lire. C'est tout.
@@ -248,7 +244,7 @@ export default function APropos() {
           <div className="text-center mb-12">
             <p className="pill-tag mb-4 mx-auto w-fit">Mission sociale</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Une mission qui dépasse le business.
+              Une mission qui va au-delà des affaires.
             </h2>
           </div>
 
@@ -257,20 +253,20 @@ export default function APropos() {
               {
                 icon: Users,
                 color: "hsl(218 72% 55%)",
-                title: "Réduire le chômage",
-                desc: "Permettre à des milliers de personnes de générer un revenu complémentaire ou principal en valorisant leurs connexions humaines existantes.",
+                title: "Aider les personnes sans emploi",
+                desc: "Permettre à des milliers de personnes de gagner un revenu en valorisant leurs contacts — sans formation spéciale, sans investissement.",
               },
               {
                 icon: Heart,
                 color: "hsl(24 100% 55%)",
-                title: "Les publics fragiles en premier",
-                desc: "Seniors, personnes en reconversion, salariés à mi-temps : WiinupMax est conçu pour ceux que l'économie traditionnelle a laissés sur le côté.",
+                title: "Les personnes fragilisées en premier",
+                desc: "Retraités, personnes en transition, salariés à temps partiel : WiinupMax est pensé pour ceux que l'économie habituelle a laissés de côté.",
               },
               {
                 icon: MapPin,
                 color: "hsl(152 62% 42%)",
-                title: "L'économie des territoires",
-                desc: "Des connexions locales qui génèrent de la valeur locale. Pas un réseau centralisé — un tissu de proximité vivant.",
+                title: "Faire vivre les territoires",
+                desc: "Des connexions locales qui créent de la valeur locale. Pas un réseau centralisé — un tissu humain vivant.",
               },
             ].map(({ icon: Icon, color, title, desc }) => (
               <div
@@ -300,7 +296,7 @@ export default function APropos() {
           >
             <Quote size={20} className="mx-auto mb-3 opacity-40 text-white" aria-hidden="true" />
             <p className="text-white/90 text-base md:text-lg font-semibold italic max-w-xl mx-auto leading-relaxed">
-              « Recréer un équilibre financier pour tous en plaçant l'humain au cœur de l'économie. »
+              « Recréer un équilibre financier pour tous en mettant l'humain au cœur de l'économie. »
             </p>
           </div>
         </div>
@@ -322,19 +318,19 @@ export default function APropos() {
                 icon: Heart,
                 color: "hsl(24 100% 55%)",
                 title: "L'humain d'abord",
-                desc: "La technologie ne remplace pas les relations. Elle les amplifie. Chaque fonctionnalité est pensée pour remettre l'humain au centre de la transaction.",
+                desc: "La technologie ne remplace pas les relations. Elle les amplifie. Chaque fonction est pensée pour remettre les gens au centre.",
               },
               {
                 icon: Target,
                 color: "hsl(218 72% 55%)",
-                title: "L'équité comme moteur",
-                desc: "Même outil, mêmes règles, mêmes opportunités — qu'on soit dirigeant d'une PME ou retraité de 62 ans. L'accès ne se mérite pas, il se donne.",
+                title: "La même chance pour tout le monde",
+                desc: "Mêmes outils, mêmes règles, mêmes opportunités — que vous soyez dirigeant ou retraité de 62 ans.",
               },
               {
                 icon: Handshake,
                 color: "hsl(152 62% 42%)",
-                title: "La collaboration avant tout",
-                desc: "On ne gagne pas seul. La plateforme est conçue pour que la réussite de l'un amplifie la réussite des autres. Pas de jeu à somme nulle.",
+                title: "On gagne ensemble",
+                desc: "Quand quelqu'un réussit grâce à vous, vous gagnez aussi. Pas de compétition — de la coopération.",
               },
             ].map(({ icon: Icon, color, title, desc }) => (
               <div
@@ -362,7 +358,7 @@ export default function APropos() {
           <div className="text-center mb-12">
             <p className="pill-tag mb-4 mx-auto w-fit">Les fondateurs</p>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Ceux qui ont tout mis en jeu.
+              Les personnes derrière WiinupMax.
             </h2>
             <p className="text-muted-foreground text-base max-w-xl mx-auto">
               WiinupMax n'est pas né dans une salle de réunion. Il est né d'une conviction personnelle
@@ -443,14 +439,12 @@ export default function APropos() {
         <div className="container max-w-4xl">
           <div className="text-center mb-10">
             <p className="pill-tag mb-4 mx-auto w-fit">Communauté</p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              La Mêlée by WiinupMax.
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+              La communauté WiinupMax.
             </h2>
             <p className="text-muted-foreground text-base max-w-xl mx-auto">
-              Du networking{" "}
-              <strong className="text-foreground font-semibold">sans bullshit</strong>, en vrai,
-              dans de vraies entreprises du territoire.
-              Pas des conférences. Des séances de travail.
+              Des rencontres vraies, dans de vraies entreprises.{" "}
+              <strong className="text-foreground font-semibold">Pas des conférences. Des séances de travail.</strong>
             </p>
           </div>
 
@@ -588,14 +582,13 @@ export default function APropos() {
           aria-hidden="true"
         />
         <div className="container max-w-xl text-center relative z-10">
-          <p
-            className="text-[10px] font-bold uppercase tracking-[0.15em] mb-5"
+          <p className="text-[10px] font-bold uppercase tracking-[0.15em] mb-5"
             style={{ color: "hsl(24 100% 62%)" }}
           >
-            La décision est là
+            Vous avez lu jusqu'ici
           </p>
           <h2 className="font-display text-[clamp(1.7rem,5vw,2.8rem)] font-bold text-white mb-4 leading-[1.1]">
-            Vous avez lu jusqu'ici.{" "}
+            Alors vous savez que{" "}
             <span
               style={{
                 background: "linear-gradient(135deg, hsl(24 100% 62%), hsl(38 100% 70%))",
@@ -604,11 +597,11 @@ export default function APropos() {
                 backgroundClip: "text",
               }}
             >
-              C'est que quelque chose résonne.
+              quelque chose vous parle.
             </span>
           </h2>
           <p className="text-white/70 text-base mb-10 max-w-sm mx-auto">
-            Rejoignez le mouvement. En tant qu'entreprise ou en tant que facilitateur.
+            Rejoignez-nous. En tant qu'entreprise ou en tant que facilitateur.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link

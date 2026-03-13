@@ -4,26 +4,26 @@ const pains = [
   {
     icon: HandCoins,
     color: "hsl(38 95% 52%)",
-    title: "Vous recommandez, vous ne gagnez rien.",
-    desc: "Vos mises en relation créent du business. Pour les autres. Pas pour vous.",
+    title: "Vous présentez des gens. Vous ne gagnez rien.",
+    desc: "Vos mises en relation créent de la valeur pour les autres. Rarement pour vous.",
   },
   {
     icon: Eye,
     color: "hsl(24 100% 55%)",
-    title: "Aucune preuve de ce que vous apportez.",
-    desc: "Le deal se fait. Mais vous ne pouvez rien prouver. Aucune trace, aucune reconnaissance.",
+    title: "Personne ne reconnaît ce que vous avez apporté.",
+    desc: "L'affaire se conclut. Mais vous ne pouvez pas prouver que c'est grâce à vous.",
   },
   {
     icon: BellOff,
     color: "hsl(38 80% 48%)",
-    title: "Pas de suivi, pas de visibilité.",
-    desc: "L'intro est envoyée. Après... silence radio. Vous ne savez même pas si elle a abouti.",
+    title: "Vous envoyez et puis... plus de nouvelles.",
+    desc: "Vous avez fait la présentation. Après, silence total. Vous ne savez même pas si ça a abouti.",
   },
   {
     icon: FolderX,
     color: "hsl(24 90% 60%)",
-    title: "Aucun outil pour structurer vos intros.",
-    desc: "Pas de CRM d'apporteur. Tout est dans votre tête. Tout finit par se perdre.",
+    title: "Tout est dans votre tête. Rien n'est rangé.",
+    desc: "Pas d'endroit pour garder la trace de vos présentations. Tout finit par se perdre.",
   },
 ];
 
@@ -43,11 +43,11 @@ export default function FacilitateurPainSection() {
                 backgroundClip: "text",
               }}
             >
-              Mais personne ne le voit.
+              Mais personne ne le sait.
             </span>
           </h2>
           <p className="text-muted-foreground text-base md:text-lg max-w-lg mx-auto">
-            Vous faites des mises en relation. Mais c'est informel, flou,{" "}
+            Vous présentez des gens depuis des années. Mais c'est informel, invisible,{" "}
             <strong className="text-foreground font-semibold">rarement payé.</strong>
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function FacilitateurPainSection() {
           }}
         >
           <p className="text-white/85 text-sm font-semibold">
-            Wiinup Max structure votre réseau et trace chaque introduction.{" "}
+            WiinupMax organise vos présentations et garde la preuve de chacune d'elles.{" "}
             <span className="text-white/60 font-normal">
               Vous êtes payé. Vous avez la preuve. Vous gardez le contrôle.
             </span>

@@ -8,37 +8,37 @@ const SPRING_BOUNCE = { type: "spring" as const, stiffness: 280, damping: 18 };
 const FEATURES = [
   {
     id: "swarm",
-    tag: "TRIPLE THREAT SWARM",
-    title: "3 IA en duel permanent",
+    tag: "TROIS CERVEAUX EN UN",
+    title: "3 assistants qui travaillent ensemble",
     icon: Swords,
-    description: "Gemini, Qwen et Grok analysent chaque opportunité simultanément. Le consensus forge la décision optimale — zéro biais, zéro hallucination unique.",
+    description: "Trois assistants intelligents analysent chaque opportunité en même temps. Ils comparent leurs résultats et retiennent la meilleure décision — sans erreur, sans oubli.",
     color: "hsl(var(--accent))",
     glowRaw: "38 95% 52%",
-    badge: "Bêta · IA assistée",
+    badge: "Bêta · En cours",
     span: "col-span-1 md:col-span-2 row-span-1",
     agents: ["Gemini", "Qwen", "Grok"],
   },
   {
     id: "voice",
-    tag: "WAR CALLER VOICE",
-    title: "Briefings vocaux IA",
+    tag: "ASSISTANT VOCAL",
+    title: "Vos nouvelles lues à voix haute",
     icon: Mic,
-    description: "Vos opportunités critiques dictées en temps réel. Priorisez sans regarder l'écran.",
+    description: "Votre assistant vous lit les bonnes nouvelles en temps réel. Sans regarder l'écran.",
     color: "hsl(var(--primary-glow))",
     glowRaw: "210 88% 68%",
-    badge: "ElevenLabs",
+    badge: "Voix réaliste",
     span: "col-span-1 row-span-1",
     agents: [],
   },
   {
     id: "autopilot",
-    tag: "AUTO-PILOT MODE",
-    title: "Pipeline autonome",
+    tag: "PILOTE AUTOMATIQUE",
+    title: "Votre espace qui travaille tout seul",
     icon: Bot,
-    description: "OpenClaw scanne, score et priorise vos leads. Vous intervenez uniquement pour conclure.",
+    description: "L'assistant cherche, trie et classe vos opportunités. Vous n'intervenez que pour dire oui ou non.",
     color: "hsl(152 62% 52%)",
     glowRaw: "152 62% 52%",
-    badge: "OpenClaw Engine",
+    badge: "Toujours actif",
     span: "col-span-1 row-span-1",
     agents: [],
   },
@@ -168,15 +168,15 @@ function BentoCard({ f, i, inView }: { f: typeof FEATURES[0]; i: number; inView:
                 {a}
               </motion.span>
             ))}
-            <motion.div
-              className="flex items-center gap-1 text-[10px]"
+              <motion.div
+              className="flex items-center gap-1 text-[10px] font-semibold"
               style={{ color: "hsl(152 62% 52%)" }}
               initial={{ opacity: 0 }}
               animate={inView ? { opacity: 1 } : {}}
               transition={{ delay: 0.6 }}
             >
               <Activity size={10} />
-              <span className="font-semibold">Consensus actif</span>
+              <span className="font-semibold">En accord</span>
             </motion.div>
           </div>
         )}
@@ -188,14 +188,14 @@ function BentoCard({ f, i, inView }: { f: typeof FEATURES[0]; i: number; inView:
               className="w-1.5 h-1.5 rounded-full animate-pulse"
               style={{ background: "hsl(152 62% 52%)", boxShadow: "0 0 6px hsl(152 62% 52%)" }}
             />
-            <span className="text-white/40 text-[10px]">Disponible en bêta</span>
+            <span className="text-white/40 text-[10px]">Disponible maintenant</span>
           </div>
           <motion.div
             className="flex items-center gap-1 text-[10px] font-semibold"
             style={{ color: f.color, opacity: hovered ? 1 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            Activer <ChevronRight size={10} />
+            Ouvrir <ChevronRight size={10} />
           </motion.div>
         </div>
       </div>
@@ -250,15 +250,15 @@ export default function GodModeTeaser() {
               color: "hsl(var(--accent))",
             }}
           >
-            <Zap size={10} strokeWidth={2.5} />
-            God Mode — Armement IA
+          <Zap size={10} strokeWidth={2.5} />
+            Fonctionnalités avancées
           </motion.div>
 
           <h2
             className="font-display font-bold text-white leading-tight mb-4"
             style={{ fontSize: "clamp(2rem, 5vw, 3.2rem)" }}
           >
-            Trois armes.{" "}
+            Trois outils puissants.{" "}
             <span
               style={{
                 background: "linear-gradient(135deg, hsl(var(--accent)), hsl(38 100% 74%))",
@@ -267,11 +267,11 @@ export default function GodModeTeaser() {
                 backgroundClip: "text",
               }}
             >
-              Un seul cockpit.
+              Un seul endroit.
             </span>
           </h2>
           <p className="text-white/60 text-lg max-w-lg mx-auto leading-relaxed">
-            L'arsenal IA complet — prospection, voix, automation — piloté depuis Wiinup.
+            Des outils intelligents pour trouver des clients, être informé et travailler sans effort.
           </p>
         </motion.div>
 
