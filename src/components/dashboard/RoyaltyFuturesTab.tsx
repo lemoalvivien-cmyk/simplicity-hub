@@ -337,13 +337,13 @@ export default function RoyaltyFuturesTab() {
         <Coins size={18} style={{ color: "hsl(38 95% 60%)" }} className="shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-bold text-foreground mb-0.5">
-            Mes Royalty Futures — WMAX Token (Base L2)
+            Mes gains — Récompenses automatiques
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Chaque deal fermé par ADA génère automatiquement{" "}
-            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>12 % de royalty tokenisée</span>{" "}
-            — 7 % platform fee + 5 % engine fee swarm.
-            Mintez vos tokens WMAX et revendez-les sur le secondary market Base L2.
+            Chaque deal fermé par votre assistant IA génère automatiquement{" "}
+            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>12 % de gains reversés</span>{" "}
+            — 7 % frais plateforme + 5 % moteur IA.
+            Convertissez vos récompenses et revendez-les sur le marché secondaire.
           </p>
         </div>
       </div>
