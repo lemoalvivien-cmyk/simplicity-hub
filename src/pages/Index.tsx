@@ -12,6 +12,7 @@ import ProofSection from "@/components/landing/ProofSection";
 import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
+import WhyDifferentSection from "@/components/landing/WhyDifferentSection";
 import { initScrollTracking, track } from "@/lib/landingTracking";
 import { trackEvent } from "@/lib/analytics";
 
