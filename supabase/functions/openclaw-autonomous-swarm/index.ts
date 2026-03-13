@@ -7,6 +7,7 @@
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { enforceRateLimit, build429, trackRequest, logFunctionError } from "../_shared/monitoring.ts";
 
 const SUPABASE_URL  = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -36,6 +37,13 @@ Deno.serve(async (req: Request) => {
   }
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+
+  // ── Rate limiting ───────────────────────────────────────────────────────────
+  const rateCheck = await enforceRateLimit(user.id, "openclaw-autonomous-swarm");
+  if (rateCheck && !rateCheck.allowed) return build429(corsHeaders, "openclaw-autonomous-swarm");
+
+  const releaseTracker = trackRequest();
+  const elapsed = startTimer();
 
   try {
     const body = await req.json();
@@ -94,12 +102,15 @@ Deno.serve(async (req: Request) => {
     });
     if (jobErr) console.warn("[swarm] job log error:", jobErr.message);
 
+    releaseTracker();
     return new Response(
-      JSON.stringify({ success: true, results }),
+      JSON.stringify({ success: true, results, duration_ms: elapsed() }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (err) {
+    releaseTracker();
+    await logFunctionError("openclaw-autonomous-swarm", err);
     console.error("[openclaw-autonomous-swarm] Error:", err);
     return new Response(
       JSON.stringify({ error: "Internal error", detail: String(err) }),
