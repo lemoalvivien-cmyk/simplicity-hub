@@ -222,14 +222,13 @@ export default function HeroSectionV2() {
 
             {/* Sub-copy */}
             <motion.p
-              className="text-white/72 mb-4 leading-[1.82] max-w-lg"
+              className="text-white/72 mb-4 leading-[1.82] max-w-xl"
               style={{ fontSize: "clamp(0.92rem, 1.9vw, 1.06rem)" }}
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.3 }}
             >
-              Prospection IA assistée + réseau humain structuré. OpenClaw et facilitateurs actifs
-              travaillent en parallèle. Chaque opportunité tracée. Chaque résultat mesurable.
+              Founder Pass 99 €/an (100 places max) – ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm + 12&nbsp;% royalty tokenisée WMAX revendable sur secondary market.
             </motion.p>
 
             {/* ── CTAs with haptic spring hover ─────────────── */}

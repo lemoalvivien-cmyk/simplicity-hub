@@ -271,11 +271,11 @@ export default function DashboardEntreprise() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-foreground text-sm leading-tight mb-1">
-                  Offre de lancement exclusive
+                  Founder Pass — 99 €/an (100 places max)
                 </p>
                 <p className="text-sm" style={{ color: "hsl(38 100% 65%)" }}>
-                  <strong className="text-foreground">99 € TTC/an</strong> au lieu de 990 €{" "}
-                  — ça part extrêmement vite, premier arrivé premier servi !
+                  ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm +{" "}
+                  <strong className="text-white">12&nbsp;% royalty tokenisée WMAX</strong> revendable sur secondary market.
                 </p>
               </div>
             </div>
