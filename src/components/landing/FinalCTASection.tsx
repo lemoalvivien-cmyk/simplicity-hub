@@ -55,13 +55,13 @@ export default function FinalCTASection() {
         </p>
 
         <div className="flex flex-col items-center gap-3 mb-5">
-          <Link
+        <Link
             to="/signup"
             className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto font-bold"
             onClick={() => track("cta_final_enterprise")}
           >
             <Zap size={16} />
-            Activer maintenant — 99 € TTC/an
+            Je veux mes premiers clients dès demain — 99 € TTC/an
             <ArrowRight size={17} />
           </Link>
           <span className="flex items-center gap-1.5 text-white/60 text-xs">

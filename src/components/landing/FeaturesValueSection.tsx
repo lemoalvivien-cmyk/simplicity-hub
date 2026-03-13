@@ -86,7 +86,7 @@ export default function FeaturesValueSection() {
     <section className="py-20 md:py-24 bg-background">
       <div className="container max-w-5xl">
         <div className="text-center mb-12">
-          <p className="pill-tag mb-4 mx-auto w-fit">Ce que vous obtenez</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">Ce que vous avez vraiment</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
             Tout ce dont vous avez besoin. Rien de superflu.
           </h2>
