@@ -39,9 +39,9 @@ const founderFeatures = [
     color: "hsl(var(--accent))",
     category: "Gains automatiques",
     items: [
-      "12 % de chaque affaire conclue, partagé automatiquement",
-      "7 % frais de plateforme + 5 % moteur",
-      "Gains enregistrés et revendables",
+      "Une part de chaque affaire conclue, partagée automatiquement",
+      "Frais de plateforme transparents",
+      "Gains enregistrés et protégés",
       "Versement automatique à chaque affaire · Traçabilité totale",
     ],
   },
@@ -294,8 +294,8 @@ export default function Pricing() {
           </h1>
 
           <p className="text-white/65 max-w-xl mx-auto leading-relaxed" style={{ fontSize: "clamp(0.9rem, 1.9vw, 1.05rem)" }}>
-            ADA prospecte en voix ElevenLabs + apporte des affaires + exécute en autonomie 24/7 via swarm
-            + <strong className="text-white/85">12 % royalty tokenisée WMAX revendable sur secondary market.</strong>
+            Votre assistant IA prospecte, apporte des affaires et travaille en autonomie 24h/24.
+            Vos <strong className="text-white/85">gains sont versés automatiquement</strong> à chaque affaire signée, sans rien faire de votre côté.
           </p>
         </div>
       </section>
@@ -465,7 +465,7 @@ export default function Pricing() {
         </div>
       </div>
 
-      {/* ── Comparatif WMAX token ────────────────────────────────────── */}
+      {/* ── Comment ça marche pour vos gains ────────────────────────── */}
       <section className="border-t border-border py-14 bg-muted">
         <div className="container max-w-3xl text-center">
           <div
@@ -473,20 +473,20 @@ export default function Pricing() {
             style={{ background: "hsl(var(--accent) / 0.12)", border: "1px solid hsl(var(--accent) / 0.35)", color: "hsl(var(--accent))" }}
           >
             <Coins size={11} />
-            WMAX Token — Base L2
+            Vos gains — transparent et automatique
           </div>
           <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-            12 % de chaque deal, tokenisé automatiquement
+            Vos gains, versés automatiquement à chaque affaire signée
           </h2>
           <p className="text-muted-foreground text-sm leading-relaxed mb-8 max-w-xl mx-auto">
-            À chaque deal fermé par ADA, la royalty est splitée en 2 tokens WMAX sur la blockchain Base L2 :
-            7 % platform fee + 5 % engine fee. Revendables sur le secondary market. Traçabilité totale.
+            À chaque affaire conclue par votre assistant IA, une part revient sur votre compte automatiquement.
+            Frais de plateforme transparents, traçabilité totale, aucune surprise.
           </p>
           <div className="grid sm:grid-cols-3 gap-4 text-left">
             {[
-              { label: "Platform fee", pct: "7 %", desc: "Financement de la plateforme, R&D et équipe", color: "hsl(var(--primary-glow))" },
-              { label: "Engine fee", pct: "5 %", desc: "Swarm autonome · Live cash flow · Secondary market", color: "hsl(var(--accent))" },
-              { label: "Votre net", pct: "88 %", desc: "Versé automatiquement après chaque deal validé", color: "hsl(152 62% 52%)" },
+              { label: "Frais plateforme", pct: "7 %", desc: "Financement de la plateforme, R&D et équipe", color: "hsl(var(--primary-glow))" },
+              { label: "Frais assistant IA", pct: "5 %", desc: "Votre assistant IA, opérationnel 24h/24", color: "hsl(var(--accent))" },
+              { label: "Votre part", pct: "88 %", desc: "Versé automatiquement après chaque affaire signée", color: "hsl(152 62% 52%)" },
             ].map(({ label, pct, desc, color }) => (
               <div
                 key={label}
