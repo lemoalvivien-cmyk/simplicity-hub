@@ -294,8 +294,8 @@ export default function Pricing() {
           </h1>
 
           <p className="text-white/65 max-w-xl mx-auto leading-relaxed" style={{ fontSize: "clamp(0.9rem, 1.9vw, 1.05rem)" }}>
-            ADA prospecte en voix ElevenLabs + apporte des affaires + exécute en autonomie 24/7 via swarm
-            + <strong className="text-white/85">12 % royalty tokenisée WMAX revendable sur secondary market.</strong>
+            Votre assistant IA prospecte, apporte des affaires et travaille en autonomie 24h/24.
+            Vos <strong className="text-white/85">gains sont versés automatiquement</strong> à chaque affaire signée, sans rien faire de votre côté.
           </p>
         </div>
       </section>
