@@ -27,7 +27,7 @@ const INITIAL_STATUSES: StatusItem[] = [
   { id: "etg",        label: "Eternal Trust Graph",   description: "pgvector + shortest_path_trust",  icon: Brain,      status: "loading" },
   { id: "ada",        label: "Assistant IA",         description: "Gemini 2.5 Flash + voix",         icon: Zap,        status: "loading" },
   { id: "stripe",     label: "Stripe Payments",       description: "Checkout + Connect + Webhooks",   icon: CreditCard, status: "loading" },
-  { id: "royalty",    label: "Partage des gains 7 %", description: "Reversement automatique",         icon: TrendingUp, status: "loading" },
+  { id: "royalty",    label: "Versement des gains",   description: "Reversement automatique",         icon: TrendingUp, status: "loading" },
   { id: "insights",   label: "Insights API",          description: "Starter · Growth · Enterprise",   icon: BarChart3,  status: "loading" },
   { id: "security",   label: "Sécurité & RGPD",       description: "RLS + rate-limit + Bloctel",      icon: ShieldCheck,status: "loading" },
 ];
