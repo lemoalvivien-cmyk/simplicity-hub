@@ -39,9 +39,9 @@ const founderFeatures = [
     color: "hsl(var(--accent))",
     category: "Gains automatiques",
     items: [
-      "12 % de chaque affaire conclue, partagé automatiquement",
-      "7 % frais de plateforme + 5 % moteur",
-      "Gains enregistrés et revendables",
+      "Une part de chaque affaire conclue, partagée automatiquement",
+      "Frais de plateforme transparents",
+      "Gains enregistrés et protégés",
       "Versement automatique à chaque affaire · Traçabilité totale",
     ],
   },
