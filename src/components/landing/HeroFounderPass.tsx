@@ -353,10 +353,10 @@ export default function HeroFounderPass() {
               <HeroSphere mouseX={sphereX} mouseY={sphereY} />
             </Suspense>
 
-            <StatCard label="Gains reversés" value="12 %" color="hsl(var(--accent))" delay={0.7} className="top-8 left-0" />
+            <StatCard label="Gains versés" value="Auto" color="hsl(var(--accent))" delay={0.7} className="top-8 left-0" />
             <StatCard label="Gains tracés" value="2 800 €" color="hsl(152 62% 52%)" delay={0.82} className="bottom-16 left-0" />
-            <StatCard label="Deals ADA fermés" value="8" color="hsl(var(--primary-glow))" delay={0.76} className="top-20 right-0" />
-            <StatCard label="Swarm agents" value="24/7" color="hsl(210 85% 72%)" delay={0.88} className="bottom-20 right-0" />
+            <StatCard label="Affaires signées" value="8" color="hsl(var(--primary-glow))" delay={0.76} className="top-20 right-0" />
+            <StatCard label="Assistant IA" value="24/7" color="hsl(210 85% 72%)" delay={0.88} className="bottom-20 right-0" />
           </motion.div>
         </div>
       </div>

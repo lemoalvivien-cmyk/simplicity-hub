@@ -274,8 +274,8 @@ export default function DashboardEntreprise() {
                   Founder Pass — 99 €/an (100 places max)
                 </p>
                 <p className="text-sm" style={{ color: "hsl(38 100% 65%)" }}>
-                  Votre assistant IA prospecte, apporte des affaires et travaille en autonomie 24h/24 +{" "}
-                  <strong className="text-white">12 % de gains versés sur votre compte</strong> à chaque affaire signée.
+                   Votre assistant IA prospecte, apporte des affaires et travaille en autonomie 24h/24.{" "}
+                  <strong className="text-white">Vos gains sont versés automatiquement</strong> à chaque affaire signée.
                 </p>
               </div>
             </div>

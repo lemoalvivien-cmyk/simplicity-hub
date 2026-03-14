@@ -111,7 +111,7 @@ export default function SystemStatus() {
       const { data, error } = await supabase.from("ada_sessions").select("commission_7pct").limit(1);
       updateStatus("royalty", {
         status: error ? "degraded" : "ok",
-        detail: error ? error.message : "Split 7% / 93% opérationnel",
+        detail: error ? error.message : "Versement automatique des gains opérationnel",
       });
     } catch (e) {
       updateStatus("royalty", { status: "error", detail: String(e) });
