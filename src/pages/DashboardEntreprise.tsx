@@ -178,8 +178,8 @@ export default function DashboardEntreprise() {
       <div className="max-w-2xl mx-auto space-y-5">
 
 
-        {/* ═══ COCKPIT TAB ═══════════════════════════════════ */}
-        {activeTab === "cockpit" && (<>
+        {/* ═══ COCKPIT ═══════════════════════════════════════ */}
+        <>
         <div className="rounded-2xl p-5 border-2"
           style={{ borderColor: "hsl(var(--accent) / 0.6)", background: "hsl(24 80% 52% / 0.06)" }}>
           <div className="flex items-start justify-between gap-4">
