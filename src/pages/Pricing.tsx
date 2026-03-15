@@ -204,17 +204,11 @@ function ActivateButton() {
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 export default function Pricing() {
-  const [slotsRemaining, setSlotsRemaining] = useState(100);
+  const { remaining, loading: slotsLoading } = useFounderSlots();
+  const slotsRemaining = remaining ?? 100;
 
   useEffect(() => {
     trackEvent("pricing_view", null, { source: "direct" });
-    supabase
-      .from("launch_quota")
-      .select("total_slots, used_slots")
-      .single()
-      .then(({ data }) => {
-        if (data) setSlotsRemaining(Math.max(0, data.total_slots - data.used_slots));
-      });
   }, []);
 
   return (
