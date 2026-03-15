@@ -160,10 +160,10 @@ export default function SystemStatus() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Activity className="text-primary" size={24} />
-              System Status
+              Statut des systèmes
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Monitoring temps réel — WiinupMax 100% Palantir-killer
+              Monitoring temps réel — WIINUP MAX
             </p>
           </div>
           <button
