@@ -409,7 +409,7 @@ export default function Pricing() {
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 text-xs text-muted-foreground">
           {[
             { icon: Shield, label: "Paiement sécurisé Stripe" },
-            { icon: Globe, label: "Données protégées · RGPD" },
+            { icon: Shield, label: "Données protégées · RGPD" },
             { icon: Zap, label: "Accès immédiat après paiement" },
             { icon: CheckCircle2, label: "Tarif garanti à vie" },
           ].map(({ icon: Icon, label }) => (
