@@ -620,7 +620,8 @@ Deno.serve(async (req: Request) => {
         success: true,
         state: "awaiting_final_closing",
         payment_link: paymentLink,
-        commission_7pct: Math.round((amount ?? 0) * 0.07 * 100) / 100,
+        // SECURITY: renamed column — still calculates 12% total royalty (7% platform + 5% engine fee)
+        royalty_12pct: Math.round((amount ?? 0) * 0.12 * 100) / 100,
         message: "Appel validé. Contrat Stripe généré. En attente du closing final.",
       }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
