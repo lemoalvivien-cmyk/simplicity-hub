@@ -163,3 +163,11 @@ project_id = "usnriklfiagazpffsqew"
 
   [functions.ada-training-pipeline]
     verify_jwt = false
+
+  # ── Transactional business flows ────────────────────────────────────────────
+  # SECURITY: auth validated in-code via supabase.auth.getUser()
+  [functions.submit-introduction]
+    verify_jwt = false
+
+  [functions.validate-introduction]
+    verify_jwt = false

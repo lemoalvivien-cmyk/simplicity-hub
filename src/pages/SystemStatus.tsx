@@ -1,6 +1,5 @@
 /**
- * System Status — Monitoring temps réel
- * WiinupMax 100% Palantir-killer — zéro bug — cash machine live
+ * Statut système — Monitoring temps réel WIINUP MAX
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
