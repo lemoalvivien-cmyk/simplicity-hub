@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import {
   CheckCircle2, Zap, Users, Flame, ArrowRight,
-  Mic, Bot, TrendingUp, Coins, Shield, Globe, ChevronDown, ChevronUp,
+  Mic, Bot, TrendingUp, Coins, Shield, ChevronDown, ChevronUp,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { trackEvent } from "@/lib/analytics";
+import { useFounderSlots } from "@/hooks/useFounderSlots";
 
 // ─── Feature blocks ────────────────────────────────────────────────────────
 const founderFeatures = [
