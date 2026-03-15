@@ -1,0 +1,73 @@
+#!/usr/bin/env sh
+# ─────────────────────────────────────────────────────────────────────────────
+# WIINUP MAX — pre-commit secret scanner
+# Blocks any commit that contains known secret patterns.
+# Patterns covered:
+#   sk_live_           → Stripe live secret key
+#   sk_test_           → Stripe test secret key  
+#   whsec_             → Stripe webhook secret
+#   eyJhbGci           → JWT (base64 header — covers service_role, anon, access tokens)
+#   service_role       → Supabase service role keyword
+#   SUPABASE_SERVICE   → Supabase service role env var
+#   re_                → Resend API key prefix
+#   rk_live_           → Stripe restricted key
+# ─────────────────────────────────────────────────────────────────────────────
+
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔐 [pre-commit] Scanning staged files for secrets..."
+
+# Get list of staged files (non-deleted)
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$STAGED" ]; then
+  echo "✅ No staged files — nothing to scan."
+  exit 0
+fi
+
+# Patterns that must never appear in committed files
+PATTERNS=(
+  "sk_live_"
+  "sk_test_"
+  "whsec_"
+  "eyJhbGci"
+  "service_role"
+  "SUPABASE_SERVICE_ROLE"
+  "re_[A-Za-z0-9]{32,}"
+  "rk_live_"
+)
+
+FOUND=0
+
+for FILE in $STAGED; do
+  # Skip binary files and known-safe generated/lock files
+  case "$FILE" in
+    *.png|*.jpg|*.ico|*.svg|*.woff*|bun.lock*|package-lock.json) continue ;;
+  esac
+
+  for PATTERN in "${PATTERNS[@]}"; do
+    if git diff --cached -- "$FILE" | grep -qE "\+.*${PATTERN}"; then
+      echo ""
+      echo "🚨 SECRET DETECTED in staged file: $FILE"
+      echo "   Pattern matched: ${PATTERN}"
+      echo ""
+      FOUND=1
+    fi
+  done
+done
+
+if [ "$FOUND" -eq 1 ]; then
+  echo "─────────────────────────────────────────────────────────────────"
+  echo "❌ COMMIT BLOCKED — Secret(s) detected in staged changes."
+  echo ""
+  echo "   All secrets must be stored in Lovable Cloud > Secrets."
+  echo "   NEVER commit API keys, JWT tokens, or webhook secrets."
+  echo ""
+  echo "   To bypass (emergency only): git commit --no-verify"
+  echo "   Then immediately rotate the exposed key."
+  echo "─────────────────────────────────────────────────────────────────"
+  exit 1
+fi
+
+echo "✅ [pre-commit] No secrets detected. Proceeding with commit."
+exit 0

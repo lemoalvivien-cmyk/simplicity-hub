@@ -7,14 +7,41 @@
 
 ---
 
-> ## 🔥 SÉCURITÉ CRITIQUE — À FAIRE EN PREMIER
-> **Si `.env` est visible sur GitHub → double-clique sur `FIX-SECURITY-FINAL.bat`**
-> ```bash
-> git rm --cached .env
-> git add .gitignore
-> git commit -m "SECURITY: remove .env from git history forever"
-> git push
-> ```
+## 🔐 Gestion des secrets — Règle absolue
+
+> **Toutes les clés et secrets sont gérés exclusivement via Lovable Cloud. Jamais dans le repo.**
+
+| Secret | Où le configurer |
+|--------|-----------------|
+| `STRIPE_SECRET_KEY` | Lovable Cloud → Secrets |
+| `STRIPE_WEBHOOK_SECRET` | Lovable Cloud → Secrets |
+| `CRON_SECRET` | Lovable Cloud → Secrets |
+| `RESEND_API_KEY` | Lovable Cloud → Secrets |
+| `ELEVENLABS_API_KEY` | Lovable Cloud → Secrets |
+| `BANK_WEBHOOK_SECRET` | Lovable Cloud → Secrets |
+| `LOVABLE_API_KEY` | Auto-provisionné par Lovable Cloud |
+
+Les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_PUBLISHABLE_KEY` sont des clés **publiques** (anon/publishable) — elles peuvent figurer dans le code frontend. **Aucun secret privé ne doit jamais être commité.**
+
+Un hook **pre-commit Husky** bloque automatiquement tout commit contenant `sk_live_`, `whsec_`, `eyJhbGci` (JWT), `service_role`, etc.
+
+### Si un secret a été exposé dans l'historique Git
+
+```bash
+# 1. Purger l'historique (nécessite git-filter-repo)
+pip install git-filter-repo
+git filter-repo --path .env --invert-paths --force
+
+# 2. Forcer la mise à jour du remote
+git push origin --force --all
+
+# OU — solution Windows rapide (double-clic) :
+# FIX-SECURITY-FINAL.bat
+```
+
+**Après la purge, rotation immédiate obligatoire de toutes les clés exposées :**
+- Stripe : https://dashboard.stripe.com/apikeys → Roll key
+- Supabase : Lovable Cloud → Settings → API → Regenerate
 
 ---
 
@@ -90,17 +117,14 @@ npm run build         # Production build
 
 ## Variables d'environnement
 
-Gérées automatiquement par Lovable Cloud. Ne pas modifier `.env`.
+**Règle absolue : aucun secret dans le repo. Tout est géré via Lovable Cloud → Secrets.**
 
-| Variable | Usage |
-|---|---|
-| `VITE_SUPABASE_URL` | URL projet |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clé anon publique |
-| `STRIPE_SECRET_KEY` | Secret Stripe (Edge Functions) |
-| `STRIPE_WEBHOOK_SECRET` | Validation webhooks Stripe |
-| `LOVABLE_API_KEY` | Gateway AI (auto-provisionné) |
-| `RESEND_API_KEY` | Email transactionnel + alertes monitoring |
-| `BANK_WEBHOOK_SECRET` | Signature PSD2 bank-webhook |
+| Variable | Type | Description |
+|---|---|---|
+| `VITE_SUPABASE_URL` | ✅ Public | URL projet — auto-injectée |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | ✅ Public | Clé anon — auto-injectée |
+| Tous les autres secrets | 🔒 Vault | Configurés dans Lovable Cloud → Secrets uniquement |
+
 
 ---
 
