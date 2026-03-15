@@ -347,18 +347,6 @@ export default function Pricing() {
             {/* CTA */}
             <div className="px-7 pb-7 pt-2 flex flex-col gap-3">
               <ActivateButton />
-              <Link
-                to="/dashboard?tab=bank"
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border transition-colors duration-200"
-                style={{
-                  borderColor: "hsl(210 85% 45% / 0.4)",
-                  background: "hsl(210 85% 15% / 0.25)",
-                  color: "hsl(210 85% 72%)",
-                }}
-              >
-                <Landmark size={14} />
-                Connect Bank PSD2 — Live Cash Flow
-              </Link>
               <p className="text-center text-xs text-muted-foreground">
                 Accès immédiat après paiement · RGPD · Facture annuelle
               </p>
