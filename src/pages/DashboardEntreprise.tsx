@@ -93,8 +93,7 @@ export default function DashboardEntreprise() {
   const { user, profile } = useAuth();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [generatingLead, setGeneratingLead] = useState(false);
-  // RoyaltyFuturesTab hidden for launch — re-enable post-launch
-  const [activeTab] = useState<"cockpit">("cockpit");
+  // RoyaltyFuturesTab hidden for launch — remove once re-enabled
   const queryClient = useQueryClient();
 
   const prenom = profile?.prenom ?? "vous";
