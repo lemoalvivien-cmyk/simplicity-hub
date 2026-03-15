@@ -5,14 +5,19 @@
  * Called by the DB trigger on_introduction_validated_pipeline via pg_net.
  *
  * POST body: { introduction_id: string }
+ *
+ * SECURITY: Internal function called exclusively by pg_net (DB trigger).
+ * Requires x-internal-secret header matching INTERNAL_FUNCTION_SECRET env var.
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { sendIntroValideeEmail } from "../_shared/emailNotifications.ts";
 
-const SUPABASE_URL     = Deno.env.get("SUPABASE_URL") ?? "";
-const SERVICE_KEY      = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const SUPABASE_URL    = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_KEY     = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+// SECURITY: Shared secret for internal pg_net → edge function calls.
+const INTERNAL_SECRET = Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? "";
 
 const log = (step: string, d?: unknown) =>
   console.log(`[notify-intro-validated] ${step}${d ? " — " + JSON.stringify(d) : ""}`);
@@ -20,6 +25,22 @@ const log = (step: string, d?: unknown) =>
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // ── SECURITY: Internal secret validation — fail-closed ────────────────────
+  if (!INTERNAL_SECRET || INTERNAL_SECRET.trim().length < 16) {
+    console.error("[notify-intro-validated] SECURITY: INTERNAL_FUNCTION_SECRET not configured — fail-closed");
+    return new Response(JSON.stringify({ error: "Internal endpoint not configured" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const callerSecret = req.headers.get("x-internal-secret");
+  if (!callerSecret || callerSecret !== INTERNAL_SECRET) {
+    console.warn("[notify-intro-validated] SECURITY: Invalid or missing x-internal-secret — rejected");
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 

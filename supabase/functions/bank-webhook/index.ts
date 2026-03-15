@@ -1,10 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { trackRequest, logFunctionError } from "../_shared/monitoring.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const WEBHOOK_SECRET = Deno.env.get("BANK_WEBHOOK_SECRET") ?? "";
+const SUPABASE_URL    = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_KEY     = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+// SECURITY: BANK_WEBHOOK_SECRET is REQUIRED. Empty secret = fail-closed (500).
+const WEBHOOK_SECRET  = Deno.env.get("BANK_WEBHOOK_SECRET") ?? "";
 
 Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -14,15 +14,35 @@ Deno.serve(async (req: Request) => {
     return new Response("Method Not Allowed", { status: 405 });
   }
 
-  // ── Webhook signature validation (fail-fast) ──────────────────────────────
-  if (WEBHOOK_SECRET) {
-    const sig = req.headers.get("x-bank-signature");
-    if (sig !== WEBHOOK_SECRET) {
-      return new Response(JSON.stringify({ error: "Invalid webhook signature" }), {
-        status: 401,
+  // ── SECURITY: Fail-closed — secret MUST be configured ───────────────────
+  // If BANK_WEBHOOK_SECRET is empty or not set, reject ALL requests.
+  // This prevents any data ingestion when the server is misconfigured.
+  if (!WEBHOOK_SECRET || WEBHOOK_SECRET.trim().length < 16) {
+    console.error("[bank-webhook] SECURITY: BANK_WEBHOOK_SECRET not configured or too short — fail-closed");
+    return new Response(
+      JSON.stringify({ error: "Webhook endpoint not configured" }),
+      {
+        status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+      }
+    );
+  }
+
+  // ── SECURITY: Webhook signature validation — mandatory, no bypass ─────────
+  const sig = req.headers.get("x-bank-signature");
+  if (!sig) {
+    console.warn("[bank-webhook] SECURITY: Missing x-bank-signature header");
+    return new Response(JSON.stringify({ error: "Missing webhook signature" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  if (sig !== WEBHOOK_SECRET) {
+    console.warn("[bank-webhook] SECURITY: Invalid webhook signature — rejected");
+    return new Response(JSON.stringify({ error: "Invalid webhook signature" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -83,6 +103,19 @@ Deno.serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // ── Audit log ─────────────────────────────────────────────────────────────
+    await supabase.from("etg_audit_log").insert({
+      action:      "bank_webhook_received",
+      entity_type: "live_cash_flow",
+      user_id,
+      after_state: {
+        amount:       transaction.amount ?? null,
+        counterparty: transaction.counterparty ?? transaction.description ?? null,
+        cash_weight,
+        auth_path:    "x-bank-signature",
+      },
+    }).catch(() => null);
 
     // ── Trigger OpenClaw analysis (best-effort) ───────────────────────────────
     try {

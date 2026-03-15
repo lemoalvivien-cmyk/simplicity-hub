@@ -1,101 +1,165 @@
 project_id = "usnriklfiagazpffsqew"
 
+# SECURITY: verify_jwt = false is MANDATORY for all functions in Lovable Cloud.
+# The gateway uses ES256 signing keys that are incompatible with the built-in JWT
+# verification. Authentication is enforced IN-CODE via getClaims()/getUser().
+# Do NOT set verify_jwt = true — it will reject all legitimate requests.
+
 [functions]
-  [functions.ada-orchestrator]
-    verify_jwt = false
-  [functions.ada-voice-call]
-    verify_jwt = false
-  [functions.ada-training-pipeline]
+  # ── Public webhooks (server-to-server — no user JWT) ───────────────────────
+  [functions.stripe-webhook]
+    verify_jwt = false  # SECURITY: validated via Stripe HMAC signature
+
+  [functions.auth-email-hook]
+    verify_jwt = false  # SECURITY: called by Supabase auth system
+
+  [functions.track-click]
+    verify_jwt = false  # SECURITY: public pixel endpoint
+
+  [functions.bank-webhook]
+    verify_jwt = false  # SECURITY: validated via x-bank-signature + fail-closed
+
+  # ── Internal notify functions (DB triggers via pg_net) ─────────────────────
+  # SECURITY: validated in-code via x-internal-secret header
+  [functions.notify-gain-paye]
     verify_jwt = false
 
+  [functions.notify-intro-validated]
+    verify_jwt = false
+
+  [functions.notify-royalty-split]
+    verify_jwt = false
+
+  [functions.send-welcome-email]
+    verify_jwt = false
+
+  [functions.send-reactivation-email]
+    verify_jwt = false  # SECURITY: additionally validated via admin JWT
+
+  # ── ETG Graph Engine ────────────────────────────────────────────────────────
   [functions.etg-aggregate]
     verify_jwt = false
+
   [functions.etg-predict]
     verify_jwt = false
+
   [functions.etg-ingest]
     verify_jwt = false
 
+  # ── AI Functions ────────────────────────────────────────────────────────────
   [functions.ai-jarvis]
     verify_jwt = false
+
   [functions.ai-lead-scoring]
     verify_jwt = false
+
   [functions.ai-matching]
     verify_jwt = false
+
   [functions.ai-opportunity-analysis]
     verify_jwt = false
+
   [functions.ai-prospection]
     verify_jwt = false
+
   [functions.ai-sequence-generator]
     verify_jwt = false
-  [functions.auth-email-hook]
-    verify_jwt = false
+
+  # ── Billing ─────────────────────────────────────────────────────────────────
   [functions.business-alert-dispatcher]
     verify_jwt = false
+
   [functions.check-subscription]
     verify_jwt = false
+
   [functions.create-checkout]
     verify_jwt = false
+
   [functions.customer-portal]
     verify_jwt = false
+
   [functions.deal-radar-score]
     verify_jwt = false
+
+  # ── Voice AI ────────────────────────────────────────────────────────────────
   [functions.elevenlabs-tts]
     verify_jwt = false
+
   [functions.elevenlabs-voice-token]
     verify_jwt = false
-  [functions.notify-gain-paye]
+
+  # ── OpenClaw Swarm ──────────────────────────────────────────────────────────
+  [functions.openclaw-autonomous-swarm]
     verify_jwt = false
-  [functions.notify-intro-validated]
-    verify_jwt = false
+
   [functions.openclaw-channel-dispatch]
     verify_jwt = false
+
   [functions.openclaw-channel-probe]
     verify_jwt = false
+
   [functions.openclaw-dossier-sync]
     verify_jwt = false
+
   [functions.openclaw-event-bus]
     verify_jwt = false
+
   [functions.openclaw-gateway]
     verify_jwt = false
+
   [functions.openclaw-generate]
     verify_jwt = false
+
   [functions.openclaw-generate-packs]
     verify_jwt = false
+
   [functions.openclaw-graph-engine]
     verify_jwt = false
+
   [functions.openclaw-healthcheck]
     verify_jwt = false
+
   [functions.openclaw-job-executor]
     verify_jwt = false
+
   [functions.openclaw-kill-switch]
     verify_jwt = false
+
   [functions.openclaw-lead-generator]
     verify_jwt = false
+
   [functions.openclaw-scheduler]
     verify_jwt = false
+
   [functions.openclaw-smoke-test]
     verify_jwt = false
+
   [functions.openclaw-status]
     verify_jwt = false
+
   [functions.openclaw-validate]
     verify_jwt = false
+
+  # ── Payout & Promo ──────────────────────────────────────────────────────────
   [functions.process-email-queue]
     verify_jwt = false
+
   [functions.process-pending-payouts]
-    verify_jwt = false
+    verify_jwt = false  # SECURITY: validated via admin JWT or x-cron-secret
+
   [functions.redeem-promo]
     verify_jwt = false
-  [functions.send-reactivation-email]
-    verify_jwt = false
-  [functions.send-welcome-email]
-    verify_jwt = false
-  [functions.stripe-webhook]
-    verify_jwt = false
-  [functions.track-click]
-    verify_jwt = false
+
+  # ── Misc ────────────────────────────────────────────────────────────────────
   [functions.insights-api]
     verify_jwt = false
+
+  # ── ADA Voice Agent ─────────────────────────────────────────────────────────
   [functions.ada-orchestrator]
     verify_jwt = false
+
   [functions.ada-voice-call]
+    verify_jwt = false
+
+  [functions.ada-training-pipeline]
     verify_jwt = false

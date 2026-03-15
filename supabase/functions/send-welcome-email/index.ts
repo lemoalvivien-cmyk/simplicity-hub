@@ -5,14 +5,19 @@
  * user confirms their account. Sends a branded welcome email via Resend.
  *
  * POST body: { user_id: string, email: string, prenom?: string }
+ *
+ * SECURITY: Internal function called by pg_net (DB trigger).
+ * Requires x-internal-secret header matching INTERNAL_FUNCTION_SECRET env var.
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { sendWelcomeEmail } from "../_shared/emailNotifications.ts";
 
-const SUPABASE_URL   = Deno.env.get("SUPABASE_URL") ?? "";
-const SERVICE_KEY    = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const SUPABASE_URL    = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_KEY     = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+// SECURITY: Shared secret for internal pg_net → edge function calls.
+const INTERNAL_SECRET = Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? "";
 
 const log = (step: string, d?: unknown) =>
   console.log(`[send-welcome-email] ${step}${d ? " — " + JSON.stringify(d) : ""}`);
@@ -20,6 +25,23 @@ const log = (step: string, d?: unknown) =>
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // ── SECURITY: Internal secret validation — fail-closed ────────────────────
+  // If INTERNAL_FUNCTION_SECRET not configured, reject all calls (misconfiguration).
+  if (!INTERNAL_SECRET || INTERNAL_SECRET.trim().length < 16) {
+    console.error("[send-welcome-email] SECURITY: INTERNAL_FUNCTION_SECRET not configured — fail-closed");
+    return new Response(JSON.stringify({ error: "Internal endpoint not configured" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const callerSecret = req.headers.get("x-internal-secret");
+  if (!callerSecret || callerSecret !== INTERNAL_SECRET) {
+    console.warn("[send-welcome-email] SECURITY: Invalid or missing x-internal-secret — rejected");
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const body = await req.json().catch(() => ({}));

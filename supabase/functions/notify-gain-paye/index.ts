@@ -5,14 +5,21 @@
  * Triggered by the DB trigger trg_notify_gain_paye via pg_net.
  *
  * POST body: { gain_id: string, facilitateur_id: string, montant: number }
+ *
+ * SECURITY: This is an internal function called by pg_net (DB trigger).
+ * It requires x-internal-secret header matching INTERNAL_FUNCTION_SECRET env var.
+ * No external caller should ever reach this without the shared secret.
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { sendGainPayeEmail } from "../_shared/emailNotifications.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const SUPABASE_URL        = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_KEY         = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+// SECURITY: Shared secret for internal pg_net → edge function calls.
+// Must match INTERNAL_FUNCTION_SECRET in Lovable Cloud Secrets.
+const INTERNAL_SECRET     = Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? "";
 
 const log = (step: string, d?: unknown) =>
   console.log(`[notify-gain-paye] ${step}${d ? " — " + JSON.stringify(d) : ""}`);
@@ -21,11 +28,28 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // ── SECURITY: Internal secret validation — fail-closed ────────────────────
+  // If secret not configured on server, reject all requests (misconfiguration).
+  if (!INTERNAL_SECRET || INTERNAL_SECRET.trim().length < 16) {
+    console.error("[notify-gain-paye] SECURITY: INTERNAL_FUNCTION_SECRET not configured — fail-closed");
+    return new Response(JSON.stringify({ error: "Internal endpoint not configured" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const callerSecret = req.headers.get("x-internal-secret");
+  if (!callerSecret || callerSecret !== INTERNAL_SECRET) {
+    console.warn("[notify-gain-paye] SECURITY: Invalid or missing x-internal-secret — rejected");
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
   try {
     const body = await req.json().catch(() => ({}));
-    const gainId: string | null        = body.gain_id ?? null;
+    const gainId: string | null         = body.gain_id ?? null;
     const facilitateurId: string | null = body.facilitateur_id ?? null;
     const montant: number               = body.montant ?? 0;
 
