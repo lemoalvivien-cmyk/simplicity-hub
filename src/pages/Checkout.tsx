@@ -718,14 +718,18 @@ function SuccessScreen({
 
           {/* CTA */}
           <button
-            onClick={() => navigate("/onboarding", { replace: true })}
+            onClick={handleContinue}
             disabled={!isPromo && subLoading && !isActive}
             className="w-full btn-cta py-4 text-base font-bold flex items-center justify-center gap-2.5 disabled:opacity-70"
           >
             {!isPromo && subLoading && !isActive ? (
               <><Loader2 size={16} className="animate-spin" /> Activation en cours…</>
             ) : (
-              <><Sparkles size={16} /> Démarrer mon onboarding<ArrowRight size={16} /></>
+              <>
+                <Sparkles size={16} />
+                {onboardingDone ? "Accéder à mon espace" : "Démarrer mon onboarding"}
+                <ArrowRight size={16} />
+              </>
             )}
           </button>
 
