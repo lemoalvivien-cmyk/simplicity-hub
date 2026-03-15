@@ -736,27 +736,11 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { redeemPromo, startCheckout, refresh, status, loading: subLoading } = useSubscription();
+  const { remaining: slots, loading: quotaLoading, isSoldOut } = useFounderSlots();
 
   const [step, setStep] = useState<Step>(1);
   const [isSuccess, setIsSuccess] = useState(false);
   const [successType, setSuccessType] = useState<SuccessType>("stripe_launch");
-
-  const [slots, setSlots] = useState<number | null>(null);
-  const [quotaLoading, setQuotaLoading] = useState(true);
-
-  // Fetch quota
-  const fetchQuota = useCallback(async (attempt = 0) => {
-    try {
-      setQuotaLoading(true);
-      const { data, error } = await supabase.from("launch_quota").select("total_slots, used_slots").single();
-      if (error || !data) throw new Error("quota fetch failed");
-      setSlots(Math.max(0, data.total_slots - data.used_slots));
-    } catch {
-      if (attempt < 2) setTimeout(() => fetchQuota(attempt + 1), 1500 * (attempt + 1));
-    } finally {
-      setQuotaLoading(false);
-    }
-  }, []);
 
   // Handle Stripe return
   useEffect(() => {
@@ -778,18 +762,11 @@ export default function Checkout() {
       }, 2000);
       return () => clearInterval(poll);
     }
-    fetchQuota();
   }, [searchParams, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Promo step: when promo succeeds → go to success
   const handlePromoSuccess = () => {
     setSuccessType("promo");
     setIsSuccess(true);
-  };
-
-  // Step 2 next: either promo success already handled above, or proceed to step 3
-  const handleStep2Next = () => {
-    setStep(3);
   };
 
   if (isSuccess) {
@@ -801,6 +778,41 @@ export default function Checkout() {
         status={status}
         navigate={navigate}
       />
+    );
+  }
+
+  // ── SOLD OUT screen ──────────────────────────────────────────────────────
+  if (!quotaLoading && isSoldOut) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <PublicNav />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="max-w-md w-full text-center">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+              style={{ background: "hsl(218 20% 88% / 0.08)", border: "1px solid hsl(218 20% 70% / 0.2)" }}
+            >
+              <Lock size={28} className="text-muted-foreground" />
+            </div>
+            <h1 className="font-display text-2xl font-bold text-foreground mb-3">
+              Offre de lancement terminée
+            </h1>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-sm mx-auto">
+              Les 100 places Founder Pass ont toutes été réservées. Merci à tous nos premiers fondateurs pour leur confiance !
+            </p>
+            <Link
+              to="/pricing"
+              className="btn-cta inline-flex items-center gap-2 px-8 py-4 font-bold"
+            >
+              Voir toutes les offres
+              <ArrowRight size={16} />
+            </Link>
+            <p className="text-xs text-muted-foreground mt-4">
+              Inscrivez-vous gratuitement — l'accès facilitateur reste ouvert à tous.
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -817,12 +829,8 @@ export default function Checkout() {
         }}
       >
         <div className="container max-w-4xl">
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-4"
-            style={{ background: "hsl(var(--accent) / 0.15)", border: "1px solid hsl(var(--accent) / 0.4)", color: "hsl(var(--accent))" }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
-            Founder Pass — 100 places max
+          <div className="flex justify-center mb-3">
+            <SlotCounter variant="hero" remaining={slots} loading={quotaLoading} />
           </div>
           <h1 className="font-display font-black text-white text-2xl md:text-3xl tracking-tight mb-2">
             Activez votre accès Founder Pass
@@ -837,46 +845,32 @@ export default function Checkout() {
       <div className="flex-1 py-10">
         <div className="container max-w-4xl">
           <div className="flex gap-8 items-start">
-            {/* Main column */}
             <div className="flex-1 min-w-0">
               <StepIndicator current={step} />
-
               <div
                 className="rounded-2xl border p-6 md:p-8"
                 style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}
               >
                 {step === 1 && (
-                  <StepRecap
-                    slots={slots}
-                    quotaLoading={quotaLoading}
-                    onNext={() => setStep(2)}
-                  />
+                  <StepRecap slots={slots} quotaLoading={quotaLoading} onNext={() => setStep(2)} />
                 )}
                 {step === 2 && (
                   <StepPromo
-                    onNext={handleStep2Next}
+                    onNext={() => setStep(3)}
                     onSkip={() => setStep(3)}
                     redeemPromo={async (code) => {
                       const result = await redeemPromo(code);
-                      if (result.valid) {
-                        setTimeout(() => handlePromoSuccess(), 1600);
-                      }
+                      if (result.valid) setTimeout(() => handlePromoSuccess(), 1600);
                       return result;
                     }}
                     user={user}
                   />
                 )}
                 {step === 3 && (
-                  <StepPayment
-                    user={user}
-                    startCheckout={startCheckout}
-                    onPromoSuccess={handlePromoSuccess}
-                  />
+                  <StepPayment user={user} startCheckout={startCheckout} onPromoSuccess={handlePromoSuccess} />
                 )}
               </div>
             </div>
-
-            {/* Desktop sidebar */}
             <OrderSidebar slots={slots} />
           </div>
         </div>
