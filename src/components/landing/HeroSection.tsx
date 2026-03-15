@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Shield, TrendingUp, Users } from "lucide-react";
-import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
+import SlotCounter from "@/components/landing/SlotCounter";
 import { track } from "@/lib/landingTracking";
 
 const trustItems = [
@@ -22,9 +22,9 @@ export default function HeroSection() {
       />
 
       <div className="container max-w-3xl relative z-10">
-        {/* Urgency banner */}
+        {/* Urgency banner — live realtime */}
         <div className="flex justify-center mb-7">
-          <LaunchQuotaBanner variant="hero" />
+          <SlotCounter variant="hero" />
         </div>
 
         {/* Main headline */}
@@ -48,22 +48,23 @@ export default function HeroSection() {
             </span>
           </h1>
 
-          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/90 mb-5 max-w-xl mx-auto leading-[1.75] font-medium px-2">
-            Founder Pass 99 €/an (100 places max) – ADA prospecte en voix + apporte des affaires + exécute en autonomie 24/7 via swarm + 12&nbsp;% royalty tokenisée WMAX revendable sur secondary market.
+          <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/75 mb-5 max-w-xl mx-auto leading-[1.75] font-medium px-2">
+            Un assistant IA cherche des clients pour vous 24h/24. Vos contacts vous présentent des affaires.
+            Vos <strong className="text-white/90">gains arrivent automatiquement</strong> à chaque affaire signée.
           </p>
 
-          <p className="text-[clamp(0.9rem,2vw,1rem)] text-white/70 font-normal mb-9 max-w-lg mx-auto leading-[1.7] px-2 text-center">
+          <p className="text-[clamp(0.9rem,2vw,1rem)] text-white/60 font-normal mb-9 max-w-lg mx-auto leading-[1.7] px-2 text-center">
             Avec Wiinup, augmentez vos revenus en toute sécurité, sans investir, sans charge mentale et sans changer vos habitudes.
           </p>
 
           {/* CTAs */}
           <div className="flex flex-col items-center gap-3 mb-9 px-2">
             <Link
-              to="/signup"
+              to="/pricing"
               className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto"
               onClick={() => track("cta_hero_enterprise")}
             >
-              Créer mon compte — gratuit
+              Voir l'offre Founder Pass — 99 €/an
               <ArrowRight size={17} />
             </Link>
             <Link
@@ -74,13 +75,13 @@ export default function HeroSection() {
               <Users size={15} />
               Devenir facilitateur — Gratuit
             </Link>
-            <p className="text-white/55 text-xs mt-1">
-              Inscription gratuite · Accès entreprise à 99 €/an
+            <p className="text-white/45 text-xs mt-1">
+              Inscription gratuite · Accès entreprise à 99 €/an · 100 places max
             </p>
           </div>
 
           {/* Trust bar */}
-          <div className="flex flex-wrap items-center justify-center gap-5 text-white/60 text-xs">
+          <div className="flex flex-wrap items-center justify-center gap-5 text-white/55 text-xs">
             {trustItems.map(({ icon: Icon, label }) => (
               <span key={label} className="flex items-center gap-1.5">
                 <Icon size={10} aria-hidden="true" /> {label}
