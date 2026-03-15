@@ -258,28 +258,30 @@ Deno.serve(async (req) => {
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE);
 
   try {
-    // ── Resolve user_id ─────────────────────────────────────────────────────
-    let userId: string | null = null;
-    let mode = "manual";
-
+    // SECURITY: no user_id override allowed — userId is ALWAYS derived from JWT
     const authHeader = req.headers.get("Authorization");
-    if (authHeader?.startsWith("Bearer ") && authHeader !== `Bearer ${SUPABASE_SERVICE}`) {
-      userId = await getUserFromToken(req);
-    }
-
-    const body = await req.json().catch(() => ({}));
-    if (!userId) {
-      userId = body?.user_id ?? null;
-      mode = body?.mode ?? "cron";
-    }
-    if (body?.mode === "autopilot") mode = "autopilot";
-
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "Unauthorized — user_id required" }), {
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const anonSb = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authErr } = await anonSb.auth.getUser();
+    if (authErr || !user?.id) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const userId = user.id;
+
+    const body = await req.json().catch(() => ({}));
+    const mode = body?.mode === "autopilot" ? "autopilot" : "manual";
 
     // ── Rate-limit ──────────────────────────────────────────────────────────
     const rl = await checkRateLimit(userId, "openclaw-lead-generator", 100);

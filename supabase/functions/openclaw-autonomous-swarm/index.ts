@@ -46,8 +46,11 @@ Deno.serve(async (req: Request) => {
   const elapsed = startTimer();
 
   try {
+    // SECURITY: no user_id override allowed — userId is ALWAYS derived from JWT
+    const userId = user.id;
+
     const body = await req.json();
-    const { user_id, tx } = body;
+    const { tx } = body;
 
     if (!tx) {
       return new Response(JSON.stringify({ error: "tx is required" }), {
@@ -55,7 +58,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const targetUserId = user_id ?? user.id;
+    const targetUserId = userId;
     const results: Record<string, unknown> = {};
 
     // ── Step 1: AI Matching — find relevant opportunities ────────────────────
