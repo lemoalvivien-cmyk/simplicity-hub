@@ -1,12 +1,12 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import {
   CheckCircle2, Zap, Users, Flame, ArrowRight,
-  Mic, Bot, TrendingUp, Coins, Shield, Globe, ChevronDown, ChevronUp,
+  Mic, Bot, TrendingUp, Coins, Shield, ChevronDown, ChevronUp,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { useFounderSlots } from "@/hooks/useFounderSlots";
 
 // ─── Feature blocks ────────────────────────────────────────────────────────
 const founderFeatures = [
@@ -203,17 +203,11 @@ function ActivateButton() {
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 export default function Pricing() {
-  const [slotsRemaining, setSlotsRemaining] = useState(100);
+  const { remaining, loading: slotsLoading } = useFounderSlots();
+  const slotsRemaining = remaining ?? 100;
 
   useEffect(() => {
     trackEvent("pricing_view", null, { source: "direct" });
-    supabase
-      .from("launch_quota")
-      .select("total_slots, used_slots")
-      .single()
-      .then(({ data }) => {
-        if (data) setSlotsRemaining(Math.max(0, data.total_slots - data.used_slots));
-      });
   }, []);
 
   return (
@@ -414,7 +408,7 @@ export default function Pricing() {
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 text-xs text-muted-foreground">
           {[
             { icon: Shield, label: "Paiement sécurisé Stripe" },
-            { icon: Globe, label: "Données protégées · RGPD" },
+            { icon: Shield, label: "Données protégées · RGPD" },
             { icon: Zap, label: "Accès immédiat après paiement" },
             { icon: CheckCircle2, label: "Tarif garanti à vie" },
           ].map(({ icon: Icon, label }) => (

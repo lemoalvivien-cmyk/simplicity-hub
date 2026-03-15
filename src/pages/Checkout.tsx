@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import {
@@ -474,11 +474,9 @@ function StepPromo({
 function StepPayment({
   user,
   startCheckout,
-  onPromoSuccess,
 }: {
   user: { id: string } | null;
   startCheckout: () => Promise<{ offer_type?: string }>;
-  onPromoSuccess: () => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -604,16 +602,26 @@ function SuccessScreen({
   prenom,
   subLoading,
   status,
+  onboardingDone,
   navigate,
 }: {
   successType: SuccessType;
   prenom: string | null;
   subLoading: boolean;
   status: string;
+  onboardingDone: boolean;
   navigate: ReturnType<typeof useNavigate>;
 }) {
   const isPromo = successType === "promo";
   const isActive = isAccessActive(status as Parameters<typeof isAccessActive>[0]);
+
+  const handleContinue = () => {
+    if (onboardingDone) {
+      navigate("/dashboard", { replace: true });
+    } else {
+      navigate("/onboarding", { replace: true });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -710,14 +718,18 @@ function SuccessScreen({
 
           {/* CTA */}
           <button
-            onClick={() => navigate("/onboarding", { replace: true })}
+            onClick={handleContinue}
             disabled={!isPromo && subLoading && !isActive}
             className="w-full btn-cta py-4 text-base font-bold flex items-center justify-center gap-2.5 disabled:opacity-70"
           >
             {!isPromo && subLoading && !isActive ? (
               <><Loader2 size={16} className="animate-spin" /> Activation en cours…</>
             ) : (
-              <><Sparkles size={16} /> Démarrer mon onboarding<ArrowRight size={16} /></>
+              <>
+                <Sparkles size={16} />
+                {onboardingDone ? "Accéder à mon espace" : "Démarrer mon onboarding"}
+                <ArrowRight size={16} />
+              </>
             )}
           </button>
 
@@ -776,6 +788,7 @@ export default function Checkout() {
         prenom={profile?.prenom ?? null}
         subLoading={subLoading}
         status={status}
+        onboardingDone={profile?.onboarding_done ?? false}
         navigate={navigate}
       />
     );
@@ -867,7 +880,7 @@ export default function Checkout() {
                   />
                 )}
                 {step === 3 && (
-                  <StepPayment user={user} startCheckout={startCheckout} onPromoSuccess={handlePromoSuccess} />
+                  <StepPayment user={user} startCheckout={startCheckout} />
                 )}
               </div>
             </div>
