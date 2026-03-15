@@ -31,7 +31,8 @@ export default function SlotCounter({
   const isUrgent = remaining !== null && remaining > 0 && remaining <= 10;
   const usedPct = remaining !== null ? Math.round(((total - remaining) / total) * 100) : 0;
 
-  // hasExternal used only to signal intent; no duplicate declarations below
+  void hasExternal; // suppress unused-var lint
+
 
   if (loading && remaining === null) {
     if (variant === "hero") {
