@@ -1,6 +1,6 @@
 /**
  * IntroductionsEntreprise — Liste des introductions reçues côté entreprise.
- * FULLY WIRED: lit et écrit dans Supabase.
+ * FULLY WIRED: lit depuis Supabase, écrit via Edge Functions transactionnelles.
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -11,11 +11,11 @@ import {
   PlayCircle, Zap
 } from "lucide-react";
 import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import LeadIntakeStatus from "@/components/leads/LeadIntakeStatus";
 import LeadActionBadge from "@/components/leads/LeadActionBadge";
-import { promoteLeadToOpportunity } from "@/lib/leadPipeline";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
 import { trackEvent } from "@/lib/analytics";
 
