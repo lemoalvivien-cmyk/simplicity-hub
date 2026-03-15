@@ -21,6 +21,7 @@ import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
+import Success from "./pages/Success";
 import CGU from "./pages/CGU";
 import Confidentialite from "./pages/Confidentialite";
 import Legal from "./pages/Legal";
@@ -117,6 +118,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/success" element={<Success />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />

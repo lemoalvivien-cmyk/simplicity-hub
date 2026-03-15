@@ -1,14 +1,12 @@
 import { Link } from "react-router-dom";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import {
-  CheckCircle2, Zap, Users, Flame, ArrowRight, Landmark,
+  CheckCircle2, Zap, Users, Flame, ArrowRight,
   Mic, Bot, TrendingUp, Coins, Shield, Globe, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
-import { PRICING } from "@/lib/pricingConfig";
-import { useToast } from "@/hooks/use-toast";
 
 // ─── Feature blocks ────────────────────────────────────────────────────────
 const founderFeatures = [
@@ -184,46 +182,21 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-// ─── CTA: Activer Founder Pass ─────────────────────────────────────────────
+// ─── CTA: Activer Founder Pass → /checkout ────────────────────────────────
 function ActivateButton() {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-
-  const handleClick = async () => {
+  const handleClick = () => {
     trackEvent("cta_click", null, { source: "pricing_founder_pass" });
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = "/signup";
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { price_id: PRICING.launch.price_id },
-      });
-      if (error || !data?.url) throw new Error(error?.message ?? "Erreur checkout");
-      window.location.href = data.url;
-    } catch {
-      toast({
-        title: "Inscription requise",
-        description: "Créez votre compte pour accéder au paiement.",
-        variant: "destructive",
-      });
-      setTimeout(() => { window.location.href = "/signup"; }, 1200);
-    } finally {
-      setLoading(false);
-    }
+    window.location.href = "/checkout";
   };
 
   return (
     <button
       onClick={handleClick}
-      disabled={loading}
-      className="btn-cta w-full flex items-center justify-center gap-2 py-4 text-base font-bold disabled:opacity-60"
+      className="btn-cta w-full flex items-center justify-center gap-2 py-4 text-base font-bold"
     >
       <Zap size={16} strokeWidth={2.5} />
-      {loading ? "Chargement…" : "Activer Founder Pass — 99 € TTC/an"}
-      {!loading && <ArrowRight size={16} />}
+      Activer Founder Pass — 99 € TTC/an
+      <ArrowRight size={16} />
     </button>
   );
 }
@@ -372,18 +345,6 @@ export default function Pricing() {
             {/* CTA */}
             <div className="px-7 pb-7 pt-2 flex flex-col gap-3">
               <ActivateButton />
-              <Link
-                to="/dashboard?tab=bank"
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold border transition-colors duration-200"
-                style={{
-                  borderColor: "hsl(210 85% 45% / 0.4)",
-                  background: "hsl(210 85% 15% / 0.25)",
-                  color: "hsl(210 85% 72%)",
-                }}
-              >
-                <Landmark size={14} />
-                Connect Bank PSD2 — Live Cash Flow
-              </Link>
               <p className="text-center text-xs text-muted-foreground">
                 Accès immédiat après paiement · RGPD · Facture annuelle
               </p>
