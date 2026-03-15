@@ -14,7 +14,8 @@
     "verify:quota": "deno run --allow-env --allow-net scripts/verify-quota-flow.ts",
     "verify:quota:gaps": "deno run --allow-env --allow-net scripts/verify-quota-gaps.ts",
     "verify:quota:race": "deno run --allow-env --allow-net scripts/verify-quota-race.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
   },
   "dependencies": {
     "@elevenlabs/react": "^0.14.1",
