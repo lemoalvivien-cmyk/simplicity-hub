@@ -602,16 +602,26 @@ function SuccessScreen({
   prenom,
   subLoading,
   status,
+  onboardingDone,
   navigate,
 }: {
   successType: SuccessType;
   prenom: string | null;
   subLoading: boolean;
   status: string;
+  onboardingDone: boolean;
   navigate: ReturnType<typeof useNavigate>;
 }) {
   const isPromo = successType === "promo";
   const isActive = isAccessActive(status as Parameters<typeof isAccessActive>[0]);
+
+  const handleContinue = () => {
+    if (onboardingDone) {
+      navigate("/dashboard", { replace: true });
+    } else {
+      navigate("/onboarding", { replace: true });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
