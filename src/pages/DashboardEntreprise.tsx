@@ -561,7 +561,7 @@ export default function DashboardEntreprise() {
           )}
         </div>
 
-        </>)}
+        </>
       </div>
     </UserLayout>
   );
