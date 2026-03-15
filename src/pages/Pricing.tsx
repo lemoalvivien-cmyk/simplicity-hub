@@ -184,46 +184,21 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   );
 }
 
-// ─── CTA: Activer Founder Pass ─────────────────────────────────────────────
+// ─── CTA: Activer Founder Pass → /checkout ────────────────────────────────
 function ActivateButton() {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-
-  const handleClick = async () => {
+  const handleClick = () => {
     trackEvent("cta_click", null, { source: "pricing_founder_pass" });
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = "/signup";
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { price_id: PRICING.launch.price_id },
-      });
-      if (error || !data?.url) throw new Error(error?.message ?? "Erreur checkout");
-      window.location.href = data.url;
-    } catch {
-      toast({
-        title: "Inscription requise",
-        description: "Créez votre compte pour accéder au paiement.",
-        variant: "destructive",
-      });
-      setTimeout(() => { window.location.href = "/signup"; }, 1200);
-    } finally {
-      setLoading(false);
-    }
+    window.location.href = "/checkout";
   };
 
   return (
     <button
       onClick={handleClick}
-      disabled={loading}
-      className="btn-cta w-full flex items-center justify-center gap-2 py-4 text-base font-bold disabled:opacity-60"
+      className="btn-cta w-full flex items-center justify-center gap-2 py-4 text-base font-bold"
     >
       <Zap size={16} strokeWidth={2.5} />
-      {loading ? "Chargement…" : "Activer Founder Pass — 99 € TTC/an"}
-      {!loading && <ArrowRight size={16} />}
+      Activer Founder Pass — 99 € TTC/an
+      <ArrowRight size={16} />
     </button>
   );
 }
