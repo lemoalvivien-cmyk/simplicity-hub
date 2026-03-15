@@ -527,6 +527,17 @@ export default function Onboarding() {
   const { user, loading: authLoading, refreshProfile } = useAuth();
   const subscription = useSubscription();
 
+  // ── Pre-select role from URL param (?role=entreprise after Founder Pass payment) ──
+  // This allows /success → /onboarding?role=entreprise to skip the role selection.
+  // useSearchParams is NOT used here to keep stable refs — we read only once on mount.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roleParam = params.get("role");
+    if (roleParam === "entreprise" || roleParam === "facilitateur") {
+      setRole(roleParam as Role);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Stable callbacks ── deps are always [] so identities never change ────────
   const handleRoleChange = useCallback((r: Role) => setRole(r), []);
   const handlePrenomChange = useCallback((v: string) => setPrenom(v), []);
