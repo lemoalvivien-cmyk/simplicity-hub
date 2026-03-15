@@ -57,6 +57,14 @@ export default function ProtectedRoute({
     return <Navigate to="/dashboard" replace />;
   }
 
+  if (entrepriseOnly && role !== "entreprise" && role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (facilitateurOnly && role !== "facilitateur" && role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   // ── ONBOARDING GUARD ────────────────────────────────────────────────────────
   // SECURITY: onboardingDone is derived exclusively from the server-side DB
   // profile. localStorage is NOT consulted for this check — it could be
