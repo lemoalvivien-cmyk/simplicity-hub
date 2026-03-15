@@ -134,8 +134,8 @@ const App = () => (
 
                 {/* ── Dashboards ───────────────────────────── */}
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
-                <Route path="/dashboard/entreprise" element={<ProtectedRoute><DashboardEntreprise /></ProtectedRoute>} />
-                <Route path="/dashboard/facilitateur" element={<ProtectedRoute><DashboardFacilitateur /></ProtectedRoute>} />
+                <Route path="/dashboard/entreprise" element={<ProtectedRoute entrepriseOnly><DashboardEntreprise /></ProtectedRoute>} />
+                <Route path="/dashboard/facilitateur" element={<ProtectedRoute facilitateurOnly><DashboardFacilitateur /></ProtectedRoute>} />
                 <Route path="/pilotage" element={<ProtectedRoute><Pilotage /></ProtectedRoute>} />
 
                 {/* ── Contacts & Actions ───────────────────── */}
@@ -168,7 +168,7 @@ const App = () => (
                 <Route path="/ada/model" element={<ProtectedRoute><ADAModelDashboard /></ProtectedRoute>} />
                 <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                 <Route path="/insights-sales" element={<InsightsSales />} />
-                <Route path="/status" element={<ProtectedRoute><SystemStatus /></ProtectedRoute>} />
+                <Route path="/status" element={<ProtectedRoute adminOnly><SystemStatus /></ProtectedRoute>} />
 
                 {/* ── Admin ────────────────────────────────── */}
                 <Route path="/admin" element={<ProtectedRoute adminOnly><AdminOverview /></ProtectedRoute>} />

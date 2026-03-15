@@ -8,6 +8,8 @@ import { toast } from "sonner";
 interface ProtectedRouteProps {
   children: ReactNode;
   adminOnly?: boolean;
+  entrepriseOnly?: boolean;
+  facilitateurOnly?: boolean;
 }
 
 /** Routes exempt from the subscription paywall (entreprise). */
@@ -16,6 +18,8 @@ const SUBSCRIPTION_EXEMPT_PATHS = ["/checkout", "/onboarding", "/account"];
 export default function ProtectedRoute({
   children,
   adminOnly = false,
+  entrepriseOnly = false,
+  facilitateurOnly = false,
 }: ProtectedRouteProps) {
   const { user, loading, profile, role } = useAuth();
   const subscription = useSubscription();
@@ -50,6 +54,14 @@ export default function ProtectedRoute({
   }
 
   if (adminOnly && role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (entrepriseOnly && role !== "entreprise" && role !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (facilitateurOnly && role !== "facilitateur" && role !== "admin") {
     return <Navigate to="/dashboard" replace />;
   }
 

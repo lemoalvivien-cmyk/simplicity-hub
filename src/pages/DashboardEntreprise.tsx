@@ -10,9 +10,10 @@ import {
   Plus, Sparkles, Check, Phone, Mail, RefreshCw,
   CheckCircle, AlertCircle, TrendingUp, ChevronRight,
   ChevronDown, ChevronUp, CheckCircle2, Flame, Bot,
-  FileText, Briefcase, Users, Coins,
+  FileText, Briefcase, Users,
 } from "lucide-react";
-import RoyaltyFuturesTab from "@/components/dashboard/RoyaltyFuturesTab";
+// RoyaltyFuturesTab hidden for launch — re-enable post-launch
+// import RoyaltyFuturesTab from "@/components/dashboard/RoyaltyFuturesTab";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
@@ -92,7 +93,7 @@ export default function DashboardEntreprise() {
   const { user, profile } = useAuth();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [generatingLead, setGeneratingLead] = useState(false);
-  const [activeTab, setActiveTab] = useState<"cockpit" | "royalties">("cockpit");
+  // RoyaltyFuturesTab hidden for launch — remove once re-enabled
   const queryClient = useQueryClient();
 
   const prenom = profile?.prenom ?? "vous";
@@ -176,35 +177,9 @@ export default function DashboardEntreprise() {
     <UserLayout role="entreprise" jarvisContext="dashboard-entreprise">
       <div className="max-w-2xl mx-auto space-y-5">
 
-        {/* ═══ TABS ════════════════════════════════════════════ */}
-        <div className="flex gap-1 p-1 rounded-2xl border border-border" style={{ background: "hsl(var(--card))" }}>
-          {([
-            { key: "cockpit", label: "Mon tableau de bord", icon: Brain },
-            { key: "royalties", label: "Mes gains", icon: Coins },
-          ] as const).map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => setActiveTab(key)}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
-              style={activeTab === key ? {
-                background: "var(--gradient-primary)",
-                color: "#fff",
-                boxShadow: "0 2px 12px hsl(var(--primary) / 0.3)",
-              } : {
-                color: "hsl(var(--muted-foreground))",
-              }}
-            >
-              <Icon size={14} />
-              {label}
-            </button>
-          ))}
-        </div>
 
-        {/* ═══ ROYALTY FUTURES TAB ════════════════════════════ */}
-        {activeTab === "royalties" && <RoyaltyFuturesTab />}
-
-        {/* ═══ COCKPIT TAB ═══════════════════════════════════ */}
-        {activeTab === "cockpit" && (<>
+        {/* ═══ COCKPIT ═══════════════════════════════════════ */}
+        <>
         <div className="rounded-2xl p-5 border-2"
           style={{ borderColor: "hsl(var(--accent) / 0.6)", background: "hsl(24 80% 52% / 0.06)" }}>
           <div className="flex items-start justify-between gap-4">
@@ -586,7 +561,7 @@ export default function DashboardEntreprise() {
           )}
         </div>
 
-        </>)}
+        </>
       </div>
     </UserLayout>
   );
