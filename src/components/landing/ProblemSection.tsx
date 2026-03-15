@@ -87,10 +87,7 @@ export default function ProblemSection() {
           }}
         >
           <p className="text-foreground text-sm font-semibold">
-            Wiinup Max règle tout ça — dans un seul système.{" "}
-            <span className="text-muted-foreground font-normal">
-              Sans 3 semaines de formation. Sans changer votre façon de travailler.
-            </span>
+            Avec Wiinup, augmentez vos revenus en toute sécurité, sans investir, sans charge mentale, ni bousculer vos habitudes.
           </p>
         </div>
       </div>
