@@ -48,15 +48,18 @@ const guarantees = [
 
 export default function Success() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, profile } = useAuth();
   const { status, loading: subLoading, refresh } = useSubscription();
 
   const prenom = profile?.prenom ?? null;
   const isActive = isAccessActive(status);
+  // Read offer param from Stripe redirect (?offer=launch) for analytics
+  const offerParam = searchParams.get("offer") ?? "launch";
 
   // Poll subscription after Stripe redirect
   useEffect(() => {
-    trackEvent("success_view", user?.id ?? null, { source: "post_payment" });
+    trackEvent("success_view", user?.id ?? null, { source: "post_payment", offer: offerParam });
     refresh();
     let attempts = 0;
     const poll = setInterval(async () => {
