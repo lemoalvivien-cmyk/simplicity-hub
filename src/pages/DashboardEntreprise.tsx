@@ -12,7 +12,8 @@ import {
   ChevronDown, ChevronUp, CheckCircle2, Flame, Bot,
   FileText, Briefcase, Users,
 } from "lucide-react";
-import RoyaltyFuturesTab from "@/components/dashboard/RoyaltyFuturesTab";
+// RoyaltyFuturesTab hidden for launch — re-enable post-launch
+// import RoyaltyFuturesTab from "@/components/dashboard/RoyaltyFuturesTab";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import FirstIntroChecklist from "@/components/activation/FirstIntroChecklist";
