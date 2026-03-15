@@ -209,7 +209,7 @@ export default function WhyDifferentSection() {
             {" "}— au lieu de 990 €.
           </p>
           <Link
-            to="/signup"
+            to="/checkout"
             className="btn-cta inline-flex items-center gap-2 px-8 py-4"
             onClick={() => track("cta_why_different")}
           >

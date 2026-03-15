@@ -90,7 +90,7 @@ export default function HowItWorksEntrepriseSection() {
 
         <div className="mt-10 text-center">
           <Link
-            to="/signup"
+            to="/checkout"
             className="btn-cta inline-flex items-center gap-2 px-8 py-4 text-base"
             onClick={() => track("cta_howitworks")}
           >
@@ -98,7 +98,7 @@ export default function HowItWorksEntrepriseSection() {
             <ArrowRight size={16} />
           </Link>
           <p className="text-[11px] text-muted-foreground mt-3">
-            Inscription gratuite · Offre entreprise 99 € TTC / an
+            Accès immédiat · 30 jours satisfait ou remboursé · Paiement sécurisé Stripe
           </p>
         </div>
 
