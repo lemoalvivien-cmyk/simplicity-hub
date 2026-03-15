@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
       customer_email: customerId ? undefined : user.email!,
       line_items: [{ price: selectedPriceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${safeOrigin}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}&offer=${offerType}`,
+      success_url: `${safeOrigin}/success?session_id={CHECKOUT_SESSION_ID}&offer=${offerType}`,
       cancel_url: `${safeOrigin}/checkout?canceled=true`,
       metadata: { user_id: user.id, offer_type: offerType },
       subscription_data: { metadata: { user_id: user.id, offer_type: offerType } },

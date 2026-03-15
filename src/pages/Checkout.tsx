@@ -619,7 +619,8 @@ function SuccessScreen({
     if (onboardingDone) {
       navigate("/dashboard", { replace: true });
     } else {
-      navigate("/onboarding", { replace: true });
+      // Pre-select "entreprise" role — user just paid for Founder Pass
+      navigate("/onboarding?role=entreprise", { replace: true });
     }
   };
 

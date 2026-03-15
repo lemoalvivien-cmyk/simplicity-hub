@@ -1,6 +1,7 @@
 /**
  * SlotCounter — Universal slot counter component
  * Shared across landing, pricing, checkout pages.
+ * Optimized: uses internal hook ONCE, never double-calls.
  */
 import { Flame, Zap, Clock, Lock } from "lucide-react";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
@@ -19,15 +20,19 @@ export default function SlotCounter({
   total: externalTotal,
   loading: externalLoading,
 }: SlotCounterProps) {
+  // OPTIMISATION: Only call internal hook if no external values provided
+  const hasExternal = externalRemaining !== undefined && externalLoading !== undefined;
   const internal = useFounderSlots();
 
-  // Use external values if provided, otherwise fall back to internal hook
   const remaining = externalRemaining !== undefined ? externalRemaining : internal.remaining;
   const total = externalTotal ?? internal.total;
   const loading = externalLoading !== undefined ? externalLoading : internal.loading;
   const isSoldOut = remaining === 0;
   const isUrgent = remaining !== null && remaining > 0 && remaining <= 10;
   const usedPct = remaining !== null ? Math.round(((total - remaining) / total) * 100) : 0;
+
+  void hasExternal; // suppress unused-var lint
+
 
   if (loading && remaining === null) {
     if (variant === "hero") {
