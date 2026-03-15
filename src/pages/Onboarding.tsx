@@ -590,14 +590,8 @@ export default function Onboarding() {
         if (fpErr) throw fpErr;
       }
 
-      // ── 3. Set localStorage flag BEFORE refreshProfile() so ProtectedRoute
-      //       never evaluates the entreprise subscription guard with stale data.
-      try {
-        localStorage.setItem("onboarding_done", "true");
-        localStorage.setItem("onboarding_role", role ?? "");
-      } catch {
-        /* storage may be unavailable in private mode */
-      }
+      // ── 3. refreshProfile() is called next — no localStorage needed since
+      //       ProtectedRoute reads onboarding_done from server-side profile only.
 
       // ── 4. Refresh auth profile so role is available in ProtectedRoute ─────
       await refreshProfile();

@@ -176,6 +176,7 @@ const adminGroups: NavGroup[] = [
       { to: "/admin",             label: "Tableau de bord", icon: LayoutDashboard },
       { to: "/admin/users",       label: "Utilisateurs",    icon: Users },
       { to: "/admin/payments",    label: "Paiements",       icon: CreditCard },
+      { to: "/admin/revenue",     label: "Revenus",         icon: TrendingUp },
       { to: "/admin/promo-codes", label: "Codes promo",     icon: Tag },
     ],
   },

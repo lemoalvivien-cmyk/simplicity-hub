@@ -1,6 +1,5 @@
 /**
- * System Status — Monitoring temps réel
- * WiinupMax 100% Palantir-killer — zéro bug — cash machine live
+ * Statut système — Monitoring temps réel WIINUP MAX
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -161,10 +160,10 @@ export default function SystemStatus() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <Activity className="text-primary" size={24} />
-              System Status
+              Statut des systèmes
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Monitoring temps réel — WiinupMax 100% Palantir-killer
+              Monitoring temps réel — WIINUP MAX
             </p>
           </div>
           <button
@@ -239,10 +238,10 @@ export default function SystemStatus() {
             <span className="text-sm font-medium text-foreground">Infrastructure</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs text-muted-foreground">
-            <div><span className="text-foreground font-medium block">Backend</span>Lovable Cloud (Supabase)</div>
-            <div><span className="text-foreground font-medium block">AI Engine</span>Llama-3-70B + Gemini 2.5</div>
-            <div><span className="text-foreground font-medium block">Voice</span>ElevenLabs WebRTC</div>
-            <div><span className="text-foreground font-medium block">Payments</span>Stripe Connect + Webhooks</div>
+            <div><span className="text-foreground font-medium block">Backend</span>Cloud sécurisé EU</div>
+            <div><span className="text-foreground font-medium block">IA</span>Gemini 2.5 + Llama-3</div>
+            <div><span className="text-foreground font-medium block">Voix</span>ElevenLabs WebRTC</div>
+            <div><span className="text-foreground font-medium block">Paiements</span>Stripe Connect</div>
           </div>
         </div>
       </div>
