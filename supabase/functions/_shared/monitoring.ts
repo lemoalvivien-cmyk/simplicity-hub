@@ -58,8 +58,11 @@ export async function enforceRateLimit(
   });
 
   if (error) {
-    console.warn(`[monitoring] rate-limit DB error for ${functionName}:`, error.message);
-    return null; // fail-open
+    // SECURITY: Fail-CLOSED — DB error must never grant rate-limit bypass.
+    // Returning null (fail-open) would let an attacker bypass limits by
+    // causing DB errors. We return { allowed: false } to block the request.
+    console.error(`[monitoring] rate-limit DB error for ${functionName} — failing CLOSED:`, error.message);
+    return { allowed: false, remaining: 0, status: 429 };
   }
 
   const allowed = data as boolean;
