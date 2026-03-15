@@ -18,6 +18,8 @@ const SUBSCRIPTION_EXEMPT_PATHS = ["/checkout", "/onboarding", "/account"];
 export default function ProtectedRoute({
   children,
   adminOnly = false,
+  entrepriseOnly = false,
+  facilitateurOnly = false,
 }: ProtectedRouteProps) {
   const { user, loading, profile, role } = useAuth();
   const subscription = useSubscription();
