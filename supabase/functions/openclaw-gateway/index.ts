@@ -23,6 +23,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { enforceRateLimit, build429, trackRequest, logFunctionError } from "../_shared/monitoring.ts";
+// SECURITY: SSRF guard — all user-supplied gateway URLs must pass validation before fetch().
+import { isValidGatewayUrl } from "../_shared/ssrfGuard.ts";
 
 // Outils autorisés par niveau d'autonomie
 // (protection externe : OpenClaw ne peut pas dépasser le niveau configuré)
