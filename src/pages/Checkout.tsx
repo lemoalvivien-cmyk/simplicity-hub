@@ -865,7 +865,7 @@ export default function Checkout() {
                   />
                 )}
                 {step === 3 && (
-                  <StepPayment user={user} startCheckout={startCheckout} onPromoSuccess={handlePromoSuccess} />
+                  <StepPayment user={user} startCheckout={startCheckout} />
                 )}
               </div>
             </div>
