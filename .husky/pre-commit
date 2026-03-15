@@ -4,13 +4,16 @@
 # Blocks any commit that contains known secret patterns.
 # Patterns covered:
 #   sk_live_           → Stripe live secret key
-#   sk_test_           → Stripe test secret key  
+#   sk_test_           → Stripe test secret key
 #   whsec_             → Stripe webhook secret
 #   eyJhbGci           → JWT (base64 header — covers service_role, anon, access tokens)
 #   service_role       → Supabase service role keyword
 #   SUPABASE_SERVICE   → Supabase service role env var
+#   BANK_WEBHOOK_SECRET → Bank webhook authentication secret
+#   INTERNAL_FUNCTION_SECRET → Internal pg_net shared secret
 #   re_                → Resend API key prefix
 #   rk_live_           → Stripe restricted key
+#   CRON_SECRET        → Cron authentication secret
 # ─────────────────────────────────────────────────────────────────────────────
 
 . "$(dirname "$0")/_/husky.sh"
@@ -25,7 +28,7 @@ if [ -z "$STAGED" ]; then
   exit 0
 fi
 
-# Patterns that must never appear in committed files
+# SECURITY: Patterns that must never appear in committed files
 PATTERNS=(
   "sk_live_"
   "sk_test_"
@@ -33,6 +36,9 @@ PATTERNS=(
   "eyJhbGci"
   "service_role"
   "SUPABASE_SERVICE_ROLE"
+  "BANK_WEBHOOK_SECRET=[^$]"
+  "INTERNAL_FUNCTION_SECRET=[^$]"
+  "CRON_SECRET=[^$]"
   "re_[A-Za-z0-9]{32,}"
   "rk_live_"
 )
@@ -43,6 +49,13 @@ for FILE in $STAGED; do
   # Skip binary files and known-safe generated/lock files
   case "$FILE" in
     *.png|*.jpg|*.ico|*.svg|*.woff*|bun.lock*|package-lock.json) continue ;;
+    # SECURITY: Never commit .env files regardless of extension
+    .env|.env.*) 
+      echo ""
+      echo "🚨 BLOCKED: Attempting to commit .env file: $FILE"
+      FOUND=1
+      continue
+      ;;
   esac
 
   for PATTERN in "${PATTERNS[@]}"; do
@@ -62,9 +75,18 @@ if [ "$FOUND" -eq 1 ]; then
   echo ""
   echo "   All secrets must be stored in Lovable Cloud > Secrets."
   echo "   NEVER commit API keys, JWT tokens, or webhook secrets."
+  echo "   NEVER commit .env files."
+  echo ""
+  echo "   Secrets managed by this project:"
+  echo "     STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET"
+  echo "     SUPABASE_SERVICE_ROLE_KEY"
+  echo "     BANK_WEBHOOK_SECRET"
+  echo "     INTERNAL_FUNCTION_SECRET"
+  echo "     CRON_SECRET"
+  echo "     RESEND_API_KEY, ELEVENLABS_API_KEY"
   echo ""
   echo "   To bypass (emergency only): git commit --no-verify"
-  echo "   Then immediately rotate the exposed key."
+  echo "   Then IMMEDIATELY rotate the exposed key."
   echo "─────────────────────────────────────────────────────────────────"
   exit 1
 fi

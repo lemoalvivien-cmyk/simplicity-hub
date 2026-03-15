@@ -1,17 +1,9 @@
 /**
  * WMAX Token — Royalty mint helper
  * Calls the openclaw-token-mint edge function (server-side blockchain write).
- * The `viem` client is kept for future on-chain read operations (balance, etc.).
+ * viem dependency removed — blockchain reads are handled server-side via edge functions.
  */
-import { createPublicClient, http } from "viem";
-import { base } from "viem/chains";
 import { supabase } from "@/integrations/supabase/client";
-
-// Public read-only client for Base L2 (balance checks, tx lookups)
-export const baseClient = createPublicClient({
-  chain: base,
-  transport: http(),
-});
 
 export interface WMAXMintResult {
   success: boolean;

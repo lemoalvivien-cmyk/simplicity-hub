@@ -68,6 +68,46 @@
     <!-- PWA / Theme -->
     <link rel="icon" href="/favicon.ico" />
     <meta name="theme-color" content="#0f1b2e" />
+
+    <!--
+      SECURITY: Content Security Policy (defense-in-depth layer)
+      ─────────────────────────────────────────────────────────────
+      default-src 'self'         → blocks all unknown origins by default
+      script-src 'self' 'unsafe-inline' 'unsafe-eval'  → React/Vite require inline scripts + eval in dev
+      style-src 'self' 'unsafe-inline'                  → Tailwind/CSS-in-JS inline styles
+      connect-src 'self'                                → fetch/XHR only to same origin + approved APIs below
+        *.supabase.co                                   → Lovable Cloud backend (Supabase project)
+        *.stripe.com                                    → Stripe checkout + elements
+        api.resend.com                                  → transactional email API
+        *.elevenlabs.io                                 → voice AI (ADA)
+        *.lovable.app *.lovableproject.com              → preview environments
+      img-src 'self' data: blob: *.supabase.co         → user avatars from Lovable Cloud Storage
+      font-src 'self' data:                             → self-hosted fonts only
+      frame-src *.stripe.com                            → Stripe payment iframe
+      object-src 'none'                                 → blocks Flash / plugins (hardening)
+      base-uri 'self'                                   → blocks <base href> injection
+      form-action 'self' *.stripe.com                   → form submissions only to safe targets
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval';
+      style-src 'self' 'unsafe-inline';
+      connect-src 'self'
+        https://*.supabase.co
+        https://api.stripe.com
+        https://js.stripe.com
+        https://api.resend.com
+        https://*.elevenlabs.io
+        wss://*.supabase.co
+        https://*.lovable.app
+        https://*.lovableproject.com;
+      img-src 'self' data: blob: https://*.supabase.co https://wiinupmax.com;
+      font-src 'self' data:;
+      frame-src https://js.stripe.com https://hooks.stripe.com;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self' https://checkout.stripe.com;
+    " />
   </head>
 
   <body>
