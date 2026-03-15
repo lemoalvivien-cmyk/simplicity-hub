@@ -15,6 +15,7 @@ export const ANALYTICS_EVENTS = [
   "pricing_view",
   "checkout_start",
   "checkout_success",
+  "success_view",
   "onboarding_done",
   "mission_created",
   "intro_submitted",
