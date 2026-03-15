@@ -318,7 +318,6 @@ export type Database = {
           call_duration_sec: number | null
           call_ended_at: string | null
           call_started_at: string | null
-          commission_7pct: number | null
           contract_amount: number | null
           created_at: string
           elevenlabs_call_id: string | null
@@ -333,6 +332,7 @@ export type Database = {
           previous_state: Database["public"]["Enums"]["ada_state"] | null
           reasoning_trace: Json | null
           roi_score: number | null
+          royalty_12pct: number | null
           state: Database["public"]["Enums"]["ada_state"]
           state_entered_at: string
           stripe_payment_link: string | null
@@ -349,7 +349,6 @@ export type Database = {
           call_duration_sec?: number | null
           call_ended_at?: string | null
           call_started_at?: string | null
-          commission_7pct?: number | null
           contract_amount?: number | null
           created_at?: string
           elevenlabs_call_id?: string | null
@@ -364,6 +363,7 @@ export type Database = {
           previous_state?: Database["public"]["Enums"]["ada_state"] | null
           reasoning_trace?: Json | null
           roi_score?: number | null
+          royalty_12pct?: number | null
           state?: Database["public"]["Enums"]["ada_state"]
           state_entered_at?: string
           stripe_payment_link?: string | null
@@ -380,7 +380,6 @@ export type Database = {
           call_duration_sec?: number | null
           call_ended_at?: string | null
           call_started_at?: string | null
-          commission_7pct?: number | null
           contract_amount?: number | null
           created_at?: string
           elevenlabs_call_id?: string | null
@@ -395,6 +394,7 @@ export type Database = {
           previous_state?: Database["public"]["Enums"]["ada_state"] | null
           reasoning_trace?: Json | null
           roi_score?: number | null
+          royalty_12pct?: number | null
           state?: Database["public"]["Enums"]["ada_state"]
           state_entered_at?: string
           stripe_payment_link?: string | null
@@ -498,7 +498,6 @@ export type Database = {
       ada_training_samples: {
         Row: {
           call_duration_sec: number | null
-          commission_7pct: number | null
           contract_amount: number | null
           created_at: string
           etg_opportunities_count: number | null
@@ -514,6 +513,7 @@ export type Database = {
           outcome: string
           quality_score: number | null
           roi_score: number | null
+          royalty_12pct: number | null
           script_phase_count: number | null
           sector: string | null
           session_hash: string
@@ -525,7 +525,6 @@ export type Database = {
         }
         Insert: {
           call_duration_sec?: number | null
-          commission_7pct?: number | null
           contract_amount?: number | null
           created_at?: string
           etg_opportunities_count?: number | null
@@ -541,6 +540,7 @@ export type Database = {
           outcome: string
           quality_score?: number | null
           roi_score?: number | null
+          royalty_12pct?: number | null
           script_phase_count?: number | null
           sector?: string | null
           session_hash: string
@@ -552,7 +552,6 @@ export type Database = {
         }
         Update: {
           call_duration_sec?: number | null
-          commission_7pct?: number | null
           contract_amount?: number | null
           created_at?: string
           etg_opportunities_count?: number | null
@@ -568,6 +567,7 @@ export type Database = {
           outcome?: string
           quality_score?: number | null
           roi_score?: number | null
+          royalty_12pct?: number | null
           script_phase_count?: number | null
           sector?: string | null
           session_hash?: string
