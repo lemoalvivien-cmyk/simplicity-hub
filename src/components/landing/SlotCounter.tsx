@@ -31,11 +31,7 @@ export default function SlotCounter({
   const isUrgent = remaining !== null && remaining > 0 && remaining <= 10;
   const usedPct = remaining !== null ? Math.round(((total - remaining) / total) * 100) : 0;
 
-  // Suppress TS unused var warning
-  void hasExternal;
-  const isSoldOut = remaining === 0;
-  const isUrgent = remaining !== null && remaining > 0 && remaining <= 10;
-  const usedPct = remaining !== null ? Math.round(((total - remaining) / total) * 100) : 0;
+  // hasExternal used only to signal intent; no duplicate declarations below
 
   if (loading && remaining === null) {
     if (variant === "hero") {
