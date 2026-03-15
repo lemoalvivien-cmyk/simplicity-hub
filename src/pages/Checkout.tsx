@@ -784,6 +784,7 @@ export default function Checkout() {
         prenom={profile?.prenom ?? null}
         subLoading={subLoading}
         status={status}
+        onboardingDone={profile?.onboarding_done ?? false}
         navigate={navigate}
       />
     );
