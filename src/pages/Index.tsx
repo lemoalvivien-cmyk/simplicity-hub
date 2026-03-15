@@ -136,11 +136,11 @@ export default function LandingPage() {
       >
         <div className="px-4 py-3 flex gap-2">
           <Link
-            to="/signup"
-            className="btn-cta flex-1 flex items-center justify-center gap-2 py-3.5 text-sm"
+            to="/checkout"
+            className="btn-cta flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-bold"
             onClick={() => track("cta_sticky_mobile")}
           >
-            Créer mon accès
+            Founder Pass — 99 €/an
             <ArrowRight size={15} />
           </Link>
           <Link

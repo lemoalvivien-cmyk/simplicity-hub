@@ -1,6 +1,8 @@
 /**
  * /success — Page de confirmation post-paiement
- * Redirige intelligemment selon l'état onboarding de l'utilisateur
+ * Redirige intelligemment selon l'état onboarding + rôle de l'utilisateur.
+ * - onboarding_done = true  → /dashboard
+ * - onboarding_done = false → /onboarding?role=entreprise (rôle pré-sélectionné)
  */
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -9,8 +11,36 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription, isAccessActive } from "@/contexts/SubscriptionContext";
 import {
   CheckCircle2, Zap, Sparkles, ArrowRight, Loader2,
-  ShieldCheck, BadgeCheck, Gift,
+  ShieldCheck, BadgeCheck, Gift, Lock, Star,
 } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
+
+const nextSteps = [
+  {
+    n: "01",
+    title: "Configurez votre profil entreprise",
+    desc: "Secteur, cible clients, zone géographique — 2 minutes chrono.",
+    color: "hsl(var(--primary-glow))",
+  },
+  {
+    n: "02",
+    title: "Votre assistant IA s'active immédiatement",
+    desc: "Il commence à identifier des opportunités pour vous dès maintenant.",
+    color: "hsl(var(--accent))",
+  },
+  {
+    n: "03",
+    title: "Votre réseau se construit tout seul",
+    desc: "Les facilitateurs commencent à vous apporter des introductions qualifiées.",
+    color: "hsl(152 62% 48%)",
+  },
+];
+
+const guarantees = [
+  { icon: ShieldCheck, label: "Accès immédiat" },
+  { icon: BadgeCheck, label: "Prix garanti à vie" },
+  { icon: Gift, label: "30j satisfait ou remboursé" },
+];
 
 export default function Success() {
   const navigate = useNavigate();
@@ -20,14 +50,15 @@ export default function Success() {
   const prenom = profile?.prenom ?? null;
   const isActive = isAccessActive(status);
 
-  // Poll subscription status after landing here directly
+  // Poll subscription after Stripe redirect
   useEffect(() => {
+    trackEvent("success_view", user?.id ?? null, { source: "post_payment" });
     refresh();
     let attempts = 0;
     const poll = setInterval(async () => {
       attempts++;
       await refresh();
-      if (attempts >= 8) clearInterval(poll);
+      if (attempts >= 10) clearInterval(poll);
     }, 2000);
     return () => clearInterval(poll);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -36,7 +67,8 @@ export default function Success() {
     if (profile?.onboarding_done) {
       navigate("/dashboard", { replace: true });
     } else {
-      navigate("/onboarding", { replace: true });
+      // Pre-select "entreprise" role — user just paid for Founder Pass
+      navigate("/onboarding?role=entreprise", { replace: true });
     }
   };
 
@@ -46,7 +78,7 @@ export default function Success() {
       <div className="flex-1 flex items-center justify-center p-6 py-16">
         <div className="max-w-lg w-full">
 
-          {/* Success icon */}
+          {/* ── Success hero ──────────────────────────────────────────── */}
           <div className="text-center mb-8">
             <div
               className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6"
@@ -59,6 +91,7 @@ export default function Success() {
               <CheckCircle2 size={44} style={{ color: "hsl(152 62% 48%)" }} />
             </div>
 
+            {/* Activated badge */}
             <div
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full border mb-5"
               style={{
@@ -67,18 +100,18 @@ export default function Success() {
               }}
             >
               <Zap size={13} style={{ color: "hsl(var(--accent))" }} />
-              <span className="text-sm font-bold text-white">🎯 Founder Pass activé</span>
+              <span className="text-sm font-bold text-white">🎯 Founder Pass activé — 99 € TTC/an</span>
             </div>
 
             <h1 className="font-display text-3xl md:text-4xl font-black text-foreground mb-3">
               {prenom ? `Bienvenue, ${prenom} ! 🎉` : "Bienvenue dans WiinupMax ! 🎉"}
             </h1>
             <p className="text-muted-foreground text-base leading-relaxed max-w-sm mx-auto">
-              Votre paiement a bien été reçu. Votre accès Founder Pass est maintenant actif pour un an.
+              Votre paiement a bien été reçu. Votre accès Founder Pass est actif pour un an entier.
             </p>
           </div>
 
-          {/* What's included */}
+          {/* ── Prochaines étapes ─────────────────────────────────────── */}
           <div
             className="rounded-2xl border overflow-hidden mb-5"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}
@@ -93,30 +126,14 @@ export default function Success() {
               <p className="text-sm font-bold text-white">Ce qui vous attend ✨</p>
             </div>
             <div className="divide-y" style={{ borderColor: "hsl(var(--border))" }}>
-              {[
-                {
-                  n: "01",
-                  title: "Configurez votre profil entreprise",
-                  desc: "Secteur, cible clients, zone géographique — 2 minutes chrono.",
-                  color: "hsl(var(--primary-glow))",
-                },
-                {
-                  n: "02",
-                  title: "Votre assistant IA s'active",
-                  desc: "Il commence à identifier des opportunités pour vous immédiatement.",
-                  color: "hsl(var(--accent))",
-                },
-                {
-                  n: "03",
-                  title: "Votre réseau se construit",
-                  desc: "Les facilitateurs commencent à vous apporter des introductions qualifiées.",
-                  color: "hsl(152 62% 48%)",
-                },
-              ].map(({ n, title, desc, color }) => (
+              {nextSteps.map(({ n, title, desc, color }) => (
                 <div key={n} className="flex items-start gap-4 px-6 py-4">
                   <div
                     className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-black font-display"
-                    style={{ background: `${color.replace("hsl(", "hsl(").replace(")", " / 0.12)")}`, color }}
+                    style={{
+                      background: color.replace("hsl(", "hsl(").replace(")", " / 0.12)"),
+                      color,
+                    }}
                   >
                     {n}
                   </div>
@@ -129,16 +146,12 @@ export default function Success() {
             </div>
           </div>
 
-          {/* Guarantees strip */}
+          {/* ── Garanties strip ──────────────────────────────────────── */}
           <div
             className="rounded-2xl border p-4 grid grid-cols-3 gap-3 mb-5"
             style={{ background: "hsl(var(--muted) / 0.5)", borderColor: "hsl(var(--border))" }}
           >
-            {[
-              { icon: ShieldCheck, label: "Accès immédiat" },
-              { icon: BadgeCheck, label: "Prix garanti à vie" },
-              { icon: Gift, label: "30j remboursé si insatisfait" },
-            ].map(({ icon: Icon, label }) => (
+            {guarantees.map(({ icon: Icon, label }) => (
               <div key={label} className="flex flex-col items-center gap-1.5 text-center">
                 <Icon size={16} className="text-success" />
                 <span className="text-xs text-muted-foreground leading-tight">{label}</span>
@@ -146,7 +159,22 @@ export default function Success() {
             ))}
           </div>
 
-          {/* CTA */}
+          {/* ── Prix verrouillé à vie ─────────────────────────────────── */}
+          <div
+            className="rounded-2xl border p-4 flex items-start gap-3 mb-5"
+            style={{
+              background: "hsl(38 95% 50% / 0.06)",
+              borderColor: "hsl(38 95% 50% / 0.2)",
+            }}
+          >
+            <Star size={15} style={{ color: "hsl(38 95% 55%)" }} className="shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong className="text-foreground" style={{ color: "hsl(38 95% 55%)" }}>Prix garanti à vie :</strong>{" "}
+              Votre tarif de 99 €/an est verrouillé définitivement. Il ne sera jamais réévalué, même quand le prix passe à 990 €.
+            </p>
+          </div>
+
+          {/* ── CTA ──────────────────────────────────────────────────── */}
           <button
             onClick={handleContinue}
             disabled={subLoading && !isActive}
@@ -157,18 +185,24 @@ export default function Success() {
             ) : (
               <>
                 <Sparkles size={16} />
-                {profile?.onboarding_done ? "Accéder à mon espace" : "Démarrer mon onboarding"}
+                {profile?.onboarding_done ? "Accéder à mon espace" : "Démarrer mon profil — 2 minutes"}
                 <ArrowRight size={16} />
               </>
             )}
           </button>
 
-          <p className="text-center text-xs text-muted-foreground">
-            Votre facture a été envoyée à{" "}
-            <span className="text-foreground font-medium">{user?.email}</span>
-            {" "}·{" "}
+          {/* Assurance anti-doute */}
+          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            <Lock size={11} />
+            <span>
+              Paiement sécurisé Stripe · Facture envoyée à{" "}
+              <span className="text-foreground font-medium">{user?.email}</span>
+            </span>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground mt-2">
             <a href="mailto:contact@wiinupmax.com" className="underline hover:text-foreground transition-colors">
-              Besoin d'aide ?
+              Besoin d'aide ? On répond sous 24h.
             </a>
           </p>
         </div>
