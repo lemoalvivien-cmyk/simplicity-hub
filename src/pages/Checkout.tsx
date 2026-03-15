@@ -474,11 +474,9 @@ function StepPromo({
 function StepPayment({
   user,
   startCheckout,
-  onPromoSuccess,
 }: {
   user: { id: string } | null;
   startCheckout: () => Promise<{ offer_type?: string }>;
-  onPromoSuccess: () => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
