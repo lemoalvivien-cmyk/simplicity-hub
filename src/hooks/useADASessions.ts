@@ -36,7 +36,7 @@ export interface ADASession {
   final_closed_at: string | null;
   stripe_payment_link: string | null;
   contract_amount: number | null;
-  commission_7pct: number | null;
+  royalty_12pct: number | null;
   outcome: string | null;
   roi_score: number | null;
   created_at: string;
