@@ -177,32 +177,6 @@ export default function DashboardEntreprise() {
     <UserLayout role="entreprise" jarvisContext="dashboard-entreprise">
       <div className="max-w-2xl mx-auto space-y-5">
 
-        {/* ═══ TABS ════════════════════════════════════════════ */}
-        <div className="flex gap-1 p-1 rounded-2xl border border-border" style={{ background: "hsl(var(--card))" }}>
-          {([
-            { key: "cockpit", label: "Mon tableau de bord", icon: Brain },
-            { key: "royalties", label: "Mes gains", icon: Coins },
-          ] as const).map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => setActiveTab(key)}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200"
-              style={activeTab === key ? {
-                background: "var(--gradient-primary)",
-                color: "#fff",
-                boxShadow: "0 2px 12px hsl(var(--primary) / 0.3)",
-              } : {
-                color: "hsl(var(--muted-foreground))",
-              }}
-            >
-              <Icon size={14} />
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* ═══ ROYALTY FUTURES TAB ════════════════════════════ */}
-        {activeTab === "royalties" && <RoyaltyFuturesTab />}
 
         {/* ═══ COCKPIT TAB ═══════════════════════════════════ */}
         {activeTab === "cockpit" && (<>
