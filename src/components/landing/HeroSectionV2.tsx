@@ -238,15 +238,15 @@ export default function HeroSectionV2() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.4 }}
             >
-              <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
+            <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
                 <Link
-                  to="/signup"
+                  to="/checkout"
                   data-magnetic
                   className="btn-cta flex items-center justify-center gap-2 px-8 py-4 text-[0.95rem]"
                   onClick={() => track("cta_hero_enterprise")}
                 >
                   <Sparkles size={15} strokeWidth={2} />
-                  Créer mon accès — gratuit
+                  Activer Founder Pass — 99 €/an
                   <ArrowRight size={15} />
                 </Link>
               </motion.div>
@@ -263,7 +263,7 @@ export default function HeroSectionV2() {
                   onClick={() => track("cta_hero_facilitateur")}
                 >
                   <Users size={14} />
-                  Devenir facilitateur
+                  Devenir facilitateur — Gratuit
                 </Link>
               </motion.div>
             </motion.div>
