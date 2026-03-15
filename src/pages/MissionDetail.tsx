@@ -81,54 +81,28 @@ function IntroductionForm({ mission, facilitateurId, onSuccess, onCancel }: Intr
     setLoading(true);
     setError("");
     try {
-      // 1. Insert introduction in DB
-      const { data: intro, error: introErr } = await db.from("introductions").insert({
-        facilitateur_id: facilitateurId,
-        entreprise_id: mission.entreprise_id,
-        mission_id: mission.id,
-        contact_nom: form.nom.trim(),
-        contact_email: form.email.trim() || null,
-        contact_telephone: form.telephone.trim() || null,
-        contexte: form.contexte.trim(),
-        pertinence: form.pourquoi.trim() || null,
-        statut: "en_attente",
-      }).select("id").single();
-
-      if (introErr) throw introErr;
-
-      // 2. Create gain record (en_attente) linked to this introduction
-      await db.from("gains").insert({
-        facilitateur_id: facilitateurId,
-        introduction_id: intro.id,
-        mission_id: mission.id,
-        source: "mission_directe",
-        statut: "en_attente",
-        montant: null, // defined once validated by company
+      // Single transactional Edge Function: intro + gain + escrow + proof
+      const { data, error: fnErr } = await supabase.functions.invoke("submit-introduction", {
+        body: {
+          entreprise_id: mission.entreprise_id,
+          mission_id: mission.id,
+          contact_nom: form.nom.trim(),
+          contact_email: form.email.trim() || null,
+          contact_telephone: form.telephone.trim() || null,
+          contexte: form.contexte.trim(),
+          pertinence: form.pourquoi.trim() || null,
+        },
       });
 
-      // 3. Create intro_escrow for protection
-      await db.from("intro_escrow").insert({
-        facilitator_id: facilitateurId,
-        company_id: mission.entreprise_id,
-        introduction_id: intro.id,
-        status: "demandee",
-        protected: true,
-      });
+      if (fnErr || !data?.success) {
+        throw new Error(data?.error ?? fnErr?.message ?? "Erreur inconnue");
+      }
 
-      // 4. Create introduction_proof entry
-      await db.from("introduction_proofs").insert({
-        facilitator_id: facilitateurId,
-        company_id: mission.entreprise_id,
-        introduction_id: intro.id,
-        proof_status: "brouillon",
-        validation_status: "en_attente",
-      });
-
-      trackEvent("intro_submitted", facilitateurId, { mission_id: mission.id, intro_id: intro.id });
+      trackEvent("intro_submitted", facilitateurId, { mission_id: mission.id, intro_id: data.introduction_id });
 
       onSuccess();
-    } catch {
-      setError("Erreur lors de l'envoi. Vérifiez votre connexion et réessayez.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de l'envoi. Vérifiez votre connexion et réessayez.");
     } finally {
       setLoading(false);
     }

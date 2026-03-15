@@ -1,6 +1,6 @@
 /**
  * IntroductionsEntreprise — Liste des introductions reçues côté entreprise.
- * FULLY WIRED: lit et écrit dans Supabase.
+ * FULLY WIRED: lit depuis Supabase, écrit via Edge Functions transactionnelles.
  */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -11,11 +11,11 @@ import {
   PlayCircle, Zap
 } from "lucide-react";
 import { db } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import LeadIntakeStatus from "@/components/leads/LeadIntakeStatus";
 import LeadActionBadge from "@/components/leads/LeadActionBadge";
-import { promoteLeadToOpportunity } from "@/lib/leadPipeline";
 import type { QualificationStatus, NextBestAction } from "@/lib/leadPipeline";
 import { trackEvent } from "@/lib/analytics";
 
@@ -355,38 +355,28 @@ export default function IntroductionsEntreprise() {
   }, [user]);
 
   const handleValidate = async (id: string) => {
-    // 1. Update introduction status
-    const { error } = await db.from("introductions").update({ statut: "validee" }).eq("id", id).eq("entreprise_id", user!.id);
-    if (error) { toast.error("Erreur lors de la validation."); return; }
-
-    // 2. Validate associated gain — update to "valide"
-    await db.from("gains").update({ statut: "valide" }).eq("introduction_id", id);
-
-    // 3. Update intro_escrow status
-    await db.from("intro_escrow").update({ status: "validee", converted: true }).eq("introduction_id", id);
-
-    // 4. Update introduction_proof
-    await db.from("introduction_proofs").update({ validation_status: "validee", proof_status: "certifie", finalized_at: new Date().toISOString() }).eq("introduction_id", id);
-
-    // 5. Promote lead intake to opportunity (enterprise-owned) if lead_intake_id exists
-    const intro = intros.find(i => i.id === id);
-    if (intro?.lead_intake_id) {
-      await promoteLeadToOpportunity(intro.lead_intake_id);
+    // Transactional Edge Function: intro + gain + escrow + proof + lead promotion
+    const { data, error: fnErr } = await supabase.functions.invoke("validate-introduction", {
+      body: { introduction_id: id, action: "validate" },
+    });
+    if (fnErr || !data?.success) {
+      toast.error(data?.error ?? "Erreur lors de la validation.");
+      return;
     }
-
     trackEvent("intro_validated", user!.id, { intro_id: id });
-
     setIntros(prev => prev.map(i => i.id === id ? { ...i, statut: "validee" as Status } : i));
     toast.success("Introduction validée ! Le gain de l'apporteur est confirmé.");
   };
 
   const handleRefuse = async (id: string) => {
-    const { error } = await db.from("introductions").update({ statut: "refusee" }).eq("id", id).eq("entreprise_id", user!.id);
-    if (error) { toast.error("Erreur lors du refus."); return; }
-
-    // Annuler le gain associé
-    await db.from("gains").update({ statut: "annule" }).eq("introduction_id", id);
-
+    // Transactional Edge Function: intro + gain cancellation
+    const { data, error: fnErr } = await supabase.functions.invoke("validate-introduction", {
+      body: { introduction_id: id, action: "refuse" },
+    });
+    if (fnErr || !data?.success) {
+      toast.error(data?.error ?? "Erreur lors du refus.");
+      return;
+    }
     setIntros(prev => prev.map(i => i.id === id ? { ...i, statut: "refusee" as Status } : i));
     toast("Introduction refusée.");
   };
