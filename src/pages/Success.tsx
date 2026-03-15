@@ -3,9 +3,13 @@
  * Redirige intelligemment selon l'état onboarding + rôle de l'utilisateur.
  * - onboarding_done = true  → /dashboard
  * - onboarding_done = false → /onboarding?role=entreprise (rôle pré-sélectionné)
+ *
+ * Accessible via :
+ *   - Stripe success_url redirect → /success?session_id=...&offer=launch
+ *   - Navigation directe post-paiement
  */
 import { useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import PublicNav from "@/components/layout/PublicNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription, isAccessActive } from "@/contexts/SubscriptionContext";
