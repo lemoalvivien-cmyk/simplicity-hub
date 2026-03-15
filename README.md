@@ -117,17 +117,14 @@ npm run build         # Production build
 
 ## Variables d'environnement
 
-Gérées automatiquement par Lovable Cloud. Ne pas modifier `.env`.
+**Règle absolue : aucun secret dans le repo. Tout est géré via Lovable Cloud → Secrets.**
 
-| Variable | Usage |
-|---|---|
-| `VITE_SUPABASE_URL` | URL projet |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clé anon publique |
-| `STRIPE_SECRET_KEY` | Secret Stripe (Edge Functions) |
-| `STRIPE_WEBHOOK_SECRET` | Validation webhooks Stripe |
-| `LOVABLE_API_KEY` | Gateway AI (auto-provisionné) |
-| `RESEND_API_KEY` | Email transactionnel + alertes monitoring |
-| `BANK_WEBHOOK_SECRET` | Signature PSD2 bank-webhook |
+| Variable | Type | Description |
+|---|---|---|
+| `VITE_SUPABASE_URL` | ✅ Public | URL projet — auto-injectée |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | ✅ Public | Clé anon — auto-injectée |
+| Tous les autres secrets | 🔒 Vault | Configurés dans Lovable Cloud → Secrets uniquement |
+
 
 ---
 
