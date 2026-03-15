@@ -31,7 +31,7 @@ export default function PromoCodeSection() {
           </div>
 
           <Link
-            to="/signup"
+            to="/checkout"
             className="btn-cta inline-flex items-center gap-2 px-8 py-4"
           >
             Utiliser mon code d'invitation
