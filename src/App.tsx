@@ -21,6 +21,7 @@ import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
+import Success from "./pages/Success";
 import CGU from "./pages/CGU";
 import Confidentialite from "./pages/Confidentialite";
 import Legal from "./pages/Legal";

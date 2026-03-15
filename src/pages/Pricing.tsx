@@ -1,14 +1,12 @@
 import { Link } from "react-router-dom";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import {
-  CheckCircle2, Zap, Users, Flame, ArrowRight, Landmark,
+  CheckCircle2, Zap, Users, Flame, ArrowRight,
   Mic, Bot, TrendingUp, Coins, Shield, Globe, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
-import { PRICING } from "@/lib/pricingConfig";
-import { useToast } from "@/hooks/use-toast";
 
 // ─── Feature blocks ────────────────────────────────────────────────────────
 const founderFeatures = [
