@@ -134,8 +134,8 @@ const App = () => (
 
                 {/* ── Dashboards ───────────────────────────── */}
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardRouter /></ProtectedRoute>} />
-                <Route path="/dashboard/entreprise" element={<ProtectedRoute><DashboardEntreprise /></ProtectedRoute>} />
-                <Route path="/dashboard/facilitateur" element={<ProtectedRoute><DashboardFacilitateur /></ProtectedRoute>} />
+                <Route path="/dashboard/entreprise" element={<ProtectedRoute entrepriseOnly><DashboardEntreprise /></ProtectedRoute>} />
+                <Route path="/dashboard/facilitateur" element={<ProtectedRoute facilitateurOnly><DashboardFacilitateur /></ProtectedRoute>} />
                 <Route path="/pilotage" element={<ProtectedRoute><Pilotage /></ProtectedRoute>} />
 
                 {/* ── Contacts & Actions ───────────────────── */}
