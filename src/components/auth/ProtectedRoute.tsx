@@ -8,6 +8,8 @@ import { toast } from "sonner";
 interface ProtectedRouteProps {
   children: ReactNode;
   adminOnly?: boolean;
+  entrepriseOnly?: boolean;
+  facilitateurOnly?: boolean;
 }
 
 /** Routes exempt from the subscription paywall (entreprise). */
