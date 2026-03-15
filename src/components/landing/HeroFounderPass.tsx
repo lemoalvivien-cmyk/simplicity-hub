@@ -182,9 +182,7 @@ export default function HeroFounderPass() {
                 className="font-display font-bold text-white leading-[1.28] tracking-tight"
                 style={{ fontSize: "clamp(1.15rem, 2.5vw, 1.6rem)" }}
               >
-                WiinupMax : vos premiers clients arrivent en moins de{" "}
-                <span style={{ color: "hsl(var(--accent))" }}>24 heures</span>
-                … et vos contacts{" "}
+                Avec WiinupMax, augmentez vos revenus en toute sécurité, sans rien sortir de votre poche,{" "}
                 <span
                   style={{
                     background: "linear-gradient(90deg, hsl(var(--accent)), hsl(38 100% 72%))",
@@ -193,7 +191,7 @@ export default function HeroFounderPass() {
                     backgroundClip: "text",
                   }}
                 >
-                  gagnent de l'argent sans rien faire.
+                  sans charge mentale, ni bousculer vos habitudes.
                 </span>
               </h1>
             </motion.div>
