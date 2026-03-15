@@ -85,21 +85,13 @@ Deno.serve(async (req) => {
     // Get ADA session for context
     const { data: adaSession } = await sb
       .from("ada_sessions")
-      .select("owner_user_id, target_name, contract_amount, commission_7pct")
+      .select("owner_user_id, target_name, contract_amount, royalty_12pct")
       .eq("id", sessionId)
       .single();
-
-    if (!adaSession) {
-      log("ADA session not found", { sessionId });
-      return new Response(JSON.stringify({ ok: true, skipped: true, reason: "session_not_found" }), {
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    // ── 1. Update ADA session with confirmed amounts ─────────────────
+...
     await sb.from("ada_sessions").update({
       contract_amount: dealAmount,
-      commission_7pct: royaltyAmount,
+      royalty_12pct: royaltyAmount,  // SECURITY: renamed from commission_7pct
       state: "closed",
       final_closed_at: new Date().toISOString(),
       final_closed_by: "stripe_webhook_auto",

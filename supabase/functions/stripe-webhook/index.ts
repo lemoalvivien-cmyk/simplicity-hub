@@ -303,7 +303,7 @@ Deno.serve(async (req) => {
         if (adaSession) {
           await supabase.from("ada_sessions").update({
             contract_amount: dealAmount,
-            commission_7pct: royaltyAmount,   // column kept for schema compat — stores full 12% royalty
+            royalty_12pct: royaltyAmount,   // SECURITY: renamed from commission_7pct — stores full 12% royalty
             state: "closed",
             final_closed_at: new Date().toISOString(),
             final_closed_by: "stripe_webhook_auto",

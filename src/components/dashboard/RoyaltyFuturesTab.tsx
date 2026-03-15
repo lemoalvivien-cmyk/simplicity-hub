@@ -258,7 +258,7 @@ export default function RoyaltyFuturesTab() {
     try {
       const { data } = await supabase
         .from("ada_sessions")
-        .select("id, target_name, contract_amount, commission_7pct, final_closed_at, reasoning_trace")
+        .select("id, target_name, contract_amount, royalty_12pct, final_closed_at, reasoning_trace")
         .eq("owner_user_id", user.id)
         .eq("state", "closed")
         .order("final_closed_at", { ascending: false })

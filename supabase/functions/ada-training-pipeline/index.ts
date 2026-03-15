@@ -114,7 +114,7 @@ async function actionCollect(
     objections_handled:        objHandled,
     outcome:                   session.outcome ?? "unknown",
     contract_amount:           session.contract_amount ?? null,
-    commission_7pct:           session.commission_7pct ?? null,
+    royalty_12pct:             session.royalty_12pct ?? null,  // SECURITY: renamed column
     roi_score:                 session.roi_score ?? null,
     call_duration_sec:         session.call_duration_sec ?? null,
     label,

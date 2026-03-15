@@ -639,7 +639,7 @@ Deno.serve(async (req: Request) => {
         final_closed_by: user.id,
       });
 
-      await logNode(sb, session_id, user.id, "final_closing", { outcome }, { commission: session.commission_7pct }, 0);
+      await logNode(sb, session_id, user.id, "final_closing", { outcome }, { royalty: session.royalty_12pct }, 0);
 
       // ── Closed-loop: auto-collect training sample (non-blocking) ─────────
       try {
