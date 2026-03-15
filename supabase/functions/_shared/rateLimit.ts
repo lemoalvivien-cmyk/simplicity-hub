@@ -1,6 +1,10 @@
 /**
- * Rate-limit helper — 100 requests / minute / user
+ * Rate-limit helper — configurable requests per minute per user.
  * Uses the api_rate_limits table via a SECURITY DEFINER DB function.
+ *
+ * SECURITY: Fail-CLOSED on DB error — if the rate-limit DB is unreachable we
+ * block the request rather than allow it. This prevents an attacker from
+ * triggering DB errors to bypass rate limiting.
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -23,9 +27,10 @@ export async function checkRateLimit(
   });
 
   if (error) {
-    // On DB error, allow (fail-open to avoid blocking legit users)
-    console.warn("[rate-limit] DB error, failing open:", error.message);
-    return { allowed: true, remaining: maxPerMin };
+    // SECURITY: Fail-CLOSED — DB error must never grant access.
+    // An attacker who can cause DB errors would otherwise bypass rate limiting.
+    console.error("[rate-limit] DB error — failing CLOSED:", error.message);
+    return { allowed: false, remaining: 0 };
   }
 
   // data = boolean (true = allowed)

@@ -50,7 +50,7 @@ function buildTrainingSample(sample: Record<string, unknown>): string {
   };
 
   const assistantOutcome = sample.label === "positive"
-    ? `[CLOSING RÉUSSI] ROI: ${sample.roi_score ?? 80}/100 | Montant: ${sample.contract_amount ?? 0}€ | Commission: ${sample.commission_7pct ?? 0}€ | Durée: ${sample.call_duration_sec ?? 0}s`
+    ? `[CLOSING RÉUSSI] ROI: ${sample.roi_score ?? 80}/100 | Montant: ${sample.contract_amount ?? 0}€ | Royalty 12%: ${sample.royalty_12pct ?? 0}€ | Durée: ${sample.call_duration_sec ?? 0}s`
     : sample.label === "negative"
     ? `[CLOSING ÉCHOUÉ] Outcome: ${sample.outcome} — Analyser les objections non résolues et adapter le script.`
     : `[RÉSULTAT NEUTRE] Outcome: ${sample.outcome} — Données de calibrage.`;
@@ -114,7 +114,7 @@ async function actionCollect(
     objections_handled:        objHandled,
     outcome:                   session.outcome ?? "unknown",
     contract_amount:           session.contract_amount ?? null,
-    commission_7pct:           session.commission_7pct ?? null,
+    royalty_12pct:             session.royalty_12pct ?? null,  // SECURITY: renamed column
     roi_score:                 session.roi_score ?? null,
     call_duration_sec:         session.call_duration_sec ?? null,
     label,

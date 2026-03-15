@@ -165,6 +165,11 @@ Deno.serve(async (req) => {
     }
 
     // ── 10. All checks passed — write redemption atomically ──
+    // SECURITY: The INSERT is protected by a UNIQUE(promo_code_id, user_id)
+    // constraint on promo_code_redemptions. If two concurrent requests both
+    // pass the application-level checks above, only one INSERT will succeed;
+    // the other will receive PG error 23505 (unique_violation) and be rejected
+    // here with a clear human-readable message — no double-redemption possible.
     const now = new Date();
     const endAt = new Date(now);
     endAt.setMonth(endAt.getMonth() + (promoCode.duration_months ?? 12));
@@ -180,6 +185,37 @@ Deno.serve(async (req) => {
       });
 
     if (redemptionError) {
+      // SECURITY: Detect pg unique_violation (23505) — race condition double-spend attempt.
+      const isRace = redemptionError.code === "23505" ||
+        redemptionError.message?.includes("unique") ||
+        redemptionError.message?.includes("duplicate");
+
+      if (isRace) {
+        logStep("Race condition detected — duplicate redemption blocked", {
+          userId: user.id,
+          code: codeUpper,
+          pgCode: redemptionError.code,
+        });
+        // Fetch the existing redemption to show the end date
+        const { data: existing } = await supabaseAdmin
+          .from("promo_code_redemptions")
+          .select("end_at")
+          .eq("promo_code_id", promoCode.id)
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        const endDateDisplay = existing?.end_at
+          ? new Date(existing.end_at).toLocaleDateString("fr-FR", {
+              day: "numeric", month: "long", year: "numeric",
+            })
+          : "bientôt";
+
+        return json({
+          valid: false,
+          message: `Ce code a déjà été utilisé sur votre compte. Accès valable jusqu'au ${endDateDisplay}.`,
+        });
+      }
+
       logStep("Redemption insert error", redemptionError);
       throw redemptionError;
     }

@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
     // Get ADA session for context
     const { data: adaSession } = await sb
       .from("ada_sessions")
-      .select("owner_user_id, target_name, contract_amount, commission_7pct")
+      .select("owner_user_id, target_name, contract_amount, royalty_12pct")
       .eq("id", sessionId)
       .single();
 
@@ -99,21 +99,11 @@ Deno.serve(async (req) => {
     // ── 1. Update ADA session with confirmed amounts ─────────────────
     await sb.from("ada_sessions").update({
       contract_amount: dealAmount,
-      commission_7pct: royaltyAmount,
+      royalty_12pct: royaltyAmount,  // SECURITY: renamed from commission_7pct — stores full 12% royalty
       state: "closed",
       final_closed_at: new Date().toISOString(),
       final_closed_by: "stripe_webhook_auto",
     }).eq("id", sessionId);
-
-    // ── 2. Log gain for facilitateur ─────────────────────────────────
-    await sb.from("gains").insert({
-      facilitateur_user_id: adaSession.owner_user_id,
-      montant:              facilitateurNet,
-      statut:               "confirme",
-      source:               "ada_autonomous",
-      description:          `Deal ADA fermé — ${adaSession.target_name} — 12% royalty WiinupMax déduit (7% platform + 5% engine fee)`,
-      stripe_payment_intent_id: pi.id,
-    });
 
     // ── 3. Log platform royalty ───────────────────────────────────────
     await sb.from("gains").insert({

@@ -23,6 +23,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { enforceRateLimit, build429, trackRequest, logFunctionError } from "../_shared/monitoring.ts";
+// SECURITY: SSRF guard — all user-supplied gateway URLs must pass validation before fetch().
+import { isValidGatewayUrl } from "../_shared/ssrfGuard.ts";
 
 // Outils autorisés par niveau d'autonomie
 // (protection externe : OpenClaw ne peut pas dépasser le niveau configuré)
@@ -261,6 +263,30 @@ Deno.serve(async (req) => {
         internal_brain_tools: INTERNAL_BRAIN_TOOLS,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // ── SSRF Guard — validate gateway URL before ANY fetch ────────────────────
+  // SECURITY: Reject non-HTTPS, private IPs, metadata endpoints, and
+  // Supabase-internal hostnames. Must be checked BEFORE the kill-switch
+  // so that malicious URLs never reach the fetch() call.
+  if (!isValidGatewayUrl(gatewayUrl)) {
+    console.error(`[openclaw-gateway] SSRF blocked: invalid gateway URL for user ${userId}`);
+    await serviceClient.from("openclaw_logs").insert({
+      user_id: userId,
+      agent_id: body.agent_id ?? null,
+      event_type: "ssrf_blocked",
+      summary: "SSRF guard rejected gateway URL",
+      details: { reason: "invalid_gateway_url", tool: body.tool },
+      risque: "eleve",
+    });
+    return new Response(
+      JSON.stringify({
+        blocked: true,
+        reason: "ssrf_blocked",
+        message: "L'URL du gateway est invalide ou pointe vers une ressource interne interdite.",
+      }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 

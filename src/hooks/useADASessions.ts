@@ -36,7 +36,7 @@ export interface ADASession {
   final_closed_at: string | null;
   stripe_payment_link: string | null;
   contract_amount: number | null;
-  commission_7pct: number | null;
+  royalty_12pct: number | null;
   outcome: string | null;
   roi_score: number | null;
   created_at: string;
@@ -230,7 +230,7 @@ export function useADASessions() {
     try {
       const result = await callOrchestrator({ action: "validate", session_id: sessionId, amount }, token);
       if (result.success) {
-        toast.success(`✅ Appel validé — Contrat Stripe généré — Commission 7%: ${result.commission_7pct}€`);
+        toast.success(`✅ Appel validé — Contrat Stripe généré — Royalty 12%: ${result.royalty_12pct}€`);
         await fetchSessionDetail(sessionId);
       } else {
         toast.error(result.error ?? "Erreur validation");

@@ -108,7 +108,7 @@ export default function SystemStatus() {
 
     // ── Royalty Engine
     try {
-      const { data, error } = await supabase.from("ada_sessions").select("commission_7pct").limit(1);
+      const { data, error } = await supabase.from("ada_sessions").select("royalty_12pct").limit(1);
       updateStatus("royalty", {
         status: error ? "degraded" : "ok",
         detail: error ? error.message : "Versement automatique des gains opérationnel",
