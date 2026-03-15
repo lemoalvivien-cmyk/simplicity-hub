@@ -1,8 +1,12 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, Zap, Flame } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Lock } from "lucide-react";
 import { track } from "@/lib/landingTracking";
+import { useFounderSlots } from "@/hooks/useFounderSlots";
+import SlotCounter from "@/components/landing/SlotCounter";
 
 export default function FinalCTASection() {
+  const { isSoldOut, isUrgent, remaining } = useFounderSlots();
+
   return (
     <section className="hero-bg py-24 md:py-32 relative overflow-hidden">
       <div
@@ -34,44 +38,46 @@ export default function FinalCTASection() {
           </span>
         </h2>
 
-        {/* Pricing urgency block */}
-        <div
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl mb-5 border"
-          style={{
-            background: "hsl(38 100% 52% / 0.1)",
-            borderColor: "hsl(38 100% 52% / 0.3)",
-          }}
-        >
-          <Flame size={14} style={{ color: "hsl(38 100% 65%)" }} />
-          <p className="text-sm font-semibold text-white/90">
-            Offre de lancement :{" "}
-            <span style={{ color: "hsl(38 100% 70%)" }}>99 € TTC/an au lieu de 990 €</span>
-            {" "}— premier arrivé premier servi
-          </p>
+        {/* Live slot counter */}
+        <div className="flex justify-center mb-5">
+          <SlotCounter variant="hero" />
         </div>
 
-        <p className="text-white/90 text-base mb-5 max-w-sm mx-auto leading-relaxed font-medium">
-          Rejoignez les entrepreneurs et facilitateurs qui ont déjà choisi la simplicité et la tranquillité. Cliquez sur le bouton qui vous correspond et commencez maintenant.
+        <p className="text-white/80 text-base mb-6 max-w-sm mx-auto leading-relaxed font-medium">
+          Rejoignez les entrepreneurs et facilitateurs qui ont déjà choisi la simplicité et la tranquillité.
         </p>
 
         <div className="flex flex-col items-center gap-3 mb-5">
-        <Link
-            to="/signup"
-            className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto font-bold"
-            onClick={() => track("cta_final_enterprise")}
-          >
-            <Zap size={16} />
-            Je veux mes premiers clients dès demain — 99 € TTC/an
-            <ArrowRight size={17} />
-          </Link>
-          <span className="flex items-center gap-1.5 text-white/60 text-xs">
+          {isSoldOut ? (
+            <div
+              className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-sm font-semibold border cursor-not-allowed opacity-60 w-full sm:w-auto"
+              style={{ borderColor: "hsl(218 20% 60% / 0.3)", color: "hsl(218 20% 70%)" }}
+            >
+              <Lock size={15} />
+              Offre de lancement terminée — Merci d'avoir participé
+            </div>
+          ) : (
+            <Link
+              to="/checkout"
+              className="btn-cta text-base px-9 py-4 gap-2 w-full sm:w-auto font-bold"
+              onClick={() => track("cta_final_enterprise")}
+            >
+              <Zap size={16} />
+              {isUrgent
+                ? `🔥 Il reste ${remaining} place${remaining! > 1 ? "s" : ""} — J'en profite maintenant`
+                : "Je veux mes premiers clients dès demain — 99 € TTC/an"
+              }
+              <ArrowRight size={17} />
+            </Link>
+          )}
+          <span className="flex items-center gap-1.5 text-white/55 text-xs">
             <ShieldCheck size={12} aria-hidden="true" />
-            Satisfait ou remboursé 30 jours
+            Satisfait ou remboursé 30 jours · Annulation libre · Accès immédiat
           </span>
         </div>
 
-        <p className="text-white/70 text-xs mb-6">
-          Sans engagement · Annulation libre · Support inclus · Accès immédiat
+        <p className="text-white/50 text-xs mb-6">
+          Paiement sécurisé par Stripe · RGPD · Facture envoyée immédiatement
         </p>
       </div>
     </section>

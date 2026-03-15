@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, ArrowRight, Zap, Users, Flame } from "lucide-react";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { CheckCircle2, ArrowRight, Zap, Users, Lock } from "lucide-react";
 import { track } from "@/lib/landingTracking";
+import { useFounderSlots } from "@/hooks/useFounderSlots";
+import SlotCounter from "@/components/landing/SlotCounter";
 
 const entrepriseFeatures = [
   "Recherche automatique intelligente de clients qualifiés",
@@ -25,19 +25,7 @@ const facilitateurFeatures = [
 ];
 
 export default function PricingSection() {
-  const [slotsRemaining, setSlotsRemaining] = useState(100);
-
-  useEffect(() => {
-    supabase
-      .from("launch_quota")
-      .select("total_slots, used_slots")
-      .single()
-      .then(({ data }) => {
-        if (data) {
-          setSlotsRemaining(Math.max(0, data.total_slots - data.used_slots));
-        }
-      });
-  }, []);
+  const { remaining, isSoldOut, isUrgent, loading } = useFounderSlots();
 
   return (
     <section id="pricing" className="bg-background py-20">
@@ -52,34 +40,43 @@ export default function PricingSection() {
           </p>
         </div>
 
-        {/* URGENT scarcity banner */}
-        <div
-          className="flex items-center justify-center gap-3 rounded-2xl px-5 py-3.5 mb-7 border"
-          style={{
-            background: "hsl(38 100% 52% / 0.08)",
-            borderColor: "hsl(38 100% 52% / 0.35)",
-          }}
-        >
-          <Flame size={16} style={{ color: "hsl(38 100% 60%)" }} className="shrink-0" />
-          <p className="text-sm font-semibold" style={{ color: "hsl(38 100% 68%)" }}>
-            Offre de lancement exclusive : <strong className="text-white">99 € TTC/an au lieu de 990 €</strong>
-            {" "}— ça part extrêmement vite,{" "}
-            <span style={{ color: "hsl(38 100% 75%)" }}>premier arrivé premier servi !</span>
-          </p>
-          {slotsRemaining > 0 && slotsRemaining <= 50 && (
-            <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-white/10 text-white">
-              {slotsRemaining} places restantes
-            </span>
+        {/* Live slot banner */}
+        <div className="mb-7">
+          {isSoldOut ? (
+            <div
+              className="flex items-center justify-center gap-3 rounded-2xl px-5 py-4 border"
+              style={{ background: "hsl(218 20% 88% / 0.05)", borderColor: "hsl(218 20% 70% / 0.2)" }}
+            >
+              <Lock size={15} className="text-muted-foreground shrink-0" />
+              <p className="text-sm font-semibold text-muted-foreground">
+                Offre de lancement terminée — Merci à tous nos premiers Fondateurs !
+              </p>
+            </div>
+          ) : (
+            <SlotCounter variant="banner" remaining={remaining} loading={loading} />
           )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 items-start">
           {/* Entreprise */}
-          <div className="bg-card rounded-2xl overflow-hidden border-2 border-primary shadow-lg flex flex-col">
+          <div
+            className="bg-card rounded-2xl overflow-hidden border-2 flex flex-col"
+            style={{ borderColor: isSoldOut ? "hsl(var(--border))" : "hsl(var(--primary))" }}
+          >
             <div className="px-7 pt-7 pb-5" style={{ background: "var(--gradient-primary)" }}>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold mb-4">
-                <Zap size={10} />
-                Offre de lancement — {slotsRemaining} place{slotsRemaining !== 1 ? "s" : ""} restante{slotsRemaining !== 1 ? "s" : ""}
+              <div className="mb-4">
+                {loading ? (
+                  <div className="h-6 w-40 rounded-full bg-white/15 animate-pulse" />
+                ) : isSoldOut ? (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white/50 text-xs font-bold">
+                    <Lock size={10} /> Offre terminée
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold">
+                    <Zap size={10} />
+                    Offre de lancement — {remaining} place{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""}
+                  </div>
+                )}
               </div>
               <p className="text-white/90 text-xs font-semibold uppercase tracking-widest mb-2">Founder Pass</p>
               <div className="flex items-end gap-2 mb-1">
@@ -90,7 +87,7 @@ export default function PricingSection() {
                 </div>
               </div>
               <p className="text-white/80 text-xs font-semibold mt-1">
-                100 places max · Premier arrivé premier servi
+                Prix garanti à vie · 100 places max · Premier arrivé premier servi
               </p>
             </div>
 
@@ -98,23 +95,40 @@ export default function PricingSection() {
               <ul className="space-y-3 mb-7 flex-1">
                 {entrepriseFeatures.map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <CheckCircle2 size={14} className="shrink-0 mt-0.5" style={{ color: "hsl(var(--primary))" }} />
+                    <CheckCircle2 size={14} className="shrink-0 mt-0.5" style={{ color: isSoldOut ? "hsl(var(--muted-foreground))" : "hsl(var(--primary))" }} />
                     <span className="text-sm text-foreground">{item}</span>
                   </li>
                 ))}
               </ul>
-              <Link
-                to="/signup"
-                className="btn-cta w-full text-center flex items-center justify-center gap-2 py-4 text-base font-bold"
-                onClick={() => track("cta_pricing_enterprise")}
-              >
-                <Zap size={16} />
-                Activer le Founder Pass — 99 € TTC/an
-                <ArrowRight size={16} />
-              </Link>
-              <p className="text-center text-xs text-muted-foreground mt-3">
-                Accès immédiat · 100 places max · Gains versés automatiquement
-              </p>
+              {isSoldOut ? (
+                <div className="space-y-3">
+                  <div
+                    className="w-full flex items-center justify-center gap-2 py-4 rounded-xl text-sm font-semibold border cursor-not-allowed opacity-50"
+                    style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}
+                  >
+                    <Lock size={14} />
+                    Offre de lancement terminée
+                  </div>
+                  <p className="text-center text-xs text-muted-foreground">
+                    Toutes les places ont été prises. Merci pour votre intérêt !
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    to="/checkout"
+                    className="btn-cta w-full text-center flex items-center justify-center gap-2 py-4 text-base font-bold"
+                    onClick={() => track("cta_pricing_enterprise")}
+                  >
+                    <Zap size={16} />
+                    Activer le Founder Pass — 99 € TTC/an
+                    <ArrowRight size={16} />
+                  </Link>
+                  <p className="text-center text-xs text-muted-foreground mt-3">
+                    Accès immédiat · Prix garanti à vie · Gains versés automatiquement
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
