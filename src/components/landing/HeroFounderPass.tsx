@@ -1,50 +1,15 @@
-import { useRef, useState, useEffect, Suspense, lazy } from "react";
+import { useRef, useState, Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Zap, Landmark, ChevronDown, Sparkles, Users } from "lucide-react";
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
+import { ArrowRight, Zap, ChevronDown, Users, Lock } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { track } from "@/lib/landingTracking";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { PRICING } from "@/lib/pricingConfig";
+import { useFounderSlots } from "@/hooks/useFounderSlots";
+import SlotCounter from "@/components/landing/SlotCounter";
 
 const HeroSphere = lazy(() => import("./HeroSphere"));
 
 const BOUNCE = { type: "spring" as const, stiffness: 260, damping: 18 };
 const EASE_POWER = { ease: [0.22, 1, 0.36, 1] as const, duration: 0.75 };
-
-// ─── Slot counter live ─────────────────────────────────────────────────────
-function SlotBadge() {
-  const [slots, setSlots] = useState<number | null>(null);
-  useEffect(() => {
-    supabase
-      .from("launch_quota")
-      .select("total_slots, used_slots")
-      .single()
-      .then(({ data }) => {
-        if (data) setSlots(Math.max(0, data.total_slots - data.used_slots));
-      });
-  }, []);
-  if (slots === null) return null;
-  return (
-    <motion.span
-      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={BOUNCE}
-      style={{
-        background: "hsl(var(--accent) / 0.15)",
-        border: "1px solid hsl(var(--accent) / 0.4)",
-        color: "hsl(var(--accent))",
-      }}
-    >
-      <span
-        className="w-1.5 h-1.5 rounded-full animate-pulse"
-        style={{ background: "hsl(var(--accent))" }}
-      />
-      {slots} / 100 places restantes
-    </motion.span>
-  );
-}
 
 // ─── Floating stat card ────────────────────────────────────────────────────
 function StatCard({
@@ -72,83 +37,35 @@ function StatCard({
   );
 }
 
-// ─── Main CTA button: Activer Founder Pass via Stripe ─────────────────────
-function FounderPassButton() {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-
-  const handleClick = async () => {
-    track("cta_hero_founder_pass");
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = "/signup";
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { price_id: PRICING.launch.price_id },
-      });
-      if (error || !data?.url) throw new Error(error?.message ?? "Erreur checkout");
-      window.location.href = data.url;
-    } catch (err) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'accéder au paiement. Veuillez vous connecter d'abord.",
-        variant: "destructive",
-      });
-      setTimeout(() => { window.location.href = "/signup"; }, 1200);
-    } finally {
-      setLoading(false);
-    }
-  };
+// ─── Main CTA button: points to /checkout ─────────────────────────────────
+function FounderPassButton({ isSoldOut, isUrgent, remaining }: { isSoldOut: boolean; isUrgent: boolean; remaining: number | null }) {
+  if (isSoldOut) {
+    return (
+      <motion.div
+        className="flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-sm font-semibold border cursor-not-allowed opacity-50"
+        style={{ borderColor: "hsl(218 20% 60% / 0.3)", color: "hsl(218 20% 70%)" }}
+      >
+        <Lock size={15} />
+        Offre de lancement terminée
+      </motion.div>
+    );
+  }
 
   return (
-    <motion.button
-      onClick={handleClick}
-      disabled={loading}
-      whileHover={{ scale: 1.03, y: -2 }}
-      whileTap={{ scale: 0.97 }}
-      transition={BOUNCE}
-      className="btn-cta flex items-center justify-center gap-2.5 px-8 py-4 text-[0.95rem] font-bold disabled:opacity-60"
-    >
-      <Zap size={16} strokeWidth={2.5} />
-      {loading ? "Chargement…" : "Je veux mes premiers clients dès demain — 99 €/an"}
-      {!loading && <ArrowRight size={15} />}
-    </motion.button>
-  );
-}
-
-// ─── PSD2 bank connect button ──────────────────────────────────────────────
-function BankPSD2Button() {
-  const { toast } = useToast();
-
-  const handleClick = () => {
-    track("cta_hero_bank_psd2");
-    toast({
-      title: "Connexion bancaire PSD2",
-      description: "Connectez votre banque pour activer le Live Cash Flow et le scoring ADA.",
-    });
-    window.location.href = "/dashboard?tab=bank";
-  };
-
-  return (
-    <motion.button
-      onClick={handleClick}
-      whileHover={{ scale: 1.03, y: -2 }}
-      whileTap={{ scale: 0.97 }}
-      transition={BOUNCE}
-      className="flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl text-sm font-semibold border text-white/85 hover:text-white transition-colors duration-200"
-      style={{
-        borderColor: "hsl(210 85% 45% / 0.45)",
-        background: "hsl(210 85% 15% / 0.35)",
-        backdropFilter: "blur(10px)",
-        color: "hsl(210 85% 75%)",
-      }}
-    >
-      <Landmark size={15} strokeWidth={2} />
-      Connect Bank PSD2
-    </motion.button>
+    <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
+      <Link
+        to="/checkout"
+        className="btn-cta flex items-center justify-center gap-2.5 px-8 py-4 text-[0.95rem] font-bold"
+        onClick={() => track("cta_hero_founder_pass")}
+      >
+        <Zap size={16} strokeWidth={2.5} />
+        {isUrgent && remaining !== null
+          ? `🔥 Il reste ${remaining} place${remaining > 1 ? "s" : ""} — J'en profite`
+          : "Je veux mes premiers clients dès demain — 99 €/an"
+        }
+        <ArrowRight size={15} />
+      </Link>
+    </motion.div>
   );
 }
 
@@ -164,6 +81,8 @@ export default function HeroFounderPass() {
 
   const [sphereX, setSphereX] = useState(0);
   const [sphereY, setSphereY] = useState(0);
+
+  const { remaining, isSoldOut, isUrgent } = useFounderSlots();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -213,24 +132,23 @@ export default function HeroFounderPass() {
           {/* LEFT — text */}
           <div className="flex flex-col">
 
-            {/* Slot badge */}
+            {/* Slot badge — realtime */}
             <motion.div
               initial={{ opacity: 0, y: -14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={EASE_POWER}
               className="mb-6"
             >
-              <SlotBadge />
+              <SlotCounter variant="hero" />
             </motion.div>
 
-            {/* Brand + price — THE key headline */}
+            {/* Brand + price */}
             <motion.div
               initial={{ opacity: 0, y: 36 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.06 }}
               className="mb-5"
             >
-              {/* WIINUP MAX big stamp */}
               <p
                 className="font-display font-black tracking-tight leading-none mb-3"
                 style={{
@@ -245,7 +163,6 @@ export default function HeroFounderPass() {
                 WIINUP MAX
               </p>
 
-              {/* Offer stamp */}
               <div
                 className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 px-4 py-2.5 rounded-2xl mb-5"
                 style={{
@@ -261,7 +178,6 @@ export default function HeroFounderPass() {
                 <span className="text-white/60 text-xs">· 100 places max</span>
               </div>
 
-              {/* The EXACT required copy — large & prominent */}
               <h1
                 className="font-display font-bold text-white leading-[1.28] tracking-tight"
                 style={{ fontSize: "clamp(1.15rem, 2.5vw, 1.6rem)" }}
@@ -300,8 +216,7 @@ export default function HeroFounderPass() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.38 }}
             >
-              <FounderPassButton />
-              <BankPSD2Button />
+              <FounderPassButton isSoldOut={isSoldOut} isUrgent={isUrgent} remaining={remaining} />
             </motion.div>
 
             {/* Secondary links */}
