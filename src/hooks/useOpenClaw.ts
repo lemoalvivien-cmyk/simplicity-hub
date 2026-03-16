@@ -203,21 +203,14 @@ export function useOpenClaw() {
     };
   }, [loadAll]);
 
-  // ── Sauvegarder config ─────────────────────────────────────────────────────
+  // ── Sauvegarder config (OpenClaw tables removed v8 — local state only) ──────
   const saveConfig = useCallback(async (updates: Partial<OpenClawConfig & { gateway_secret?: string }>) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    await supabase.from("openclaw_config").upsert(
-      { user_id: user.id, ...updates },
-      { onConflict: "user_id" }
-    );
-
+    // OpenClaw config table dropped — update local state only
     setConfig((prev) => prev ? { ...prev, ...updates } : null);
 
-    // Si URL changée → recalculer statut
     if (updates.gateway_url !== undefined) {
       setConnectionStatus(updates.gateway_url ? "error" : "not_configured");
+
     }
   }, []);
 
