@@ -19,7 +19,7 @@ project_id = "usnriklfiagazpffsqew"
   [functions.bank-webhook]
     verify_jwt = false  # SECURITY: validated via x-bank-signature + fail-closed
 
-  # ── Internal notify functions (DB triggers via pg_net) ─────────────────────
+  # ── Internal notify / email (DB triggers via pg_net) ───────────────────────
   # SECURITY: validated in-code via x-internal-secret header
   [functions.notify-gain-paye]
     verify_jwt = false
@@ -35,6 +35,9 @@ project_id = "usnriklfiagazpffsqew"
 
   [functions.send-reactivation-email]
     verify_jwt = false  # SECURITY: additionally validated via admin JWT
+
+  [functions.business-alert-dispatcher]
+    verify_jwt = false  # SECURITY: validated via admin JWT or x-cron-secret
 
   # ── Billing ─────────────────────────────────────────────────────────────────
   [functions.check-subscription]
