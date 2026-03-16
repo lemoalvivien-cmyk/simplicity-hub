@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import {
   CheckCircle2, Zap, Users, Flame, ArrowRight,
-  Mic, Bot, TrendingUp, Coins, Shield, ChevronDown, ChevronUp,
+  FileText, TrendingUp, Coins, Shield, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
@@ -11,25 +11,25 @@ import { useFounderSlots } from "@/hooks/useFounderSlots";
 // ─── Feature blocks ────────────────────────────────────────────────────────
 const founderFeatures = [
   {
-    icon: Mic,
+    icon: FileText,
     color: "hsl(210 85% 62%)",
-    category: "Recherche automatique de clients",
+    category: "Missions et ciblage",
     items: [
-      "Un assistant cherche des clients pour vous, 24h/24",
-      "Plusieurs assistants intelligents travaillent ensemble",
-      "Messages adaptés à chaque situation",
-      "Consentement enregistré automatiquement",
+      "Missions publiées en 2 minutes",
+      "Visibles immédiatement par vos apporteurs",
+      "Critères de ciblage précis par secteur et zone",
+      "Vous gardez le contrôle total",
     ],
   },
   {
-    icon: Bot,
+    icon: Users,
     color: "hsl(var(--primary-glow))",
-    category: "Suivi et conclusions",
+    category: "Réseau et introductions",
     items: [
-      "Analyse des opportunités en temps réel",
-      "Votre assistant trouve des affaires en autonomie",
-      "Détection des signaux d'intérêt",
-      "Tableau de suivi complet · Vous gardez le contrôle",
+      "Introductions qualifiées par vos contacts de confiance",
+      "Chaque mise en relation traçée et horodatée",
+      "Validation en un clic, refus possible",
+      "Tableau de suivi complet · Zéro intro perdue",
     ],
   },
   {
@@ -37,21 +37,21 @@ const founderFeatures = [
     color: "hsl(var(--accent))",
     category: "Gains automatiques",
     items: [
-      "Une part de chaque affaire conclue, partagée automatiquement",
-      "Frais de plateforme transparents",
-      "Gains enregistrés et protégés",
-      "Versement automatique à chaque affaire · Traçabilité totale",
+      "Versement automatique à signature de contrat",
+      "Commission définie à l'avance, transparente",
+      "Gains enregistrés et protégés pour vos apporteurs",
+      "Traçabilité totale · Aucune zone grise",
     ],
   },
   {
     icon: TrendingUp,
     color: "hsl(152 62% 52%)",
-    category: "Données et suivi en direct",
+    category: "Suivi en temps réel",
     items: [
-      "Connexion bancaire en direct",
+      "Pipeline clair et lisible à tout moment",
       "Réseau de confiance évolutif",
       "Attribution prouvée et vérifiable",
-      "Données de marché accessibles",
+      "Score de réputation des facilitateurs",
     ],
   },
   {
@@ -59,7 +59,7 @@ const founderFeatures = [
     color: "hsl(38 95% 52%)",
     category: "Réseau et sécurité",
     items: [
-      "Présentateurs qualifiés disponibles",
+      "Facilitateurs qualifiés disponibles",
       "Chaque présentation vérifiée et protégée",
       "Protection contre les contournements",
       "Support inclus · Mises à jour incluses · Conforme RGPD",
@@ -83,15 +83,11 @@ const faqItems = [
   },
   {
     q: "À quoi servent les 99 € par an ?",
-    a: "Ils donnent accès à tout : l'assistant qui cherche des clients pour vous, les présentations de vos contacts, le suivi complet et les gains automatiques. Tout inclus, sans frais cachés.",
+    a: "Ils donnent accès à tout : publier des missions, recevoir des introductions qualifiées de vos apporteurs, suivre votre pipeline et déclencher les versements automatiques. Tout inclus, sans frais cachés.",
   },
   {
-    q: "Comment fonctionne l'assistant vocal ?",
-    a: "Il cherche des clients pour vous, prépare les messages, et vous informe au bon moment — 24h/24, sans que vous ayez à intervenir. Vous validez ou refusez en un clic.",
-  },
-  {
-    q: "Puis-je connecter mon compte bancaire ?",
-    a: "Oui. La connexion bancaire vous permet de voir vos entrées d'argent en direct et d'améliorer les résultats de votre assistant. Vos données bancaires ne sont jamais stockées chez nous.",
+    q: "Puis-je arrêter quand je veux ?",
+    a: "Oui. Sans condition. Votre accès continue jusqu'à la fin de la période payée. Aucune pénalité, aucun engagement.",
   },
   {
     q: "Les facilitateurs paient-ils quelque chose ?",
@@ -261,8 +257,8 @@ export default function Pricing() {
           </h1>
 
           <p className="text-white/65 max-w-xl mx-auto leading-relaxed" style={{ fontSize: "clamp(0.9rem, 1.9vw, 1.05rem)" }}>
-            Votre assistant IA prospecte, apporte des affaires et travaille en autonomie 24h/24.
-            Vos <strong className="text-white/85">gains sont versés automatiquement</strong> à chaque affaire signée, sans rien faire de votre côté.
+            Vos contacts vous envoient des introductions qualifiées.{" "}
+            Vos <strong className="text-white/85">gains sont versés automatiquement</strong> à chaque affaire signée. Vous ne payez que si ça marche.
           </p>
         </div>
       </section>
@@ -434,13 +430,13 @@ export default function Pricing() {
             Vos gains, versés automatiquement à chaque affaire signée
           </h2>
           <p className="text-muted-foreground text-sm leading-relaxed mb-8 max-w-xl mx-auto">
-            À chaque affaire conclue par votre assistant IA, une part revient sur votre compte automatiquement.
+            À chaque affaire conclue et signée, une part revient automatiquement à votre apporteur.
             Frais de plateforme transparents, traçabilité totale, aucune surprise.
           </p>
           <div className="grid sm:grid-cols-3 gap-4 text-left">
             {[
               { label: "Frais plateforme", pct: "7 %", desc: "Financement de la plateforme, R&D et équipe", color: "hsl(var(--primary-glow))" },
-              { label: "Frais assistant IA", pct: "5 %", desc: "Votre assistant IA, opérationnel 24h/24", color: "hsl(var(--accent))" },
+              { label: "Commission apporteur", pct: "5 %+", desc: "Définie par vous lors de la création de mission", color: "hsl(var(--accent))" },
               { label: "Votre part", pct: "88 %", desc: "Versé automatiquement après chaque affaire signée", color: "hsl(152 62% 52%)" },
             ].map(({ label, pct, desc, color }) => (
               <div

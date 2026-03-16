@@ -5,13 +5,13 @@ import { useFounderSlots } from "@/hooks/useFounderSlots";
 import SlotCounter from "@/components/landing/SlotCounter";
 
 const entrepriseFeatures = [
-  "Recherche automatique intelligente de clients qualifiés",
-  "Présentations de contacts de confiance",
-  "Suivi complet de chaque opportunité",
-  "Gains automatiques tracés et protégés",
-  "Assistant vocal qui vous lit les bonnes nouvelles",
-  "Équipe d'assistants intelligents 24h/24",
-  "Votre espace personnel haut de gamme",
+  "Missions publiées en 2 minutes — visibles immédiatement",
+  "Introductions qualifiées envoyées par vos apporteurs",
+  "Suivi complet et traçé de chaque opportunité",
+  "Validation en un clic — vous gardez le contrôle total",
+  "Gains automatiques tracés et versés à signature",
+  "Votre espace personnel haut de gamme unifié",
+  "Matching facilitateurs par mission",
   "Support inclus · Mises à jour incluses",
 ];
 

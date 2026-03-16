@@ -295,7 +295,7 @@ export default function Account() {
           </a>
         </div>
 
-        {/* Autonomie & IA */}
+        {/* Paramètres avancés */}
         <div className="card-surface p-5 mb-5">
           <div className="flex items-center gap-2 mb-4">
             <Zap size={17} className="text-primary" />

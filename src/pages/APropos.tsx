@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Brain, Users, ArrowRight, Target, Heart, Handshake,
+  FileText, Users, ArrowRight, Target, Heart, Handshake,
   MapPin, Cpu, TrendingUp, Newspaper, Star, Clock, Euro,
   Zap, Quote
 } from "lucide-react";
@@ -103,7 +103,7 @@ export default function APropos() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-5">
-            {/* Carte IA */}
+            {/* Carte Missions */}
             <div
               className="rounded-2xl p-6 flex flex-col gap-4"
               style={{
@@ -116,19 +116,19 @@ export default function APropos() {
                   className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  <Brain size={18} className="text-white" aria-hidden="true" />
+                  <FileText size={18} className="text-white" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Moteur 1</p>
-                  <p className="font-display font-bold text-white text-base leading-tight">IA Agent</p>
+                  <p className="font-display font-bold text-white text-base leading-tight">Vos missions publiées</p>
                 </div>
               </div>
               <p className="text-white/80 text-sm leading-relaxed">
-                <strong className="text-white">La recherche automatique.</strong>{" "}
-                Un assistant cherche pour vous en continu, repère les personnes intéressées, prépare les messages et remonte les meilleures opportunités — sans que vous ayez à intervenir.
+                <strong className="text-white">La mise en relation structurée.</strong>{" "}
+                Décrivez le client idéal en 2 minutes. Vos apporteurs reçoivent votre mission immédiatement et vous envoient des introductions qualifiées.
               </p>
               <ul className="space-y-1.5">
-                {["Actif 24h/24 pour vous", "Détecte les personnes intéressées", "Prépare les messages à envoyer"].map(item => (
+                {["Création de mission en 2 minutes", "Visibles par tout votre réseau", "Validation en un clic"].map(item => (
                   <li key={item} className="flex items-center gap-2.5 text-sm text-white/75">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" aria-hidden="true" />
                     {item}

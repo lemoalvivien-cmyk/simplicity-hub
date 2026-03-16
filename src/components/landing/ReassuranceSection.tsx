@@ -7,7 +7,7 @@ const items = [
   {
     icon: "🧭",
     title: "Vous êtes guidé à chaque étape",
-    desc: "Onboarding pas à pas, aide contextuelle, assistant disponible à tout moment.",
+    desc: "Onboarding pas à pas, aide contextuelle, support disponible à tout moment.",
   },
   {
     icon: "📞",
