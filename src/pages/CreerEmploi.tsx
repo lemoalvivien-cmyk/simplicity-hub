@@ -260,10 +260,14 @@ export default function CreerEmploiPage() {
                 <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
                   <Link
                     to="/pricing"
-                    className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold border text-white/80 hover:text-white transition-colors"
-                    style={{ borderColor: "hsl(218 55% 33% / 0.5)", background: "hsl(218 55% 17% / 0.4)", backdropFilter: "blur(10px)" }}
+                    className="flex flex-col items-center justify-center gap-1 px-6 py-5 rounded-xl text-sm font-semibold border transition-colors"
+                    style={{ borderColor: "hsl(218 55% 33% / 0.5)", background: "hsl(218 55% 17% / 0.4)", backdropFilter: "blur(10px)", color: "hsl(0 0% 100% / 0.8)" }}
                   >
-                    Voir les tarifs
+                    <span className="flex items-center gap-1.5">Je veux mes premiers clients – 99 €/an</span>
+                    <span className="text-[11px] opacity-70 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
+                      Places limitées — 100/100
+                    </span>
                   </Link>
                 </motion.div>
               </motion.div>
