@@ -228,7 +228,7 @@ export default function HeroSectionV2() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.3 }}
             >
-              Founder Pass 99 €/an (100 places max) – Votre assistant IA prospecte en voix + apporte des affaires + travaille en autonomie 24h/24 + 12&nbsp;% de gains reversés automatiquement sur chaque deal fermé.
+              Founder Pass 99 €/an (100 places max) — Vos contacts vous envoient des introductions qualifiées. Chaque affaire signée déclenche le versement automatique du gain de votre apporteur. Zéro avance de frais. Zéro résultat, zéro frais.
             </motion.p>
 
             {/* ── CTAs with haptic spring hover ─────────────── */}
