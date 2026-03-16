@@ -690,8 +690,8 @@ function SuccessScreen({
                 },
                 {
                   n: 2,
-                  title: "Activez votre assistant IA",
-                  desc: "Il commence à chercher des clients pour vous immédiatement.",
+                  title: "Publiez votre première mission",
+                  desc: "Décrivez le client idéal. Vos apporteurs peuvent vous envoyer des introductions immédiatement.",
                   color: "hsl(var(--accent))",
                 },
                 {
