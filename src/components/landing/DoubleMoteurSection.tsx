@@ -1,10 +1,10 @@
-import { Brain, Users, Zap, MessageSquare, Link2, Send, TrendingUp, Shield } from "lucide-react";
+import { Users, Zap, MessageSquare, Link2, Send, TrendingUp, Shield, FileText } from "lucide-react";
 
 const moteur1Features = [
-  { icon: Brain, label: "OpenClaw — assistant IA de prospection" },
-  { icon: Zap, label: "Suggestions de cibles et de messages" },
-  { icon: MessageSquare, label: "Brouillons de messages à personnaliser" },
-  { icon: Link2, label: "Diffusion passive & liens traqués" },
+  { icon: FileText, label: "Missions publiées en 2 minutes" },
+  { icon: Zap, label: "Brouillons de messages prêts à personnaliser" },
+  { icon: Link2, label: "Liens traqués pour mesurer chaque intérêt" },
+  { icon: MessageSquare, label: "Brouillons multicanaux — WhatsApp, email, LinkedIn" },
   { icon: TrendingUp, label: "Alertes de suivi et de relance" },
 ];
 
@@ -26,12 +26,12 @@ export default function DoubleMoteurSection() {
             Deux moteurs. Un seul guichet.
           </h2>
           <p className="text-muted-foreground text-base max-w-xl mx-auto">
-            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+            Missions publiées + réseau humain structuré. Vos facilitateurs actifs travaillent pour vous. Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-5">
-          {/* Moteur 1 — Prospection IA assistée */}
+          {/* Moteur 1 — Missions & prospection */}
           <div
             className="rounded-2xl overflow-hidden border border-border"
             style={{ background: "linear-gradient(160deg, hsl(218 65% 9%), hsl(218 55% 12%))" }}
@@ -45,17 +45,17 @@ export default function DoubleMoteurSection() {
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  <Brain size={18} className="text-white" aria-hidden="true" />
+                  <FileText size={18} className="text-white" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "hsl(218 72% 65%)" }}>
                     Moteur 1
                   </p>
-                  <p className="font-display font-bold text-white text-base">Prospection IA assistée</p>
+                  <p className="font-display font-bold text-white text-base">Missions & messages</p>
                 </div>
               </div>
               <p className="text-white/70 text-sm leading-relaxed">
-                OpenClaw (en connexion réelle avec API externe) vous suggère des cibles, prépare des brouillons et vous alerte. L'humain valide et envoie.
+                Publiez votre mission en 2 minutes. Des brouillons de messages sont prêts à personnaliser. Vous gardez le contrôle de chaque envoi.
               </p>
             </div>
             <div className="p-6">
@@ -132,7 +132,7 @@ export default function DoubleMoteurSection() {
             <p className="font-semibold text-white text-sm">Les deux ensemble = plus puissant</p>
           </div>
           <p className="text-white/60 text-sm">
-            L'assistant IA assiste la prospection. Votre réseau ouvre des portes. Tout converge dans un seul cockpit.
+            Vos missions attirent des apporteurs. Votre réseau ouvre des portes. Tout converge dans un seul cockpit.
           </p>
         </div>
 

@@ -1,7 +1,7 @@
-import { Brain, Zap, MessageSquare, Activity, Link2, CheckCircle2 } from "lucide-react";
+import { Zap, MessageSquare, Activity, Link2, CheckCircle2, FileText } from "lucide-react";
 
 const features = [
-  { icon: Brain, title: "OpenClaw, assistant IA", desc: "Assiste votre prospection en connexion réelle avec API externe." },
+  { icon: FileText, title: "Missions claires et précises", desc: "Décrivez votre client idéal en quelques mots. Votre réseau reçoit la mission immédiatement." },
   { icon: MessageSquare, title: "Messages préparés", desc: "Brouillons de messages multicanaux à personnaliser avant envoi." },
   { icon: Link2, title: "Diffusion structurée", desc: "Liens traqués pour mesurer chaque clic et chaque intérêt." },
   { icon: Activity, title: "Cockpit de pilotage", desc: "Missions, introductions, gains — tout centralisé." },
@@ -13,17 +13,17 @@ export default function OpenClawSection() {
       <div className="container max-w-4xl">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
-            <p className="pill-tag mb-5">Moteur 1 · Prospection IA assistée</p>
+            <p className="pill-tag mb-5">Moteur 1 · Missions & prospection</p>
             <h2 className="font-display text-3xl font-bold text-foreground mb-4">
-              OpenClaw assiste votre<br />
-              <span className="text-highlight">prospection en connexion réelle.</span>
+              Publiez votre mission.<br />
+              <span className="text-highlight">Votre réseau fait le reste.</span>
             </h2>
             <p className="text-muted-foreground text-base mb-6 leading-relaxed">
-              Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+              Réseau humain structuré + introductions tracées. Vos facilitateurs actifs vous apportent des introductions qualifiées. Chaque opportunité est tracée. Chaque résultat est mesurable.
             </p>
             <div className="space-y-2.5">
               {[
-                "Suggestions de cibles basées sur votre profil mission",
+                "Votre mission visible immédiatement par vos apporteurs",
                 "Brouillons de messages prêts à personnaliser",
                 "Alertes de suivi pour ne laisser traîner aucun dossier",
                 "Tout remonte dans un seul cockpit",
@@ -41,7 +41,7 @@ export default function OpenClawSection() {
             </div>
           </div>
 
-          {/* OpenClaw mockup */}
+          {/* Mockup */}
           <div
             className="rounded-2xl overflow-hidden border"
             style={{
@@ -57,11 +57,11 @@ export default function OpenClawSection() {
                 className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: "var(--gradient-primary)" }}
               >
-                <Brain size={15} className="text-white" aria-hidden="true" />
+                <Zap size={15} className="text-white" aria-hidden="true" />
               </div>
               <div>
-                <p className="font-bold text-white text-sm">OpenClaw</p>
-                <p className="text-white/40 text-xs">Prospection IA assistée — bêta active</p>
+                <p className="font-bold text-white text-sm">Wiinup Max</p>
+                <p className="text-white/40 text-xs">Missions & introductions — en temps réel</p>
               </div>
               <div className="ml-auto flex items-center gap-1.5">
                 <div
@@ -69,7 +69,7 @@ export default function OpenClawSection() {
                   style={{ background: "hsl(var(--success))" }}
                   aria-hidden="true"
                 />
-                <span className="text-xs text-white/40">Connecté</span>
+                <span className="text-xs text-white/40">Actif</span>
               </div>
             </div>
             <div className="p-5 space-y-3">
@@ -95,7 +95,6 @@ export default function OpenClawSection() {
                 </div>
               ))}
             </div>
-            
           </div>
         </div>
       </div>
