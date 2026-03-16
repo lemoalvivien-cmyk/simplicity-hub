@@ -38,7 +38,7 @@ const steps = [
 
 const proofPoints = [
   "Votre réseau génère des opportunités tracées",
-  "OpenClaw prépare des brouillons à personnaliser",
+  "Des brouillons de messages prêts à personnaliser",
   "Chaque introduction est certifiée et prouvée",
   "100% gratuit pour les facilitateurs — toujours",
 ];
