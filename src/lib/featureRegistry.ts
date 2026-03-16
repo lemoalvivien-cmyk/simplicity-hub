@@ -67,6 +67,18 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     evidence: { tables: ["launch_quota"], codeFiles: ["src/components/landing/LaunchQuotaBanner.tsx"] },
   },
   {
+    id: "creer_emploi",
+    label: "Page Créer son Emploi",
+    status: "real",
+    enabled: true,
+    confidence: "code-verified",
+    area: "acquisition",
+    pages: ["/creer-emploi"],
+    note: "Tunnel de vente Facilitateur. 7 audiences, 4 étapes, FAQ, mega CTA avec quota live.",
+    risk: "none",
+    evidence: { tables: ["launch_quota"], codeFiles: ["src/pages/CreerEmploi.tsx"] },
+  },
+  {
     id: "pricing_page",
     label: "Page Pricing",
     status: "real",
