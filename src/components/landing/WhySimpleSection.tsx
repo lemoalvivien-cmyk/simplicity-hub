@@ -6,8 +6,8 @@ const points = [
   },
   {
     icon: "🧑‍🏫",
-    title: "Un assistant vous guide à chaque étape",
-    desc: "À chaque doute, une aide simple et claire est disponible en un clic.",
+    title: "Une aide claire à chaque étape",
+    desc: "À chaque doute, une aide simple et directe est disponible en un clic.",
   },
   {
     icon: "📱",

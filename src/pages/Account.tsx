@@ -299,13 +299,13 @@ export default function Account() {
         <div className="card-surface p-5 mb-5">
           <div className="flex items-center gap-2 mb-4">
             <Zap size={17} className="text-primary" />
-            <h2 className="font-semibold text-foreground">Mon assistant IA</h2>
+            <h2 className="font-semibold text-foreground">Paramètres avancés</h2>
           </div>
           <Link
             to="/pilotage"
             className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
-            Configurer la voix et les canaux
+            Configurer mes canaux et notifications
             <ChevronRight size={15} className="text-muted-foreground" />
           </Link>
         </div>

@@ -17,7 +17,7 @@ const steps = [
     icon: Share2,
     num: "02",
     title: "Choisissez une offre",
-    desc: "Parcourez les offres des entreprises. OpenClaw (IA assistée) vous propose des brouillons à personnaliser.",
+    desc: "Parcourez les offres des entreprises. Des brouillons de messages sont prêts à personnaliser selon votre réseau.",
     color: "hsl(24 100% 52%)",
   },
   {
@@ -38,7 +38,7 @@ const steps = [
 
 const proofPoints = [
   "Votre réseau génère des opportunités tracées",
-  "OpenClaw prépare des brouillons à personnaliser",
+  "Des brouillons de messages prêts à personnaliser",
   "Chaque introduction est certifiée et prouvée",
   "100% gratuit pour les facilitateurs — toujours",
 ];
@@ -67,7 +67,7 @@ export default function PassiveSectionLanding() {
             }}>avec traçabilité complète.</span>
           </h2>
           <p className="text-white/55 text-lg max-w-2xl mx-auto leading-relaxed">
-            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+            Réseau humain structuré. Vos facilitateurs actifs vous apportent des introductions qualifiées en parallèle de votre prospection. Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
         </div>
 
@@ -111,11 +111,15 @@ export default function PassiveSectionLanding() {
           }}>
             <div className="flex items-center gap-2 mb-4 pb-3 border-b" style={{ borderColor: "hsl(218 40% 25% / 0.4)" }}>
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-white/50 text-xs font-semibold">OpenClaw · Brouillon prêt à personnaliser</span>
+              <span className="text-white/50 text-xs font-semibold">Wiinup Max · Brouillon prêt à personnaliser</span>
             </div>
             <div className="space-y-2.5">
               {[
-                { icon: "💬", label: "WhatsApp court", status: "✓ Brouillon" },
+  {
+    icon: "🤝",
+    label: "WhatsApp court",
+    status: "✓ Brouillon",
+  },
                 { icon: "📧", label: "Email professionnel", status: "✓ Brouillon" },
                 { icon: "🔗", label: "Lien traqué unique", status: "✓ Actif" },
                 { icon: "📊", label: "Suivi des clics", status: "3 clics" },
@@ -131,7 +135,7 @@ export default function PassiveSectionLanding() {
             </div>
             <div className="mt-4 p-3 rounded-xl flex items-center gap-2" style={{ background: "hsl(24 100% 52% / 0.1)", border: "1px solid hsl(24 100% 52% / 0.2)" }}>
               <p className="text-xs" style={{ color: "hsl(24 80% 65%)" }}>
-                IA assistée — vous validez chaque message avant envoi.
+                Vous validez chaque message avant envoi. Rien ne part sans votre accord.
               </p>
             </div>
           </div>
