@@ -218,23 +218,14 @@ export default function HeroFounderPass() {
               <FounderPassButton isSoldOut={isSoldOut} isUrgent={isUrgent} remaining={remaining} />
             </motion.div>
 
-            {/* Secondary links */}
+            {/* Trust signals */}
             <motion.div
               className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.55, duration: 0.6 }}
             >
-              <Link
-                to="/signup"
-                className="flex items-center gap-1.5 text-xs text-white/45 hover:text-white/70 transition-colors"
-                onClick={() => track("cta_hero_facilitateur")}
-              >
-                <Users size={11} />
-                Je veux gagner de l'argent facilement — Gratuit pour toujours
-              </Link>
-              <span className="text-white/20 text-xs">·</span>
-              <span className="text-white/35 text-xs">Accès immédiat · Aucune CB requise pour inscription</span>
+              <span className="text-white/40 text-xs">Paiement sécurisé Stripe · Satisfait ou remboursé 30 jours · Accès immédiat</span>
             </motion.div>
           </div>
 
