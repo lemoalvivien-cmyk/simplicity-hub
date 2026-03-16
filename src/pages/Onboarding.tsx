@@ -52,10 +52,10 @@ const TOTAL_STEPS = 3;
 const INPUT_CLASS =
   "w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition placeholder:text-muted-foreground/60";
 
-// ── AHA MOMENT — Step 3 (entreprise only) ────────────────────────────────────
-interface StepAhaProps { prenom: string; onGo: () => void; }
+// ── AHA MOMENT — final screen ─────────────────────────────────────────────────
+interface StepAhaProps { prenom: string; role: Role; onGo: () => void; }
 
-function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
+function StepAhaMoment({ prenom, role, onGo }: StepAhaProps) {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
@@ -66,9 +66,20 @@ function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
     return () => clearInterval(t);
   }, [onGo]);
 
+  const items = role === "entreprise"
+    ? [
+        { icon: CheckCircle2, text: "3 missions actives créées pour vous", done: true },
+        { icon: CheckCircle2, text: "1 contact demo dans votre liste", done: true },
+        { icon: Target,       text: "Première victoire : créez une vraie mission →", done: false },
+      ]
+    : [
+        { icon: CheckCircle2, text: "Profil Facilitateur activé", done: true },
+        { icon: CheckCircle2, text: "Missions disponibles visibles", done: true },
+        { icon: Rocket,       text: "Première victoire : envoyez une introduction →", done: false },
+      ];
+
   return (
     <div className="w-full max-w-md text-center animate-fade-in">
-      {/* Trophy */}
       <div className="mx-auto mb-5 w-16 h-16 rounded-2xl flex items-center justify-center"
         style={{ background: "var(--gradient-accent)" }}>
         <Trophy size={28} className="text-white" />
@@ -78,25 +89,25 @@ function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
         Bravo {prenom} ! Votre espace est prêt 🎉
       </h1>
       <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-        Nous avons créé <strong className="text-foreground">3 missions d'exemple</strong> et{" "}
-        <strong className="text-foreground">1 contact demo</strong> pour que votre dashboard ne soit jamais vide.
+        {role === "entreprise"
+          ? <>Nous avons créé <strong className="text-foreground">3 missions d'exemple</strong> et <strong className="text-foreground">1 contact demo</strong> pour que votre dashboard soit immédiatement opérationnel.</>
+          : <>Votre profil Facilitateur est actif. Les missions disponibles vous attendent dans votre tableau de bord.</>
+        }
       </p>
 
-      {/* Checklist */}
+      {/* Checklist Première Victoire */}
       <div className="rounded-2xl border border-border bg-card p-4 mb-6 text-left space-y-3">
-        {[
-          { icon: CheckCircle2, text: "3 missions actives créées pour vous", done: true },
-          { icon: CheckCircle2, text: "1 contact demo dans votre liste", done: true },
-          { icon: Rocket,       text: "Créez votre première vraie mission →", done: false },
-        ].map(({ icon: Icon, text, done }) => (
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
+          ✨ Checklist Première Victoire
+        </p>
+        {items.map(({ icon: Icon, text, done }) => (
           <div key={text} className="flex items-center gap-3">
-            <Icon size={16} className={done ? "text-green-500 shrink-0" : "text-primary shrink-0"} />
+            <Icon size={16} className={done ? "text-green-500 shrink-0" : "text-primary shrink-0 animate-pulse"} />
             <span className={`text-sm ${done ? "text-foreground" : "font-semibold text-foreground"}`}>{text}</span>
           </div>
         ))}
       </div>
 
-      {/* CTA */}
       <button
         type="button"
         onClick={onGo}
@@ -107,7 +118,9 @@ function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
         <span className="ml-1 text-white/60 text-xs">({countdown}s)</span>
       </button>
       <p className="text-xs text-muted-foreground mt-3">
-        Votre première introduction peut arriver dans les 24h.
+        {role === "entreprise"
+          ? "Votre première introduction peut arriver dans les 24h."
+          : "Choisissez une mission et envoyez votre première introduction."}
       </p>
     </div>
   );
