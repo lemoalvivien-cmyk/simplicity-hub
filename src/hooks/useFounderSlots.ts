@@ -1,9 +1,9 @@
 /**
- * useFounderSlots — Realtime-aware Founder Pass slot counter
- * Subscribes to `launch_quota` via Supabase Realtime for live updates.
+ * useFounderSlots — re-exports from FounderSlotsContext singleton.
+ * All consumers share ONE fetch + ONE realtime channel → no duplicate requests.
  */
-import { useEffect, useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+export type { FounderSlotsState } from "@/contexts/FounderSlotsContext";
+export { useFounderSlotsContext as useFounderSlots } from "@/contexts/FounderSlotsContext";
 
 export interface FounderSlotsState {
   remaining: number | null;   // null = loading
