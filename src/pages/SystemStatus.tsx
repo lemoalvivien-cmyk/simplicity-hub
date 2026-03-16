@@ -21,14 +21,13 @@ interface StatusItem {
 }
 
 const INITIAL_STATUSES: StatusItem[] = [
-  { id: "db",         label: "Base de données",      description: "PostgreSQL + pgvector",           icon: Database,   status: "loading" },
-  { id: "auth",       label: "Authentification",      description: "JWT + RLS strict",                icon: Lock,       status: "loading" },
-  { id: "etg",        label: "Eternal Trust Graph",   description: "pgvector + shortest_path_trust",  icon: Brain,      status: "loading" },
-  { id: "ada",        label: "Assistant IA",         description: "Gemini 2.5 Flash + voix",         icon: Zap,        status: "loading" },
-  { id: "stripe",     label: "Stripe Payments",       description: "Checkout + Connect + Webhooks",   icon: CreditCard, status: "loading" },
-  { id: "royalty",    label: "Versement des gains",   description: "Reversement automatique",         icon: TrendingUp, status: "loading" },
-  { id: "insights",   label: "Insights API",          description: "Starter · Growth · Enterprise",   icon: BarChart3,  status: "loading" },
-  { id: "security",   label: "Sécurité & RGPD",       description: "RLS + rate-limit + Bloctel",      icon: ShieldCheck,status: "loading" },
+  { id: "db",       label: "Base de données",    description: "PostgreSQL + sauvegardes auto",    icon: Database,   status: "loading" },
+  { id: "auth",     label: "Authentification",    description: "JWT + RLS strict",                 icon: Lock,       status: "loading" },
+  { id: "reseau",   label: "Réseau & Missions",   description: "Introductions + pipeline",         icon: Zap,        status: "loading" },
+  { id: "stripe",   label: "Stripe Payments",     description: "Checkout + Connect + Webhooks",    icon: CreditCard, status: "loading" },
+  { id: "royalty",  label: "Versement des gains", description: "Reversement automatique",          icon: TrendingUp, status: "loading" },
+  { id: "notifs",   label: "Notifications",       description: "Emails transactionnels",           icon: BarChart3,  status: "loading" },
+  { id: "security", label: "Sécurité & RGPD",     description: "RLS + rate-limit",                 icon: ShieldCheck,status: "loading" },
 ];
 
 const STATUS_CONFIG = {

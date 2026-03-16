@@ -115,7 +115,11 @@ export default function PassiveSectionLanding() {
             </div>
             <div className="space-y-2.5">
               {[
-                { icon: "💬", label: "WhatsApp court", status: "✓ Brouillon" },
+  {
+    icon: "🤝",
+    label: "WhatsApp court",
+    status: "✓ Brouillon",
+  },
                 { icon: "📧", label: "Email professionnel", status: "✓ Brouillon" },
                 { icon: "🔗", label: "Lien traqué unique", status: "✓ Actif" },
                 { icon: "📊", label: "Suivi des clics", status: "3 clics" },
