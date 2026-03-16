@@ -223,13 +223,6 @@ export default function Facilitateurs() {
           </div>
         </div>
 
-        {/* Best Access Panel */}
-        <BestAccessPanel
-          title="Meilleur chemin d'accès recommandé"
-          context={{ limit: 3 }}
-          compact={true}
-        />
-
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           {[
