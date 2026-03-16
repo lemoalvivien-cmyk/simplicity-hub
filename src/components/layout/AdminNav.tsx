@@ -1,13 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
-  LayoutDashboard, Users, Tag, CreditCard, HelpCircle,
-  BarChart2, Menu, X, LogOut, Shield, Zap, TrendingUp, Rocket, Activity, Brain,
+  LayoutDashboard, Users, Tag, CreditCard,
+  Menu, X, LogOut, Shield, Zap, TrendingUp, Rocket, CheckSquare,
 } from "lucide-react";
 
-// AUDIT 16/03/2026 – BLOQUANTS LEVÉS
-// Liens morts supprimés : payout-ops, reactivation, analytics, env-check, go-live, operations, help
-// Seules les 5 routes admin vérifiées et actives sont conservées.
 const links = [
   { to: "/admin", label: "Vue d'ensemble", icon: LayoutDashboard },
   { to: "/admin/users", label: "Utilisateurs", icon: Users },
@@ -15,6 +12,7 @@ const links = [
   { to: "/admin/payments", label: "Paiements", icon: CreditCard },
   { to: "/admin/revenue", label: "Revenu réel", icon: TrendingUp },
   { to: "/admin/beta", label: "Bêta & Waitlist", icon: Rocket },
+  { to: "/admin/launch-checklist", label: "Checklist lancement", icon: CheckSquare },
 ];
 
 export default function AdminNav() {
