@@ -207,34 +207,35 @@ export default function CreerEmploiPage() {
               </motion.p>
 
               <motion.h1
-                className="font-display font-bold text-white leading-[1.05] tracking-tight mb-6"
-                style={{ fontSize: "clamp(2.4rem, 5.5vw, 4rem)" }}
+                className="font-display font-bold text-white leading-[1.1] tracking-tight mb-6"
+                style={{ fontSize: "clamp(1.6rem, 3.8vw, 3rem)" }}
                 initial={{ opacity: 0, y: 36 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...EASE, delay: 0.08 }}
               >
-                Créez votre{" "}
+                Créez votre propre emploi ou un{" "}
                 <span style={{
                   background: "linear-gradient(135deg, hsl(var(--accent)), hsl(38 100% 70%))",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
                 }}>
-                  propre emploi
-                </span>
+                  complément de revenus
+                </span>{" "}
+                en toute sécurité, sans rien sortir de votre poche, sans charge mentale ni bousculer vos habitudes en travaillant moins de 8H par semaine
               </motion.h1>
 
               <motion.p
-                className="font-display font-semibold leading-snug mb-6"
+                className="font-semibold leading-relaxed mb-8"
                 style={{
-                  fontSize: "clamp(1.05rem, 2.2vw, 1.4rem)",
-                  color: "hsl(0 0% 100% / 0.88)",
+                  fontSize: "clamp(0.9rem, 1.6vw, 1.1rem)",
+                  color: "hsl(0 0% 100% / 0.7)",
                 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...EASE, delay: 0.18 }}
               >
-                Créez votre propre emploi ou un complément de revenus en toute sécurité, sans rien sortir de votre poche, sans charge mentale ni bousculer vos habitudes en travaillant moins de 8H par semaine.
+                Accès Facilitateur 100 % gratuit. Vous ne payez que si ça marche.
               </motion.p>
 
               <motion.div
@@ -244,19 +245,29 @@ export default function CreerEmploiPage() {
                 transition={{ ...EASE, delay: 0.3 }}
               >
                 <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
-                  <Link to="/signup" className="btn-cta flex items-center justify-center gap-2 px-8 py-4 text-base">
-                    <Zap size={16} />
-                    Je deviens Facilitateur maintenant
-                    <ArrowRight size={16} />
+                  <Link to="/signup" className="btn-cta flex flex-col items-center justify-center gap-1 px-8 py-5 text-base leading-tight">
+                    <span className="flex items-center gap-2 font-bold">
+                      <Zap size={16} />
+                      Je deviens Facilitateur – Gratuit
+                      <ArrowRight size={16} />
+                    </span>
+                    <span className="text-[11px] font-semibold opacity-80 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-white/70 inline-block" />
+                      Places limitées — 100/100
+                    </span>
                   </Link>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
                   <Link
                     to="/pricing"
-                    className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold border text-white/80 hover:text-white transition-colors"
-                    style={{ borderColor: "hsl(218 55% 33% / 0.5)", background: "hsl(218 55% 17% / 0.4)", backdropFilter: "blur(10px)" }}
+                    className="flex flex-col items-center justify-center gap-1 px-6 py-5 rounded-xl text-sm font-semibold border transition-colors"
+                    style={{ borderColor: "hsl(218 55% 33% / 0.5)", background: "hsl(218 55% 17% / 0.4)", backdropFilter: "blur(10px)", color: "hsl(0 0% 100% / 0.8)" }}
                   >
-                    Voir les tarifs
+                    <span className="flex items-center gap-1.5">Je veux mes premiers clients – 99 €/an</span>
+                    <span className="text-[11px] opacity-70 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
+                      Places limitées — 100/100
+                    </span>
                   </Link>
                 </motion.div>
               </motion.div>
@@ -691,10 +702,16 @@ export default function CreerEmploiPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <motion.div whileHover={{ scale: 1.04, y: -3 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
-                <Link to="/signup" className="btn-cta text-base px-10 py-4 inline-flex items-center gap-2">
-                  <Award size={18} />
-                  Devenir Facilitateur — Founder Pass 99 €/an
-                  <ArrowRight size={18} />
+                <Link to="/signup" className="btn-cta text-base px-10 py-5 inline-flex flex-col items-center gap-1">
+                  <span className="flex items-center gap-2 font-bold">
+                    <Award size={18} />
+                    Je deviens Facilitateur – Gratuit
+                    <ArrowRight size={18} />
+                  </span>
+                  <span className="text-[12px] font-semibold opacity-85 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-white/70 inline-block" />
+                    Places limitées — 100/100
+                  </span>
                 </Link>
               </motion.div>
             </div>
@@ -712,6 +729,27 @@ export default function CreerEmploiPage() {
       </section>
 
       <LegalFooter />
+
+      {/* ── Sticky CTA Mobile ────────────────────────────────────────────── */}
+      <div
+        className="md:hidden fixed bottom-0 inset-x-0 z-50 px-4 pb-4 pt-2"
+        style={{ background: "linear-gradient(to top, hsl(218 72% 5%) 60%, transparent)" }}
+      >
+        <Link
+          to="/signup"
+          className="btn-cta w-full flex flex-col items-center justify-center gap-0.5 py-4 text-sm font-bold rounded-2xl"
+        >
+          <span className="flex items-center gap-2">
+            <Zap size={15} />
+            Je deviens Facilitateur – Gratuit
+            <ArrowRight size={15} />
+          </span>
+          <span className="text-[11px] font-semibold opacity-80 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-white/70 inline-block" />
+            Places limitées — 100/100
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }
