@@ -1,6 +1,11 @@
 /**
- * useFounderSlots — re-exports from FounderSlotsContext singleton.
- * All consumers share ONE fetch + ONE realtime channel → no duplicate requests.
+ * useFounderSlots — reads from Zustand store (founderSlotsStore).
+ * Zero re-renders unless the selected slice actually changes (subscribeWithSelector).
+ * Drop-in replacement: same API as old FounderSlotsContext hook.
  */
-export type { FounderSlotsState } from "@/contexts/FounderSlotsContext";
-export { useFounderSlotsContext as useFounderSlots } from "@/contexts/FounderSlotsContext";
+import { useFounderSlotsStore, selectSlots } from "@/stores/founderSlotsStore";
+export type { FounderSlotsState } from "@/stores/founderSlotsStore";
+
+export function useFounderSlots() {
+  return useFounderSlotsStore(selectSlots);
+}
