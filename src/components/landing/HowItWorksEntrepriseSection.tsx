@@ -13,14 +13,14 @@ const steps = [
   {
     num: "02",
     title: "Vous dites simplement ce que vous cherchez",
-    desc: "Vous écrivez en français normal : « Je cherche des entreprises qui veulent se former » ou « Je propose des solutions pour cabinets ». L'assistant comprend tout de suite.",
+    desc: "Vous décrivez votre client idéal en quelques mots. Votre espace est configuré en 2 minutes, et votre réseau reçoit votre mission immédiatement.",
     color: "hsl(152 62% 45%)",
     tag: "Simple",
   },
   {
     num: "03",
-    title: "Tout se met en route pour vous",
-    desc: "L'assistant intelligent trouve des clients qualifiés en quelques heures. Vos facilitateurs vous apportent des présentations précieuses. Tout arrive directement dans votre espace privé et calme.",
+    title: "Vos facilitateurs envoient des introductions",
+    desc: "Vos apporteurs d'affaires — anciens collègues, partenaires, contacts — vous présentent des prospects qu'ils connaissent personnellement. Chaque introduction arrive directement dans votre espace.",
     color: "hsl(38 95% 50%)",
     tag: "Automatique",
   },

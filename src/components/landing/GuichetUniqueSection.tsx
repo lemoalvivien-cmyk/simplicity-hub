@@ -1,14 +1,14 @@
-import { Brain, Target, Users, Send, TrendingUp, ShieldCheck, Shield, Smartphone, Zap, CheckCircle2, ArrowRight } from "lucide-react";
+import { Target, Users, Send, TrendingUp, ShieldCheck, Shield, Smartphone, Zap, CheckCircle2, ArrowRight, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const engines = [
   {
-    icon: Brain,
+    icon: FileText,
     color: "hsl(218 72% 55%)",
     bg: "hsl(218 72% 55% / 0.12)",
-    title: "OpenClaw — Prospection IA assistée",
-    desc: "Suggestions de cibles et brouillons de messages. En connexion réelle avec API externe.",
-    tag: "IA assistée",
+    title: "Missions publiées en 2 minutes",
+    desc: "Décrivez votre client idéal. Votre réseau reçoit la mission et vous envoie des introductions qualifiées.",
+    tag: "Entreprise",
   },
   {
     icon: Target,
@@ -38,8 +38,8 @@ const engines = [
     icon: ShieldCheck,
     color: "hsl(210 85% 55%)",
     bg: "hsl(210 85% 55% / 0.12)",
-    title: "Assistant IA contextuel",
-    desc: "Suggestions de prochaine action selon l'état de votre pipeline.",
+    title: "Prochaine action suggérée",
+    desc: "Prochaine étape claire selon l'état de votre pipeline, sans se perdre dans les détails.",
     tag: "Suggestions",
   },
   {
@@ -84,7 +84,7 @@ export default function GuichetUniqueSection() {
               <span className="text-highlight"> des clients. Dans un seul endroit.</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-              Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+              Réseau humain structuré + introductions tracées. Vos facilitateurs actifs travaillent pour vous. Chaque opportunité est tracée. Chaque résultat est mesurable.
             </p>
           </div>
 
@@ -171,10 +171,10 @@ export default function GuichetUniqueSection() {
           </div>
 
           <div className="bg-card rounded-2xl p-6 border-2 border-accent/30 max-w-2xl mx-auto text-center">
-            <div className="text-3xl mb-3">🤖</div>
-            <h3 className="font-semibold text-foreground text-base mb-2">OpenClaw vous suggère qui contacter</h3>
+            <div className="text-3xl mb-3">🤝</div>
+            <h3 className="font-semibold text-foreground text-base mb-2">Votre réseau travaille pour vous</h3>
             <p className="text-muted-foreground text-sm mb-4">
-              L'assistant IA analyse les missions et suggère les contacts de votre réseau qui correspondent le mieux. Vous gardez le contrôle de chaque envoi.
+              Chaque introduction envoyée par vos apporteurs est tracée et horodatée. Vous validez en un clic. Le gain est versé automatiquement à la signature.
             </p>
             <Link to="/signup" className="btn-cta text-sm px-7 py-3 inline-flex gap-2">
               Créer mon compte apporteur gratuit <ArrowRight size={14} />

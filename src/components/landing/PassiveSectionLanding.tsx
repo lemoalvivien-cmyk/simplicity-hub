@@ -17,7 +17,7 @@ const steps = [
     icon: Share2,
     num: "02",
     title: "Choisissez une offre",
-    desc: "Parcourez les offres des entreprises. OpenClaw (IA assistée) vous propose des brouillons à personnaliser.",
+    desc: "Parcourez les offres des entreprises. Des brouillons de messages sont prêts à personnaliser selon votre réseau.",
     color: "hsl(24 100% 52%)",
   },
   {
