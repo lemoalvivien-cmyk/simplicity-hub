@@ -163,14 +163,11 @@ export default function ProfilEntreprise() {
             />
           </div>
 
-          {/* IA Matching CTA */}
-          <button
-            onClick={() => setMatchingOpen(true)}
-            className="w-full py-4 rounded-xl border-2 border-primary/30 bg-primary/5 hover:bg-primary/10 hover:border-primary/50 transition-all flex items-center justify-center gap-2 font-semibold text-primary text-sm"
-          >
+          {/* Trouver des apporteurs */}
+          <div className="w-full py-4 rounded-xl border border-border bg-muted/50 flex items-center justify-center gap-2 font-semibold text-muted-foreground text-sm">
             <Sparkles size={16} />
-            ✨ Trouver mes Apporteurs IA
-          </button>
+            Apporteurs disponibles dans Facilitateurs
+          </div>
 
           {/* Copilot IA */}
           <CopilotPanel
