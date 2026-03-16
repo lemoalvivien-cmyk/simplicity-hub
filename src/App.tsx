@@ -58,6 +58,7 @@ const FacilitateurDetail = lazy(() => import("./pages/FacilitateurDetail"));
 
 // ── Lazy: public pages ───────────────────────────────────────────────────────
 const APropos = lazy(() => import("./pages/APropos"));
+const CreerEmploiPage = lazy(() => import("./pages/CreerEmploi"));
 
 // ── Lazy: utils ──────────────────────────────────────────────────────────────
 const Assistant = lazy(() => import("./pages/Assistant"));
