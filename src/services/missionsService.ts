@@ -71,5 +71,5 @@ export async function fetchMissionById(id: string): Promise<Mission | null> {
     .maybeSingle();
 
   if (error) throw error;
-  return data as Mission | null;
+  return data as unknown as Mission | null;
 }
