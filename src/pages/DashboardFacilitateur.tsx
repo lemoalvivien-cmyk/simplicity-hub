@@ -107,7 +107,6 @@ export default function DashboardFacilitateur() {
   return (
     <TooltipProvider>
       <UserLayout role="facilitateur" jarvisContext="dashboard-facilitateur">
-        <VoiceWelcome context="dashboard-facilitateur" userName={prenom} />
         <div className="max-w-2xl mx-auto space-y-5 pb-8">
 
           {/* ═══ HERO ══════════════════════════════════════════ */}
