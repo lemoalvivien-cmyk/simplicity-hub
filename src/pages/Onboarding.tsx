@@ -575,6 +575,7 @@ function StepSectorGoal({
 // ── MAIN PAGE ─────────────────────────────────────────────────────────────────
 export default function Onboarding() {
   const [step, setStep] = useState(1);
+  const [ahaMoment, setAhaMoment] = useState(false); // true = show step 3 aha screen
   const [role, setRole] = useState<Role>(null);
   const [prenom, setPrenom] = useState("");
   const [nomEntite, setNomEntite] = useState("");
@@ -589,9 +590,14 @@ export default function Onboarding() {
   // subscription conservé pour compatibilité contexte (peut être supprimé ultérieurement)
   useSubscription();
 
+  // Navigate to dashboard — stable ref used by StepAhaMoment countdown
+  const goToDashboard = useCallback(() => {
+    const dest =
+      role === "entreprise" ? "/dashboard/entreprise" : "/dashboard/facilitateur";
+    navigate(dest, { replace: true });
+  }, [role, navigate]);
+
   // ── Pre-select role from URL param (?role=entreprise after Founder Pass payment) ──
-  // This allows /success → /onboarding?role=entreprise to skip the role selection.
-  // useSearchParams is NOT used here to keep stable refs — we read only once on mount.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const roleParam = params.get("role");
@@ -652,29 +658,24 @@ export default function Onboarding() {
         if (fpErr) throw fpErr;
       }
 
-      // ── 3. refreshProfile() is called next — no localStorage needed since
-      //       ProtectedRoute reads onboarding_done from server-side profile only.
-
-      // ── 4. Refresh auth profile so role is available in ProtectedRoute ─────
+      // ── 3. Refresh auth profile so role is available in ProtectedRoute ─────
       await refreshProfile();
 
       trackEvent("onboarding_done", user.id, { role: role ?? "unknown", cible });
 
-      // ── 5. AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+      // ── 4. AUDIT 16/03/2026 – BLOQUANTS LEVÉS
       //       Seed demo data pour les entreprises (non-bloquant, idempotent).
       //       Injecte 3 missions + 1 contact pour que le dashboard ne soit jamais vide.
       if (role === "entreprise") {
-        void supabase
-          .rpc("seed_demo_data", { p_user_id: user.id, p_role: "entreprise" })
-          .then(() => {
-            toast.success("Votre espace est prêt. 3 missions d'exemple ont été créées pour démarrer.");
-          });
+        void supabase.rpc("seed_demo_data", { p_user_id: user.id, p_role: "entreprise" });
+        // Show Aha Moment screen for entreprise
+        setSaving(false);
+        setAhaMoment(true);
+        return;
       }
 
-      // ── 6. Navigate — replace so the Back button never returns to /onboarding
-      const dest =
-        role === "entreprise" ? "/dashboard/entreprise" : "/dashboard/facilitateur";
-      navigate(dest, { replace: true });
+      // ── 5. Facilitateur → direct redirect (no aha-moment screen)
+      navigate("/dashboard/facilitateur", { replace: true });
     } catch (err) {
       savingRef.current = false;
       setSaving(false);
@@ -716,16 +717,21 @@ export default function Onboarding() {
       <div className="border-b border-border">
         <div className="container flex items-center justify-between h-14">
           <span className="font-display font-bold text-foreground">WIINUP MAX</span>
-          <span className="text-xs text-muted-foreground">
-            Étape {step} sur {TOTAL_STEPS}
-          </span>
+          {!ahaMoment && (
+            <span className="text-xs text-muted-foreground">
+              Étape {step} sur {TOTAL_STEPS}
+            </span>
+          )}
         </div>
       </div>
 
-      <ProgressBar current={step} total={TOTAL_STEPS} />
+      {!ahaMoment && <ProgressBar current={step} total={TOTAL_STEPS} />}
 
       <div className="flex-1 flex items-center justify-center p-6">
-        {step === 1 ? (
+        {/* ── Step 3: Aha Moment (entreprise only, after seed) ── */}
+        {ahaMoment ? (
+          <StepAhaMoment prenom={prenom} onGo={goToDashboard} />
+        ) : step === 1 ? (
           <StepIdentity
             role={role}
             prenom={prenom}
@@ -753,3 +759,4 @@ export default function Onboarding() {
     </div>
   );
 }
+
