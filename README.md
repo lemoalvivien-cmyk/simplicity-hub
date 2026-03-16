@@ -160,7 +160,7 @@ bunx playwright test  # E2E tests (retries: 3)
 |---|---|---|---|
 | 1 | RLS activé sur 100% des tables métier | ✅ | `SELECT tablename FROM pg_tables WHERE schemaname='public'` → toutes avec RLS |
 | 2 | Secrets exclusivement dans Lovable Cloud Vault | ✅ | `git grep -r "sk_live_\|whsec_\|service_role"` → vide |
-| 3 | `.env` purgé de l'historique Git | ✅ Done — push force exécuté | `git ls-files \| grep .env` → vide |
+| 3 | `.env` purgé de l'historique Git | ⚠️ **ACTION LOCALE REQUISE** — voir commandes ci-dessous | `git ls-files \| grep .env` → doit retourner VIDE après purge |
 | 4 | `RGPDConsentBanner` monté dans `App.tsx` | ✅ | Visible sur wiinupmax.com au 1er chargement |
 | 5 | `trackEvent()` bloqué sans consentement | ✅ | `isAnalyticsConsented()` gate dans `analytics.ts` |
 | 6 | Export JSON + suppression compte (`/account`) | ✅ | RGPD art. 17 & 20 |
@@ -183,7 +183,7 @@ git grep -r "sk_live_\|whsec_\|service_role\|STRIPE_SECRET" -- '*.ts' '*.tsx' '*
 
 # Vérifier purge .env
 git ls-files | grep "\.env"
-# → doit retourner VIDE
+# → doit retourner VIDE après purge locale
 
 # Vérifier fonctions ghost
 ls supabase/functions/ | grep -E "openclaw|ada|etg"
@@ -193,14 +193,33 @@ ls supabase/functions/ | grep -E "openclaw|ada|etg"
 supabase db dump --schema public -f supabase/migrations/$(date +%Y%m%d%H%M%S)_schema_squash.sql
 ```
 
-### Commandes git filter-repo (purge .env — à exécuter en local)
+### ⚠️ ACTION LOCALE OBLIGATOIRE — Purge .env de l'historique Git
+
+> **Lovable ne peut pas exécuter cette purge** — `git filter-repo` modifie l'historique Git côté GitHub et doit être lancé depuis votre terminal local. Le `.env` actuel ne contient que des clés publiques (`VITE_*`), mais sa présence dans l'historique doit être nettoyée.
 
 ```bash
+# ── ÉTAPE 1 — Installer git-filter-repo ──────────────────────────────────────
 pip install git-filter-repo
-git filter-repo --path .env --invert-paths --force
-git filter-repo --path .env.local --invert-paths --force
-printf ".env\n.env.*\n.env.local\n.env.*.local\n" >> .gitignore
-git add .gitignore && git commit -m "chore(security): block all .env patterns"
-git push origin --force --all && git push origin --force --tags
-# Vérification : git ls-files | grep "\.env"  → VIDE
+# ou : brew install git-filter-repo (macOS)
+
+# ── ÉTAPE 2 — Cloner le repo proprement ──────────────────────────────────────
+git clone https://github.com/<votre-org>/<votre-repo>.git repo-clean
+cd repo-clean
+
+# ── ÉTAPE 3 — Purger .env de TOUT l'historique ───────────────────────────────
+git filter-repo --invert-paths --path .env --force
+git filter-repo --invert-paths --path .env.local --force
+git filter-repo --invert-paths --path .env.example --force
+
+# ── ÉTAPE 4 — Forcer push sur toutes les branches ────────────────────────────
+git push origin --force --all
+git push origin --force --tags
+
+# ── ÉTAPE 5 — Vérification finale ────────────────────────────────────────────
+git ls-files | grep "\.env"
+# RÉSULTAT ATTENDU : vide (aucune ligne)
+
+# ── ÉTAPE 6 (post-purge) — Marquer item #3 comme ✅ dans ce README ───────────
 ```
+
+> ⚠️ Après la purge : tous les collaborateurs doivent faire `git clone` à nouveau. Supprimer les forks GitHub qui peuvent encore contenir l'historique.
