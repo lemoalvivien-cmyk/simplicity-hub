@@ -81,6 +81,7 @@ const AdminUsers = lazy(() => import("./pages/admin/Users"));
 const AdminPayments = lazy(() => import("./pages/admin/Payments"));
 const AdminPromoCodes = lazy(() => import("./pages/admin/PromoCodes"));
 const AdminRevenue = lazy(() => import("./pages/admin/Revenue"));
+const AdminBeta = lazy(() => import("./pages/admin/Beta"));
 
 // ── Skeleton fallback ────────────────────────────────────────────────────────
 function PageSkeleton() {
