@@ -131,6 +131,7 @@ const App = () => (
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/a-propos" element={<APropos />} />
+                <Route path="/creer-emploi" element={<CreerEmploiPage />} />
 
                 {/* ── Onboarding ───────────────────────────── */}
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
