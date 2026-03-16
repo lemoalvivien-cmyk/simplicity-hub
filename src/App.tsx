@@ -104,6 +104,7 @@ function PageTracker() {
 }
 
 const App = () => (
+  <FounderSlotsProvider>
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <SubscriptionProvider>
