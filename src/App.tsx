@@ -188,8 +188,8 @@ const App = () => (
         </TooltipProvider>
       </SubscriptionProvider>
     </AuthProvider>
+  </QueryClientProvider>
   </FounderSlotsProvider>
-</QueryClientProvider>
 );
 
 export default App;
