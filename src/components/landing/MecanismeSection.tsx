@@ -1,4 +1,4 @@
-import { Brain, Users, BarChart3, ArrowDown } from "lucide-react";
+import { Handshake, Users, BarChart3, ArrowDown } from "lucide-react";
 
 export default function MecanismeSection() {
   return (
@@ -7,10 +7,10 @@ export default function MecanismeSection() {
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">Comment ça fonctionne</p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-            WiinupMax, c'est comme avoir deux amis exceptionnels qui travaillent pour vous en même temps.
+            WiinupMax, c'est comme avoir deux canaux de développement commercial qui travaillent ensemble.
           </h2>
           <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed">
-            L'un cherche automatiquement les bonnes personnes pendant que vous dormez. L'autre vous présente des clients de confiance. Les deux ensemble dans un seul espace calme et protégé.
+            D'un côté, vos missions publiées en 2 minutes. De l'autre, votre réseau d'apporteurs qui vous envoie des introductions qualifiées. Les deux ensemble dans un seul espace clair et tracé.
           </p>
         </div>
 
@@ -30,28 +30,28 @@ export default function MecanismeSection() {
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: "var(--gradient-primary)" }}
                 >
-                  <Brain size={17} className="text-white" aria-hidden="true" />
+                  <Handshake size={17} className="text-white" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(218 72% 60%)" }}>
                     Moteur 1
                   </p>
                   <p className="font-display font-bold text-white text-[0.95rem] leading-tight mt-0.5">
-                    Prospection IA assistée
+                    Vos missions publiées
                   </p>
                 </div>
               </div>
               <p className="text-white/90 text-sm leading-relaxed">
-                Un assistant discret et efficace fouille le marché à votre place. Il trouve les personnes vraiment intéressées, prépare les messages parfaits et vous prévient au bon moment. Il continue même pendant que vous dormez.
+                Décrivez le client idéal que vous cherchez. En 2 minutes votre mission est visible par tout votre réseau d'apporteurs. Vous gardez le contrôle total — chaque introduction doit être validée par vous.
               </p>
             </div>
             <ul className="p-6 space-y-2.5">
               {[
-                "Suggestions de cibles basées sur votre profil",
-                "Brouillons de messages prêts à personnaliser",
-                "Alertes de suivi pour ne rien laisser traîner",
-                "Analyse de pertinence avant envoi",
-                "Tableau de bord d'activité unifié",
+                "Création de mission en 2 minutes",
+                "Visible par vos apporteurs immédiatement",
+                "Critères de ciblage précis",
+                "Validation en un clic, sans ambiguïté",
+                "Tableau de bord unifié",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-3">
                   <span
@@ -101,7 +101,7 @@ export default function MecanismeSection() {
                 "Introductions vérifiées avant livraison",
                 "Protection de chaque mise en relation",
                 "Gains traçables et visibles en temps réel",
-                "Validation en un clic, sans ambiguïté",
+                "Versement automatique à signature",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-3">
                   <span
