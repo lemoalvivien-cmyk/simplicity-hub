@@ -297,7 +297,7 @@ export default function Account() {
         </div>
 
         {/* Paramètres avancés */}
-        <div className="card-surface p-5 mb-5">
+        <div className="card-surface p-5 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <Zap size={17} className="text-primary" />
             <h2 className="font-semibold text-foreground">Paramètres avancés</h2>
@@ -309,6 +309,24 @@ export default function Account() {
             Configurer mes canaux et notifications
             <ChevronRight size={15} className="text-muted-foreground" />
           </Link>
+        </div>
+
+        {/* Données personnelles — RGPD */}
+        <div className="card-surface p-5 mb-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield size={17} className="text-primary" />
+            <h2 className="font-semibold text-foreground">Mes données personnelles</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+            Conformément au RGPD (art. 20 — portabilité, art. 17 — droit à l'effacement), vous pouvez exporter vos données ou supprimer votre compte. La suppression est définitive après 30 jours.
+          </p>
+          <div className="flex flex-col gap-2">
+            <RGPDExportButton userId={user?.id} />
+            <RGPDDeleteButton onConfirm={async () => {
+              await signOut();
+              navigate("/login", { replace: true });
+            }} />
+          </div>
         </div>
 
         {/* Logout */}
