@@ -1,21 +1,15 @@
 /**
- * Onboarding — 2-step profile wizard
+ * Onboarding — 2-step profile wizard + Step 3 Aha Moment
  *
  * Architecture notes
  * ──────────────────
  * • StepIdentity, StepSectorGoal, StepDone are defined as TOP-LEVEL functions
  *   (module scope) so React never unmounts/remounts them on parent re-renders.
- *   This is the ONLY reliable fix for the "focus lost after each keystroke" bug.
  *
- * • All change-handlers in the parent are useCallback with [] deps so their
- *   references are stable across re-renders — child props never change identity.
- *
- * • After saveProfile() succeeds:
- *     1. localStorage flag set (prevents ProtectedRoute /checkout bounce)
- *     2. refreshProfile() awaited (profile.onboarding_done is now true in React)
- *     3. navigate() with replace:true → /dashboard/entreprise or /dashboard/facilitateur
- *   No intermediate "done" screen is shown between save and redirect, which
- *   removed the previous window where ProtectedRoute could re-evaluate and bounce.
+ * • After saveProfile() succeeds for entreprise:
+ *     1. seed_demo_data RPC injects 3 missions + 1 contact
+ *     2. Step 3 (aha-moment screen) is shown for 4s before redirect
+ *   For facilitateur: direct redirect to /dashboard/facilitateur.
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -28,12 +22,16 @@ import {
   ArrowRight,
   Loader2,
   Search,
+  Sparkles,
+  Trophy,
+  Rocket,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
+
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type Role = "entreprise" | "facilitateur" | null;
