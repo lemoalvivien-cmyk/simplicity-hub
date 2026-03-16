@@ -1,3 +1,7 @@
+// AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+// Promesses mensongères supprimées : assistant vocal IA, pilote automatique, 3 cerveaux IA.
+// Promesse honnête et claire : marketplace réseau B2B, pay-per-result.
+
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Shield, TrendingUp, Users } from "lucide-react";
 import SlotCounter from "@/components/landing/SlotCounter";
@@ -5,7 +9,7 @@ import { track } from "@/lib/landingTracking";
 
 const trustItems = [
   { icon: CheckCircle2, label: "Introductions traçées" },
-  { icon: Shield, label: "Gains protégés" },
+  { icon: Shield, label: "Gains sécurisés" },
   { icon: TrendingUp, label: "Résultats mesurables" },
 ];
 
@@ -39,22 +43,22 @@ export default function HeroSection() {
                 backgroundClip: "text",
               }}
             >
-              Trouvez vos prochains clients.
+              Trouvez vos prochains clients B2B.
             </span>
             <span className="block text-[clamp(1.55rem,4.5vw,2.6rem)] text-white/85 mt-3 font-semibold">
-              Via votre réseau. Via l'IA assistée.
+              Via votre réseau.
               <br className="hidden sm:block" />
-              {" "}Dans un seul cockpit.
+              {" "}Vous ne payez que si ça marche.
             </span>
           </h1>
 
           <p className="text-[clamp(0.95rem,2.2vw,1.1rem)] text-white/75 mb-5 max-w-xl mx-auto leading-[1.75] font-medium px-2">
-            Un assistant IA cherche des clients pour vous 24h/24. Vos contacts vous présentent des affaires.
-            Vos <strong className="text-white/90">gains arrivent automatiquement</strong> à chaque affaire signée.
+            Vos contacts vous envoient des introductions qualifiées. Chaque affaire signée déclenche automatiquement le gain de votre apporteur.{" "}
+            <strong className="text-white/90">Aucun abonnement caché. Aucun résultat, aucun frais.</strong>
           </p>
 
           <p className="text-[clamp(0.9rem,2vw,1rem)] text-white/60 font-normal mb-9 max-w-lg mx-auto leading-[1.7] px-2 text-center">
-            Avec Wiinup, augmentez vos revenus en toute sécurité, sans investir, sans charge mentale et sans changer vos habitudes.
+            Un cockpit simple pour gérer vos missions, vos introductions et vos gains — sans changer vos habitudes.
           </p>
 
           {/* CTAs */}
@@ -73,7 +77,7 @@ export default function HeroSection() {
               onClick={() => track("cta_hero_facilitateur")}
             >
               <Users size={15} />
-              Devenir facilitateur — Gratuit
+              Devenir apporteur — Gratuit
             </Link>
             <p className="text-white/45 text-xs mt-1">
               Inscription gratuite · Accès entreprise à 99 €/an · 100 places max

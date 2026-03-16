@@ -1,3 +1,7 @@
+// AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+// Tous les modules IA / ETG / ADA / OpenClaw / War Caller / Insights / PSD2
+// sont désactivés pour le lancement GTM.  Seul le cœur marketplace est actif.
+
 /**
  * FEATURE REGISTRY — Source de vérité produit unique.
  * Périmètre MVP : routes actives dans App.tsx uniquement.
@@ -8,6 +12,7 @@
  *   mock    = données simulées / comportement fake / façade UI
  *   dead    = page vide, lien vers nulle part, aucune valeur utilisateur
  *   env-dep = fonctionnel mais nécessite une config environnement externe
+ *   disabled = AUDIT 16/03/2026 — désactivé pour le lancement, ne pas réactiver sans validation produit
  *
  * Confidence :
  *   declared         = déclaré manuellement, pas encore vérifié en code
@@ -15,7 +20,7 @@
  *   runtime-verified = testé en exécution réelle (edge fn, DB, session)
  */
 
-export type FeatureStatus     = "real" | "partial" | "mock" | "dead" | "env-dep";
+export type FeatureStatus     = "real" | "partial" | "mock" | "dead" | "env-dep" | "disabled";
 export type FeatureConfidence = "declared" | "code-verified" | "runtime-verified";
 export type OwnerArea =
   | "acquisition"
@@ -38,6 +43,7 @@ export interface FeatureEntry {
   id: string;
   label: string;
   status: FeatureStatus;
+  enabled: boolean;   // AUDIT 16/03/2026 — flag opérationnel : false = bloqué
   confidence: FeatureConfidence;
   area: OwnerArea;
   pages: string[];
@@ -52,6 +58,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "landing",
     label: "Landing page",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "acquisition",
     pages: ["/"],
@@ -63,6 +70,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "pricing_page",
     label: "Page Pricing",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "acquisition",
     pages: ["/pricing"],
@@ -76,6 +84,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "onboarding",
     label: "Onboarding",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "onboarding",
     pages: ["/onboarding"],
@@ -89,6 +98,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "checkout",
     label: "Checkout Stripe",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "billing",
     pages: ["/checkout"],
@@ -100,6 +110,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "stripe_webhook",
     label: "Webhook Stripe",
     status: "env-dep",
+    enabled: true,
     confidence: "code-verified",
     area: "billing",
     pages: ["supabase/functions/stripe-webhook"],
@@ -111,6 +122,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "customer_portal",
     label: "Portail client Stripe",
     status: "env-dep",
+    enabled: true,
     confidence: "code-verified",
     area: "billing",
     pages: ["/account"],
@@ -124,6 +136,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "contacts_list",
     label: "Liste contacts",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "contacts",
     pages: ["/contacts", "/contacts/:id"],
@@ -135,6 +148,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "contact_import",
     label: "Import contacts CSV",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "contacts",
     pages: ["/contacts/import"],
@@ -148,10 +162,11 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "missions",
     label: "Missions d'apport",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "referral",
     pages: ["/missions", "/missions/:id", "/missions/nouvelle"],
-    note: "CRUD complet, triggers SQL actifs (openclaw_business_event_trigger).",
+    note: "CRUD complet, triggers SQL actifs.",
     risk: "none",
     evidence: { tables: ["missions"], codeFiles: ["src/pages/Missions.tsx", "src/pages/MissionDetail.tsx", "src/pages/MissionNouvelle.tsx"] },
   },
@@ -159,6 +174,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "introductions",
     label: "Introductions",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "referral",
     pages: ["/introductions", "/introductions/:id", "/entreprise/introductions"],
@@ -170,6 +186,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "gains",
     label: "Gains facilitateur",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "referral",
     pages: ["/gains"],
@@ -181,6 +198,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "facilitateurs_marketplace",
     label: "Marketplace facilitateurs",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "referral",
     pages: ["/facilitateurs", "/facilitateurs/:id"],
@@ -192,6 +210,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "actions",
     label: "Actions",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "referral",
     pages: ["/actions"],
@@ -203,6 +222,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "pilotage",
     label: "Pilotage",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "referral",
     pages: ["/pilotage"],
@@ -216,6 +236,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "admin_overview",
     label: "Admin Overview",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "admin",
     pages: ["/admin"],
@@ -227,6 +248,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "admin_users",
     label: "Admin Users",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "admin",
     pages: ["/admin/users"],
@@ -238,6 +260,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "admin_payments",
     label: "Admin Payments",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "admin",
     pages: ["/admin/payments"],
@@ -249,6 +272,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "admin_promo_codes",
     label: "Admin Promo Codes",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "admin",
     pages: ["/admin/promo-codes"],
@@ -262,6 +286,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "account",
     label: "Mon compte",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "settings",
     pages: ["/account"],
@@ -273,6 +298,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "profil_facilitateur",
     label: "Profil facilitateur",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "settings",
     pages: ["/profil/facilitateur"],
@@ -284,6 +310,7 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     id: "profil_entreprise",
     label: "Profil entreprise",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "settings",
     pages: ["/profil/entreprise"],
@@ -294,20 +321,10 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
 
   // ── INFRASTRUCTURE ─────────────────────────────────────────────
   {
-    id: "assistant",
-    label: "Assistant IA",
-    status: "real",
-    confidence: "code-verified",
-    area: "infrastructure",
-    pages: ["/assistant"],
-    note: "Chat IA via Lovable AI models.",
-    risk: "none",
-    evidence: { edgeFunctions: ["ai-jarvis"], codeFiles: ["src/pages/Assistant.tsx"] },
-  },
-  {
     id: "pwa",
     label: "PWA installable",
     status: "real",
+    enabled: true,
     confidence: "code-verified",
     area: "infrastructure",
     pages: ["global"],
@@ -315,16 +332,129 @@ export const FEATURE_REGISTRY: FeatureEntry[] = [
     risk: "none",
     evidence: { codeFiles: ["vite.config.ts"] },
   },
+
+  // ── DÉSACTIVÉS POUR LE LANCEMENT — AUDIT 16/03/2026 ───────────
+  // Ces features sont bloquées (enabled: false) jusqu'à validation produit.
+  // Ne pas réactiver sans décision explicite du Product Owner.
+  {
+    id: "ai_assistant",
+    label: "Assistant IA (Jarvis)",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+    confidence: "code-verified",
+    area: "infrastructure",
+    pages: ["/assistant"],
+    note: "Désactivé pour GTM. Route supprimée dans App.tsx.",
+    risk: "high",
+    evidence: { edgeFunctions: ["ai-jarvis"], codeFiles: ["src/pages/Assistant.tsx"] },
+  },
+  {
+    id: "openclaw",
+    label: "OpenClaw Swarm",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+    confidence: "code-verified",
+    area: "infrastructure",
+    pages: [],
+    note: "Désactivé pour GTM. 17 edge functions bloquées côté config + RLS.",
+    risk: "high",
+    evidence: { edgeFunctions: ["openclaw-*"], tables: [] },
+  },
+  {
+    id: "ada",
+    label: "ADA — Agent vocal IA",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+    confidence: "code-verified",
+    area: "infrastructure",
+    pages: ["/ada", "/ada/model"],
+    note: "Désactivé pour GTM. Routes supprimées dans App.tsx. Tables bloquées par RLS.",
+    risk: "high",
+    evidence: { edgeFunctions: ["ada-orchestrator", "ada-voice-call", "ada-training-pipeline"], tables: ["ada_sessions", "ada_training_runs", "ada_training_samples"] },
+  },
+  {
+    id: "etg",
+    label: "Eternal Trust Graph (ETG)",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+    confidence: "code-verified",
+    area: "infrastructure",
+    pages: [],
+    note: "Désactivé pour GTM. Edge functions etg-* bloquées. Tables etg_* inaccessibles.",
+    risk: "high",
+    evidence: { edgeFunctions: ["etg-aggregate", "etg-ingest", "etg-predict"], tables: ["etg_companies", "etg_persons", "etg_links", "etg_opportunities", "etg_hidden_links"] },
+  },
+  {
+    id: "insights_api",
+    label: "Insights API (Sales Intelligence)",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+    confidence: "code-verified",
+    area: "infrastructure",
+    pages: ["/insights-sales"],
+    note: "Désactivé pour GTM. Route supprimée dans App.tsx.",
+    risk: "high",
+    evidence: { edgeFunctions: ["insights-api"] },
+  },
+  {
+    id: "war_caller",
+    label: "War Caller",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+    confidence: "code-verified",
+    area: "infrastructure",
+    pages: [],
+    note: "Désactivé pour GTM. Composant UI masqué.",
+    risk: "high",
+    evidence: { codeFiles: ["src/components/ai/WarCaller.tsx"] },
+  },
+  {
+    id: "god_mode",
+    label: "God Mode Panel",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+    confidence: "code-verified",
+    area: "infrastructure",
+    pages: [],
+    note: "Désactivé pour GTM. Composant UI masqué.",
+    risk: "high",
+    evidence: { codeFiles: ["src/components/ai/GodModePanel.tsx"] },
+  },
   {
     id: "voice_elevenlabs",
     label: "Voix ElevenLabs",
-    status: "env-dep",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
     confidence: "code-verified",
     area: "infrastructure",
-    pages: ["global"],
-    note: "ELEVENLABS_API_KEY configurée en secret. Fallback navigateur si absent.",
-    risk: "none",
+    pages: [],
+    note: "Désactivé pour GTM. Composant VoiceWelcome masqué.",
+    risk: "medium",
     evidence: { edgeFunctions: ["elevenlabs-voice-token", "elevenlabs-tts"], codeFiles: ["src/components/ai/VoiceWelcome.tsx"] },
+  },
+  {
+    id: "psd2_banking",
+    label: "Connexion bancaire PSD2",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+    confidence: "code-verified",
+    area: "billing",
+    pages: [],
+    note: "Désactivé pour GTM. Edge function bank-webhook bloquée.",
+    risk: "high",
+    evidence: { edgeFunctions: ["bank-webhook"] },
+  },
+  {
+    id: "live_cash_flow",
+    label: "Live Cash Flow",
+    status: "disabled",
+    enabled: false, // AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+    confidence: "declared",
+    area: "billing",
+    pages: [],
+    note: "Désactivé pour GTM. Jamais implémenté côté client.",
+    risk: "high",
+    evidence: {},
   },
 ];
 
@@ -353,12 +483,23 @@ export function getDeclaredOnlyFeatures(): FeatureEntry[] {
   return FEATURE_REGISTRY.filter(f => f.confidence === "declared");
 }
 
+/** Features actives (enabled = true) */
+export function getEnabledFeatures(): FeatureEntry[] {
+  return FEATURE_REGISTRY.filter(f => f.enabled);
+}
+
+/** Features désactivées pour le GTM */
+export function getDisabledFeatures(): FeatureEntry[] {
+  return FEATURE_REGISTRY.filter(f => !f.enabled);
+}
+
 export const STATUS_META: Record<FeatureStatus, { label: string; color: string; bg: string }> = {
   real:      { label: "Réel",         color: "hsl(var(--success))",         bg: "hsl(var(--success-light))" },
   partial:   { label: "Partiel",      color: "hsl(38 80% 30%)",             bg: "hsl(var(--accent-light))" },
   mock:      { label: "Mock",         color: "hsl(0 65% 40%)",              bg: "hsl(0 65% 95%)" },
   dead:      { label: "Non branché",  color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
   "env-dep": { label: "Dépend env",  color: "hsl(218 72% 55%)",            bg: "hsl(218 72% 95%)" },
+  disabled:  { label: "Désactivé",   color: "hsl(0 65% 40%)",              bg: "hsl(0 65% 95%)" },
 };
 
 export const CONFIDENCE_META: Record<FeatureConfidence, { label: string; color: string; bg: string; short: string }> = {

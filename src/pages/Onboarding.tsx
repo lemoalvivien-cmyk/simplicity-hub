@@ -30,8 +30,7 @@ import {
   Search,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSubscription, isAccessActive } from "@/contexts/SubscriptionContext";
-import { db } from "@/lib/supabase";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
@@ -525,7 +524,8 @@ export default function Onboarding() {
 
   const navigate = useNavigate();
   const { user, loading: authLoading, refreshProfile } = useAuth();
-  const subscription = useSubscription();
+  // subscription conservé pour compatibilité contexte (peut être supprimé ultérieurement)
+  useSubscription();
 
   // ── Pre-select role from URL param (?role=entreprise after Founder Pass payment) ──
   // This allows /success → /onboarding?role=entreprise to skip the role selection.
@@ -557,7 +557,7 @@ export default function Onboarding() {
     try {
       // ── 1. Persist profile ─────────────────────────────────────────────────
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: profileErr } = await (db.from("profiles") as any)
+      const { error: profileErr } = await (supabase.from("profiles") as any)
         .update({
           role,
           prenom,
@@ -571,7 +571,7 @@ export default function Onboarding() {
 
       // ── 2. Persist role-specific data ──────────────────────────────────────
       if (role === "entreprise") {
-        const { error: epErr } = await db
+        const { error: epErr } = await supabase
           .from("entreprise_profiles")
           .upsert(
             {
@@ -584,7 +584,7 @@ export default function Onboarding() {
           );
         if (epErr) throw epErr;
       } else if (role === "facilitateur") {
-        const { error: fpErr } = await db
+        const { error: fpErr } = await supabase
           .from("facilitateur_profiles")
           .upsert({ user_id: user.id, secteur }, { onConflict: "user_id" });
         if (fpErr) throw fpErr;
@@ -598,40 +598,15 @@ export default function Onboarding() {
 
       trackEvent("onboarding_done", user.id, { role: role ?? "unknown", cible });
 
-      // ── 5. Fire OpenClaw background tasks (non-blocking) ──────────────────
-      const hasAccess = isAccessActive(subscription.status);
-      if (role === "entreprise" && hasAccess) {
-        const { count: missionCount } = await db
-          .from("missions")
-          .select("id", { count: "exact", head: true })
-          .eq("entreprise_id", user.id);
-
-        const calls: Promise<unknown>[] = [
-          supabase.functions.invoke("openclaw-dossier-sync", { body: { force: true } }),
-          supabase.functions.invoke("openclaw-job-executor", {
-            body: { job_type: "daily_brief_generate" },
-          }),
-          supabase.functions.invoke("openclaw-scheduler", {
-            body: { tick_type: "welcome_scan", user_id: user.id },
-          }),
-        ];
-        if ((missionCount ?? 0) > 0) {
-          calls.push(
-            supabase.functions.invoke("openclaw-job-executor", {
-              body: { job_type: "radar_scan" },
-            })
-          );
-        }
-        Promise.allSettled(calls).catch(() => {});
-        toast.success(
-          "Le cerveau WiinupMax analyse votre profil. Vos premières recommandations arrivent…"
-        );
-      } else if (role === "facilitateur") {
-        supabase.functions
-          .invoke("openclaw-scheduler", {
-            body: { tick_type: "welcome_scan", user_id: user.id },
-          })
-          .catch(() => {});
+      // ── 5. AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+      //       Seed demo data pour les entreprises (non-bloquant, idempotent).
+      //       Injecte 3 missions + 1 contact pour que le dashboard ne soit jamais vide.
+      if (role === "entreprise") {
+        void supabase
+          .rpc("seed_demo_data", { p_user_id: user.id, p_role: "entreprise" })
+          .then(() => {
+            toast.success("Votre espace est prêt. 3 missions d'exemple ont été créées pour démarrer.");
+          });
       }
 
       // ── 6. Navigate — replace so the Back button never returns to /onboarding
@@ -653,7 +628,6 @@ export default function Onboarding() {
     secteur,
     cible,
     objectif,
-    subscription.status,
     refreshProfile,
     navigate,
   ]);

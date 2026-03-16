@@ -63,12 +63,12 @@ const Assistant = lazy(() => import("./pages/Assistant"));
 const Help = lazy(() => import("./pages/Help"));
 const Account = lazy(() => import("./pages/Account"));
 
-// ── Lazy: ADA ────────────────────────────────────────────────────────────────
-const ADAControlPanel  = lazy(() => import("./pages/ADAControlPanel"));
-const ADAModelDashboard = lazy(() => import("./pages/ADAModelDashboard"));
-
-// ── Lazy: Insights API Sales ──────────────────────────────────────────────────
-const InsightsSales = lazy(() => import("./pages/InsightsSales"));
+// AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+// ADA, Insights API désactivés pour le lancement GTM.
+// Routes commentées — ne pas réactiver sans validation produit.
+// const ADAControlPanel  = lazy(() => import("./pages/ADAControlPanel"));
+// const ADAModelDashboard = lazy(() => import("./pages/ADAModelDashboard"));
+// const InsightsSales = lazy(() => import("./pages/InsightsSales"));
 
 // ── Lazy: System Status ───────────────────────────────────────────────────────
 const SystemStatus = lazy(() => import("./pages/SystemStatus"));
@@ -162,12 +162,13 @@ const App = () => (
                 <Route path="/facilitateurs/:id" element={<ProtectedRoute><FacilitateurDetail /></ProtectedRoute>} />
 
                 {/* ── Utilitaires ──────────────────────────── */}
-                <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} />
+                {/* AUDIT 16/03/2026 – BLOQUANTS LEVÉS : /assistant, /ada, /ada/model, /insights-sales désactivés */}
+                {/* <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} /> */}
+                {/* <Route path="/ada" element={<ProtectedRoute><ADAControlPanel /></ProtectedRoute>} /> */}
+                {/* <Route path="/ada/model" element={<ProtectedRoute><ADAModelDashboard /></ProtectedRoute>} /> */}
+                {/* <Route path="/insights-sales" element={<InsightsSales />} /> */}
                 <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
-                <Route path="/ada" element={<ProtectedRoute><ADAControlPanel /></ProtectedRoute>} />
-                <Route path="/ada/model" element={<ProtectedRoute><ADAModelDashboard /></ProtectedRoute>} />
                 <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-                <Route path="/insights-sales" element={<InsightsSales />} />
                 <Route path="/status" element={<ProtectedRoute adminOnly><SystemStatus /></ProtectedRoute>} />
 
                 {/* ── Admin ────────────────────────────────── */}
