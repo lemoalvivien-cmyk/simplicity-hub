@@ -340,10 +340,9 @@ export default function RoyaltyFuturesTab() {
             Mes gains
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Chaque affaire signée par votre assistant IA génère automatiquement{" "}
-            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>12 % de gains versés sur votre compte</span>{" "}
-            — 7 % frais plateforme + 5 % moteur IA.
-            Votre argent est disponible directement sur le marché secondaire.
+            Chaque affaire signée génère automatiquement{" "}
+            <span className="font-semibold" style={{ color: "hsl(38 95% 65%)" }}>des gains versés automatiquement sur votre compte</span>{" "}
+            dès la validation par l'entreprise.
           </p>
         </div>
       </div>
