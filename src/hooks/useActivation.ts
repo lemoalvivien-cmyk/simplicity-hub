@@ -104,11 +104,12 @@ export function useActivation(role: "entreprise" | "facilitateur" | null) {
   const trackEvent = useCallback(async (event: ActivationEvent) => {
     if (!user) return;
     try {
-      await db.from("openclaw_logs").insert({
+      // Activation events logged to analytics_events (openclaw_logs removed v8)
+      await db.from("analytics_events").insert({
         user_id: user.id,
         event_type: "activation_event",
-        summary: event,
-        details: { event, timestamp: new Date().toISOString() },
+        session_id: user.id,
+        properties: { event, timestamp: new Date().toISOString() },
       });
     } catch {
       // silent — activation tracking must never break the UX

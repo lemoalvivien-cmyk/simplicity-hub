@@ -74,21 +74,10 @@ function useBadges(role: AppRole, userId: string | undefined) {
   return { pendingIntros, urgentActions, pendingGains, myIntros };
 }
 
-/* ── Gateway readiness hook ─────────────────────────── */
-function useGatewayReady(userId: string | undefined) {
-  const [gatewayReady, setGatewayReady] = useState(false);
-  useEffect(() => {
-    if (!userId) return;
-    supabase
-      .from("openclaw_config")
-      .select("gateway_url, is_connected")
-      .eq("user_id", userId)
-      .maybeSingle()
-      .then(({ data }) => {
-        setGatewayReady(!!data?.gateway_url && data.is_connected === true);
-      });
-  }, [userId]);
-  return gatewayReady;
+/* ── Gateway readiness hook — OpenClaw removed v8 ───── */
+function useGatewayReady(_userId: string | undefined) {
+  // OpenClaw tables removed in v8 — gateway always disabled
+  return false;
 }
 
 /* ── Nav definitions ────────────────────────────────── */

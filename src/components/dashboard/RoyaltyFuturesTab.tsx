@@ -256,34 +256,33 @@ export default function RoyaltyFuturesTab() {
     if (!user?.id) return;
     setLoading(true);
     try {
+      // Royalties are sourced from validated gains (introductions validated + commission paid)
       const { data } = await supabase
-        .from("ada_sessions")
-        .select("id, target_name, contract_amount, royalty_12pct, final_closed_at, reasoning_trace")
-        .eq("owner_user_id", user.id)
-        .eq("state", "closed")
-        .order("final_closed_at", { ascending: false })
+        .from("gains")
+        .select("id, montant, statut, created_at, introduction_id")
+        .eq("facilitateur_id", user.id)
+        .eq("statut", "paye")
+        .order("created_at", { ascending: false })
         .limit(50);
 
       if (data) {
-        const mapped: RoyaltyRecord[] = data.map(s => {
-          const deal = s.contract_amount ?? 0;
+        const mapped: RoyaltyRecord[] = data.map(g => {
+          const deal = g.montant ?? 0;
           const r12  = Math.round(deal * 0.12 * 100) / 100;
           const p7   = Math.round(deal * 0.07 * 100) / 100;
           const e5   = Math.round(deal * 0.05 * 100) / 100;
           const net  = Math.round((deal - r12) * 100) / 100;
-          const trace = (s.reasoning_trace as Record<string, unknown>[] | null) ?? [];
-          const mintData = trace.find((t: Record<string, unknown>) => t.wmax_minted);
           return {
-            id: s.id,
-            target_name: s.target_name,
+            id: g.id,
+            target_name: `Gain #${g.id.slice(0, 8)}`,
             deal_amount: deal,
             royalty_12pct: r12,
             platform_fee_7pct: p7,
             engine_fee_5pct: e5,
             facilitateur_net: net,
-            closed_at: s.final_closed_at ?? "",
-            minted: !!mintData,
-            tx_hash: mintData ? String(mintData.tx_hash ?? "") : undefined,
+            closed_at: g.created_at ?? "",
+            minted: false,
+            tx_hash: undefined,
           };
         });
         setRecords(mapped);
