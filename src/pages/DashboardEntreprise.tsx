@@ -73,7 +73,7 @@ function MetricCard({ label, value, to, urgent, loading }: {
       <p className="font-display font-bold text-2xl text-foreground leading-none">
         {loading ? <span className="inline-block w-10 h-6 rounded bg-muted animate-pulse" /> : value}
       </p>
-      {urgent && value > 0 && !loading && (
+      {urgent && typeof value === "number" && value > 0 && !loading && (
         <span className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
           style={{ background: "hsl(38 90% 52% / 0.15)", color: "hsl(38 90% 60%)" }}>
           <AlertCircle size={9} /> À valider
