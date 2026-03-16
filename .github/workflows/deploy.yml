@@ -277,6 +277,40 @@ jobs:
   # ─────────────────────────────────────────────────────────────────────────────
   # 6. MONITORING — RESEND ALERT ON FAILURE
   # ─────────────────────────────────────────────────────────────────────────────
+  sentry-release:
+    name: "🔍 Sentry Release Tag"
+    runs-on: ubuntu-latest
+    needs: deploy-functions
+    if: success()
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag Sentry release
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: wiinupmax
+          SENTRY_PROJECT: wiinup-max-frontend
+        run: |
+          if [ -n "$SENTRY_AUTH_TOKEN" ]; then
+            npx --yes @sentry/cli@2 releases new "$GITHUB_SHA" \
+              --org "$SENTRY_ORG" --project "$SENTRY_PROJECT"
+            npx @sentry/cli@2 releases set-commits "$GITHUB_SHA" --auto \
+              --org "$SENTRY_ORG" --project "$SENTRY_PROJECT" || true
+            npx @sentry/cli@2 releases finalize "$GITHUB_SHA" \
+              --org "$SENTRY_ORG" --project "$SENTRY_PROJECT"
+            npx @sentry/cli@2 releases deploys "$GITHUB_SHA" new \
+              --env production \
+              --org "$SENTRY_ORG" --project "$SENTRY_PROJECT"
+            echo "✅ Sentry release tagged: $GITHUB_SHA"
+          else
+            echo "ℹ️  SENTRY_AUTH_TOKEN not set — Sentry release skipped."
+          fi
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 6. MONITORING — RESEND + SENTRY ALERT ON FAILURE
+  # ─────────────────────────────────────────────────────────────────────────────
   notify-failure:
     name: "🚨 Alert on Failure"
     runs-on: ubuntu-latest
