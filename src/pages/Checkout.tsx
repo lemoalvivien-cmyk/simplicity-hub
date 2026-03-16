@@ -18,10 +18,10 @@ type SuccessType = "promo" | "stripe_launch" | "stripe_standard";
 
 // ─── Features list ────────────────────────────────────────────────────────────
 const founderBenefits = [
-  { icon: Zap, label: "Assistant IA qui prospecte pour vous", sub: "24h/24, sans intervention de votre part" },
-  { icon: Users, label: "Réseau de facilitateurs qualifiés", sub: "Introductions certifiées et protégées" },
+  { icon: Zap, label: "Missions publiées en 2 minutes", sub: "Visibles par vos apporteurs immédiatement" },
+  { icon: Users, label: "Réseau de facilitateurs qualifiés", sub: "Introductions traçées et protégées" },
   { icon: Star, label: "Gains versés automatiquement", sub: "À chaque affaire signée, sur votre compte" },
-  { icon: BadgeCheck, label: "Tableau de bord complet", sub: "Suivi, ROI, actions en temps réel" },
+  { icon: BadgeCheck, label: "Tableau de bord complet", sub: "Suivi, pipeline, actions en temps réel" },
   { icon: ShieldCheck, label: "Support prioritaire inclus", sub: "Réponse sous 24h garantie" },
 ];
 

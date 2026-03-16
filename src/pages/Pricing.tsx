@@ -430,13 +430,13 @@ export default function Pricing() {
             Vos gains, versés automatiquement à chaque affaire signée
           </h2>
           <p className="text-muted-foreground text-sm leading-relaxed mb-8 max-w-xl mx-auto">
-            À chaque affaire conclue par votre assistant IA, une part revient sur votre compte automatiquement.
+            À chaque affaire conclue et signée, une part revient automatiquement à votre apporteur.
             Frais de plateforme transparents, traçabilité totale, aucune surprise.
           </p>
           <div className="grid sm:grid-cols-3 gap-4 text-left">
             {[
               { label: "Frais plateforme", pct: "7 %", desc: "Financement de la plateforme, R&D et équipe", color: "hsl(var(--primary-glow))" },
-              { label: "Frais assistant IA", pct: "5 %", desc: "Votre assistant IA, opérationnel 24h/24", color: "hsl(var(--accent))" },
+              { label: "Commission apporteur", pct: "5 %+", desc: "Définie par vous lors de la création de mission", color: "hsl(var(--accent))" },
               { label: "Votre part", pct: "88 %", desc: "Versé automatiquement après chaque affaire signée", color: "hsl(152 62% 52%)" },
             ].map(({ label, pct, desc, color }) => (
               <div
