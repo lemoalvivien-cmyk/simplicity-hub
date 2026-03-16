@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,12 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
-import { FounderSlotsProvider } from "@/contexts/FounderSlotsContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import InstallBanner from "@/components/pwa/InstallBanner";
 import RGPDConsentBanner from "@/components/landing/RGPDConsentBanner";
 import { usePageTracking } from "@/lib/analytics";
 import { useAuth } from "@/contexts/AuthContext";
+import { initFounderSlots } from "@/stores/founderSlotsStore";
 
 // ── Eager imports (core) ────────────────────────────────────────────────────
 import Index from "./pages/Index";
@@ -100,8 +100,15 @@ function PageTracker() {
   return null;
 }
 
+/** Initialize Zustand Founder Slots store once at the root — no Context wrapper needed. */
+function FounderSlotsInit() {
+  useEffect(() => {
+    return initFounderSlots();
+  }, []);
+  return null;
+}
+
 const App = () => (
-  <FounderSlotsProvider>
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <SubscriptionProvider>
@@ -110,6 +117,7 @@ const App = () => (
           <Sonner />
           <InstallBanner />
           <RGPDConsentBanner />
+          <FounderSlotsInit />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <PageTracker />
             <Suspense fallback={<PageSkeleton />}>
@@ -185,7 +193,6 @@ const App = () => (
       </SubscriptionProvider>
     </AuthProvider>
   </QueryClientProvider>
-  </FounderSlotsProvider>
 );
 
 export default App;
