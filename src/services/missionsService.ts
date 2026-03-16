@@ -25,11 +25,12 @@ export interface Mission {
   statut: string | null;
   secteur: string | null;
   zone: string | null;
-  commission_type: string | null;
-  commission_valeur: number | null;
+  recompense: string | null;
+  description: string | null;
+  entreprise_id: string;
+  type_client_recherche: string | null;
   created_at: string;
   updated_at: string;
-  owner_user_id: string;
 }
 
 export async function fetchMissions(
