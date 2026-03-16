@@ -12,8 +12,6 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
-import BestAccessPanel from "@/components/graph/BestAccessPanel";
-import { useGraphEngine } from "@/hooks/useGraphEngine";
 
 interface FacilitateurProfile {
   id: string;

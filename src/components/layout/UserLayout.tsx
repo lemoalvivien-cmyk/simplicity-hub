@@ -1,8 +1,6 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import UserNav from "./UserNav";
-import JarvisButton from "@/components/ai/JarvisButton";
-import { CopilotContext } from "@/lib/aiService";
 import { useAuth } from "@/contexts/AuthContext";
 
 type UserRole = "entreprise" | "facilitateur" | "admin";
@@ -11,7 +9,8 @@ interface UserLayoutProps {
   children: ReactNode;
   /** Override role — if omitted, uses the authenticated user's real role */
   role?: UserRole;
-  jarvisContext?: CopilotContext;
+  /** @deprecated — Jarvis/KITT removed. Kept for call-site compat, has no effect. */
+  jarvisContext?: string;
 }
 
 export default function UserLayout({ children, role: roleProp, jarvisContext = "dashboard" }: UserLayoutProps) {
