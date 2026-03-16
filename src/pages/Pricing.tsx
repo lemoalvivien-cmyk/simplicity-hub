@@ -11,25 +11,25 @@ import { useFounderSlots } from "@/hooks/useFounderSlots";
 // ─── Feature blocks ────────────────────────────────────────────────────────
 const founderFeatures = [
   {
-    icon: Mic,
+    icon: FileText,
     color: "hsl(210 85% 62%)",
-    category: "Recherche automatique de clients",
+    category: "Missions et ciblage",
     items: [
-      "Un assistant cherche des clients pour vous, 24h/24",
-      "Plusieurs assistants intelligents travaillent ensemble",
-      "Messages adaptés à chaque situation",
-      "Consentement enregistré automatiquement",
+      "Missions publiées en 2 minutes",
+      "Visibles immédiatement par vos apporteurs",
+      "Critères de ciblage précis par secteur et zone",
+      "Vous gardez le contrôle total",
     ],
   },
   {
-    icon: Bot,
+    icon: Users,
     color: "hsl(var(--primary-glow))",
-    category: "Suivi et conclusions",
+    category: "Réseau et introductions",
     items: [
-      "Analyse des opportunités en temps réel",
-      "Votre assistant trouve des affaires en autonomie",
-      "Détection des signaux d'intérêt",
-      "Tableau de suivi complet · Vous gardez le contrôle",
+      "Introductions qualifiées par vos contacts de confiance",
+      "Chaque mise en relation traçée et horodatée",
+      "Validation en un clic, refus possible",
+      "Tableau de suivi complet · Zéro intro perdue",
     ],
   },
   {
@@ -37,21 +37,21 @@ const founderFeatures = [
     color: "hsl(var(--accent))",
     category: "Gains automatiques",
     items: [
-      "Une part de chaque affaire conclue, partagée automatiquement",
-      "Frais de plateforme transparents",
-      "Gains enregistrés et protégés",
-      "Versement automatique à chaque affaire · Traçabilité totale",
+      "Versement automatique à signature de contrat",
+      "Commission définie à l'avance, transparente",
+      "Gains enregistrés et protégés pour vos apporteurs",
+      "Traçabilité totale · Aucune zone grise",
     ],
   },
   {
     icon: TrendingUp,
     color: "hsl(152 62% 52%)",
-    category: "Données et suivi en direct",
+    category: "Suivi en temps réel",
     items: [
-      "Connexion bancaire en direct",
+      "Pipeline clair et lisible à tout moment",
       "Réseau de confiance évolutif",
       "Attribution prouvée et vérifiable",
-      "Données de marché accessibles",
+      "Score de réputation des facilitateurs",
     ],
   },
   {
@@ -59,7 +59,7 @@ const founderFeatures = [
     color: "hsl(38 95% 52%)",
     category: "Réseau et sécurité",
     items: [
-      "Présentateurs qualifiés disponibles",
+      "Facilitateurs qualifiés disponibles",
       "Chaque présentation vérifiée et protégée",
       "Protection contre les contournements",
       "Support inclus · Mises à jour incluses · Conforme RGPD",
