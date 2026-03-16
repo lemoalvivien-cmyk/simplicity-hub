@@ -56,6 +56,19 @@ function getSessionId(): string {
   return sid;
 }
 
+// ── Consent gate ─────────────────────────────────────────────────────────────
+// trackEvent() is blocked until the user accepts cookies (RGPD art. 6.1.a)
+function isAnalyticsConsented(): boolean {
+  try {
+    const raw = localStorage.getItem("wiinupmax_cookie_consent");
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return parsed.state === "accepted" && parsed.version === "v1";
+  } catch {
+    return false;
+  }
+}
+
 // ── Core write function ──────────────────────────────────────────────────────
 // Fire & forget — never throws, never blocks
 export function trackEvent(
@@ -63,6 +76,14 @@ export function trackEvent(
   userId: string | null | undefined,
   properties: AnalyticsPayload = {}
 ): void {
+  // RGPD: don't track until consent
+  if (!isAnalyticsConsented()) {
+    if (import.meta.env.DEV) {
+      console.info(`[analytics] BLOCKED (no consent): ${eventType}`);
+    }
+    return;
+  }
+
   const sessionId = getSessionId();
   const page = typeof window !== "undefined" ? window.location.pathname : "/";
 
