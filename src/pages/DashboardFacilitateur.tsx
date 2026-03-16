@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
-import VoiceWelcome from "@/components/ai/VoiceWelcome";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDashboardFacilitateurData } from "@/hooks/useDashboardFacilitateurData";
