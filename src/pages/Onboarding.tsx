@@ -46,10 +46,74 @@ type ProfileData = {
   cible: Cible;
 };
 
+// Step 3 exists only for entreprise (aha-moment after seed)
 const TOTAL_STEPS = 2;
 
 const INPUT_CLASS =
   "w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition placeholder:text-muted-foreground/60";
+
+// ── AHA MOMENT — Step 3 (entreprise only) ────────────────────────────────────
+interface StepAhaProps { prenom: string; onGo: () => void; }
+
+function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
+  const [countdown, setCountdown] = useState(5);
+
+  useEffect(() => {
+    const t = setInterval(() => setCountdown(c => {
+      if (c <= 1) { clearInterval(t); onGo(); return 0; }
+      return c - 1;
+    }), 1000);
+    return () => clearInterval(t);
+  }, [onGo]);
+
+  return (
+    <div className="w-full max-w-md text-center animate-fade-in">
+      {/* Trophy */}
+      <div className="mx-auto mb-5 w-16 h-16 rounded-2xl flex items-center justify-center"
+        style={{ background: "var(--gradient-accent)" }}>
+        <Trophy size={28} className="text-white" />
+      </div>
+
+      <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+        Bravo {prenom} ! Votre espace est prêt 🎉
+      </h1>
+      <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+        Nous avons créé <strong className="text-foreground">3 missions d'exemple</strong> et{" "}
+        <strong className="text-foreground">1 contact demo</strong> pour que votre dashboard ne soit jamais vide.
+      </p>
+
+      {/* Checklist */}
+      <div className="rounded-2xl border border-border bg-card p-4 mb-6 text-left space-y-3">
+        {[
+          { icon: CheckCircle2, text: "3 missions actives créées pour vous", done: true },
+          { icon: CheckCircle2, text: "1 contact demo dans votre liste", done: true },
+          { icon: Rocket,       text: "Créez votre première vraie mission →", done: false },
+        ].map(({ icon: Icon, text, done }) => (
+          <div key={text} className="flex items-center gap-3">
+            <Icon size={16} className={done ? "text-green-500 shrink-0" : "text-primary shrink-0"} />
+            <span className={`text-sm ${done ? "text-foreground" : "font-semibold text-foreground"}`}>{text}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <button
+        type="button"
+        onClick={onGo}
+        className="btn-cta w-full py-4 flex items-center justify-center gap-2"
+      >
+        <Sparkles size={16} />
+        Accéder à mon espace maintenant
+        <span className="ml-1 text-white/60 text-xs">({countdown}s)</span>
+      </button>
+      <p className="text-xs text-muted-foreground mt-3">
+        Votre première introduction peut arriver dans les 24h.
+      </p>
+    </div>
+  );
+}
+
+
 
 // ── Secteurs ───────────────────────────────────────────────────────────────────
 const ENTREPRISE_SECTORS = [
