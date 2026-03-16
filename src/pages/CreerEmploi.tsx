@@ -672,32 +672,32 @@ export default function CreerEmploiPage() {
             </div>
 
             <h2 className="font-display text-3xl md:text-5xl font-bold text-white leading-tight">
-              Devenez Facilitateur{" "}
+              Obtenez vos premiers clients B2B{" "}
               <span style={{
                 background: "linear-gradient(135deg, hsl(var(--accent)), hsl(38 100% 70%))",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
               }}>
-                dès aujourd'hui
+                dès cette semaine
               </span>
             </h2>
 
             <p className="text-white/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-              Rejoignez les premiers facilitateurs WiinupMax. Founder Pass à 99 €/an — prix garanti à vie. Accès illimité. Paiements automatiques. 100 places seulement.
+              Founder Pass à 99 €/an — prix garanti à vie. Vos contacts vous envoient des introductions qualifiées. Vous ne payez que si ça marche. 100 places seulement.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <motion.div whileHover={{ scale: 1.04, y: -3 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
-                <Link to="/signup" className="btn-cta text-base px-10 py-5 inline-flex flex-col items-center gap-1">
+                <Link to="/checkout" className="btn-cta text-base px-10 py-5 inline-flex flex-col items-center gap-1">
                   <span className="flex items-center gap-2 font-bold">
                     <Award size={18} />
-                    Je deviens Facilitateur – Gratuit
+                    Activer Founder Pass — 99 € TTC/an
                     <ArrowRight size={18} />
                   </span>
                   <span className="text-[12px] font-semibold opacity-85 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-white/70 inline-block" />
-                    Places limitées — 100/100
+                    Places limitées — 100 places max
                   </span>
                 </Link>
               </motion.div>
