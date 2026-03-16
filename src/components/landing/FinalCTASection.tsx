@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, Zap, Lock } from "lucide-react";
+import { ArrowRight, Zap, Lock } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
 import SlotCounter from "@/components/landing/SlotCounter";
+import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
+import { CLOSED_BETA } from "@/lib/betaConfig";
 
 export default function FinalCTASection() {
   const { isSoldOut, isUrgent, remaining } = useFounderSlots();
@@ -44,11 +46,19 @@ export default function FinalCTASection() {
         </div>
 
         <p className="text-white/80 text-base mb-6 max-w-sm mx-auto leading-relaxed font-medium">
-          Rejoignez les entrepreneurs et facilitateurs qui ont déjà choisi la simplicité et la tranquillité.
+          Rejoignez les entrepreneurs qui ont déjà choisi la simplicité et la tranquillité.
         </p>
 
         <div className="flex flex-col items-center gap-3 mb-5">
-          {isSoldOut ? (
+          {CLOSED_BETA ? (
+            <div
+              className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-sm font-semibold border w-full sm:w-auto"
+              style={{ borderColor: "hsl(var(--primary-glow) / 0.4)", color: "hsl(var(--primary-glow))" }}
+            >
+              <Lock size={15} />
+              Bêta privée — inscrivez-vous sur liste d'attente ci-dessus
+            </div>
+          ) : isSoldOut ? (
             <div
               className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-sm font-semibold border cursor-not-allowed opacity-60 w-full sm:w-auto"
               style={{ borderColor: "hsl(218 20% 60% / 0.3)", color: "hsl(218 20% 70%)" }}
@@ -70,10 +80,7 @@ export default function FinalCTASection() {
               <ArrowRight size={17} />
             </Link>
           )}
-          <span className="flex items-center gap-1.5 text-white/55 text-xs">
-            <ShieldCheck size={12} aria-hidden="true" />
-            Satisfait ou remboursé 30 jours · Annulation libre · Accès immédiat
-          </span>
+          <GuaranteeBadge className="text-white/70" />
         </div>
 
         <p className="text-white/50 text-xs mb-6">

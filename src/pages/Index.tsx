@@ -13,15 +13,16 @@ import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
 import WhyDifferentSection from "@/components/landing/WhyDifferentSection";
+import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
+import ClosedBetaBanner from "@/components/landing/ClosedBetaBanner";
 import { initScrollTracking, track } from "@/lib/landingTracking";
 import { trackEvent } from "@/lib/analytics";
+import { CLOSED_BETA } from "@/lib/betaConfig";
 
-// ── Dynamic imports for heavy/above-fold 3D & cursor components ──────────────
 const HeroFounderPass = lazy(() => import("@/components/landing/HeroFounderPass"));
 const MagneticCursor  = lazy(() => import("@/components/landing/MagneticCursor"));
 const GodModeTeaser   = lazy(() => import("@/components/landing/GodModeTeaser"));
 
-// ── Hero skeleton while Three.js loads ───────────────────────────────────────
 function HeroFallback() {
   return (
     <div
@@ -36,62 +37,47 @@ function HeroFallback() {
 
 export default function LandingPage() {
   useEffect(() => {
-    trackEvent("landing_view", null, { source: "direct" });
+    trackEvent("landing_view", null, { source: "direct", beta: CLOSED_BETA });
     const cleanup = initScrollTracking();
     return cleanup;
   }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-
-      {/* Global magnetic cursor — desktop pointer only, lazy-loaded */}
       <Suspense fallback={null}>
         <MagneticCursor />
       </Suspense>
 
       <PublicNav />
 
-      {/* 1 — HERO FOUNDER PASS (brand + exact copy + CTAs Stripe + PSD2) */}
       <Suspense fallback={<HeroFallback />}>
         <HeroFounderPass />
       </Suspense>
 
-      {/* 2 — DOULEURS ENTREPRISES */}
+      {/* CLOSED BETA — liste d'attente visible juste sous le hero */}
+      {CLOSED_BETA && (
+        <section className="py-10 bg-background">
+          <div className="container max-w-xl">
+            <ClosedBetaBanner />
+          </div>
+        </section>
+      )}
+
       <ProblemSection />
-
-      {/* 3 — DOULEURS FACILITATEURS */}
       <FacilitateurPainSection />
-
-      {/* 4 — MÉCANISME DOUBLE MOTEUR */}
       <MecanismeSection />
 
-      {/* 5 — COMMENT ÇA MARCHE (4 étapes honnêtes) */}
       <Suspense fallback={null}>
         <GodModeTeaser />
       </Suspense>
 
-      {/* 6 — FONCTIONNALITÉS COMPLÈTES */}
       <FeaturesValueSection />
-
-      {/* 7 — COMMENT ÇA MARCHE ENTREPRISE */}
       <HowItWorksEntrepriseSection />
-
-      {/* 8 — FACILITATEUR */}
       <FacilitateurSection />
-
-      {/* 9 — PREUVES */}
       <ProofSection />
-
-      {/* 10 — QUESTIONS & RÉPONSES */}
       <AntiBullshitSection />
-
-      {/* 11 — POURQUOI DIFFÉRENT */}
       <WhyDifferentSection />
-
-      {/* 12 — PRICING */}
       <PricingSection />
-
-      {/* 13 — CTA FINAL */}
       <FinalCTASection />
 
       {/* FOOTER */}
@@ -121,37 +107,42 @@ export default function LandingPage() {
             <a href="mailto:contact@wiinupmax.com" className="hover:text-foreground transition-colors">Contact</a>
           </div>
         </div>
+        <div className="container mt-5">
+          <GuaranteeBadge variant="bar" />
+        </div>
       </footer>
 
-      {/* STICKY CTA — Mobile only */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
-        style={{
-          background: "hsl(218 72% 10% / 0.97)",
-          borderTop: "1px solid hsl(218 55% 22% / 0.7)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
-      >
-        <div className="px-4 py-3 flex gap-2">
-          <Link
-            to="/checkout"
-            className="btn-cta flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-bold"
-            onClick={() => track("cta_sticky_mobile")}
-          >
-            Founder Pass — 99 €/an
-            <ArrowRight size={15} />
-          </Link>
-          <Link
-            to="/login"
-            className="px-4 py-3.5 rounded-xl text-sm font-medium border border-white/15 text-white/70 hover:text-white/90 transition-colors flex items-center"
-            onClick={() => track("cta_sticky_mobile", { label: "login" })}
-          >
-            Connexion
-          </Link>
+      {/* STICKY CTA — Mobile uniquement, masqué en beta */}
+      {!CLOSED_BETA && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+          style={{
+            background: "hsl(218 72% 10% / 0.97)",
+            borderTop: "1px solid hsl(218 55% 22% / 0.7)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}
+        >
+          <div className="px-4 py-3 flex gap-2">
+            <Link
+              to="/checkout"
+              className="btn-cta flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-bold"
+              onClick={() => track("cta_sticky_mobile")}
+            >
+              Founder Pass — 99 €/an
+              <ArrowRight size={15} />
+            </Link>
+            <Link
+              to="/login"
+              className="px-4 py-3.5 rounded-xl text-sm font-medium border border-white/15 text-white/70 hover:text-white/90 transition-colors flex items-center"
+            >
+              Connexion
+            </Link>
+          </div>
+          <GuaranteeBadge className="pb-2 px-4" />
         </div>
-      </div>
+      )}
     </div>
   );
 }
