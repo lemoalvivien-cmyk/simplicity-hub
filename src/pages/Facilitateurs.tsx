@@ -94,14 +94,6 @@ export default function Facilitateurs() {
   const [showFilters, setShowFilters] = useState(false);
   const [sortMode, setSortMode] = useState<"match" | "score" | "activity">("match");
 
-  const { paths, findBestPaths } = useGraphEngine();
-
-  useEffect(() => {
-    if (!user) return;
-    // Pre-load best paths
-    findBestPaths({ limit: 10 });
-  }, [user]);
-
   useEffect(() => {
     if (!user) return;
     const load = async () => {
@@ -117,34 +109,35 @@ export default function Facilitateurs() {
         const facs = facRes.data || [];
         const intros = introsRes.data || [];
         const profiles = profilesRes.data || [];
-        const favSet = new Set<string>((favRes.data || []).map((f: { facilitator_user_id: string }) => f.facilitator_user_id));
+        const favSet = new Set<string>(
+          (favRes.data || []).map((f: { facilitator_user_id: string }) => f.facilitator_user_id)
+        );
         setFavorites(favSet);
 
-        // Build match score map from graph engine results
-        const matchMap: Record<string, { score: number; explanation: string[] }> = {};
-        paths.forEach(p => {
-          matchMap[p.facilitator_id] = { score: p.global_score, explanation: p.explanation };
-        });
-
         const facWithStats: FacilitateurWithStats[] = facs.map(f => {
-          const myIntros = intros.filter((i: { facilitateur_id: string; statut: string | null }) => i.facilitateur_id === f.user_id);
-          const validees = myIntros.filter((i: { statut: string | null }) => i.statut === "validee").length;
+          const myIntros = intros.filter(
+            (i: { facilitateur_id: string; statut: string | null }) => i.facilitateur_id === f.user_id
+          );
+          const validees = myIntros.filter(
+            (i: { statut: string | null }) => i.statut === "validee"
+          ).length;
           const total = myIntros.length;
           const tauxConv = total > 0 ? Math.round((validees / total) * 100) : 0;
           const score = Math.min(100, tauxConv + Math.min(30, total * 2) + (total >= 5 ? 20 : 0));
-          const profil = profiles.find((p: { id: string; prenom: string | null }) => p.id === f.user_id);
+          const profil = profiles.find(
+            (p: { id: string; prenom: string | null }) => p.id === f.user_id
+          );
           const badge = getBadge(score);
-          const graphMatch = matchMap[f.user_id];
           return {
             ...f,
             prenom: profil?.prenom || "Facilitateur",
             intros_count: total,
             intros_validees: validees,
             score,
-            match_score: graphMatch?.score ?? score,
+            match_score: score,
             badge,
             isFavorite: favSet.has(f.user_id),
-            explanation: graphMatch?.explanation ?? [],
+            explanation: [] as string[],
           };
         });
 
@@ -154,7 +147,7 @@ export default function Facilitateurs() {
       }
     };
     load();
-  }, [user, paths]);
+  }, [user]);
 
   const toggleFavorite = async (fac: FacilitateurWithStats, e: React.MouseEvent) => {
     e.preventDefault();
