@@ -1,5 +1,7 @@
+// AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireAuth, unauthorizedResponse } from "../_shared/authGuard.ts";
 
 const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const AI_MODEL = "google/gemini-2.5-flash";

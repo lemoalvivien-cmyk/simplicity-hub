@@ -1,23 +1,22 @@
 /**
- * ADA Voice Call — ElevenLabs TTS + Consent Recording
- * Handles: voice synthesis, consent audio, call status updates
- *
- * POST /ada-voice-call
- * Body: { action: "synthesize" | "log_consent" | "start_call" | "end_call", session_id, ... }
+ * ADA Voice Call — DÉSACTIVÉE pour le lancement GTM
+ * AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
  */
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireAuth, unauthorizedResponse } from "../_shared/authGuard.ts";
 
-const SUPABASE_URL      = Deno.env.get("SUPABASE_URL") ?? "";
-const SERVICE_KEY       = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY") ?? "";
+Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-// Closer voice — professional French male voice
-const ADA_VOICE_ID = "nPczCjzI2devNBz1zQrb"; // Brian — deep professional voice
+  // AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
+  try { await requireAuth(req); } catch { return unauthorizedResponse(corsHeaders); }
 
-// RGPD consent preamble always prepended to every call
-const RGPD_PREAMBLE = `Bonjour, je vous contacte de la part de WiinupMax. 
-Avant de continuer, je dois vous informer que cet appel peut être enregistré à des fins de qualité et de conformité RGPD. 
+  return new Response(
+    JSON.stringify({ error: "ADA Voice Call non disponible.", code: "FEATURE_DISABLED" }),
+    { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+});
 Vous avez le droit d'accès, de rectification et de suppression de vos données. 
 Acceptez-vous que nous poursuivions cet appel ? Répondez oui ou non.`;
 
