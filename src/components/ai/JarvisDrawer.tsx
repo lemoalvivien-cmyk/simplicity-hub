@@ -30,8 +30,6 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [voiceMode, setVoiceMode] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
 
   // last jarvis text for TTS
   const lastJarvisText = messages.filter((m) => m.role === "jarvis").at(-1)?.text;
