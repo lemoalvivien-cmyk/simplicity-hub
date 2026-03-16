@@ -30,7 +30,7 @@ import {
   Search,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSubscription, isAccessActive } from "@/contexts/SubscriptionContext";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import { db } from "@/lib/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
