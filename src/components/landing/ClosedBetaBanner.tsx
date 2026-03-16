@@ -1,6 +1,6 @@
 /**
- * ClosedBetaBanner — Displayed on landing when CLOSED_BETA = true
- * Replaces the main CTA with a waitlist signup form.
+ * ClosedBetaBanner — Affiché sur la landing quand CLOSED_BETA = true.
+ * Collecte les emails de la liste d'attente (table analytics_events).
  */
 import { useState } from "react";
 import { Lock, Mail, CheckCircle2, ArrowRight } from "lucide-react";
@@ -18,7 +18,6 @@ export default function ClosedBetaBanner() {
     if (!email.trim()) return;
     setLoading(true);
     try {
-      // Fire-and-forget analytics event reusing existing table
       await (supabase.from("analytics_events") as any).insert({
         event_type: "waitlist_signup",
         session_id: sessionStorage.getItem("wiinup_sid") ?? crypto.randomUUID(),
@@ -28,7 +27,7 @@ export default function ClosedBetaBanner() {
       });
       setSubmitted(true);
     } catch {
-      toast.error("Une erreur est survenue. Réessayez.");
+      toast.error("Une erreur est survenue. Réessayez dans un instant.");
     } finally {
       setLoading(false);
     }
@@ -36,65 +35,70 @@ export default function ClosedBetaBanner() {
 
   return (
     <div
-      className="rounded-2xl border-2 p-6 text-center max-w-md mx-auto"
+      className="rounded-2xl border-2 p-6 sm:p-8 text-center max-w-md mx-auto"
       style={{
-        borderColor: "hsl(var(--primary-glow) / 0.4)",
+        borderColor: "hsl(var(--primary-glow) / 0.35)",
         background: "linear-gradient(145deg, hsl(218 72% 8%), hsl(218 65% 14%))",
       }}
     >
+      {/* Icon */}
       <div
-        className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
-        style={{ background: "hsl(var(--primary) / 0.15)", border: "1px solid hsl(var(--primary) / 0.3)" }}
+        className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
+        style={{ background: "hsl(var(--primary) / 0.12)", border: "1px solid hsl(var(--primary) / 0.25)" }}
       >
-        <Lock size={22} style={{ color: "hsl(var(--primary-glow))" }} />
+        <Lock size={24} style={{ color: "hsl(var(--primary-glow))" }} />
       </div>
 
-      <h3 className="font-display font-bold text-lg text-white mb-2">
+      {/* Copy */}
+      <h3 className="font-display font-bold text-xl text-white mb-2 leading-snug">
         {BETA_MESSAGE.headline}
       </h3>
-      <p className="text-sm text-white/65 mb-5 leading-relaxed">
+      <p className="text-sm text-white/60 mb-6 leading-relaxed max-w-xs mx-auto">
         {BETA_MESSAGE.body}
       </p>
 
+      {/* Form / confirmation */}
       {submitted ? (
         <div
-          className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl"
+          className="flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl"
           style={{ background: "hsl(152 62% 34% / 0.15)", border: "1px solid hsl(152 62% 34% / 0.3)" }}
         >
-          <CheckCircle2 size={16} style={{ color: "hsl(152 62% 52%)" }} />
-          <span className="text-sm font-semibold" style={{ color: "hsl(152 62% 55%)" }}>
-            Vous êtes sur la liste — on vous prévient en premier !
+          <CheckCircle2 size={17} style={{ color: "hsl(152 62% 52%)" }} />
+          <span className="text-sm font-semibold" style={{ color: "hsl(152 62% 58%)" }}>
+            {BETA_MESSAGE.confirmation}
           </span>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex gap-2.5">
           <div className="flex-1 relative">
-            <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/35 pointer-events-none" />
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="votre@email.com"
               required
-              className="w-full pl-9 pr-3 py-3 rounded-xl text-sm bg-white/8 border border-white/15 text-white placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition"
+              aria-label="Votre adresse email"
+              className="w-full pl-10 pr-3 py-3.5 rounded-xl text-sm border text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+              style={{ background: "hsl(218 72% 12%)", borderColor: "hsl(218 55% 25% / 0.6)" }}
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="btn-cta px-4 py-3 text-sm font-bold flex items-center gap-1.5 shrink-0"
+            aria-label="M'inscrire sur la liste d'attente"
+            className="btn-cta px-5 py-3.5 text-sm font-bold flex items-center gap-2 shrink-0"
           >
-            {loading ? (
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <ArrowRight size={15} />
-            )}
+            {loading
+              ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              : <><span className="hidden sm:inline">{BETA_MESSAGE.cta}</span><ArrowRight size={16} /></>
+            }
           </button>
         </form>
       )}
 
-      <p className="text-[11px] text-white/35 mt-3">
-        50 places max · Aucun spam · Désabonnement en un clic
+      <p className="text-[11px] text-white/30 mt-4">
+        {BETA_MESSAGE.disclaimer}
       </p>
     </div>
   );
