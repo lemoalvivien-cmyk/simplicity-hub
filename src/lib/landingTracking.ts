@@ -40,6 +40,7 @@ export type TrackEvent =
   | "cta_hero_founder_pass"
   | "cta_hero_bank_psd2"
   | "cta_facilitateur_section"
+  | "cta_entreprise_section"
   | "cta_why_different"
   | "cta_dashboard_activate"
   | "qa_open"
