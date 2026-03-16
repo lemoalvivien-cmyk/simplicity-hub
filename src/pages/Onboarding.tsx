@@ -598,40 +598,18 @@ export default function Onboarding() {
 
       trackEvent("onboarding_done", user.id, { role: role ?? "unknown", cible });
 
-      // ── 5. Fire OpenClaw background tasks (non-blocking) ──────────────────
-      const hasAccess = isAccessActive(subscription.status);
-      if (role === "entreprise" && hasAccess) {
-        const { count: missionCount } = await db
-          .from("missions")
-          .select("id", { count: "exact", head: true })
-          .eq("entreprise_id", user.id);
-
-        const calls: Promise<unknown>[] = [
-          supabase.functions.invoke("openclaw-dossier-sync", { body: { force: true } }),
-          supabase.functions.invoke("openclaw-job-executor", {
-            body: { job_type: "daily_brief_generate" },
-          }),
-          supabase.functions.invoke("openclaw-scheduler", {
-            body: { tick_type: "welcome_scan", user_id: user.id },
-          }),
-        ];
-        if ((missionCount ?? 0) > 0) {
-          calls.push(
-            supabase.functions.invoke("openclaw-job-executor", {
-              body: { job_type: "radar_scan" },
-            })
-          );
-        }
-        Promise.allSettled(calls).catch(() => {});
-        toast.success(
-          "Le cerveau WiinupMax analyse votre profil. Vos premières recommandations arrivent…"
-        );
-      } else if (role === "facilitateur") {
-        supabase.functions
-          .invoke("openclaw-scheduler", {
-            body: { tick_type: "welcome_scan", user_id: user.id },
+      // ── 5. AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+      //       Seed demo data pour les entreprises (non-bloquant, idempotent).
+      //       Injecte 3 missions + 1 contact pour que le dashboard ne soit jamais vide.
+      if (role === "entreprise") {
+        supabase
+          .rpc("seed_demo_data", { p_user_id: user.id, p_role: "entreprise" })
+          .then(() => {
+            toast.success("Votre espace est prêt. 3 missions d'exemple ont été créées pour démarrer.");
           })
-          .catch(() => {});
+          .catch(() => {
+            // Non-bloquant — l'onboarding continue même si le seed échoue
+          });
       }
 
       // ── 6. Navigate — replace so the Back button never returns to /onboarding
