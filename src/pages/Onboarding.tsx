@@ -602,13 +602,10 @@ export default function Onboarding() {
       //       Seed demo data pour les entreprises (non-bloquant, idempotent).
       //       Injecte 3 missions + 1 contact pour que le dashboard ne soit jamais vide.
       if (role === "entreprise") {
-        supabase
+        void supabase
           .rpc("seed_demo_data", { p_user_id: user.id, p_role: "entreprise" })
           .then(() => {
             toast.success("Votre espace est prêt. 3 missions d'exemple ont été créées pour démarrer.");
-          })
-          .catch(() => {
-            // Non-bloquant — l'onboarding continue même si le seed échoue
           });
       }
 
