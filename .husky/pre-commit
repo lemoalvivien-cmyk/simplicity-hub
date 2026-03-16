@@ -50,7 +50,7 @@ for FILE in $STAGED; do
   case "$FILE" in
     *.png|*.jpg|*.ico|*.svg|*.woff*|bun.lock*|package-lock.json) continue ;;
     # SECURITY: Never commit .env files regardless of extension
-    .env|.env.*) 
+    .env|.env.*|.env.example)
       echo ""
       echo "🚨 BLOCKED: Attempting to commit .env file: $FILE"
       FOUND=1
