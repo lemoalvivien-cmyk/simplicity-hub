@@ -17,7 +17,7 @@
  */
 
 // ── TOGGLE PRINCIPAL ────────────────────────────────────────────
-export const CLOSED_BETA = true; // 👈 OUVRIR AU PUBLIC : mettre false ici
+export const CLOSED_BETA = false; // ✅ OUVERT AU PUBLIC
 
 // ── Paramètres bêta ─────────────────────────────────────────────
 /** Places max en bêta privée (indépendant du quota public 100) */
