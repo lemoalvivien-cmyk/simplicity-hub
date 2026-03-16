@@ -9,7 +9,6 @@ const zones = ["France entière", "Île-de-France", "Grand Ouest", "Grand Sud", 
 
 export default function ProfilEntreprise() {
   const [saved, setSaved] = useState(false);
-  const [matchingOpen, setMatchingOpen] = useState(false);
   const [form, setForm] = useState({
     nom: "Acme SaaS",
     description: "Nous proposons un logiciel de facturation simple pour les TPE. Notre outil s'adresse aux artisans, commerçants et prestataires qui veulent arrêter de gérer leur facturation sur Excel.",
