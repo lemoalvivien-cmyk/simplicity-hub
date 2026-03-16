@@ -160,7 +160,7 @@ bunx playwright test  # E2E tests (retries: 3)
 |---|---|---|---|
 | 1 | RLS activé sur 100% des tables métier | ✅ | `SELECT tablename FROM pg_tables WHERE schemaname='public'` → toutes avec RLS |
 | 2 | Secrets exclusivement dans Lovable Cloud Vault | ✅ | `git grep -r "sk_live_\|whsec_\|service_role"` → vide |
-| 3 | `.env` purgé de l'historique Git | ⚠️ **ACTION LOCALE REQUISE** — voir commandes ci-dessous | `git ls-files \| grep .env` → doit retourner VIDE après purge |
+| 3 | `.env` purgé de l'historique Git | ✅ **Done après push force** — `git ls-files \| grep .env` = vide | `git filter-repo --invert-paths --path .env --force` exécuté + `git push origin --force --all` |
 | 4 | `RGPDConsentBanner` monté dans `App.tsx` | ✅ | Visible sur wiinupmax.com au 1er chargement |
 | 5 | `trackEvent()` bloqué sans consentement | ✅ | `isAnalyticsConsented()` gate dans `analytics.ts` |
 | 6 | Export JSON + suppression compte (`/account`) | ✅ | RGPD art. 17 & 20 |
