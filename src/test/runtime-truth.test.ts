@@ -62,6 +62,7 @@ describe("analytics writer registry", () => {
       "promo_redeemed",   // src/pages/Checkout.tsx → checkPromo → result.valid
       "login_success",    // src/pages/Login.tsx → handleSubmit after successful signIn
       "signup_started",   // src/pages/Signup.tsx → handleSubmit before signUp call
+      "success_view",     // src/pages/Success.tsx → useEffect on mount after Stripe redirect
     ]);
     ANALYTICS_EVENTS.forEach(evt => {
       expect(explicitlyAllowed.has(evt)).toBe(true);
