@@ -245,28 +245,15 @@ export default function CreerEmploiPage() {
                 transition={{ ...EASE, delay: 0.3 }}
               >
                 <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
-                  <Link to="/signup" className="btn-cta flex flex-col items-center justify-center gap-1 px-8 py-5 text-base leading-tight">
+                  <Link to="/checkout" className="btn-cta flex flex-col items-center justify-center gap-1 px-8 py-5 text-base leading-tight">
                     <span className="flex items-center gap-2 font-bold">
                       <Zap size={16} />
-                      Je deviens Facilitateur – Gratuit
+                      Activer Founder Pass — 99 € TTC/an
                       <ArrowRight size={16} />
                     </span>
                     <span className="text-[11px] font-semibold opacity-80 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-white/70 inline-block" />
-                      Places limitées — 100/100
-                    </span>
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
-                  <Link
-                    to="/pricing"
-                    className="flex flex-col items-center justify-center gap-1 px-6 py-5 rounded-xl text-sm font-semibold border transition-colors"
-                    style={{ borderColor: "hsl(218 55% 33% / 0.5)", background: "hsl(218 55% 17% / 0.4)", backdropFilter: "blur(10px)", color: "hsl(0 0% 100% / 0.8)" }}
-                  >
-                    <span className="flex items-center gap-1.5">Je veux mes premiers clients – 99 €/an</span>
-                    <span className="text-[11px] opacity-70 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
-                      Places limitées — 100/100
+                      Places limitées — 100 places max
                     </span>
                   </Link>
                 </motion.div>
