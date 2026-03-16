@@ -41,6 +41,18 @@ function StatCard({
 
 // ─── Main CTA button: points to /checkout ─────────────────────────────────
 function FounderPassButton({ isSoldOut, isUrgent, remaining }: { isSoldOut: boolean; isUrgent: boolean; remaining: number | null }) {
+  if (CLOSED_BETA) {
+    return (
+      <motion.div
+        className="flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-sm font-semibold border"
+        style={{ borderColor: "hsl(var(--primary-glow) / 0.35)", color: "hsl(var(--primary-glow))" }}
+      >
+        <Lock size={15} />
+        Bêta privée — Inscrivez-vous ci-dessous
+      </motion.div>
+    );
+  }
+
   if (isSoldOut) {
     return (
       <motion.div
@@ -48,7 +60,7 @@ function FounderPassButton({ isSoldOut, isUrgent, remaining }: { isSoldOut: bool
         style={{ borderColor: "hsl(218 20% 60% / 0.3)", color: "hsl(218 20% 70%)" }}
       >
         <Lock size={15} />
-        Offre de lancement terminée
+        Toutes les places ont été prises
       </motion.div>
     );
   }
