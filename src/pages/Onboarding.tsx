@@ -46,8 +46,8 @@ type ProfileData = {
   cible: Cible;
 };
 
-// Step 3 exists only for entreprise (aha-moment after seed)
-const TOTAL_STEPS = 2;
+// 3 real steps + aha-moment screen
+const TOTAL_STEPS = 3;
 
 const INPUT_CLASS =
   "w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition placeholder:text-muted-foreground/60";
