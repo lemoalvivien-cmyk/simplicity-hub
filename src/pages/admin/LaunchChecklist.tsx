@@ -1,6 +1,6 @@
 /**
  * Launch Checklist — page /admin/launch-checklist
- * Todo list finale avant lancement public.
+ * Checklist finale avant lancement public.
  * Protégée : admin uniquement.
  */
 import { useState } from "react";
@@ -8,6 +8,7 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import {
   CheckCircle2, Clock, AlertTriangle, ExternalLink,
   Lock, Unlock, GitBranch, Shield, Zap, Globe, Mail, CreditCard,
+  Rocket, PartyPopper,
 } from "lucide-react";
 import { CLOSED_BETA } from "@/lib/betaConfig";
 
@@ -28,8 +29,8 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "repo-private",
     category: "Sécurité",
-    label: "Repo GitHub rendu 100% privé",
-    detail: "GitHub → Settings → Danger Zone → Change repository visibility → Make private",
+    label: "Dépôt de code rendu 100% privé",
+    detail: "GitHub → Settings → Danger Zone → Change visibility → Make private",
     done: false,
     critical: true,
     icon: Lock,
@@ -39,7 +40,7 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "git-purge",
     category: "Sécurité",
-    label: "Historique Git purgé (.env)",
+    label: "Historique purgé (fichiers .env supprimés)",
     detail: "git filter-repo --path .env --invert-paths --force && git push --force --all",
     done: false,
     critical: true,
@@ -48,9 +49,9 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "stripe-webhook",
     category: "Sécurité",
-    label: "STRIPE_WEBHOOK_SECRET configuré en production",
-    detail: "Stripe Dashboard → Webhooks → Endpoint → Signing secret → Copier dans Lovable Cloud Vault",
-    done: false,
+    label: "Clé de signature Stripe configurée",
+    detail: "Stripe → Webhooks → Endpoint → Signing secret → Ajouter dans Lovable Cloud Vault",
+    done: true,
     critical: true,
     icon: CreditCard,
     actionUrl: "https://dashboard.stripe.com/webhooks",
@@ -59,8 +60,8 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "pre-commit",
     category: "Sécurité",
-    label: "Hooks Husky actifs (bloquent les clés sk_live_)",
-    detail: "Vérifier .husky/pre-commit — scanner les patterns Stripe + JWT avant chaque commit",
+    label: "Vérifications automatiques actives (bloquent les clés secrètes)",
+    detail: "Husky pre-commit — scan des clés Stripe + JWT avant chaque sauvegarde de code",
     done: true,
     critical: true,
     icon: Shield,
@@ -69,7 +70,7 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "beta-toggle",
     category: "Bêta & Lancement",
-    label: `CLOSED_BETA = ${CLOSED_BETA ? "true (bêta active)" : "false (SITE OUVERT)"}`,
+    label: `Mode bêta : ${CLOSED_BETA ? "fermé (bêta active)" : "OUVERT AU PUBLIC ✓"}`,
     detail: "Modifier src/lib/betaConfig.ts → CLOSED_BETA = false pour ouvrir au public",
     done: !CLOSED_BETA,
     critical: true,
@@ -78,17 +79,28 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "quota-db",
     category: "Bêta & Lancement",
-    label: "launch_quota.total_slots = 100 en base",
+    label: "Nombre de places réglé à 100 en base de données",
     detail: "Vérifier la table launch_quota : total_slots doit valoir 100 avant l'ouverture",
     done: false,
     critical: true,
     icon: Zap,
   },
   {
+    id: "sentry-dsn",
+    category: "Bêta & Lancement",
+    label: "Suivi des erreurs Sentry configuré (VITE_SENTRY_DSN)",
+    detail: "sentry.io → New Project → React → copier le DSN dans les variables d'environnement Lovable",
+    done: false,
+    critical: false,
+    icon: AlertTriangle,
+    actionUrl: "https://sentry.io",
+    actionLabel: "Ouvrir Sentry",
+  },
+  {
     id: "admin-beta",
     category: "Bêta & Lancement",
-    label: "Page /admin/beta opérationnelle (compteur + export CSV)",
-    detail: "Tester le chargement de la liste d'attente et l'export CSV",
+    label: "Page de gestion bêta opérationnelle (compteur + export)",
+    detail: "Vérifier le chargement de la liste d'attente et l'export CSV",
     done: true,
     critical: false,
     icon: Mail,
@@ -99,7 +111,7 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "error-monitoring",
     category: "Technique",
-    label: "Monitoring d'erreurs actif (ErrorBoundary + global handler)",
+    label: "Capture d'erreurs active (ErrorBoundary + surveillance globale)",
     detail: "Les erreurs JS non gérées sont capturées et enregistrées dans business_alerts",
     done: true,
     critical: false,
@@ -108,8 +120,8 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "analytics",
     category: "Technique",
-    label: "Analytics funnel complet (landing → gain_paid)",
-    detail: "usePageTracking actif + events nommés dans analytics_events",
+    label: "Mesures du parcours complet (inscription → gain reçu)",
+    detail: "Suivi de page actif + événements nommés dans analytics_events",
     done: true,
     critical: false,
     icon: Zap,
@@ -117,8 +129,8 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "tanstack",
     category: "Technique",
-    label: "TanStack Query v5 intégré sur tous les services",
-    detail: "useQuery + useMutation avec staleTime, pagination et error handling",
+    label: "Chargement des données optimisé sur tous les services",
+    detail: "TanStack Query v5 — useQuery + useMutation avec mise en cache et gestion des erreurs",
     done: true,
     critical: false,
     icon: Zap,
@@ -126,8 +138,8 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "e2e-tests",
     category: "Technique",
-    label: "Tests E2E Playwright prêts (signup, checkout, mission)",
-    detail: "playwright.config.ts avec retries:3 + 3 specs dans tests/e2e/",
+    label: "Tests automatisés prêts (inscription, paiement, mission)",
+    detail: "3 scénarios Playwright dans tests/e2e/ avec 3 tentatives automatiques",
     done: true,
     critical: false,
     icon: CheckCircle2,
@@ -136,8 +148,8 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "guarantee-badge",
     category: "Produit",
-    label: "GuaranteeBadge visible (pricing, checkout, landing, footer)",
-    detail: "Prix garanti à vie + Remboursement 30 jours affiché sur tous les CTAs",
+    label: "Garantie visible (tarification, paiement, accueil, pied de page)",
+    detail: "Prix verrouillé à vie + Remboursé sous 30 jours affiché sur tous les boutons d'action",
     done: true,
     critical: false,
     icon: Shield,
@@ -145,8 +157,8 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "onboarding-3",
     category: "Produit",
-    label: "Onboarding 3 écrans (rôle → infos → première mission)",
-    detail: "Checklist Première Victoire visible sur le dashboard + notification J1",
+    label: "Accueil en 3 étapes (rôle → informations → première mission)",
+    detail: "Checklist Première Victoire visible sur le tableau de bord + notification J1",
     done: true,
     critical: false,
     icon: CheckCircle2,
@@ -154,7 +166,7 @@ const INITIAL_ITEMS: CheckItem[] = [
   {
     id: "domain",
     category: "Produit",
-    label: "Domaine wiinupmax.com pointé et HTTPS actif",
+    label: "Nom de domaine wiinupmax.com actif et sécurisé (HTTPS)",
     detail: "DNS A/CNAME → vérifier SSL, robots.txt et sitemap.xml",
     done: false,
     critical: false,
@@ -179,8 +191,8 @@ export default function AdminLaunchChecklist() {
   const totalCritical = items.filter(it => it.critical).length;
   const criticalDone = items.filter(it => it.critical && it.done).length;
   const pct = Math.round((totalDone / items.length) * 100);
-
   const isReadyToLaunch = criticalDone === totalCritical;
+  const isFullyDone = totalDone === items.length;
 
   return (
     <AdminLayout
@@ -188,6 +200,40 @@ export default function AdminLaunchChecklist() {
       subtitle="Tous les points à valider avant d'ouvrir la plateforme au public"
     >
       <div className="max-w-2xl mx-auto space-y-6 pb-10">
+
+        {/* 🎉 Fully done celebration banner */}
+        {isFullyDone && (
+          <div
+            className="rounded-2xl border-2 p-6 text-center animate-fade-in"
+            style={{
+              background: "linear-gradient(135deg, hsl(152 62% 34% / 0.12), hsl(38 95% 50% / 0.08))",
+              borderColor: "hsl(152 62% 40% / 0.4)",
+            }}
+          >
+            <PartyPopper size={32} className="mx-auto mb-3" style={{ color: "hsl(38 95% 60%)" }} />
+            <p className="font-display font-bold text-xl text-foreground mb-1">
+              100% — Lancez maintenant !
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Chaque point est validé. La plateforme est prête pour accueillir vos premiers clients.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="/admin/beta"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-colors"
+                style={{ background: "hsl(152 62% 34% / 0.2)", color: "hsl(152 62% 58%)", border: "1px solid hsl(152 62% 40% / 0.3)" }}
+              >
+                <Rocket size={14} /> Voir le tableau de bord bêta
+              </a>
+              <code
+                className="px-3 py-2 rounded-lg text-xs font-mono"
+                style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}
+              >
+                CLOSED_BETA = false → Publier
+              </code>
+            </div>
+          </div>
+        )}
 
         {/* Progress banner */}
         <div
@@ -313,18 +359,18 @@ export default function AdminLaunchChecklist() {
           );
         })}
 
-        {/* Final CTA */}
-        {isReadyToLaunch && (
+        {/* Critical items done → launch CTA */}
+        {isReadyToLaunch && !isFullyDone && (
           <div
             className="rounded-2xl border p-6 text-center"
             style={{ background: "hsl(152 62% 34% / 0.08)", borderColor: "hsl(152 62% 34% / 0.25)" }}
           >
             <CheckCircle2 size={28} className="mx-auto mb-3" style={{ color: "hsl(152 62% 52%)" }} />
             <p className="font-display font-bold text-lg text-foreground mb-1">
-              Tout est en ordre — Lancez maintenant !
+              Points critiques validés — Vous pouvez lancer !
             </p>
             <p className="text-sm text-muted-foreground">
-              Mettez <code className="bg-muted px-1 rounded">CLOSED_BETA = false</code> dans betaConfig.ts et publiez.
+              Mettez <code className="bg-muted px-1 rounded">CLOSED_BETA = false</code> dans <code className="bg-muted px-1 rounded">betaConfig.ts</code> et publiez.
             </p>
           </div>
         )}
