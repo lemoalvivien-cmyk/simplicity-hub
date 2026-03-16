@@ -1,6 +1,6 @@
 /**
  * Admin Beta — Dashboard bêta privée
- * Voir : compteur de slots · liste waitlist · statut beta
+ * Compteur de slots · Liste waitlist · Export CSV · Checklist lancement
  * Protégé : admin uniquement
  */
 import { useState, useEffect } from "react";
@@ -56,7 +56,7 @@ export default function AdminBeta() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `waitlist-wiinupmax-${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `waitlist-wiinupmax-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success(`${waitlist.length} adresses exportées`);
@@ -66,22 +66,21 @@ export default function AdminBeta() {
   const betaProgress = Math.min((waitlist.length / BETA_MAX_SLOTS) * 100, 100);
 
   return (
-    <AdminLayout title="Tableau de bord Bêta" subtitle="Gestion de la bêta privée et liste d'attente">
+    <AdminLayout title="Bêta & Waitlist" subtitle="Gestion de la bêta privée, liste d'attente et checklist de lancement">
       <div className="max-w-3xl mx-auto space-y-6 pb-10">
 
         {/* Status badge */}
         <div className="flex items-center">
           <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
-              style={
-                CLOSED_BETA
-                  ? { background: "hsl(38 95% 50% / 0.12)", border: "1px solid hsl(38 95% 50% / 0.3)", color: "hsl(38 95% 55%)" }
-                  : { background: "hsl(152 62% 34% / 0.12)", border: "1px solid hsl(152 62% 34% / 0.3)", color: "hsl(152 62% 50%)" }
-              }
-            >
-              {CLOSED_BETA ? <Lock size={11} /> : <Unlock size={11} />}
-              {CLOSED_BETA ? "Bêta privée active" : "Site public ouvert"}
-            </div>
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+            style={
+              CLOSED_BETA
+                ? { background: "hsl(38 95% 50% / 0.12)", border: "1px solid hsl(38 95% 50% / 0.3)", color: "hsl(38 95% 55%)" }
+                : { background: "hsl(152 62% 34% / 0.12)", border: "1px solid hsl(152 62% 34% / 0.3)", color: "hsl(152 62% 50%)" }
+            }
+          >
+            {CLOSED_BETA ? <Lock size={11} /> : <Unlock size={11} />}
+            {CLOSED_BETA ? "Bêta privée active" : "Site public ouvert"}
           </div>
         </div>
 
@@ -96,7 +95,7 @@ export default function AdminBeta() {
           <Zap size={16} style={{ color: CLOSED_BETA ? "hsl(38 95% 55%)" : "hsl(152 62% 50%)" }} className="shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-semibold text-foreground mb-1">
-              {CLOSED_BETA ? "Pour ouvrir au public :" : "La plateforme est ouverte au public."}
+              {CLOSED_BETA ? "👉 Pour ouvrir au public :" : "La plateforme est ouverte au public."}
             </p>
             {CLOSED_BETA ? (
               <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
@@ -130,7 +129,7 @@ export default function AdminBeta() {
             )}
           </div>
           <div className="rounded-2xl border border-border bg-card p-5 text-center">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Places payantes</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Abonnés payants</p>
             {slotsLoading ? (
               <div className="h-9 w-16 rounded bg-muted animate-pulse mx-auto" />
             ) : (
@@ -160,7 +159,8 @@ export default function AdminBeta() {
             <p className="text-xs text-muted-foreground mt-2">
               {betaProgress >= 100
                 ? "Liste complète — prêt à ouvrir au public"
-                : `${Math.round(betaProgress)}% rempli — ${BETA_MAX_SLOTS - waitlist.length} places restantes`}
+                : `${Math.round(betaProgress)}% rempli — ${BETA_MAX_SLOTS - waitlist.length} place${BETA_MAX_SLOTS - waitlist.length > 1 ? "s" : ""} restante${BETA_MAX_SLOTS - waitlist.length > 1 ? "s" : ""}`
+              }
             </p>
           </div>
         )}
@@ -200,14 +200,16 @@ export default function AdminBeta() {
             <div className="py-12 text-center">
               <Users size={28} className="text-muted-foreground mx-auto mb-3" />
               <p className="text-sm font-semibold text-foreground mb-1">Aucune inscription pour l'instant</p>
-              <p className="text-xs text-muted-foreground">Les emails apparaîtront ici dès que quelqu'un s'inscrit.</p>
+              <p className="text-xs text-muted-foreground">Les emails apparaîtront ici dès que quelqu'un s'inscrit sur la landing.</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
               {waitlist.map((entry) => (
                 <div key={entry.id} className="flex items-center gap-3 px-5 py-3">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
-                    style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}>
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                    style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
+                  >
                     {(entry.properties?.email ?? "?")[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -235,16 +237,16 @@ export default function AdminBeta() {
           </h2>
           <ul className="space-y-2.5 text-sm">
             {[
-              { ok: true,          label: "betaConfig.ts créé avec toggle commenté" },
-              { ok: true,          label: "ClosedBetaBanner sur la landing" },
-              { ok: true,          label: "GuaranteeBadge sur landing, pricing, checkout, success" },
-              { ok: true,          label: "usePageTracking actif dans App.tsx" },
-              { ok: true,          label: "Funnel analytics complet (landing → gain_paid)" },
-              { ok: true,          label: "Page /admin-beta avec export CSV waitlist" },
-              { ok: !CLOSED_BETA,  label: "CLOSED_BETA = false (site ouvert au public)" },
-              { ok: false,         label: "Repo GitHub rendu privé (manuel)" },
-              { ok: false,         label: "Historique Git purgé avec git filter-repo (manuel)" },
-              { ok: false,         label: "STRIPE_WEBHOOK_SECRET configuré en production" },
+              { ok: true,         label: "betaConfig.ts créé avec toggle OUVRIR AU PUBLIC" },
+              { ok: true,         label: "ClosedBetaBanner sur la landing (liste d'attente)" },
+              { ok: true,         label: "GuaranteeBadge sur landing, pricing, checkout, success" },
+              { ok: true,         label: "usePageTracking actif (funnel complet landing → gain_paid)" },
+              { ok: true,         label: "Page /admin-beta avec export CSV waitlist" },
+              { ok: true,         label: "Script git filter-repo documenté dans README.md" },
+              { ok: !CLOSED_BETA, label: "CLOSED_BETA = false (site ouvert au public)" },
+              { ok: false,        label: "Repo GitHub rendu privé (action manuelle requise)" },
+              { ok: false,        label: "Historique Git purgé avec git filter-repo (action manuelle)" },
+              { ok: false,        label: "STRIPE_WEBHOOK_SECRET configuré en production" },
             ].map(({ ok, label }) => (
               <li key={label} className="flex items-center gap-3">
                 <div
@@ -261,6 +263,7 @@ export default function AdminBeta() {
             ))}
           </ul>
         </div>
+
       </div>
     </AdminLayout>
   );
