@@ -5,19 +5,15 @@ import {
   BarChart2, Menu, X, LogOut, Shield, Zap, TrendingUp, Rocket, Activity, Brain,
 } from "lucide-react";
 
+// AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+// Liens morts supprimés : payout-ops, reactivation, analytics, env-check, go-live, operations, help
+// Seules les 5 routes admin vérifiées et actives sont conservées.
 const links = [
   { to: "/admin", label: "Vue d'ensemble", icon: LayoutDashboard },
   { to: "/admin/users", label: "Utilisateurs", icon: Users },
   { to: "/admin/promo-codes", label: "Codes promo", icon: Tag },
   { to: "/admin/payments", label: "Paiements", icon: CreditCard },
-  { to: "/admin/payout-ops", label: "Payout Ops", icon: TrendingUp },
-  { to: "/admin/reactivation", label: "Réactivation", icon: Rocket },
   { to: "/admin/revenue", label: "Revenu réel", icon: TrendingUp },
-  { to: "/admin/analytics", label: "Analytics", icon: BarChart2 },
-  { to: "/admin/env-check", label: "Env Check", icon: Activity },
-  { to: "/admin/go-live", label: "Go-Live", icon: Rocket },
-  { to: "/operations", label: "Operations", icon: Brain },
-  { to: "/admin/help", label: "Aide", icon: HelpCircle },
 ];
 
 export default function AdminNav() {
