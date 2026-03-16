@@ -76,26 +76,9 @@ Deno.serve(async (req) => {
     }
 
     const userId = claims.sub;
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user }, error: authError } = await userClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-    const userId: string | null = user.id;
 
     const body = await req.json();
     const { company_name, sector, target_description } = body;
-
-    if (!company_name || !sector || !target_description) {
-      return new Response(
-        JSON.stringify({ error: "company_name, sector et target_description sont requis." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
 
     // ── Load dossier in parallel with auth ───────────────────
     const dossier = userId ? await loadDossier(supabaseUrl, serviceKey, userId) : null;
