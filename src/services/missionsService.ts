@@ -44,7 +44,7 @@ export async function fetchMissions(
   let query = supabase
     .from("missions")
     .select("*", { count: "exact" })
-    .eq("owner_user_id", userId)
+    .eq("entreprise_id", userId)
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -55,7 +55,7 @@ export async function fetchMissions(
   if (error) throw error;
 
   return {
-    data: (data ?? []) as Mission[],
+    data: (data ?? []) as unknown as Mission[],
     count: count ?? 0,
     page,
     pageSize,
