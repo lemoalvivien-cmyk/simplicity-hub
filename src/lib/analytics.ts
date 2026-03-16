@@ -3,26 +3,38 @@
  * Writes real events to `analytics_events` table.
  * Validates event_type at compile-time. Never blocks UI (fire & forget).
  * Correlates session_id / user_id / page / created_at.
+ *
+ * FUNNEL EVENTS (full coverage):
+ *   landing_view → pricing_view → checkout_start → checkout_success →
+ *   success_view → onboarding_done → mission_created → intro_submitted →
+ *   intro_validated → gain_created → gain_paid
  */
 
 import { supabase } from "@/integrations/supabase/client";
 
 // ── Validated event types ────────────────────────────────────────────────────
 export const ANALYTICS_EVENTS = [
+  // Acquisition funnel
   "page_view",
   "landing_view",
+  "waitlist_signup",
   "cta_click",
   "pricing_view",
   "checkout_start",
   "checkout_success",
   "success_view",
+  // Activation funnel
+  "signup_started",
+  "login_success",
   "onboarding_done",
+  "promo_redeemed",
+  // Core value funnel
   "mission_created",
   "intro_submitted",
   "intro_validated",
-  "signup_started",
-  "login_success",
-  "promo_redeemed",
+  // Revenue funnel
+  "gain_created",
+  "gain_paid",
 ] as const;
 
 export type AnalyticsEventType = typeof ANALYTICS_EVENTS[number];
@@ -102,6 +114,18 @@ export function usePageTracking() {
     const path = location.pathname;
     if (path === prevPath.current) return;
     prevPath.current = path;
-    trackEvent("page_view", user?.id ?? null, { path });
+
+    // Named funnel events for key pages
+    const funnelMap: Partial<Record<string, AnalyticsEventType>> = {
+      "/pricing": "pricing_view",
+      "/checkout": "checkout_start",
+      "/success": "success_view",
+    };
+    const funnelEvent = funnelMap[path];
+    if (funnelEvent) {
+      trackEvent(funnelEvent, user?.id ?? null, { path });
+    } else {
+      trackEvent("page_view", user?.id ?? null, { path });
+    }
   }, [location.pathname, user?.id]);
 }

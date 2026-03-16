@@ -3,11 +3,13 @@ import { CheckCircle2, ArrowRight, Zap, Users, Lock } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
 import SlotCounter from "@/components/landing/SlotCounter";
+import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
+import { CLOSED_BETA } from "@/lib/betaConfig";
 
 const entrepriseFeatures = [
   "Missions publiées en 2 minutes — visibles immédiatement",
   "Introductions qualifiées envoyées par vos apporteurs",
-  "Suivi complet et traçé de chaque opportunité",
+  "Suivi complet et tracé de chaque opportunité",
   "Validation en un clic — vous gardez le contrôle total",
   "Gains automatiques tracés et versés à signature",
   "Votre espace personnel haut de gamme unifié",
@@ -25,18 +27,22 @@ const facilitateurFeatures = [
 ];
 
 export default function PricingSection() {
-  const { remaining, isSoldOut, isUrgent, loading } = useFounderSlots();
+  const { remaining, isSoldOut, loading } = useFounderSlots();
 
   return (
     <section id="pricing" className="bg-background py-20">
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
-          <p className="pill-tag mb-4 mx-auto w-fit">Offre lancement exclusive</p>
+          <p className="pill-tag mb-4 mx-auto w-fit">
+            {CLOSED_BETA ? "Bêta privée — 50 places" : "Offre lancement exclusive"}
+          </p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
             Simple, honnête, transparent.
           </h2>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
-            Pour les entreprises : Pass Fondateur à <strong className="text-foreground">99 € par an</strong> seulement (au lieu de 990 €). Seulement 100 places disponibles. Tout est inclus. Pour les facilitateurs : <strong className="text-foreground">Gratuit pour toujours</strong>, aucune carte demandée.
+            Pour les entreprises : Pass Fondateur à <strong className="text-foreground">99 € par an</strong> seulement (au lieu de 990 €).{" "}
+            {CLOSED_BETA ? "50 places en bêta privée." : "Seulement 100 places disponibles."}{" "}
+            Tout est inclus. Pour les facilitateurs : <strong className="text-foreground">Gratuit pour toujours</strong>, aucune carte demandée.
           </p>
         </div>
 
@@ -74,7 +80,10 @@ export default function PricingSection() {
                 ) : (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold">
                     <Zap size={10} />
-                    Offre de lancement — {remaining} place{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""}
+                    {CLOSED_BETA
+                      ? "Bêta privée — places limitées"
+                      : `Offre lancement — ${remaining} place${remaining !== 1 ? "s" : ""} restante${remaining !== 1 ? "s" : ""}`
+                    }
                   </div>
                 )}
               </div>
@@ -87,12 +96,12 @@ export default function PricingSection() {
                 </div>
               </div>
               <p className="text-white/80 text-xs font-semibold mt-1">
-                Prix garanti à vie · 100 places max · Premier arrivé premier servi
+                Prix garanti à vie · Remboursé si insatisfait 30 jours · Premier arrivé premier servi
               </p>
             </div>
 
             <div className="px-7 py-6 flex flex-col flex-1">
-              <ul className="space-y-3 mb-7 flex-1">
+              <ul className="space-y-3 mb-5 flex-1">
                 {entrepriseFeatures.map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <CheckCircle2 size={14} className="shrink-0 mt-0.5" style={{ color: isSoldOut ? "hsl(var(--muted-foreground))" : "hsl(var(--primary))" }} />
@@ -100,6 +109,9 @@ export default function PricingSection() {
                   </li>
                 ))}
               </ul>
+
+              <GuaranteeBadge variant="card" className="mb-5" />
+
               {isSoldOut ? (
                 <div className="space-y-3">
                   <div
@@ -124,9 +136,7 @@ export default function PricingSection() {
                     Activer le Founder Pass — 99 € TTC/an
                     <ArrowRight size={16} />
                   </Link>
-                  <p className="text-center text-xs text-muted-foreground mt-3">
-                    Accès immédiat · Prix garanti à vie · Gains versés automatiquement
-                  </p>
+                  <GuaranteeBadge className="mt-3" />
                 </>
               )}
             </div>
