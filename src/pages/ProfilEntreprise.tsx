@@ -2,7 +2,6 @@ import { useState } from "react";
 import UserLayout from "@/components/layout/UserLayout";
 import { Building2, CheckCircle2, Save, Sparkles } from "lucide-react";
 import CopilotPanel from "@/components/ai/CopilotPanel";
-import MatchingModal from "@/components/ai/MatchingModal";
 
 const secteurs = ["SaaS / Tech", "Immobilier", "Finance / Assurance", "Formation", "Commerce", "Industrie", "Autre"];
 const tailles = ["Indépendant", "2–10 personnes", "10–50 personnes", "50–200 personnes", "Plus de 200 personnes"];
