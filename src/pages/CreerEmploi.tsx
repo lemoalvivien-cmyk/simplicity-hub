@@ -702,10 +702,16 @@ export default function CreerEmploiPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <motion.div whileHover={{ scale: 1.04, y: -3 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
-                <Link to="/signup" className="btn-cta text-base px-10 py-4 inline-flex items-center gap-2">
-                  <Award size={18} />
-                  Devenir Facilitateur — Founder Pass 99 €/an
-                  <ArrowRight size={18} />
+                <Link to="/signup" className="btn-cta text-base px-10 py-5 inline-flex flex-col items-center gap-1">
+                  <span className="flex items-center gap-2 font-bold">
+                    <Award size={18} />
+                    Je deviens Facilitateur – Gratuit
+                    <ArrowRight size={18} />
+                  </span>
+                  <span className="text-[12px] font-semibold opacity-85 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-white/70 inline-block" />
+                    Places limitées — 100/100
+                  </span>
                 </Link>
               </motion.div>
             </div>
