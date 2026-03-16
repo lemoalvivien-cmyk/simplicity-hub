@@ -1,15 +1,13 @@
 /**
- * Onboarding — 2-step profile wizard + Step 3 Aha Moment
+ * Onboarding — 3 écrans obligatoires + Aha Moment
  *
- * Architecture notes
- * ──────────────────
- * • StepIdentity, StepSectorGoal, StepDone are defined as TOP-LEVEL functions
- *   (module scope) so React never unmounts/remounts them on parent re-renders.
+ * Écran 1 — Rôle + identité
+ * Écran 2 — Secteur + objectif
+ * Écran 3 — Première mission (entreprise) / premiers contacts (facilitateur)
+ * Écran 4 — Aha Moment (auto-redirect 5s)
  *
- * • After saveProfile() succeeds for entreprise:
- *     1. seed_demo_data RPC injects 3 missions + 1 contact
- *     2. Step 3 (aha-moment screen) is shown for 4s before redirect
- *   For facilitateur: direct redirect to /dashboard/facilitateur.
+ * Architecture: tous les sous-composants sont TOP-LEVEL pour stabilité React.
+ * Après saveProfile() pour entreprise: seed_demo_data → écran 3 mission → Aha.
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -25,6 +23,8 @@ import {
   Sparkles,
   Trophy,
   Rocket,
+  Target,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
