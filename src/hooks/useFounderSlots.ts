@@ -1,11 +1,20 @@
 /**
  * useFounderSlots — reads from Zustand store (founderSlotsStore).
- * Zero re-renders unless the selected slice actually changes (subscribeWithSelector).
- * Drop-in replacement: same API as old FounderSlotsContext hook.
+ * Uses individual selectors to avoid infinite re-render loops from object identity.
  */
-import { useFounderSlotsStore, selectSlots } from "@/stores/founderSlotsStore";
+import { useFounderSlotsStore } from "@/stores/founderSlotsStore";
+import { useShallow } from "zustand/react/shallow";
 export type { FounderSlotsState } from "@/stores/founderSlotsStore";
 
 export function useFounderSlots() {
-  return useFounderSlotsStore(selectSlots);
+  return useFounderSlotsStore(
+    useShallow((s) => ({
+      remaining: s.remaining,
+      total: s.total,
+      usedPct: s.usedPct,
+      isUrgent: s.isUrgent,
+      isSoldOut: s.isSoldOut,
+      loading: s.loading,
+    }))
+  );
 }
