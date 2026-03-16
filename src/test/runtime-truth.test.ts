@@ -63,6 +63,9 @@ describe("analytics writer registry", () => {
       "login_success",    // src/pages/Login.tsx → handleSubmit after successful signIn
       "signup_started",   // src/pages/Signup.tsx → handleSubmit before signUp call
       "success_view",     // src/pages/Success.tsx → useEffect on mount after Stripe redirect
+      "waitlist_signup",  // src/components/landing/ClosedBetaBanner.tsx → handleSubmit
+      "gain_created",     // supabase/functions/notify-gain-paye → gain creation event
+      "gain_paid",        // supabase/functions/stripe-webhook → payout confirmed
     ]);
     ANALYTICS_EVENTS.forEach(evt => {
       expect(explicitlyAllowed.has(evt)).toBe(true);
