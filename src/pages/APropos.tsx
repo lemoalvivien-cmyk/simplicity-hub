@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Brain, Users, ArrowRight, Target, Heart, Handshake,
+  FileText, Users, ArrowRight, Target, Heart, Handshake,
   MapPin, Cpu, TrendingUp, Newspaper, Star, Clock, Euro,
   Zap, Quote
 } from "lucide-react";
