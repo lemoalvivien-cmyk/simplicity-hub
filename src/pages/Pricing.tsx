@@ -83,15 +83,11 @@ const faqItems = [
   },
   {
     q: "À quoi servent les 99 € par an ?",
-    a: "Ils donnent accès à tout : l'assistant qui cherche des clients pour vous, les présentations de vos contacts, le suivi complet et les gains automatiques. Tout inclus, sans frais cachés.",
+    a: "Ils donnent accès à tout : publier des missions, recevoir des introductions qualifiées de vos apporteurs, suivre votre pipeline et déclencher les versements automatiques. Tout inclus, sans frais cachés.",
   },
   {
-    q: "Comment fonctionne l'assistant vocal ?",
-    a: "Il cherche des clients pour vous, prépare les messages, et vous informe au bon moment — 24h/24, sans que vous ayez à intervenir. Vous validez ou refusez en un clic.",
-  },
-  {
-    q: "Puis-je connecter mon compte bancaire ?",
-    a: "Oui. La connexion bancaire vous permet de voir vos entrées d'argent en direct et d'améliorer les résultats de votre assistant. Vos données bancaires ne sont jamais stockées chez nous.",
+    q: "Puis-je arrêter quand je veux ?",
+    a: "Oui. Sans condition. Votre accès continue jusqu'à la fin de la période payée. Aucune pénalité, aucun engagement.",
   },
   {
     q: "Les facilitateurs paient-ils quelque chose ?",
