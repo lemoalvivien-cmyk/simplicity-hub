@@ -124,13 +124,13 @@ export default function Help() {
           </div>
           <h3 className="font-semibold mb-1">Vous n'avez pas trouvé votre réponse ?</h3>
           <p className="text-sm text-primary-foreground/70 mb-4">
-            Notre assistant IA peut vous aider instantanément.
+            Notre équipe support peut vous aider rapidement.
           </p>
           <Link
             to="/assistant"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-primary font-semibold text-sm hover:bg-white/90 transition-colors"
           >
-            Parler à l'assistant →
+            Contacter le support →
           </Link>
         </div>
       </div>

@@ -417,7 +417,7 @@ export default function RoyaltyFuturesTab() {
                 Aucune affaire signée pour l'instant
               </p>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                Vos gains apparaîtront ici dès que votre assistant IA finalisera sa première affaire.
+                Vos gains apparaîtront ici dès que votre première affaire sera signée.
               </p>
             </div>
           ) : (
