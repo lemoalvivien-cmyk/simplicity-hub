@@ -12,3 +12,11 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /admin
+Disallow: /checkout
+Disallow: /success
+Disallow: /account
+
+Sitemap: https://wiinupmax.com/sitemap.xml

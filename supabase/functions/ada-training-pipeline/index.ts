@@ -1,21 +1,22 @@
 /**
- * ADA Training Pipeline — Closed-Loop Fine-Tuning Orchestrator
- *
- * Actions:
- *   "collect"   — called after each deal close; ingests anonymized sample
- *   "check"     — returns should_retrain status + dataset stats
- *   "export"    — exports JSONL training set (for inspection / manual upload)
- *   "trigger"   — manually or auto-trigger a new training run via Together AI
- *   "status"    — returns current model + run status
+ * ADA Training Pipeline — DÉSACTIVÉE pour le lancement GTM
+ * AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
  */
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { createHash } from "node:crypto";
+import { requireAuth, unauthorizedResponse } from "../_shared/authGuard.ts";
 
-const SUPABASE_URL   = Deno.env.get("SUPABASE_URL") ?? "";
-const SERVICE_KEY    = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const TOGETHER_KEY   = Deno.env.get("TOGETHER_AI_API_KEY") ?? "";
-const LOVABLE_KEY    = Deno.env.get("LOVABLE_API_KEY") ?? "";
+Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  // AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
+  try { await requireAuth(req); } catch { return unauthorizedResponse(corsHeaders); }
+
+  return new Response(
+    JSON.stringify({ error: "ADA Training non disponible.", code: "FEATURE_DISABLED" }),
+    { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+});
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

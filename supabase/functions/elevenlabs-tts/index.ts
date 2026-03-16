@@ -1,5 +1,7 @@
+// AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
+// ElevenLabs TTS désactivée pour le lancement GTM.
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { requireAuth, unauthorizedResponse } from "../_shared/authGuard.ts";
 
 Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -7,7 +9,18 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const authHeader = req.headers.get("Authorization");
+  // AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
+  try { await requireAuth(req); } catch { return unauthorizedResponse(corsHeaders); }
+
+  return new Response(
+    JSON.stringify({ error: "Assistant vocal non disponible.", code: "FEATURE_DISABLED" }),
+    { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+});
+
+// ── Legacy code preserved below (disabled) ───────────────────────────────────
+// deno-lint-ignore no-unused-vars
+const _authHeader = req?.headers?.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
