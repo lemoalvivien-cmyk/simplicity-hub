@@ -1,6 +1,8 @@
+// AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireAuth, unauthorizedResponse } from "../_shared/authGuard.ts";
 
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
@@ -11,6 +13,14 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
+  let claims: Awaited<ReturnType<typeof requireAuth>>;
+  try {
+    claims = await requireAuth(req);
+  } catch {
+    return unauthorizedResponse(corsHeaders);
   }
 
   try {
@@ -25,15 +35,9 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData.user?.email) throw new Error("User not authenticated");
-
-    const user = userData.user;
-    logStep("User authenticated", { userId: user.id });
+    const userId    = claims.sub;
+    const userEmail = claims.email ?? "";
+    logStep("User authenticated", { userId });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email!, limit: 1 });

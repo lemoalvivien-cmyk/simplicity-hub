@@ -1,5 +1,7 @@
+// AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireAuth, unauthorizedResponse } from "../_shared/authGuard.ts";
 
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
@@ -19,14 +21,16 @@ Deno.serve(async (req) => {
       status,
     });
 
+  // AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
+  let claims: Awaited<ReturnType<typeof requireAuth>>;
+  try {
+    claims = await requireAuth(req);
+  } catch {
+    return json({ valid: false, message: "Non authentifié." }, 401);
+  }
+
   try {
     logStep("Function started");
-
-    // ── 1. Authenticate — JWT validated server-side, never trust client body ──
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return json({ valid: false, message: "Non authentifié." }, 401);
-    }
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -34,11 +38,9 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
-    if (userError || !userData.user) {
-      return json({ valid: false, message: "Session invalide. Reconnectez-vous." }, 401);
-    }
+    const userId    = claims.sub;
+    const userEmail = claims.email ?? "";
+    logStep("User authenticated", { userId, email: userEmail });
 
     const user = userData.user;
     logStep("User authenticated", { userId: user.id });
