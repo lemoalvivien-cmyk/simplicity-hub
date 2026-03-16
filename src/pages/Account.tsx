@@ -126,7 +126,6 @@ function RGPDDeleteButton({ onConfirm }: { onConfirm: () => Promise<void> }) {
     </button>
   );
 }
-import { supabase } from "@/integrations/supabase/client";
 
 export default function Account() {
   const { user, profile, signOut } = useAuth();
