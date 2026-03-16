@@ -59,7 +59,6 @@ const FacilitateurDetail = lazy(() => import("./pages/FacilitateurDetail"));
 // ── Lazy: public pages ───────────────────────────────────────────────────────
 const APropos = lazy(() => import("./pages/APropos"));
 const CreerEmploiPage = lazy(() => import("./pages/CreerEmploi"));
-const LandingRSA = lazy(() => import("./pages/LandingRSA"));
 
 // ── Lazy: utils ──────────────────────────────────────────────────────────────
 const Assistant = lazy(() => import("./pages/Assistant"));
@@ -133,7 +132,6 @@ const App = () => (
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/a-propos" element={<APropos />} />
                 <Route path="/creer-emploi" element={<CreerEmploiPage />} />
-                <Route path="/rejoindre" element={<LandingRSA />} />
 
                 {/* ── Onboarding ───────────────────────────── */}
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
