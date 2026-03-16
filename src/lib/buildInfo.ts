@@ -25,7 +25,7 @@ export const FEATURE_FLAGS = {
   billing_stripe:          { state: "live",     note: "create-checkout + stripe-webhook + check-subscription" },
   pwa_installable:         { state: "live",     note: "vite-plugin-pwa + InstallBanner + /install" },
   multilingue_i18n:        { state: "hardcoded_fr" as unknown as "live", note: "UI hardcoded in French only — i18n removed, no LanguageSwitcher" },
-  voice_elevenlabs:        { state: "live",     note: "elevenlabs-voice-token edge fn + VoiceWelcome" },
+  voice_elevenlabs:        { state: "disabled",  note: "AUDIT 16/03/2026 — désactivé GTM, retourne 503" },
 
   // ── Facilitateur OS ───────────────────────────────────────
   missions:                { state: "live",     note: "/missions /missions/:id /missions/nouvelle" },

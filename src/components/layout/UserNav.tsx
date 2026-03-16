@@ -97,7 +97,7 @@ function buildEntrepriseGroups(badges: ReturnType<typeof useBadges>, gatewayRead
     { to: "/dashboard/entreprise", label: "Tableau de bord", icon: LayoutDashboard },
   ];
   if (gatewayReady) {
-    accueilItems.push({ to: "/pilotage", label: "Mon IA", icon: Activity, badgeLabel: badges.urgentActions > 0 ? "Nouveau" : undefined });
+    accueilItems.push({ to: "/pilotage", label: "Pilotage", icon: Activity, badgeLabel: badges.urgentActions > 0 ? "Nouveau" : undefined });
   }
   return [
     {
