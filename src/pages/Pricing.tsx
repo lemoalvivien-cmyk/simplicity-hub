@@ -261,8 +261,8 @@ export default function Pricing() {
           </h1>
 
           <p className="text-white/65 max-w-xl mx-auto leading-relaxed" style={{ fontSize: "clamp(0.9rem, 1.9vw, 1.05rem)" }}>
-            Votre assistant IA prospecte, apporte des affaires et travaille en autonomie 24h/24.
-            Vos <strong className="text-white/85">gains sont versés automatiquement</strong> à chaque affaire signée, sans rien faire de votre côté.
+            Vos contacts vous envoient des introductions qualifiées.{" "}
+            Vos <strong className="text-white/85">gains sont versés automatiquement</strong> à chaque affaire signée. Vous ne payez que si ça marche.
           </p>
         </div>
       </section>
