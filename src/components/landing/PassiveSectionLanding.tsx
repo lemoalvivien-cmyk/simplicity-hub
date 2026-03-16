@@ -111,7 +111,7 @@ export default function PassiveSectionLanding() {
           }}>
             <div className="flex items-center gap-2 mb-4 pb-3 border-b" style={{ borderColor: "hsl(218 40% 25% / 0.4)" }}>
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-white/50 text-xs font-semibold">OpenClaw · Brouillon prêt à personnaliser</span>
+              <span className="text-white/50 text-xs font-semibold">Wiinup Max · Brouillon prêt à personnaliser</span>
             </div>
             <div className="space-y-2.5">
               {[
