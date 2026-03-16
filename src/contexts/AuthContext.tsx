@@ -112,13 +112,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, prenom?: string) => {
+    // SEC: emailRedirectTo is hardcoded to production — prevents broken links
+    // from preview/local environments landing in transactional emails.
+    const redirectBase =
+      import.meta.env.PROD
+        ? "https://wiinupmax.com"
+        : window.location.origin;
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { prenom: prenom || "" },
-        // PASSE F: redirect to /login?confirmed=true so user sees confirmation banner
-        emailRedirectTo: `${window.location.origin}/login?confirmed=true`,
+        emailRedirectTo: `${redirectBase}/login?confirmed=true`,
       },
     });
     return { error: error as Error | null };
