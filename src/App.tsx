@@ -116,6 +116,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <InstallBanner />
+          <RGPDConsentBanner />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <PageTracker />
             <Suspense fallback={<PageSkeleton />}>
