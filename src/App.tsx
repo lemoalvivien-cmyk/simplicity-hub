@@ -133,6 +133,7 @@ const App = () => (
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/a-propos" element={<APropos />} />
                 <Route path="/creer-emploi" element={<CreerEmploiPage />} />
+                <Route path="/rejoindre" element={<LandingRSA />} />
 
                 {/* ── Onboarding ───────────────────────────── */}
                 <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />

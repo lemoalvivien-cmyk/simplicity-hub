@@ -1,6 +1,6 @@
 import { useRef, useState, Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Zap, ChevronDown, Users, Lock } from "lucide-react";
+import { ArrowRight, Zap, ChevronDown, Lock } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { track } from "@/lib/landingTracking";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
