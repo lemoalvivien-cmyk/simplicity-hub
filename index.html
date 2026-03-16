@@ -87,25 +87,7 @@
       base-uri 'self'                                   → blocks <base href> injection
       form-action 'self' *.stripe.com                   → form submissions only to safe targets
     -->
-    <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval';
-      style-src 'self' 'unsafe-inline';
-      connect-src 'self'
-        https://*.supabase.co
-        https://api.stripe.com
-        https://js.stripe.com
-        https://api.resend.com
-        wss://*.supabase.co
-        https://*.lovable.app
-        https://*.lovableproject.com;
-      img-src 'self' data: blob: https://*.supabase.co https://wiinupmax.com;
-      font-src 'self' data:;
-      frame-src https://js.stripe.com https://hooks.stripe.com;
-      object-src 'none';
-      base-uri 'self';
-      form-action 'self' https://checkout.stripe.com;
-    " />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://api.stripe.com https://js.stripe.com https://api.resend.com wss://*.supabase.co https://*.lovable.app https://*.lovableproject.com; img-src 'self' data: blob: https://*.supabase.co https://wiinupmax.com; font-src 'self' data:; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com;" />
   </head>
 
   <body>
