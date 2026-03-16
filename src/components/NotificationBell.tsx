@@ -215,7 +215,7 @@ export default function NotificationBell() {
                 </div>
                 <p className="text-sm font-medium text-foreground mb-1">Tout est calme</p>
                 <p className="text-xs text-muted-foreground">
-                  Les activités d'OpenClaw apparaîtront ici
+                  Vos nouvelles introductions et gains apparaîtront ici.
                 </p>
               </div>
             ) : (
