@@ -63,12 +63,12 @@ const Assistant = lazy(() => import("./pages/Assistant"));
 const Help = lazy(() => import("./pages/Help"));
 const Account = lazy(() => import("./pages/Account"));
 
-// ── Lazy: ADA ────────────────────────────────────────────────────────────────
-const ADAControlPanel  = lazy(() => import("./pages/ADAControlPanel"));
-const ADAModelDashboard = lazy(() => import("./pages/ADAModelDashboard"));
-
-// ── Lazy: Insights API Sales ──────────────────────────────────────────────────
-const InsightsSales = lazy(() => import("./pages/InsightsSales"));
+// AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+// ADA, Insights API désactivés pour le lancement GTM.
+// Routes commentées — ne pas réactiver sans validation produit.
+// const ADAControlPanel  = lazy(() => import("./pages/ADAControlPanel"));
+// const ADAModelDashboard = lazy(() => import("./pages/ADAModelDashboard"));
+// const InsightsSales = lazy(() => import("./pages/InsightsSales"));
 
 // ── Lazy: System Status ───────────────────────────────────────────────────────
 const SystemStatus = lazy(() => import("./pages/SystemStatus"));
