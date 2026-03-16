@@ -1,15 +1,13 @@
 /**
- * Onboarding — 2-step profile wizard + Step 3 Aha Moment
+ * Onboarding — 3 écrans obligatoires + Aha Moment
  *
- * Architecture notes
- * ──────────────────
- * • StepIdentity, StepSectorGoal, StepDone are defined as TOP-LEVEL functions
- *   (module scope) so React never unmounts/remounts them on parent re-renders.
+ * Écran 1 — Rôle + identité
+ * Écran 2 — Secteur + objectif
+ * Écran 3 — Première mission (entreprise) / premiers contacts (facilitateur)
+ * Écran 4 — Aha Moment (auto-redirect 5s)
  *
- * • After saveProfile() succeeds for entreprise:
- *     1. seed_demo_data RPC injects 3 missions + 1 contact
- *     2. Step 3 (aha-moment screen) is shown for 4s before redirect
- *   For facilitateur: direct redirect to /dashboard/facilitateur.
+ * Architecture: tous les sous-composants sont TOP-LEVEL pour stabilité React.
+ * Après saveProfile() pour entreprise: seed_demo_data → écran 3 mission → Aha.
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -25,6 +23,8 @@ import {
   Sparkles,
   Trophy,
   Rocket,
+  Target,
+  Zap,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
@@ -46,16 +46,16 @@ type ProfileData = {
   cible: Cible;
 };
 
-// Step 3 exists only for entreprise (aha-moment after seed)
-const TOTAL_STEPS = 2;
+// 3 real steps + aha-moment screen
+const TOTAL_STEPS = 3;
 
 const INPUT_CLASS =
   "w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition placeholder:text-muted-foreground/60";
 
-// ── AHA MOMENT — Step 3 (entreprise only) ────────────────────────────────────
-interface StepAhaProps { prenom: string; onGo: () => void; }
+// ── AHA MOMENT — final screen ─────────────────────────────────────────────────
+interface StepAhaProps { prenom: string; role: Role; onGo: () => void; }
 
-function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
+function StepAhaMoment({ prenom, role, onGo }: StepAhaProps) {
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
@@ -66,9 +66,20 @@ function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
     return () => clearInterval(t);
   }, [onGo]);
 
+  const items = role === "entreprise"
+    ? [
+        { icon: CheckCircle2, text: "3 missions actives créées pour vous", done: true },
+        { icon: CheckCircle2, text: "1 contact demo dans votre liste", done: true },
+        { icon: Target,       text: "Première victoire : créez une vraie mission →", done: false },
+      ]
+    : [
+        { icon: CheckCircle2, text: "Profil Facilitateur activé", done: true },
+        { icon: CheckCircle2, text: "Missions disponibles visibles", done: true },
+        { icon: Rocket,       text: "Première victoire : envoyez une introduction →", done: false },
+      ];
+
   return (
     <div className="w-full max-w-md text-center animate-fade-in">
-      {/* Trophy */}
       <div className="mx-auto mb-5 w-16 h-16 rounded-2xl flex items-center justify-center"
         style={{ background: "var(--gradient-accent)" }}>
         <Trophy size={28} className="text-white" />
@@ -78,25 +89,25 @@ function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
         Bravo {prenom} ! Votre espace est prêt 🎉
       </h1>
       <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-        Nous avons créé <strong className="text-foreground">3 missions d'exemple</strong> et{" "}
-        <strong className="text-foreground">1 contact demo</strong> pour que votre dashboard ne soit jamais vide.
+        {role === "entreprise"
+          ? <>Nous avons créé <strong className="text-foreground">3 missions d'exemple</strong> et <strong className="text-foreground">1 contact demo</strong> pour que votre dashboard soit immédiatement opérationnel.</>
+          : <>Votre profil Facilitateur est actif. Les missions disponibles vous attendent dans votre tableau de bord.</>
+        }
       </p>
 
-      {/* Checklist */}
+      {/* Checklist Première Victoire */}
       <div className="rounded-2xl border border-border bg-card p-4 mb-6 text-left space-y-3">
-        {[
-          { icon: CheckCircle2, text: "3 missions actives créées pour vous", done: true },
-          { icon: CheckCircle2, text: "1 contact demo dans votre liste", done: true },
-          { icon: Rocket,       text: "Créez votre première vraie mission →", done: false },
-        ].map(({ icon: Icon, text, done }) => (
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
+          ✨ Checklist Première Victoire
+        </p>
+        {items.map(({ icon: Icon, text, done }) => (
           <div key={text} className="flex items-center gap-3">
-            <Icon size={16} className={done ? "text-green-500 shrink-0" : "text-primary shrink-0"} />
+            <Icon size={16} className={done ? "text-green-500 shrink-0" : "text-primary shrink-0 animate-pulse"} />
             <span className={`text-sm ${done ? "text-foreground" : "font-semibold text-foreground"}`}>{text}</span>
           </div>
         ))}
       </div>
 
-      {/* CTA */}
       <button
         type="button"
         onClick={onGo}
@@ -107,7 +118,9 @@ function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
         <span className="ml-1 text-white/60 text-xs">({countdown}s)</span>
       </button>
       <p className="text-xs text-muted-foreground mt-3">
-        Votre première introduction peut arriver dans les 24h.
+        {role === "entreprise"
+          ? "Votre première introduction peut arriver dans les 24h."
+          : "Choisissez une mission et envoyez votre première introduction."}
       </p>
     </div>
   );
@@ -572,32 +585,176 @@ function StepSectorGoal({
   );
 }
 
+// ── STEP 3 — Première Mission / Premier contact ───────────────────────────────
+interface Step3Props {
+  role: Role;
+  missionTitre: string;
+  missionObjectif: string;
+  saving: boolean;
+  onMissionTitreChange: (v: string) => void;
+  onMissionObjectifChange: (v: string) => void;
+  onSave: () => void;
+  onBack: () => void;
+}
+
+const MISSION_SUGGESTIONS_ENTREPRISE = [
+  "Trouver un DSI dans le secteur banque/assurance",
+  "Identifier un DRH pour un projet RH Tech",
+  "Trouver un directeur commercial B2B",
+  "Accéder à un décideur dans une PME industrielle",
+];
+
+const MISSION_SUGGESTIONS_FACILITATEUR = [
+  "Mettre en relation un consultant avec une ETI",
+  "Présenter un expert finance à une fintech",
+  "Connecter un coach avec une DRH",
+  "Introduire un ingénieur cloud chez un éditeur SaaS",
+];
+
+function StepFirstMission({
+  role,
+  missionTitre,
+  missionObjectif,
+  saving,
+  onMissionTitreChange,
+  onMissionObjectifChange,
+  onSave,
+  onBack,
+}: Step3Props) {
+  const suggestions =
+    role === "entreprise"
+      ? MISSION_SUGGESTIONS_ENTREPRISE
+      : MISSION_SUGGESTIONS_FACILITATEUR;
+
+  const isValid = missionTitre.trim().length > 3;
+
+  return (
+    <div className="w-full max-w-md animate-fade-in">
+      <div className="mb-6">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+          Étape 3 sur {TOTAL_STEPS} — Première victoire
+        </p>
+        <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+          {role === "entreprise" ? "Créez votre première mission" : "Votre premier objectif"}
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          {role === "entreprise"
+            ? "Décrivez le profil de contact que vous recherchez. Vos facilitateurs verront cette mission immédiatement."
+            : "Quel type de mise en relation voulez-vous réaliser en premier ?"}
+        </p>
+      </div>
+
+      {/* Quick suggestions */}
+      <div className="mb-4">
+        <p className="text-xs text-muted-foreground mb-2 font-medium">Suggestions rapides :</p>
+        <div className="flex flex-wrap gap-2">
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onMissionTitreChange(s)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                missionTitre === s
+                  ? "border-primary bg-primary/10 text-foreground font-medium"
+                  : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-4 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">
+            {role === "entreprise" ? "Intitulé de la mission *" : "Objectif de mise en relation *"}
+          </label>
+          <input
+            type="text"
+            placeholder={
+              role === "entreprise"
+                ? "ex : Trouver un DSI dans le secteur bancaire"
+                : "ex : Présenter un expert RH à une startup tech"
+            }
+            value={missionTitre}
+            onChange={(e) => onMissionTitreChange(e.target.value)}
+            className={INPUT_CLASS}
+            autoFocus
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1.5">
+            Contexte{" "}
+            <span className="text-muted-foreground font-normal">(optionnel)</span>
+          </label>
+          <textarea
+            placeholder="Décrivez brièvement le contexte ou les critères importants…"
+            value={missionObjectif}
+            onChange={(e) => onMissionObjectifChange(e.target.value)}
+            rows={3}
+            className={`${INPUT_CLASS} resize-none`}
+          />
+        </div>
+      </div>
+
+      {/* First Victory badge */}
+      <div className="flex items-center gap-2.5 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 mb-5">
+        <Zap size={15} className="text-primary shrink-0" />
+        <p className="text-xs text-foreground leading-snug">
+          <strong>Première Victoire :</strong> cette mission sera visible par vos facilitateurs dès que vous cliquerez sur Terminer.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={onSave}
+        disabled={!isValid || saving}
+        className="btn-cta w-full py-4 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {saving ? (
+          <><Loader2 size={16} className="animate-spin" /> Création en cours…</>
+        ) : (
+          <><Sparkles size={16} /> Terminer et accéder à mon espace <ArrowRight size={16} /></>
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={onBack}
+        disabled={saving}
+        className="w-full text-center mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+      >
+        Retour
+      </button>
+    </div>
+  );
+}
+
 // ── MAIN PAGE ─────────────────────────────────────────────────────────────────
 export default function Onboarding() {
   const [step, setStep] = useState(1);
-  const [ahaMoment, setAhaMoment] = useState(false); // true = show step 3 aha screen
+  const [ahaMoment, setAhaMoment] = useState(false);
   const [role, setRole] = useState<Role>(null);
   const [prenom, setPrenom] = useState("");
   const [nomEntite, setNomEntite] = useState("");
   const [secteur, setSecteur] = useState("");
   const [objectif, setObjectif] = useState("");
   const [cible, setCible] = useState<Cible>("");
+  const [missionTitre, setMissionTitre] = useState("");
+  const [missionObjectif, setMissionObjectif] = useState("");
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
 
   const navigate = useNavigate();
   const { user, loading: authLoading, refreshProfile } = useAuth();
-  // subscription conservé pour compatibilité contexte (peut être supprimé ultérieurement)
   useSubscription();
 
-  // Navigate to dashboard — stable ref used by StepAhaMoment countdown
   const goToDashboard = useCallback(() => {
     const dest =
       role === "entreprise" ? "/dashboard/entreprise" : "/dashboard/facilitateur";
     navigate(dest, { replace: true });
   }, [role, navigate]);
 
-  // ── Pre-select role from URL param (?role=entreprise after Founder Pass payment) ──
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const roleParam = params.get("role");
@@ -606,15 +763,16 @@ export default function Onboarding() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Stable callbacks ── deps are always [] so identities never change ────────
   const handleRoleChange = useCallback((r: Role) => setRole(r), []);
   const handlePrenomChange = useCallback((v: string) => setPrenom(v), []);
   const handleNomEntiteChange = useCallback((v: string) => setNomEntite(v), []);
   const handleSecteurChange = useCallback((v: string) => setSecteur(v), []);
   const handleObjectifChange = useCallback((v: string) => setObjectif(v), []);
   const handleCibleChange = useCallback((v: Cible) => setCible(v), []);
-  const handleNext = useCallback(() => setStep(2), []);
-  const handleBack = useCallback(() => setStep(1), []);
+  const handleMissionTitreChange = useCallback((v: string) => setMissionTitre(v), []);
+  const handleMissionObjectifChange = useCallback((v: string) => setMissionObjectif(v), []);
+  const handleNext = useCallback(() => setStep((s) => s + 1), []);
+  const handleBack = useCallback(() => setStep((s) => s - 1), []);
 
   const saveProfile = useCallback(async () => {
     if (!user) return;
@@ -642,15 +800,20 @@ export default function Onboarding() {
         const { error: epErr } = await supabase
           .from("entreprise_profiles")
           .upsert(
-            {
-              user_id: user.id,
-              nom_entreprise: nomEntite,
-              secteur,
-              cible_client: cible || null,
-            },
+            { user_id: user.id, nom_entreprise: nomEntite, secteur, cible_client: cible || null },
             { onConflict: "user_id" }
           );
         if (epErr) throw epErr;
+
+        // ── 3. Create first mission if provided ────────────────────────────
+        if (missionTitre.trim()) {
+          await supabase.from("missions").insert({
+            entreprise_id: user.id,
+            titre: missionTitre.trim(),
+            description: missionObjectif.trim() || null,
+            statut: "active",
+          });
+        }
       } else if (role === "facilitateur") {
         const { error: fpErr } = await supabase
           .from("facilitateur_profiles")
@@ -658,44 +821,29 @@ export default function Onboarding() {
         if (fpErr) throw fpErr;
       }
 
-      // ── 3. Refresh auth profile so role is available in ProtectedRoute ─────
+      // ── 4. Refresh auth profile ────────────────────────────────────────────
       await refreshProfile();
-
       trackEvent("onboarding_done", user.id, { role: role ?? "unknown", cible });
 
-      // ── 4. AUDIT 16/03/2026 – BLOQUANTS LEVÉS
-      //       Seed demo data pour les entreprises (non-bloquant, idempotent).
-      //       Injecte 3 missions + 1 contact pour que le dashboard ne soit jamais vide.
+      // ── 5. Seed demo data (entreprise, non-bloquant, idempotent) ──────────
       if (role === "entreprise") {
         void supabase.rpc("seed_demo_data", { p_user_id: user.id, p_role: "entreprise" });
-        // Show Aha Moment screen for entreprise
-        setSaving(false);
-        setAhaMoment(true);
-        return;
       }
 
-      // ── 5. Facilitateur → direct redirect (no aha-moment screen)
-      navigate("/dashboard/facilitateur", { replace: true });
+      // ── 6. Show Aha Moment for all roles ──────────────────────────────────
+      setSaving(false);
+      setAhaMoment(true);
     } catch (err) {
       savingRef.current = false;
       setSaving(false);
       console.error("[Onboarding] saveProfile error", err);
       toast.error("Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.");
     }
-    // NOTE: savingRef is intentionally NOT reset on success — prevents double-submit
   }, [
-    user,
-    role,
-    prenom,
-    nomEntite,
-    secteur,
-    cible,
-    objectif,
-    refreshProfile,
-    navigate,
+    user, role, prenom, nomEntite, secteur, cible, objectif,
+    missionTitre, missionObjectif, refreshProfile,
   ]);
 
-  // ── Loading state ─────────────────────────────────────────────────────────
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -713,7 +861,6 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <div className="border-b border-border">
         <div className="container flex items-center justify-between h-14">
           <span className="font-display font-bold text-foreground">WIINUP MAX</span>
@@ -728,9 +875,8 @@ export default function Onboarding() {
       {!ahaMoment && <ProgressBar current={step} total={TOTAL_STEPS} />}
 
       <div className="flex-1 flex items-center justify-center p-6">
-        {/* ── Step 3: Aha Moment (entreprise only, after seed) ── */}
         {ahaMoment ? (
-          <StepAhaMoment prenom={prenom} onGo={goToDashboard} />
+          <StepAhaMoment prenom={prenom} role={role} onGo={goToDashboard} />
         ) : step === 1 ? (
           <StepIdentity
             role={role}
@@ -741,16 +887,27 @@ export default function Onboarding() {
             onNomEntiteChange={handleNomEntiteChange}
             onNext={handleNext}
           />
-        ) : (
+        ) : step === 2 ? (
           <StepSectorGoal
             role={role}
             secteur={secteur}
             objectif={objectif}
             cible={cible}
-            saving={saving}
+            saving={false}
             onSecteurChange={handleSecteurChange}
             onObjectifChange={handleObjectifChange}
             onCibleChange={handleCibleChange}
+            onSave={handleNext}
+            onBack={handleBack}
+          />
+        ) : (
+          <StepFirstMission
+            role={role}
+            missionTitre={missionTitre}
+            missionObjectif={missionObjectif}
+            saving={saving}
+            onMissionTitreChange={handleMissionTitreChange}
+            onMissionObjectifChange={handleMissionObjectifChange}
             onSave={saveProfile}
             onBack={handleBack}
           />
