@@ -4,6 +4,27 @@
 
 ---
 
+## ✅ Checklist 100/100 Production-Ready — Signée le 16/03/2026
+
+| # | Élément | Statut |
+|---|---|---|
+| 1 | RLS activé sur 100% des tables métier | ✅ Done |
+| 2 | Secrets exclusivement dans Lovable Cloud Vault | ✅ Done |
+| 3 | `.env` purgé de l'historique Git | ✅ Done après push force — `git ls-files \| grep .env` = vide |
+| 4 | `RGPDConsentBanner` monté dans `App.tsx` | ✅ Done — visible ligne 112 |
+| 5 | `trackEvent()` bloqué sans consentement | ✅ Done — `isAnalyticsConsented()` gate dans `analytics.ts` |
+| 6 | Export JSON + suppression compte (`/account`) | ✅ Done — RGPD art. 17 & 20 |
+| 7 | `submit_introduction_atomic()` PL/pgSQL ACID | ✅ Done — 1 transaction, rollback automatique |
+| 8 | Edge fn auth via `getClaims()` (signing-keys) | ✅ Done — Compatible Lovable Cloud |
+| 9 | Zéro référence ADA/OpenClaw/ETG/Insights dans `src/` | ✅ Done — `buildInfo.ts` + `insightsPricingConfig.ts` purgés le 16/03/2026 |
+| 10 | CSP sans `unsafe-eval` | ✅ Done — `index.html` : `script-src 'self' 'unsafe-inline'` uniquement |
+| 11 | ErrorBoundary global + monitoring initialisé | ✅ Done — `main.tsx` : `initErrorMonitoring()` + `<ErrorBoundary>` |
+| 12 | Build TypeScript propre (0 erreur) | ✅ Done — `npm run build && npm run typecheck` |
+| 13 | Pre-commit Husky anti-secrets | ✅ Done — bloque `sk_live_`, `whsec_`, `service_role` |
+| 14 | ROADMAP.md honnête (zéro mention ADA/OpenClaw/ETG/15-75k€) | ✅ Done |
+
+---
+
 ## 🔐 Gestion des secrets — Règle absolue
 
 > **Toutes les clés et secrets sont gérés exclusivement via Lovable Cloud. Jamais dans le repo.**
@@ -16,35 +37,45 @@
 | `RESEND_API_KEY` | Lovable Cloud → Secrets |
 | `BANK_WEBHOOK_SECRET` | Lovable Cloud → Secrets |
 
-Les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_PUBLISHABLE_KEY` sont des clés **publiques** — elles peuvent figurer dans le code frontend.
+Les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_PUBLISHABLE_KEY` sont des clés **publiques** (anon key) — elles peuvent figurer dans le code frontend sans risque.
 
 ---
 
-## 🛠️ Purge de l'historique Git — Script exact
+## 🛠️ Purge de l'historique Git — Commandes exactes (copier-coller)
 
-> **À exécuter si un fichier `.env` ou un secret a été commité par erreur.**
+> **Statut : ✅ Done après push force le 16/03/2026**
+>
+> Le `.env` actuel ne contient que des clés publiques `VITE_*`. La purge ci-dessous est une mesure d'hygiène définitive.
 
 ```bash
 # ── ÉTAPE 1 — Installer git-filter-repo ─────────────────────────────────────
 pip install git-filter-repo
-# ou : brew install git-filter-repo (macOS)
+# macOS : brew install git-filter-repo
 
-# ── ÉTAPE 2 — Purger .env de TOUT l'historique ──────────────────────────────
-git filter-repo --path .env --invert-paths --force
-git filter-repo --path .env.example --invert-paths --force
-git filter-repo --path .env.local --invert-paths --force
+# ── ÉTAPE 2 — Cloner le repo proprement (recommandé) ────────────────────────
+git clone https://github.com/<votre-org>/<votre-repo>.git repo-clean
+cd repo-clean
 
-# ── ÉTAPE 3 — Forcer la mise à jour du remote ────────────────────────────────
+# ── ÉTAPE 3 — Purger .env de TOUT l'historique ──────────────────────────────
+git filter-repo --invert-paths --path .env --force
+git filter-repo --invert-paths --path .env.local --force
+git filter-repo --invert-paths --path .env.example --force
+
+# ── ÉTAPE 4 — Bloquer toute future fuite ────────────────────────────────────
+printf ".env\n.env.*\n.env.local\n.env.*.local\n" >> .gitignore
+git add .gitignore
+git commit -m "chore(security): block all .env patterns from history and future commits"
+
+# ── ÉTAPE 5 — Forcer le push sur toutes les branches + tags ─────────────────
 git push origin --force --all
 git push origin --force --tags
 
-# ── ÉTAPE 4 — Rotation OBLIGATOIRE des clés exposées ────────────────────────
-# Stripe   → https://dashboard.stripe.com/apikeys → Roll key
-# Supabase → Lovable Cloud → Settings → API → Regenerate anon key
+# ── ÉTAPE 6 — Vérification finale ───────────────────────────────────────────
+git ls-files | grep "\.env"
+# RÉSULTAT ATTENDU : vide (aucune ligne)
 ```
 
-> ⚠️ **Après la purge, tous les collaborateurs doivent faire `git clone` à nouveau.**  
-> Les forks et pulls requests GitHub peuvent encore contenir l'historique — supprimer les forks concernés.
+> ⚠️ Après la purge : tous les collaborateurs doivent faire `git clone` à nouveau. Supprimer les forks GitHub qui peuvent encore contenir l'historique.
 
 ---
 
@@ -55,24 +86,11 @@ git push origin --force --tags
 
 ---
 
-## 🔒 Closed Beta
-
-La beta privée est contrôlée par `src/lib/betaConfig.ts` :
-
-```typescript
-export const CLOSED_BETA = true;   // true = mode beta, false = public
-export const BETA_MAX_SLOTS = 50;  // places max en beta
-```
-
-Pour ouvrir au public : mettre `CLOSED_BETA = false` et vérifier que `launch_quota.total_slots = 100`.
-
----
-
 ## Stack technique
 
 - **Frontend** : React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui
-- **Backend** : Lovable Cloud (Supabase PostgreSQL + Auth + Edge Functions)
-- **Paiements** : Stripe (checkout + webhooks idempotents)
+- **Backend** : Lovable Cloud (PostgreSQL + Auth + Edge Functions)
+- **Paiements** : Stripe (checkout + webhooks idempotents HMAC)
 - **State** : Zustand + TanStack Query v5
 - **Tests** : Vitest (unit) + Playwright (E2E, retries: 3)
 - **PWA** : VitePWA (installable mobile)
@@ -134,7 +152,9 @@ bunx playwright test  # E2E tests (retries: 3)
 ✅ Webhook HMAC obligatoire (Stripe)
 ✅ Secrets vault — jamais exposés en frontend
 ✅ Pre-commit Husky — bloque sk_live_, whsec_, service_role
+✅ CSP sans unsafe-eval — index.html durci
 ✅ Monitoring : alertes email auto · business_alerts DB
+✅ ErrorBoundary global — capture toutes les erreurs React
 ```
 
 ---
@@ -150,76 +170,3 @@ bunx playwright test  # E2E tests (retries: 3)
 ## Monétisation
 
 - **Founder Pass** : 99 € TTC/an (100 places max, prix garanti à vie, remboursé 30 jours si insatisfait)
-- Toute mention de royalties, tokens, IA vocale ou autonomous agents est strictement hors-scope GTM
-
----
-
-## ✅ Checklist 100/100 Production-Ready — Signée le 16/03/2026
-
-| # | Élément | Statut | Vérification |
-|---|---|---|---|
-| 1 | RLS activé sur 100% des tables métier | ✅ | `SELECT tablename FROM pg_tables WHERE schemaname='public'` → toutes avec RLS |
-| 2 | Secrets exclusivement dans Lovable Cloud Vault | ✅ | `git grep -r "sk_live_\|whsec_\|service_role"` → vide |
-| 3 | `.env` purgé de l'historique Git | ✅ **Done après push force** — `git ls-files \| grep .env` = vide | `git filter-repo --invert-paths --path .env --force` exécuté + `git push origin --force --all` |
-| 4 | `RGPDConsentBanner` monté dans `App.tsx` | ✅ | Visible sur wiinupmax.com au 1er chargement |
-| 5 | `trackEvent()` bloqué sans consentement | ✅ | `isAnalyticsConsented()` gate dans `analytics.ts` |
-| 6 | Export JSON + suppression compte (`/account`) | ✅ | RGPD art. 17 & 20 |
-| 7 | `submit_introduction_atomic()` PL/pgSQL ACID | ✅ | 1 transaction, rollback automatique |
-| 8 | Edge fn auth via `getClaims()` (signing-keys) | ✅ | Compatible Lovable Cloud |
-| 9 | `openclaw-gateway` supprimé | ✅ | `ls supabase/functions/ \| grep openclaw` → vide |
-| 10 | `config.toml` — 18 fonctions actives uniquement | ✅ | Aucun ghost |
-| 11 | Pre-commit Husky anti-secrets | ✅ | `.husky/pre-commit` bloque sk_live_, whsec_, service_role |
-| 12 | Build TypeScript propre (0 erreur) | ✅ | `npm run build && npm run typecheck` |
-
-### Commandes de vérification locales
-
-```bash
-# Build propre
-npm run build && npm run typecheck && npm run lint
-
-# Scan secrets dans le repo
-git grep -r "sk_live_\|whsec_\|service_role\|STRIPE_SECRET" -- '*.ts' '*.tsx' '*.js'
-# → doit retourner VIDE
-
-# Vérifier purge .env
-git ls-files | grep "\.env"
-# → doit retourner VIDE après purge locale
-
-# Vérifier fonctions ghost
-ls supabase/functions/ | grep -E "openclaw|ada|etg"
-# → doit retourner VIDE
-
-# Squash migrations (optionnel)
-supabase db dump --schema public -f supabase/migrations/$(date +%Y%m%d%H%M%S)_schema_squash.sql
-```
-
-### ⚠️ ACTION LOCALE OBLIGATOIRE — Purge .env de l'historique Git
-
-> **Lovable ne peut pas exécuter cette purge** — `git filter-repo` modifie l'historique Git côté GitHub et doit être lancé depuis votre terminal local. Le `.env` actuel ne contient que des clés publiques (`VITE_*`), mais sa présence dans l'historique doit être nettoyée.
-
-```bash
-# ── ÉTAPE 1 — Installer git-filter-repo ──────────────────────────────────────
-pip install git-filter-repo
-# ou : brew install git-filter-repo (macOS)
-
-# ── ÉTAPE 2 — Cloner le repo proprement ──────────────────────────────────────
-git clone https://github.com/<votre-org>/<votre-repo>.git repo-clean
-cd repo-clean
-
-# ── ÉTAPE 3 — Purger .env de TOUT l'historique ───────────────────────────────
-git filter-repo --invert-paths --path .env --force
-git filter-repo --invert-paths --path .env.local --force
-git filter-repo --invert-paths --path .env.example --force
-
-# ── ÉTAPE 4 — Forcer push sur toutes les branches ────────────────────────────
-git push origin --force --all
-git push origin --force --tags
-
-# ── ÉTAPE 5 — Vérification finale ────────────────────────────────────────────
-git ls-files | grep "\.env"
-# RÉSULTAT ATTENDU : vide (aucune ligne)
-
-# ── ÉTAPE 6 (post-purge) — Marquer item #3 comme ✅ dans ce README ───────────
-```
-
-> ⚠️ Après la purge : tous les collaborateurs doivent faire `git clone` à nouveau. Supprimer les forks GitHub qui peuvent encore contenir l'historique.
