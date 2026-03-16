@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import {
   CheckCircle2, Zap, Users, Flame, ArrowRight,
-  Mic, Bot, TrendingUp, Coins, Shield, ChevronDown, ChevronUp,
+  FileText, Users, TrendingUp, Coins, Shield, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
