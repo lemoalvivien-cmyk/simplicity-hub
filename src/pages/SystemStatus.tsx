@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import UserLayout from "@/components/layout/UserLayout";
 import {
   CheckCircle2, XCircle, AlertTriangle, RefreshCw, Loader2,
-  Zap, Brain, ShieldCheck, CreditCard, BarChart3, Activity,
+  Zap, ShieldCheck, CreditCard, BarChart3, Activity,
   Globe, Database, Lock, TrendingUp,
 } from "lucide-react";
 
