@@ -28,8 +28,8 @@ const nextSteps = [
   },
   {
     n: "02",
-    title: "Votre assistant IA s'active immédiatement",
-    desc: "Il commence à identifier des opportunités pour vous dès maintenant.",
+    title: "Publiez votre première mission",
+    desc: "Décrivez le client idéal que vous cherchez. En 2 minutes, votre réseau d'apporteurs peut vous envoyer des introductions.",
     color: "hsl(var(--accent))",
   },
   {
