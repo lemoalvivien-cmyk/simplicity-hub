@@ -729,6 +729,27 @@ export default function CreerEmploiPage() {
       </section>
 
       <LegalFooter />
+
+      {/* ── Sticky CTA Mobile ────────────────────────────────────────────── */}
+      <div
+        className="md:hidden fixed bottom-0 inset-x-0 z-50 px-4 pb-4 pt-2"
+        style={{ background: "linear-gradient(to top, hsl(218 72% 5%) 60%, transparent)" }}
+      >
+        <Link
+          to="/signup"
+          className="btn-cta w-full flex flex-col items-center justify-center gap-0.5 py-4 text-sm font-bold rounded-2xl"
+        >
+          <span className="flex items-center gap-2">
+            <Zap size={15} />
+            Je deviens Facilitateur – Gratuit
+            <ArrowRight size={15} />
+          </span>
+          <span className="text-[11px] font-semibold opacity-80 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-white/70 inline-block" />
+            Places limitées — 100/100
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }
