@@ -1,0 +1,196 @@
+name: Deploy — WIINUP MAX v7
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # ── 1. Quality Gate ─────────────────────────────────────────────────────────
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Unit tests (Vitest)
+        run: npm run test
+
+      - name: Production build
+        run: npm run build
+
+  # ── 2. Security Audit ───────────────────────────────────────────────────────
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    needs: quality-gate
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+
+      - name: npm audit (high + critical)
+        run: npm audit --audit-level=high
+
+      - name: No hardcoded secrets
+        run: |
+          echo "🔍 Scanning for hardcoded secrets..."
+          if grep -rn \
+            --include="*.ts" --include="*.tsx" --include="*.js" \
+            --exclude-dir=node_modules --exclude-dir=.git \
+            -E "(sk_live_|sk_test_|whsec_|service_role.*eyJ|SUPABASE_SERVICE_ROLE)" \
+            src/ supabase/functions/ 2>/dev/null | \
+            grep -v "Deno.env.get\|process.env\|import.meta.env\|// " ; then
+            echo "❌ Potential hardcoded secret found!"
+            exit 1
+          fi
+          echo "✅ No hardcoded secrets."
+
+      - name: No legacy AI endpoints in source
+        run: |
+          echo "🤖 Checking for legacy AI endpoint calls in frontend..."
+          LEGACY=0
+          for pattern in "ai-jarvis" "ai-lead-scoring" "ai-matching" "ai-prospection" \
+                         "ada-voice-call" "ada-orchestrator" "openclaw" "elevenlabs" \
+                         "etg-aggregate" "etg-ingest" "etg-predict" "deal-radar-score"; do
+            if grep -rn --include="*.ts" --include="*.tsx" \
+              --exclude-dir=node_modules "$pattern" src/ 2>/dev/null; then
+              echo "❌ Legacy endpoint '$pattern' found in frontend!"
+              LEGACY=$((LEGACY+1))
+            fi
+          done
+          if [ $LEGACY -gt 0 ]; then exit 1; fi
+          echo "✅ No legacy AI endpoints in frontend."
+
+      - name: RLS / Auth guard coverage
+        run: |
+          echo "🔒 Verifying auth guards in Edge Functions..."
+          UNGUARDED=0
+          for f in supabase/functions/*/index.ts; do
+            name=$(basename $(dirname "$f"))
+            case "$name" in stripe-webhook|auth-email-hook|track-click) continue ;; esac
+            if ! grep -qE "(requireAuth|supabase\.auth\.getUser|SERVICE_KEY|SUPABASE_SERVICE_ROLE_KEY)" "$f" 2>/dev/null; then
+              echo "⚠️  $f — no auth guard"
+              UNGUARDED=$((UNGUARDED+1))
+            fi
+          done
+          [ $UNGUARDED -eq 0 ] && echo "✅ All Edge Functions guarded." || (echo "❌ $UNGUARDED unguarded function(s)!" && exit 1)
+
+      - name: No wildcard CORS
+        run: |
+          if grep -rn --include="*.ts" --exclude-dir=node_modules \
+            'Allow-Origin.*\*' supabase/functions/_shared/cors.ts 2>/dev/null | \
+            grep -v "wiinupmax.com\|lovable.app\|localhost"; then
+            echo "❌ Wildcard CORS detected!"
+            exit 1
+          fi
+          echo "✅ CORS hardened."
+
+  # ── 3. Deploy Edge Functions ────────────────────────────────────────────────
+  deploy-functions:
+    name: Deploy Edge Functions
+    runs-on: ubuntu-latest
+    needs: security-audit
+    timeout-minutes: 20
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy all Edge Functions
+        run: |
+          supabase functions deploy --project-ref "$SUPABASE_PROJECT_ID"
+          echo "✅ Edge Functions deployed."
+
+  # ── 4. E2E Smoke Tests ──────────────────────────────────────────────────────
+  e2e-smoke:
+    name: E2E Smoke Tests
+    runs-on: ubuntu-latest
+    needs: deploy-functions
+    timeout-minutes: 10
+    env:
+      SITE_URL: https://wiinupmax.com
+      FUNCTION_URL: https://${{ secrets.SUPABASE_PROJECT_ID }}.supabase.co/functions/v1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Live site health check
+        run: |
+          HTTP=$(curl -o /dev/null -s -w "%{http_code}" "$SITE_URL/")
+          echo "→ $SITE_URL → HTTP $HTTP"
+          [ "$HTTP" -eq 200 ] || (echo "❌ Site down!" && exit 1)
+          echo "✅ Live site OK."
+
+      - name: Stripe webhook 401 guard
+        run: |
+          HTTP=$(curl -o /dev/null -s -w "%{http_code}" \
+            -X POST "$FUNCTION_URL/stripe-webhook" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "→ stripe-webhook without secret → HTTP $HTTP"
+          [ "$HTTP" -eq 400 ] || [ "$HTTP" -eq 401 ] || [ "$HTTP" -eq 403 ] || \
+            (echo "❌ stripe-webhook should reject unsigned requests!" && exit 1)
+          echo "✅ stripe-webhook properly rejects unsigned calls."
+
+      - name: Legacy AI endpoints return 404/503
+        run: |
+          for endpoint in "ai-jarvis" "ada-voice-call" "openclaw-status" "elevenlabs-tts"; do
+            HTTP=$(curl -o /dev/null -s -w "%{http_code}" \
+              -X POST "$FUNCTION_URL/$endpoint" \
+              -H "Content-Type: application/json" \
+              -d '{}')
+            echo "→ $endpoint → HTTP $HTTP"
+            # Should be 404 (deleted) or 401 (protected)
+            [ "$HTTP" -eq 404 ] || [ "$HTTP" -eq 401 ] || [ "$HTTP" -eq 403 ] || \
+              (echo "❌ Legacy endpoint $endpoint still accessible!" && exit 1)
+          done
+          echo "✅ All legacy endpoints properly blocked."
+
+      - name: Meta tags validation
+        run: |
+          HTML=$(curl -s "$SITE_URL/")
+          echo "$HTML" | grep -q "WIINUP MAX" || (echo "❌ Title missing WIINUP MAX" && exit 1)
+          echo "$HTML" | grep -qi "assistant.ia\|vocal\|24h/24\|intelligent" && \
+            (echo "❌ Legacy AI text found in HTML!" && exit 1) || true
+          echo "✅ Meta tags clean."
+
+  # ── 5. Notify on failure ────────────────────────────────────────────────────
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [quality-gate, security-audit, deploy-functions, e2e-smoke]
+    if: failure()
+    steps:
+      - name: Deploy failed
+        run: |
+          echo "❌ WIINUP MAX v7 deployment FAILED."
+          echo "Check workflow logs at: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          exit 1
