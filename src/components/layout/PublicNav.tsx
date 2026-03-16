@@ -48,6 +48,7 @@ export default function PublicNav() {
 
   const links: { to: string; label: string; isHash?: boolean }[] = [
     { to: "/#comment-ca-marche", label: "Comment ça marche", isHash: true },
+    { to: "/creer-emploi", label: "Créer son Emploi" },
     { to: "/pricing", label: "Tarifs" },
     { to: "/a-propos", label: "À propos" },
   ];
