@@ -1,6 +1,8 @@
+// AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireAuth, unauthorizedResponse } from "../_shared/authGuard.ts";
 
 const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
@@ -15,6 +17,14 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
+  let claims: Awaited<ReturnType<typeof requireAuth>>;
+  try {
+    claims = await requireAuth(req);
+  } catch {
+    return unauthorizedResponse(corsHeaders);
+  }
+
   try {
     logStep("Function started");
 
@@ -24,21 +34,15 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header");
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData.user) throw new Error("User not authenticated");
-
-    const user = userData.user;
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    const userId = claims.sub;
+    const userEmail = claims.email ?? "";
+    logStep("User authenticated", { userId, email: userEmail });
 
     // ── 1. Check profile role ─────────────────────────────────────────────
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
-      .eq("id", user.id)
+      .eq("id", userId)
       .maybeSingle();
 
     if (profile?.role === "facilitateur" || profile?.role === "admin") {
@@ -63,7 +67,7 @@ Deno.serve(async (req) => {
     const { data: redemption } = await supabase
       .from("promo_code_redemptions")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("status", "active")
       .gt("end_at", now)
       .maybeSingle();
@@ -72,7 +76,7 @@ Deno.serve(async (req) => {
       logStep("Active promo redemption found", { end_at: redemption.end_at });
       await supabase.from("subscriptions").upsert(
         {
-          user_id: user.id,
+          user_id: userId,
           status: "promo_active",
           current_period_start: redemption.start_at,
           current_period_end: redemption.end_at,
@@ -98,11 +102,10 @@ Deno.serve(async (req) => {
     }
 
     // ── 3. DB-first: read subscriptions table (webhook already synced it) ──
-    //    This avoids a round-trip to Stripe on every check after a webhook.
     const { data: dbSub } = await supabase
       .from("subscriptions")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .maybeSingle();
 
     const ACTIVE_STATUSES = ["active", "trialing"];
@@ -112,7 +115,6 @@ Deno.serve(async (req) => {
 
       const offerType = dbSub.stripe_price_id === LAUNCH_PRICE_ID ? "launch" : (dbSub.offer_type ?? "standard");
 
-      // Still fetch quota for display
       const { data: quota } = await supabase
         .from("launch_quota")
         .select("used_slots, total_slots")
@@ -153,12 +155,12 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
 
     if (customers.data.length === 0) {
       logStep("No Stripe customer found");
       await supabase.from("subscriptions").upsert(
-        { user_id: user.id, status: "none", updated_at: now },
+        { user_id: userId, status: "none", updated_at: now },
         { onConflict: "user_id" }
       );
 
@@ -199,7 +201,7 @@ Deno.serve(async (req) => {
 
     if (subscriptions.data.length === 0) {
       await supabase.from("subscriptions").upsert(
-        { user_id: user.id, stripe_customer_id: customerId, status: "none", updated_at: now },
+        { user_id: userId, stripe_customer_id: customerId, status: "none", updated_at: now },
         { onConflict: "user_id" }
       );
       return new Response(
@@ -223,7 +225,7 @@ Deno.serve(async (req) => {
     // Sync live Stripe data back to DB
     await supabase.from("subscriptions").upsert(
       {
-        user_id: user.id,
+        user_id: userId,
         stripe_customer_id: customerId,
         stripe_subscription_id: sub.id,
         stripe_price_id: priceId,

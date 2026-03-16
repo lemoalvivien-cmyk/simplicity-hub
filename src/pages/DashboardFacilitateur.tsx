@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import GlossaryTooltip from "@/components/ui/GlossaryTooltip";
 import { useAuth } from "@/contexts/AuthContext";
-import VoiceWelcome from "@/components/ai/VoiceWelcome";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDashboardFacilitateurData } from "@/hooks/useDashboardFacilitateurData";
@@ -108,7 +107,6 @@ export default function DashboardFacilitateur() {
   return (
     <TooltipProvider>
       <UserLayout role="facilitateur" jarvisContext="dashboard-facilitateur">
-        <VoiceWelcome context="dashboard-facilitateur" userName={prenom} />
         <div className="max-w-2xl mx-auto space-y-5 pb-8">
 
           {/* ═══ HERO ══════════════════════════════════════════ */}

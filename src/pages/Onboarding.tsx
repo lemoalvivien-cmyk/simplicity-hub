@@ -1,21 +1,15 @@
 /**
- * Onboarding — 2-step profile wizard
+ * Onboarding — 2-step profile wizard + Step 3 Aha Moment
  *
  * Architecture notes
  * ──────────────────
  * • StepIdentity, StepSectorGoal, StepDone are defined as TOP-LEVEL functions
  *   (module scope) so React never unmounts/remounts them on parent re-renders.
- *   This is the ONLY reliable fix for the "focus lost after each keystroke" bug.
  *
- * • All change-handlers in the parent are useCallback with [] deps so their
- *   references are stable across re-renders — child props never change identity.
- *
- * • After saveProfile() succeeds:
- *     1. localStorage flag set (prevents ProtectedRoute /checkout bounce)
- *     2. refreshProfile() awaited (profile.onboarding_done is now true in React)
- *     3. navigate() with replace:true → /dashboard/entreprise or /dashboard/facilitateur
- *   No intermediate "done" screen is shown between save and redirect, which
- *   removed the previous window where ProtectedRoute could re-evaluate and bounce.
+ * • After saveProfile() succeeds for entreprise:
+ *     1. seed_demo_data RPC injects 3 missions + 1 contact
+ *     2. Step 3 (aha-moment screen) is shown for 4s before redirect
+ *   For facilitateur: direct redirect to /dashboard/facilitateur.
  */
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -28,12 +22,16 @@ import {
   ArrowRight,
   Loader2,
   Search,
+  Sparkles,
+  Trophy,
+  Rocket,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
+
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type Role = "entreprise" | "facilitateur" | null;
@@ -48,10 +46,74 @@ type ProfileData = {
   cible: Cible;
 };
 
+// Step 3 exists only for entreprise (aha-moment after seed)
 const TOTAL_STEPS = 2;
 
 const INPUT_CLASS =
   "w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition placeholder:text-muted-foreground/60";
+
+// ── AHA MOMENT — Step 3 (entreprise only) ────────────────────────────────────
+interface StepAhaProps { prenom: string; onGo: () => void; }
+
+function StepAhaMoment({ prenom, onGo }: StepAhaProps) {
+  const [countdown, setCountdown] = useState(5);
+
+  useEffect(() => {
+    const t = setInterval(() => setCountdown(c => {
+      if (c <= 1) { clearInterval(t); onGo(); return 0; }
+      return c - 1;
+    }), 1000);
+    return () => clearInterval(t);
+  }, [onGo]);
+
+  return (
+    <div className="w-full max-w-md text-center animate-fade-in">
+      {/* Trophy */}
+      <div className="mx-auto mb-5 w-16 h-16 rounded-2xl flex items-center justify-center"
+        style={{ background: "var(--gradient-accent)" }}>
+        <Trophy size={28} className="text-white" />
+      </div>
+
+      <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+        Bravo {prenom} ! Votre espace est prêt 🎉
+      </h1>
+      <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+        Nous avons créé <strong className="text-foreground">3 missions d'exemple</strong> et{" "}
+        <strong className="text-foreground">1 contact demo</strong> pour que votre dashboard ne soit jamais vide.
+      </p>
+
+      {/* Checklist */}
+      <div className="rounded-2xl border border-border bg-card p-4 mb-6 text-left space-y-3">
+        {[
+          { icon: CheckCircle2, text: "3 missions actives créées pour vous", done: true },
+          { icon: CheckCircle2, text: "1 contact demo dans votre liste", done: true },
+          { icon: Rocket,       text: "Créez votre première vraie mission →", done: false },
+        ].map(({ icon: Icon, text, done }) => (
+          <div key={text} className="flex items-center gap-3">
+            <Icon size={16} className={done ? "text-green-500 shrink-0" : "text-primary shrink-0"} />
+            <span className={`text-sm ${done ? "text-foreground" : "font-semibold text-foreground"}`}>{text}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <button
+        type="button"
+        onClick={onGo}
+        className="btn-cta w-full py-4 flex items-center justify-center gap-2"
+      >
+        <Sparkles size={16} />
+        Accéder à mon espace maintenant
+        <span className="ml-1 text-white/60 text-xs">({countdown}s)</span>
+      </button>
+      <p className="text-xs text-muted-foreground mt-3">
+        Votre première introduction peut arriver dans les 24h.
+      </p>
+    </div>
+  );
+}
+
+
 
 // ── Secteurs ───────────────────────────────────────────────────────────────────
 const ENTREPRISE_SECTORS = [
@@ -513,6 +575,7 @@ function StepSectorGoal({
 // ── MAIN PAGE ─────────────────────────────────────────────────────────────────
 export default function Onboarding() {
   const [step, setStep] = useState(1);
+  const [ahaMoment, setAhaMoment] = useState(false); // true = show step 3 aha screen
   const [role, setRole] = useState<Role>(null);
   const [prenom, setPrenom] = useState("");
   const [nomEntite, setNomEntite] = useState("");
@@ -527,9 +590,14 @@ export default function Onboarding() {
   // subscription conservé pour compatibilité contexte (peut être supprimé ultérieurement)
   useSubscription();
 
+  // Navigate to dashboard — stable ref used by StepAhaMoment countdown
+  const goToDashboard = useCallback(() => {
+    const dest =
+      role === "entreprise" ? "/dashboard/entreprise" : "/dashboard/facilitateur";
+    navigate(dest, { replace: true });
+  }, [role, navigate]);
+
   // ── Pre-select role from URL param (?role=entreprise after Founder Pass payment) ──
-  // This allows /success → /onboarding?role=entreprise to skip the role selection.
-  // useSearchParams is NOT used here to keep stable refs — we read only once on mount.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const roleParam = params.get("role");
@@ -590,29 +658,24 @@ export default function Onboarding() {
         if (fpErr) throw fpErr;
       }
 
-      // ── 3. refreshProfile() is called next — no localStorage needed since
-      //       ProtectedRoute reads onboarding_done from server-side profile only.
-
-      // ── 4. Refresh auth profile so role is available in ProtectedRoute ─────
+      // ── 3. Refresh auth profile so role is available in ProtectedRoute ─────
       await refreshProfile();
 
       trackEvent("onboarding_done", user.id, { role: role ?? "unknown", cible });
 
-      // ── 5. AUDIT 16/03/2026 – BLOQUANTS LEVÉS
+      // ── 4. AUDIT 16/03/2026 – BLOQUANTS LEVÉS
       //       Seed demo data pour les entreprises (non-bloquant, idempotent).
       //       Injecte 3 missions + 1 contact pour que le dashboard ne soit jamais vide.
       if (role === "entreprise") {
-        void supabase
-          .rpc("seed_demo_data", { p_user_id: user.id, p_role: "entreprise" })
-          .then(() => {
-            toast.success("Votre espace est prêt. 3 missions d'exemple ont été créées pour démarrer.");
-          });
+        void supabase.rpc("seed_demo_data", { p_user_id: user.id, p_role: "entreprise" });
+        // Show Aha Moment screen for entreprise
+        setSaving(false);
+        setAhaMoment(true);
+        return;
       }
 
-      // ── 6. Navigate — replace so the Back button never returns to /onboarding
-      const dest =
-        role === "entreprise" ? "/dashboard/entreprise" : "/dashboard/facilitateur";
-      navigate(dest, { replace: true });
+      // ── 5. Facilitateur → direct redirect (no aha-moment screen)
+      navigate("/dashboard/facilitateur", { replace: true });
     } catch (err) {
       savingRef.current = false;
       setSaving(false);
@@ -654,16 +717,21 @@ export default function Onboarding() {
       <div className="border-b border-border">
         <div className="container flex items-center justify-between h-14">
           <span className="font-display font-bold text-foreground">WIINUP MAX</span>
-          <span className="text-xs text-muted-foreground">
-            Étape {step} sur {TOTAL_STEPS}
-          </span>
+          {!ahaMoment && (
+            <span className="text-xs text-muted-foreground">
+              Étape {step} sur {TOTAL_STEPS}
+            </span>
+          )}
         </div>
       </div>
 
-      <ProgressBar current={step} total={TOTAL_STEPS} />
+      {!ahaMoment && <ProgressBar current={step} total={TOTAL_STEPS} />}
 
       <div className="flex-1 flex items-center justify-center p-6">
-        {step === 1 ? (
+        {/* ── Step 3: Aha Moment (entreprise only, after seed) ── */}
+        {ahaMoment ? (
+          <StepAhaMoment prenom={prenom} onGo={goToDashboard} />
+        ) : step === 1 ? (
           <StepIdentity
             role={role}
             prenom={prenom}
@@ -691,3 +759,4 @@ export default function Onboarding() {
     </div>
   );
 }
+

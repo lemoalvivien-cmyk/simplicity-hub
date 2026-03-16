@@ -1,13 +1,12 @@
 /**
  * validate-introduction — Transactional Edge Function.
- * Atomically handles validate OR refuse for an introduction:
- *   validate: introduction → validée, gain → valide, escrow → validée+converted,
- *             proof → certifie, lead_intake → promote to opportunity
- *   refuse:   introduction → refusée, gain → annule
+ * Atomically handles validate OR refuse for an introduction.
+ * AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
  * SECURITY: userId is always derived from JWT. No user_id override allowed.
  */
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireAuth, unauthorizedResponse } from "../_shared/authGuard.ts";
 
 Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -16,32 +15,18 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // AUDIT 16/03/2026 – SÉCURITÉ FORCÉE : requireAuth obligatoire
+  let claims: Awaited<ReturnType<typeof requireAuth>>;
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing authorization" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    claims = await requireAuth(req);
+  } catch {
+    return unauthorizedResponse(corsHeaders);
+  }
 
-    // SECURITY: no user_id override allowed — derive from JWT only
-    const userSb = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+  // SECURITY: no user_id override allowed — derived from JWT only
+  const entrepriseId = claims.sub;
 
-    const { data: { user }, error: authErr } = await userSb.auth.getUser();
-    if (authErr || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // SECURITY: no user_id override allowed
-    const entrepriseId = user.id;
+  try {
 
     const body = await req.json();
     const { introduction_id, action } = body as {
