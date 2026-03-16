@@ -629,7 +629,6 @@ export default function Onboarding() {
     secteur,
     cible,
     objectif,
-    subscription.status,
     refreshProfile,
     navigate,
   ]);
