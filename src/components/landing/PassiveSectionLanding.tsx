@@ -135,7 +135,7 @@ export default function PassiveSectionLanding() {
             </div>
             <div className="mt-4 p-3 rounded-xl flex items-center gap-2" style={{ background: "hsl(24 100% 52% / 0.1)", border: "1px solid hsl(24 100% 52% / 0.2)" }}>
               <p className="text-xs" style={{ color: "hsl(24 80% 65%)" }}>
-                IA assistée — vous validez chaque message avant envoi.
+                Vous validez chaque message avant envoi. Rien ne part sans votre accord.
               </p>
             </div>
           </div>
