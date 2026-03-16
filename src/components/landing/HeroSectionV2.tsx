@@ -133,7 +133,7 @@ export default function HeroSectionV2() {
     setSphereY(-ny);
   };
 
-  const PILLS = ["Introductions traçées", "Gains protégés", "IA assistée réelle", "Résultats mesurables"];
+  const PILLS = ["Introductions traçées", "Gains protégés", "Réseau humain", "Résultats mesurables"];
 
   return (
     <section
