@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     const userEmail = claims.email ?? "";
     logStep("User authenticated", { userId, email: userEmail });
 
-    const user = userData.user;
+    const user = { id: userId, email: userEmail };
     logStep("User authenticated", { userId: user.id });
 
     // ── 2. Role guard — facilitateurs have permanent free access ──
