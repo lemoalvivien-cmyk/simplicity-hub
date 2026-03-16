@@ -69,14 +69,9 @@ export default function AdminBeta() {
     <AdminLayout title="Tableau de bord Bêta" subtitle="Gestion de la bêta privée et liste d'attente">
       <div className="max-w-3xl mx-auto space-y-6 pb-10">
 
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="font-display font-bold text-2xl text-foreground">Tableau de bord Bêta</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Gestion de la bêta privée et liste d'attente</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
+        {/* Status badge */}
+        <div className="flex items-center">
+          <div
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
               style={
                 CLOSED_BETA

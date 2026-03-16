@@ -14,6 +14,7 @@ const links = [
   { to: "/admin/promo-codes", label: "Codes promo", icon: Tag },
   { to: "/admin/payments", label: "Paiements", icon: CreditCard },
   { to: "/admin/revenue", label: "Revenu réel", icon: TrendingUp },
+  { to: "/admin/beta", label: "Bêta & Waitlist", icon: Rocket },
 ];
 
 export default function AdminNav() {
