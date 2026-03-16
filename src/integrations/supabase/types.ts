@@ -4920,6 +4920,19 @@ export type Database = {
           trust_score: number
         }[]
       }
+      submit_introduction_atomic: {
+        Args: {
+          p_contact_email: string
+          p_contact_nom: string
+          p_contact_telephone: string
+          p_contexte: string
+          p_entreprise_id: string
+          p_facilitateur_id: string
+          p_mission_id: string
+          p_pertinence: string
+        }
+        Returns: Json
+      }
       track_business_event: {
         Args: {
           p_entity_id: string
