@@ -36,39 +36,7 @@ project_id = "usnriklfiagazpffsqew"
   [functions.send-reactivation-email]
     verify_jwt = false  # SECURITY: additionally validated via admin JWT
 
-  # ── ETG Graph Engine ────────────────────────────────────────────────────────
-  [functions.etg-aggregate]
-    verify_jwt = false
-
-  [functions.etg-predict]
-    verify_jwt = false
-
-  [functions.etg-ingest]
-    verify_jwt = false
-
-  # ── AI Functions ────────────────────────────────────────────────────────────
-  [functions.ai-jarvis]
-    verify_jwt = false
-
-  [functions.ai-lead-scoring]
-    verify_jwt = false
-
-  [functions.ai-matching]
-    verify_jwt = false
-
-  [functions.ai-opportunity-analysis]
-    verify_jwt = false
-
-  [functions.ai-prospection]
-    verify_jwt = false
-
-  [functions.ai-sequence-generator]
-    verify_jwt = false
-
   # ── Billing ─────────────────────────────────────────────────────────────────
-  [functions.business-alert-dispatcher]
-    verify_jwt = false
-
   [functions.check-subscription]
     verify_jwt = false
 
@@ -76,68 +44,6 @@ project_id = "usnriklfiagazpffsqew"
     verify_jwt = false
 
   [functions.customer-portal]
-    verify_jwt = false
-
-  [functions.deal-radar-score]
-    verify_jwt = false
-
-  # ── Voice AI ────────────────────────────────────────────────────────────────
-  [functions.elevenlabs-tts]
-    verify_jwt = false
-
-  [functions.elevenlabs-voice-token]
-    verify_jwt = false
-
-  # ── OpenClaw Swarm ──────────────────────────────────────────────────────────
-  [functions.openclaw-autonomous-swarm]
-    verify_jwt = false
-
-  [functions.openclaw-channel-dispatch]
-    verify_jwt = false
-
-  [functions.openclaw-channel-probe]
-    verify_jwt = false
-
-  [functions.openclaw-dossier-sync]
-    verify_jwt = false
-
-  [functions.openclaw-event-bus]
-    verify_jwt = false
-
-  [functions.openclaw-gateway]
-    verify_jwt = false
-
-  [functions.openclaw-generate]
-    verify_jwt = false
-
-  [functions.openclaw-generate-packs]
-    verify_jwt = false
-
-  [functions.openclaw-graph-engine]
-    verify_jwt = false
-
-  [functions.openclaw-healthcheck]
-    verify_jwt = false
-
-  [functions.openclaw-job-executor]
-    verify_jwt = false
-
-  [functions.openclaw-kill-switch]
-    verify_jwt = false
-
-  [functions.openclaw-lead-generator]
-    verify_jwt = false
-
-  [functions.openclaw-scheduler]
-    verify_jwt = false
-
-  [functions.openclaw-smoke-test]
-    verify_jwt = false
-
-  [functions.openclaw-status]
-    verify_jwt = false
-
-  [functions.openclaw-validate]
     verify_jwt = false
 
   # ── Payout & Promo ──────────────────────────────────────────────────────────
@@ -150,22 +56,8 @@ project_id = "usnriklfiagazpffsqew"
   [functions.redeem-promo]
     verify_jwt = false
 
-  # ── Misc ────────────────────────────────────────────────────────────────────
-  [functions.insights-api]
-    verify_jwt = false
-
-  # ── ADA Voice Agent ─────────────────────────────────────────────────────────
-  [functions.ada-orchestrator]
-    verify_jwt = false
-
-  [functions.ada-voice-call]
-    verify_jwt = false
-
-  [functions.ada-training-pipeline]
-    verify_jwt = false
-
   # ── Transactional business flows ────────────────────────────────────────────
-  # SECURITY: auth validated in-code via supabase.auth.getUser()
+  # SECURITY: auth validated in-code via requireAuth()
   [functions.submit-introduction]
     verify_jwt = false
 
