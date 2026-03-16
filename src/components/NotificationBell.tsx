@@ -215,7 +215,7 @@ export default function NotificationBell() {
                 </div>
                 <p className="text-sm font-medium text-foreground mb-1">Tout est calme</p>
                 <p className="text-xs text-muted-foreground">
-                  Les activités d'OpenClaw apparaîtront ici
+                  Vos nouvelles introductions et gains apparaîtront ici.
                 </p>
               </div>
             ) : (
@@ -292,7 +292,7 @@ export default function NotificationBell() {
           {notifications.length > 0 && (
             <div className="px-4 py-2.5 border-t border-border">
               <p className="text-[10px] text-muted-foreground text-center">
-                Activité OpenClaw en temps réel
+                Activité en temps réel
               </p>
             </div>
           )}

@@ -9,6 +9,7 @@ import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { FounderSlotsProvider } from "@/contexts/FounderSlotsContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import InstallBanner from "@/components/pwa/InstallBanner";
+import RGPDConsentBanner from "@/components/landing/RGPDConsentBanner";
 import { usePageTracking } from "@/lib/analytics";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -115,6 +116,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <InstallBanner />
+          <RGPDConsentBanner />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <PageTracker />
             <Suspense fallback={<PageSkeleton />}>

@@ -2,13 +2,130 @@ import UserLayout from "@/components/layout/UserLayout";
 import {
   User, CreditCard, Shield, ChevronRight, LogOut,
   CheckCircle2, Clock, AlertCircle, XCircle, Loader2,
-  ExternalLink, Zap, Gift, Calendar, Timer, ShieldCheck
+  ExternalLink, Zap, Gift, Calendar, Timer, ShieldCheck,
+  Download, Trash2,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription, isAccessActive, getOfferLabel } from "@/contexts/SubscriptionContext";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+/* ── RGPD: Export my data ────────────────────────────── */
+function RGPDExportButton({ userId }: { userId: string | undefined }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleExport = async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      const [{ data: profile }, { data: intros }, { data: gains }, { data: contacts }] =
+        await Promise.all([
+          supabase.from("profiles").select("*").eq("id", userId).single(),
+          (supabase.from("introductions") as any).select("*").eq("facilitateur_id", userId),
+          (supabase.from("gains") as any).select("*").eq("facilitateur_id", userId),
+          (supabase.from("contacts") as any).select("*").eq("owner_user_id", userId),
+        ]);
+
+      const payload = {
+        exported_at: new Date().toISOString(),
+        user_id: userId,
+        profile: profile ?? null,
+        introductions: intros ?? [],
+        gains: gains ?? [],
+        contacts: contacts ?? [],
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `wiinupmax-data-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Export téléchargé ✓");
+    } catch (err) {
+      toast.error("Erreur lors de l'export");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleExport}
+      disabled={loading || !userId}
+      className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
+    >
+      <span className="flex items-center gap-2">
+        {loading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+        Exporter mes données (JSON)
+      </span>
+      <ChevronRight size={15} className="text-muted-foreground" />
+    </button>
+  );
+}
+
+/* ── RGPD: Delete account ────────────────────────────── */
+function RGPDDeleteButton({ onConfirm }: { onConfirm: () => Promise<void> }) {
+  const [step, setStep] = useState<"idle" | "confirm">("idle");
+  const [loading, setLoading] = useState(false);
+
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      // Soft-delete: mark profile as deleted. Hard-delete via cron after 30 days.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+      await (supabase.from("profiles") as any).update({
+        deletion_requested_at: new Date().toISOString(),
+      }).eq("id", user.id);
+      toast.success("Demande de suppression enregistrée. Votre compte sera supprimé sous 30 jours.");
+      await onConfirm();
+    } catch (err) {
+      toast.error("Erreur — veuillez contacter notifications@wiinupmax.com");
+      setLoading(false);
+      setStep("idle");
+    }
+  };
+
+  if (step === "confirm") {
+    return (
+      <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 space-y-3">
+        <p className="text-xs font-semibold text-destructive">
+          ⚠️ Cette action est irréversible. Votre compte et toutes vos données seront supprimés définitivement dans 30 jours.
+        </p>
+        <div className="flex gap-2">
+          <button onClick={() => setStep("idle")} className="flex-1 px-3 py-2 rounded-lg text-xs font-medium border border-border hover:bg-muted transition-colors">
+            Annuler
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={loading}
+            className="flex-1 px-3 py-2 rounded-lg text-xs font-bold bg-destructive text-white hover:bg-destructive/90 transition-colors flex items-center justify-center gap-1.5"
+          >
+            {loading ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+            Confirmer la suppression
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setStep("confirm")}
+      className="flex items-center justify-between w-full px-4 py-2.5 rounded-xl border border-destructive/30 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+    >
+      <span className="flex items-center gap-2">
+        <Trash2 size={14} />
+        Supprimer mon compte (RGPD art. 17)
+      </span>
+      <ChevronRight size={15} className="opacity-60" />
+    </button>
+  );
+}
 
 export default function Account() {
   const { user, profile, signOut } = useAuth();
@@ -296,7 +413,7 @@ export default function Account() {
         </div>
 
         {/* Paramètres avancés */}
-        <div className="card-surface p-5 mb-5">
+        <div className="card-surface p-5 mb-4">
           <div className="flex items-center gap-2 mb-4">
             <Zap size={17} className="text-primary" />
             <h2 className="font-semibold text-foreground">Paramètres avancés</h2>
@@ -308,6 +425,24 @@ export default function Account() {
             Configurer mes canaux et notifications
             <ChevronRight size={15} className="text-muted-foreground" />
           </Link>
+        </div>
+
+        {/* Données personnelles — RGPD */}
+        <div className="card-surface p-5 mb-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield size={17} className="text-primary" />
+            <h2 className="font-semibold text-foreground">Mes données personnelles</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+            Conformément au RGPD (art. 20 — portabilité, art. 17 — droit à l'effacement), vous pouvez exporter vos données ou supprimer votre compte. La suppression est définitive après 30 jours.
+          </p>
+          <div className="flex flex-col gap-2">
+            <RGPDExportButton userId={user?.id} />
+            <RGPDDeleteButton onConfirm={async () => {
+              await signOut();
+              navigate("/login", { replace: true });
+            }} />
+          </div>
         </div>
 
         {/* Logout */}
