@@ -185,12 +185,6 @@ export default function ProfilEntreprise() {
           </button>
         </div>
       </div>
-
-      <MatchingModal
-        open={matchingOpen}
-        onClose={() => setMatchingOpen(false)}
-        enterpriseProfile={enterpriseProfileForMatching}
-      />
     </UserLayout>
   );
 }

@@ -235,33 +235,12 @@ export default function JarvisDrawer({ open, onClose, context = "dashboard", use
 
         {/* Input */}
         <div className="border-t border-border px-4 py-3 shrink-0">
-          {/* Voice mode toggle + JarvisVoice */}
-          <div className="flex items-center justify-between mb-2.5">
-            <JarvisVoice
-              onTranscript={(text) => send(text)}
-              lastJarvisText={voiceMode ? lastJarvisText : undefined}
-              autoSpeak={voiceMode}
-            />
-            <button
-              onClick={() => setVoiceMode((v) => !v)}
-              title={voiceMode ? "Passer en mode texte" : "Activer le mode vocal"}
-              className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-xl transition-all"
-              style={{
-                background: voiceMode ? "hsl(var(--secondary))" : "hsl(var(--muted))",
-                color: voiceMode ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                border: `1px solid ${voiceMode ? "hsl(var(--primary) / 0.3)" : "hsl(var(--border))"}`,
-              }}
-            >
-              {voiceMode ? <Volume2 size={12} /> : <VolumeX size={12} />}
-              {voiceMode ? "Vocal actif" : "Vocal"}
-            </button>
-          </div>
           <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="flex gap-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={voiceMode ? "Ou tapez votre question…" : "Posez votre question…"}
+              placeholder="Posez votre question…"
               className="flex-1 px-3.5 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/30 transition-shadow"
             />
             <button
