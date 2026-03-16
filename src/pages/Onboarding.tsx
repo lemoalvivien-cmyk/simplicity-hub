@@ -525,7 +525,8 @@ export default function Onboarding() {
 
   const navigate = useNavigate();
   const { user, loading: authLoading, refreshProfile } = useAuth();
-  const subscription = useSubscription();
+  // subscription conservé pour compatibilité contexte (peut être supprimé ultérieurement)
+  useSubscription();
 
   // ── Pre-select role from URL param (?role=entreprise after Founder Pass payment) ──
   // This allows /success → /onboarding?role=entreprise to skip the role selection.
