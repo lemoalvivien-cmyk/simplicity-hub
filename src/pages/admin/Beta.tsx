@@ -66,7 +66,7 @@ export default function AdminBeta() {
   const betaProgress = Math.min((waitlist.length / BETA_MAX_SLOTS) * 100, 100);
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Tableau de bord Bêta" subtitle="Gestion de la bêta privée et liste d'attente">
       <div className="max-w-3xl mx-auto space-y-6 pb-10">
 
         {/* Header */}
