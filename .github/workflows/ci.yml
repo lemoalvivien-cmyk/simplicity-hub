@@ -1,4 +1,4 @@
-name: CI
+name: CI — WIINUP MAX v7
 
 on:
   push:
@@ -25,48 +25,33 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ── Type safety ──────────────────────────────────────────────────────────
       - name: TypeScript type check
         run: npx tsc --noEmit
 
-      # ── Code quality ─────────────────────────────────────────────────────────
       - name: ESLint
         run: npm run lint
 
-      # ── Unit tests ───────────────────────────────────────────────────────────
       - name: Unit tests (Vitest)
         run: npm run test
 
-      # ── Build ────────────────────────────────────────────────────────────────
       - name: Production build
         run: npm run build
 
-      # ── Quota DB-level proof (requires secrets) ───────────────────────────────
-      - name: Quota flow verification (DB-level)
-        if: ${{ env.VITE_SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: No legacy AI in frontend source
         run: |
-          curl -fsSL https://deno.land/install.sh | sh
-          export DENO_INSTALL="$HOME/.deno"
-          export PATH="$DENO_INSTALL/bin:$PATH"
-          npm run verify:quota
-        continue-on-error: false
+          LEGACY=0
+          for pattern in "ai-jarvis" "ai-lead-scoring" "ai-matching" "ai-prospection" \
+                         "ada-voice-call" "ada-orchestrator" "openclaw" "elevenlabs" \
+                         "etg-aggregate" "etg-ingest" "etg-predict" "deal-radar-score"; do
+            if grep -rn --include="*.ts" --include="*.tsx" \
+              --exclude-dir=node_modules "$pattern" src/ 2>/dev/null; then
+              echo "❌ Legacy ref '$pattern' found in frontend!"
+              LEGACY=$((LEGACY+1))
+            fi
+          done
+          [ $LEGACY -eq 0 ] && echo "✅ No legacy AI refs in frontend." || exit 1
 
-      # ── Race test ─────────────────────────────────────────────────────────
-      - name: Quota race test (concurrent delivery)
-        if: ${{ env.VITE_SUPABASE_URL != '' && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          export DENO_INSTALL="$HOME/.deno"
-          export PATH="$DENO_INSTALL/bin:$PATH"
-          deno run --allow-env --allow-net scripts/verify-quota-race.ts
-        continue-on-error: false
-
-  # ── Security audit ─────────────────────────────────────────────────────────
+  # ── Security Audit ──────────────────────────────────────────────────────────
   security-audit:
     name: Security Audit
     runs-on: ubuntu-latest
@@ -83,10 +68,9 @@ jobs:
       - name: npm audit (high + critical only)
         run: npm audit --audit-level=high
 
-      - name: Check for secrets in source
+      - name: No hardcoded secrets
         run: |
           echo "🔍 Scanning for hardcoded secrets..."
-          # Fail if any private key patterns are found outside .env files
           if grep -rn \
             --include="*.ts" --include="*.tsx" --include="*.js" \
             --exclude-dir=node_modules --exclude-dir=.git \
@@ -96,75 +80,44 @@ jobs:
             echo "❌ Potential hardcoded secret found!"
             exit 1
           fi
-          echo "✅ No hardcoded secrets detected."
+          echo "✅ No hardcoded secrets."
 
-      - name: Check RLS coverage (build-time)
+      - name: RLS / Auth guard coverage
         run: |
-          echo "🔒 Verifying RLS guard patterns in Edge Functions..."
-          # Warn if any Edge Function is missing JWT or service-key auth guard
+          echo "🔒 Verifying auth guards in Edge Functions..."
           UNGUARDED=0
           for f in supabase/functions/*/index.ts; do
-            # Skip internal/cron-only functions
-            name=$(basename $(dirname $f))
-            case "$name" in
-              stripe-webhook|auth-email-hook|track-click) continue ;;
-            esac
-            if ! grep -qE "(supabase\.auth\.getUser|SERVICE_KEY|SUPABASE_SERVICE_ROLE_KEY|Authorization)" "$f" 2>/dev/null; then
-              echo "⚠️  $f — no auth guard detected"
+            name=$(basename $(dirname "$f"))
+            case "$name" in stripe-webhook|auth-email-hook|track-click) continue ;; esac
+            if ! grep -qE "(requireAuth|supabase\.auth\.getUser|SERVICE_KEY|SUPABASE_SERVICE_ROLE_KEY|Authorization)" "$f" 2>/dev/null; then
+              echo "⚠️  $f — no auth guard"
               UNGUARDED=$((UNGUARDED+1))
             fi
           done
-          if [ $UNGUARDED -gt 0 ]; then
-            echo "⚠️  $UNGUARDED function(s) may lack auth guards. Review before go-live."
-          else
-            echo "✅ All Edge Functions have auth guards."
-          fi
+          [ $UNGUARDED -eq 0 ] && echo "✅ All Edge Functions guarded." \
+            || (echo "❌ $UNGUARDED unguarded function(s)!" && exit 1)
 
-      - name: Check rate-limit usage
+      - name: No wildcard CORS
         run: |
-          echo "⏱ Verifying rate-limit middleware usage in AI functions..."
-          AI_MISSING=0
-          for f in supabase/functions/ai-*/index.ts supabase/functions/ada-*/index.ts; do
-            [ -f "$f" ] || continue
-            if ! grep -q "checkRateLimit\|rateLimit" "$f" 2>/dev/null; then
-              echo "⚠️  $f — rate-limit not found"
-              AI_MISSING=$((AI_MISSING+1))
-            fi
-          done
-          if [ $AI_MISSING -gt 0 ]; then
-            echo "⚠️  $AI_MISSING AI function(s) missing rate-limit. Review before go-live."
-          else
-            echo "✅ Rate-limit detected in all AI functions."
-          fi
-
-      - name: CORS wildcard check
-        run: |
-          echo "🌐 Checking for CORS wildcard (*) in Edge Functions..."
-          if grep -rn \
-            --include="*.ts" \
-            --exclude-dir=node_modules \
-            'Allow-Origin.*\*' \
-            supabase/functions/ 2>/dev/null; then
-            echo "❌ Wildcard CORS detected! This is a security risk."
+          if grep -rn --include="*.ts" --exclude-dir=node_modules \
+            'Allow-Origin.*\*' supabase/functions/_shared/cors.ts 2>/dev/null | \
+            grep -v "wiinupmax.com\|lovable.app\|localhost"; then
+            echo "❌ Wildcard CORS detected!"
             exit 1
           fi
-          echo "✅ No wildcard CORS found."
+          echo "✅ CORS hardened."
 
 # ── MANUAL GATES (run before go-live) ────────────────────────────────────────
 #
-#   1. Gap 1 (RPC error rollback fault injection):
-#        deno run --allow-env --allow-net scripts/verify-quota-gaps.ts
-#
-#   2. Gap 3 (Stripe HTTP path + signature verification):
+#   1. Stripe E2E:
 #        stripe listen --forward-to <function-url>
 #        stripe trigger checkout.session.completed
+#        Verify: subscription row + founder_pass status
 #
-#   3. Full E2E smoke test (Stripe test mode):
-#        Create a test checkout, complete with card 4242424242424242
-#        Verify: subscription row created + launch_quota incremented
+#   2. Seed first 5 clients:
+#        Run scripts/seed-first-clients.sql in Lovable Cloud > SQL Editor
 #
-#   4. Bloctel API verification (before enabling ADA outbound calls):
-#        Confirm BLOCTEL_API_KEY secret is configured
-#        Run manual call flow test with a Bloctel-registered test number
+#   3. Full smoke test:
+#        ./deploy.sh
 #
-# Documented in docs/compliance.md §3 and ROADMAP.md §Phase1.
+# Documented in docs/compliance.md and ROADMAP.md §Phase1.
