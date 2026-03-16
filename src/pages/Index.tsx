@@ -65,7 +65,7 @@ export default function LandingPage() {
       {/* 4 — MÉCANISME DOUBLE MOTEUR */}
       <MecanismeSection />
 
-      {/* 5 — GOD MODE TEASER (Triple Threat Swarm / War Caller / Auto-Pilot) */}
+      {/* 5 — COMMENT ÇA MARCHE (4 étapes honnêtes) */}
       <Suspense fallback={null}>
         <GodModeTeaser />
       </Suspense>

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Network, Brain, Coins, ArrowRight } from "lucide-react";
+import { Network, ShieldCheck, Coins, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { track } from "@/lib/landingTracking";
 
@@ -7,8 +7,8 @@ const pillars = [
   {
     icon: Network,
     tag: "Réseau vivant",
-    title: "Un réseau qui apprend de lui-même",
-    desc: "Chaque présentation renforce le système. Il découvre les connexions cachées que personne ne voit — et vous indique le meilleur chemin pour atteindre un nouveau client.",
+    title: "Un réseau structuré qui crée de vraies opportunités",
+    desc: "Chaque présentation renforce la confiance. Vos apporteurs ont un espace dédié, traçable et motivant. Le réseau grandit avec vous.",
     gradient: "var(--gradient-primary)",
     glowColor: "hsl(var(--primary) / 0.18)",
     accentColor: "hsl(var(--primary))",
@@ -52,33 +52,32 @@ const pillars = [
     ),
   },
   {
-    icon: Brain,
-    tag: "Assistant vocal",
-    title: "Un assistant qui cherche et qui parle",
-    desc: "Il cherche des clients potentiels pour vous, analyse les situations, et vous informe au bon moment. Il travaille même quand vous dormez.",
-    gradient: "linear-gradient(135deg, hsl(270 70% 30%), hsl(280 60% 20%))",
-    glowColor: "hsl(270 70% 50% / 0.15)",
-    accentColor: "hsl(270 80% 70%)",
+    icon: ShieldCheck,
+    tag: "Traçabilité totale",
+    title: "Chaque introduction, datée et protégée pour toujours",
+    desc: "La date, l'heure, les parties — tout est enregistré dès l'envoi. Même si l'affaire se conclut dans 6 mois, la paternité de la mise en relation est incontestable.",
+    gradient: "linear-gradient(135deg, hsl(152 62% 20%), hsl(152 50% 12%))",
+    glowColor: "hsl(152 62% 42% / 0.15)",
+    accentColor: "hsl(152 62% 52%)",
     visual: (
       <div className="relative w-full h-28 flex items-center justify-center">
-        <div className="flex items-end gap-1 h-16">
-          {[40, 65, 52, 80, 72, 90, 85, 92].map((h, i) => (
-            <div key={i}
-              className="rounded-t-sm"
-              style={{
-                width: 14,
-                height: `${h}%`,
-                background: i < 6
-                  ? "hsl(270 70% 55% / 0.4)"
-                  : "linear-gradient(180deg, hsl(270 80% 70%), hsl(270 60% 50%))",
-                transition: "height 0.5s ease",
-              }}
-            />
+        <div className="flex flex-col gap-2 w-full max-w-[160px]">
+          {[
+            { label: "Introduction envoyée", date: "14/03 09:41", done: true },
+            { label: "Validée par l'entreprise", date: "14/03 11:22", done: true },
+            { label: "Affaire signée", date: "28/03 14:05", done: true },
+          ].map(({ label, date, done }) => (
+            <div key={label} className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full shrink-0 flex items-center justify-center"
+                style={{ background: done ? "hsl(152 62% 42% / 0.3)" : "hsl(218 30% 30%)", border: `1px solid ${done ? "hsl(152 62% 52%)" : "hsl(218 30% 50%)"}` }}>
+                {done && <div className="w-1.5 h-1.5 rounded-full" style={{ background: "hsl(152 62% 52%)" }} />}
+              </div>
+              <div>
+                <p className="text-[10px] font-medium text-white/70 leading-none">{label}</p>
+                <p className="text-[9px] text-white/35 mt-0.5">{date}</p>
+              </div>
+            </div>
           ))}
-        </div>
-        <div className="absolute top-2 right-4 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold"
-          style={{ background: "hsl(270 70% 55% / 0.2)", color: "hsl(270 80% 75%)", border: "1px solid hsl(270 60% 50% / 0.3)" }}>
-          <Brain size={9} /> 92% de précision
         </div>
       </div>
     ),
@@ -166,7 +165,7 @@ export default function WhyDifferentSection() {
           whileInView="visible"
           viewport={{ once: true, margin: "-60px" }}
         >
-          {pillars.map(({ icon: Icon, tag, title, desc, gradient, glowColor, accentColor, visual }) => (
+          {pillars.map(({ icon: Icon, tag, title, desc, glowColor, accentColor, visual }) => (
             <motion.div
               key={tag}
               variants={cardVariants}

@@ -1,22 +1,22 @@
-import { Send, Brain, Zap, LayoutDashboard, TrendingUp, ShieldCheck, MessageSquare, Bell } from "lucide-react";
+import { Send, FileText, Zap, LayoutDashboard, TrendingUp, ShieldCheck, MessageSquare, Bell } from "lucide-react";
 
 const features = [
   {
-    icon: Brain,
-    name: "L'assistant qui vous parle à voix haute",
+    icon: FileText,
+    name: "Missions publiées en 2 minutes",
     badge: "Entreprise",
-    what: "Il vous lit les bonnes nouvelles comme un conseiller personnel de confiance",
+    what: "Décrivez le client idéal, votre réseau reçoit la mission immédiatement",
     problem: "Vous n'avez pas le temps de prospecter et de personnaliser chaque jour.",
-    impact: "Un assistant discret et efficace fouille le marché à votre place, même pendant que vous dormez.",
+    impact: "Vos apporteurs voient votre besoin immédiatement et vous envoient des introductions qualifiées.",
     color: "hsl(218 80% 65%)",
   },
   {
     icon: Send,
-    name: "L'équipe qui travaille 24h/24 pour vous",
+    name: "Introductions traçées et horodatées",
     badge: "Les deux",
-    what: "Plusieurs assistants intelligents discutent entre eux pour trouver les meilleures opportunités",
+    what: "Chaque mise en relation est enregistrée et protégée",
     problem: "Les intros informelles ne sont pas traçables — elles disparaissent.",
-    impact: "Plus rapide et plus juste. Zéro intro perdue. Tout est suivi. Rien ne se perd.",
+    impact: "Chaque introduction est datée, signée et défendable. Zéro intro perdue. Rien ne se perd.",
     color: "hsl(152 62% 42%)",
   },
   {
@@ -32,7 +32,7 @@ const features = [
     icon: Bell,
     name: "Le suivi doux et automatique",
     badge: "Les deux",
-    what: "Il vous rappelle exactement au bon moment, sans jamais vous embêter",
+    what: "Notifications au bon moment, sans jamais vous embêter",
     problem: "Vous ratez des signaux critiques parce qu'ils se noient dans le bruit.",
     impact: "Chaque événement important remonte immédiatement. Zéro opportunité manquée.",
     color: "hsl(218 72% 62%)",
@@ -66,9 +66,9 @@ const features = [
   },
   {
     icon: MessageSquare,
-    name: "Assistant IA contextuel",
+    name: "Suggestions de prochaine action",
     badge: "Les deux",
-    what: "Suggestions de prochaine action selon l'état de votre pipeline",
+    what: "Prochaine étape claire selon l'état de votre pipeline",
     problem: "Vous ne savez pas toujours quelle action prioriser parmi toutes les tâches.",
     impact: "Des suggestions concrètes basées sur l'état réel de votre pipeline.",
     color: "hsl(262 72% 60%)",

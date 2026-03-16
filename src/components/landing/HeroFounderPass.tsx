@@ -204,7 +204,8 @@ export default function HeroFounderPass() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.26 }}
             >
-              Une plateforme simple et magnifique qui travaille pour vous. Elle trouve toute seule les bonnes personnes qui veulent acheter chez vous. Vos amis et connaissances vous présentent des clients prêts à signer. Tout se passe dans un seul espace calme et protégé, sans effort, sans stress, sans rien changer à votre vie.
+              Vos contacts — facilitateurs, partenaires, anciens collègues — vous présentent des prospects qu'ils connaissent personnellement. Chaque introduction est traçée et horodatée. Affaire signée ? Le gain de votre apporteur est versé automatiquement.{" "}
+              <strong className="text-white/85">Vous ne payez que si ça marche.</strong>
             </motion.p>
 
             {/* CTA row */}
