@@ -21,7 +21,6 @@ import { CLOSED_BETA } from "@/lib/betaConfig";
 
 const HeroFounderPass = lazy(() => import("@/components/landing/HeroFounderPass"));
 const MagneticCursor  = lazy(() => import("@/components/landing/MagneticCursor"));
-const GodModeTeaser   = lazy(() => import("@/components/landing/GodModeTeaser"));
 
 function HeroFallback() {
   return (
@@ -66,10 +65,6 @@ export default function LandingPage() {
       <ProblemSection />
       <FacilitateurPainSection />
       <MecanismeSection />
-
-      <Suspense fallback={null}>
-        <GodModeTeaser />
-      </Suspense>
 
       <FeaturesValueSection />
       <HowItWorksEntrepriseSection />

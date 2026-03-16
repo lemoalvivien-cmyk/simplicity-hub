@@ -163,11 +163,6 @@ const App = () => (
                 <Route path="/facilitateurs/:id" element={<ProtectedRoute><FacilitateurDetail /></ProtectedRoute>} />
 
                 {/* ── Utilitaires ──────────────────────────── */}
-                {/* AUDIT 16/03/2026 – BLOQUANTS LEVÉS : /assistant, /ada, /ada/model, /insights-sales désactivés */}
-                {/* <Route path="/assistant" element={<ProtectedRoute><Assistant /></ProtectedRoute>} /> */}
-                {/* <Route path="/ada" element={<ProtectedRoute><ADAControlPanel /></ProtectedRoute>} /> */}
-                {/* <Route path="/ada/model" element={<ProtectedRoute><ADAModelDashboard /></ProtectedRoute>} /> */}
-                {/* <Route path="/insights-sales" element={<InsightsSales />} /> */}
                 <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
                 <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                 <Route path="/status" element={<ProtectedRoute adminOnly><SystemStatus /></ProtectedRoute>} />
