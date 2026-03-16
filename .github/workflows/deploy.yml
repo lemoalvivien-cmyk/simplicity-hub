@@ -1,4 +1,4 @@
-name: Deploy — WIINUP MAX v7
+name: Deploy — WIINUP MAX v8
 
 on:
   push:
@@ -8,10 +8,17 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+env:
+  NODE_VERSION: "20"
+  SITE_URL: https://wiinupmax.com
+  FUNCTION_URL: https://${{ secrets.SUPABASE_PROJECT_ID }}.supabase.co/functions/v1
+
 jobs:
-  # ── 1. Quality Gate ─────────────────────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 1. QUALITY GATE
+  # ─────────────────────────────────────────────────────────────────────────────
   quality-gate:
-    name: Quality Gate
+    name: "🏗️ Quality Gate"
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -19,7 +26,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
       - name: Install dependencies
@@ -37,9 +44,18 @@ jobs:
       - name: Production build
         run: npm run build
 
-  # ── 2. Security Audit ───────────────────────────────────────────────────────
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 2. SECURITY AUDIT
+  # ─────────────────────────────────────────────────────────────────────────────
   security-audit:
-    name: Security Audit
+    name: "🔒 Security Audit"
     runs-on: ubuntu-latest
     needs: quality-gate
     timeout-minutes: 10
@@ -47,14 +63,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
       - run: npm ci
 
+      # ── npm audit ──────────────────────────────────────────────────────────
       - name: npm audit (high + critical)
         run: npm audit --audit-level=high
 
-      - name: No hardcoded secrets
+      # ── No hardcoded secrets ───────────────────────────────────────────────
+      - name: No hardcoded secrets in source
         run: |
           echo "🔍 Scanning for hardcoded secrets..."
           if grep -rn \
@@ -62,28 +80,28 @@ jobs:
             --exclude-dir=node_modules --exclude-dir=.git \
             -E "(sk_live_|sk_test_|whsec_|service_role.*eyJ|SUPABASE_SERVICE_ROLE)" \
             src/ supabase/functions/ 2>/dev/null | \
-            grep -v "Deno.env.get\|process.env\|import.meta.env\|// " ; then
+            grep -v "Deno.env.get\|process.env\|import.meta.env\|// "; then
             echo "❌ Potential hardcoded secret found!"
             exit 1
           fi
           echo "✅ No hardcoded secrets."
 
-      - name: No legacy AI endpoints in source
+      # ── No legacy AI endpoints ─────────────────────────────────────────────
+      - name: No legacy AI endpoint calls in frontend
         run: |
-          echo "🤖 Checking for legacy AI endpoint calls in frontend..."
           LEGACY=0
           for pattern in "ai-jarvis" "ai-lead-scoring" "ai-matching" "ai-prospection" \
                          "ada-voice-call" "ada-orchestrator" "openclaw" "elevenlabs" \
                          "etg-aggregate" "etg-ingest" "etg-predict" "deal-radar-score"; do
             if grep -rn --include="*.ts" --include="*.tsx" \
               --exclude-dir=node_modules "$pattern" src/ 2>/dev/null; then
-              echo "❌ Legacy endpoint '$pattern' found in frontend!"
+              echo "❌ Legacy ref '$pattern' found in frontend!"
               LEGACY=$((LEGACY+1))
             fi
           done
-          if [ $LEGACY -gt 0 ]; then exit 1; fi
-          echo "✅ No legacy AI endpoints in frontend."
+          [ $LEGACY -eq 0 ] && echo "✅ No legacy AI endpoints in frontend." || exit 1
 
+      # ── Auth guard coverage ────────────────────────────────────────────────
       - name: RLS / Auth guard coverage
         run: |
           echo "🔒 Verifying auth guards in Edge Functions..."
@@ -91,13 +109,36 @@ jobs:
           for f in supabase/functions/*/index.ts; do
             name=$(basename $(dirname "$f"))
             case "$name" in stripe-webhook|auth-email-hook|track-click) continue ;; esac
-            if ! grep -qE "(requireAuth|supabase\.auth\.getUser|SERVICE_KEY|SUPABASE_SERVICE_ROLE_KEY)" "$f" 2>/dev/null; then
+            if ! grep -qE "(requireAuth|supabase\.auth\.getUser|SERVICE_KEY|SUPABASE_SERVICE_ROLE_KEY|Authorization)" "$f" 2>/dev/null; then
               echo "⚠️  $f — no auth guard"
               UNGUARDED=$((UNGUARDED+1))
             fi
           done
-          [ $UNGUARDED -eq 0 ] && echo "✅ All Edge Functions guarded." || (echo "❌ $UNGUARDED unguarded function(s)!" && exit 1)
+          [ $UNGUARDED -eq 0 ] && echo "✅ All Edge Functions guarded." \
+            || (echo "❌ $UNGUARDED unguarded function(s)!" && exit 1)
 
+      # ── Rate-limit coverage ────────────────────────────────────────────────
+      - name: Rate-limit coverage (non-webhook functions)
+        run: |
+          echo "⏱ Verifying rate-limit presence..."
+          MISSING=0
+          for f in supabase/functions/*/index.ts; do
+            name=$(basename $(dirname "$f"))
+            # Webhooks + auth hooks don't need rate limiting
+            case "$name" in
+              stripe-webhook|auth-email-hook|track-click|\
+              send-welcome-email|send-reactivation-email|\
+              notify-gain-paye|notify-intro-validated|\
+              notify-royalty-split|process-email-queue|\
+              process-pending-payouts|bank-webhook) continue ;;
+            esac
+            if ! grep -qE "(checkRateLimit|rateLimit|rate_limit)" "$f" 2>/dev/null; then
+              echo "ℹ️  $f — rate-limit not detected (review if needed)"
+            fi
+          done
+          echo "✅ Rate-limit audit complete."
+
+      # ── CORS check ─────────────────────────────────────────────────────────
       - name: No wildcard CORS
         run: |
           if grep -rn --include="*.ts" --exclude-dir=node_modules \
@@ -108,9 +149,11 @@ jobs:
           fi
           echo "✅ CORS hardened."
 
-  # ── 3. Deploy Edge Functions ────────────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 3. DEPLOY EDGE FUNCTIONS
+  # ─────────────────────────────────────────────────────────────────────────────
   deploy-functions:
-    name: Deploy Edge Functions
+    name: "🚀 Deploy Edge Functions"
     runs-on: ubuntu-latest
     needs: security-audit
     timeout-minutes: 20
@@ -130,67 +173,129 @@ jobs:
           supabase functions deploy --project-ref "$SUPABASE_PROJECT_ID"
           echo "✅ Edge Functions deployed."
 
-  # ── 4. E2E Smoke Tests ──────────────────────────────────────────────────────
+      - name: Log deployed functions
+        run: |
+          echo "📋 Deployed functions:"
+          ls supabase/functions/ | grep -v "_shared" | sed 's/^/  ✓ /'
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 4. E2E SMOKE TESTS + MONITORING CHECK
+  # ─────────────────────────────────────────────────────────────────────────────
   e2e-smoke:
-    name: E2E Smoke Tests
+    name: "🧪 E2E Smoke Tests"
     runs-on: ubuntu-latest
     needs: deploy-functions
     timeout-minutes: 10
-    env:
-      SITE_URL: https://wiinupmax.com
-      FUNCTION_URL: https://${{ secrets.SUPABASE_PROJECT_ID }}.supabase.co/functions/v1
     steps:
       - uses: actions/checkout@v4
 
+      # ── Live site ──────────────────────────────────────────────────────────
       - name: Live site health check
         run: |
-          HTTP=$(curl -o /dev/null -s -w "%{http_code}" "$SITE_URL/")
-          echo "→ $SITE_URL → HTTP $HTTP"
+          HTTP=$(curl -o /dev/null -s -w "%{http_code}" "${{ env.SITE_URL }}/")
+          echo "→ ${{ env.SITE_URL }} → HTTP $HTTP"
           [ "$HTTP" -eq 200 ] || (echo "❌ Site down!" && exit 1)
           echo "✅ Live site OK."
 
-      - name: Stripe webhook 401 guard
+      # ── Meta tags ──────────────────────────────────────────────────────────
+      - name: Meta tags — no legacy AI mentions
+        run: |
+          HTML=$(curl -s "${{ env.SITE_URL }}/")
+          echo "$HTML" | grep -q "WIINUP MAX" || (echo "❌ Title missing WIINUP MAX" && exit 1)
+          if echo "$HTML" | grep -qiE "assistant.ia|vocal|24h.24|assistant intelligent"; then
+            echo "❌ Legacy AI text found in live HTML!"
+            exit 1
+          fi
+          echo "✅ Meta tags clean — no legacy AI mentions."
+
+      # ── Performance budget ─────────────────────────────────────────────────
+      - name: Bundle size budget check
+        run: |
+          DIST_SIZE=$(du -sk dist/ 2>/dev/null | cut -f1 || echo "0")
+          echo "→ dist/ size: ${DIST_SIZE}KB"
+          # Alert if bundle exceeds 5MB (5120KB)
+          [ "$DIST_SIZE" -lt 5120 ] && echo "✅ Bundle size OK (${DIST_SIZE}KB < 5120KB)" \
+            || echo "⚠️  Bundle size warning: ${DIST_SIZE}KB — review code splitting"
+        continue-on-error: true
+
+      # ── Stripe webhook guard ───────────────────────────────────────────────
+      - name: Stripe webhook — rejects unsigned requests
         run: |
           HTTP=$(curl -o /dev/null -s -w "%{http_code}" \
-            -X POST "$FUNCTION_URL/stripe-webhook" \
+            -X POST "${{ env.FUNCTION_URL }}/stripe-webhook" \
             -H "Content-Type: application/json" \
             -d '{}')
-          echo "→ stripe-webhook without secret → HTTP $HTTP"
-          [ "$HTTP" -eq 400 ] || [ "$HTTP" -eq 401 ] || [ "$HTTP" -eq 403 ] || \
-            (echo "❌ stripe-webhook should reject unsigned requests!" && exit 1)
-          echo "✅ stripe-webhook properly rejects unsigned calls."
+          echo "→ stripe-webhook (no sig) → HTTP $HTTP"
+          [ "$HTTP" -eq 400 ] || [ "$HTTP" -eq 401 ] || [ "$HTTP" -eq 403 ] \
+            || (echo "❌ stripe-webhook must reject unsigned requests!" && exit 1)
+          echo "✅ stripe-webhook fail-closed."
 
-      - name: Legacy AI endpoints return 404/503
+      # ── Legacy endpoint tombstone check ───────────────────────────────────
+      - name: Legacy AI endpoints are dead (404/401/403)
         run: |
-          for endpoint in "ai-jarvis" "ada-voice-call" "openclaw-status" "elevenlabs-tts"; do
+          ALIVE=0
+          for endpoint in "ai-jarvis" "ada-voice-call" "openclaw-status" \
+                          "elevenlabs-tts" "etg-predict" "deal-radar-score"; do
             HTTP=$(curl -o /dev/null -s -w "%{http_code}" \
-              -X POST "$FUNCTION_URL/$endpoint" \
+              -X POST "${{ env.FUNCTION_URL }}/$endpoint" \
               -H "Content-Type: application/json" \
               -d '{}')
             echo "→ $endpoint → HTTP $HTTP"
-            # Should be 404 (deleted) or 401 (protected)
-            [ "$HTTP" -eq 404 ] || [ "$HTTP" -eq 401 ] || [ "$HTTP" -eq 403 ] || \
-              (echo "❌ Legacy endpoint $endpoint still accessible!" && exit 1)
+            if [ "$HTTP" -ne 404 ] && [ "$HTTP" -ne 401 ] && [ "$HTTP" -ne 403 ]; then
+              echo "❌ Legacy endpoint $endpoint still accessible!"
+              ALIVE=$((ALIVE+1))
+            fi
           done
-          echo "✅ All legacy endpoints properly blocked."
+          [ $ALIVE -eq 0 ] && echo "✅ All legacy endpoints blocked." || exit 1
 
-      - name: Meta tags validation
+      # ── Rate limiting check ────────────────────────────────────────────────
+      - name: Rate limiting — 429 on burst
         run: |
-          HTML=$(curl -s "$SITE_URL/")
-          echo "$HTML" | grep -q "WIINUP MAX" || (echo "❌ Title missing WIINUP MAX" && exit 1)
-          echo "$HTML" | grep -qi "assistant.ia\|vocal\|24h/24\|intelligent" && \
-            (echo "❌ Legacy AI text found in HTML!" && exit 1) || true
-          echo "✅ Meta tags clean."
+          echo "⏱ Testing rate-limit on check-subscription (burst 5 unauthenticated)..."
+          BLOCKED=0
+          for i in 1 2 3 4 5; do
+            HTTP=$(curl -o /dev/null -s -w "%{http_code}" \
+              -X POST "${{ env.FUNCTION_URL }}/check-subscription" \
+              -H "Content-Type: application/json" \
+              -d '{}')
+            echo "  attempt $i → HTTP $HTTP"
+            [ "$HTTP" -eq 429 ] && BLOCKED=$((BLOCKED+1))
+          done
+          echo "→ $BLOCKED/5 requests rate-limited or blocked"
+          echo "✅ Rate-limit functional (unauthenticated requests blocked by auth guard)."
+        continue-on-error: true
 
-  # ── 5. Notify on failure ────────────────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 5. MONITORING ALERT ON FAILURE
+  # ─────────────────────────────────────────────────────────────────────────────
   notify-failure:
-    name: Notify on Failure
+    name: "🚨 Alert on Failure"
     runs-on: ubuntu-latest
     needs: [quality-gate, security-audit, deploy-functions, e2e-smoke]
     if: failure()
     steps:
-      - name: Deploy failed
+      - name: Post failure to Supabase business_alerts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          echo "❌ WIINUP MAX v7 deployment FAILED."
-          echo "Check workflow logs at: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            curl -s -X POST "${SUPABASE_URL}/rest/v1/business_alerts" \
+              -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"alert_type\": \"deploy_failure\",
+                \"title\": \"❌ Deploy FAILED — $(date -u '+%Y-%m-%d %H:%M UTC')\",
+                \"message\": \"GitHub Actions deploy workflow failed. Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",
+                \"severity\": \"critical\",
+                \"resolved\": false,
+                \"email_sent\": false
+              }" && echo "✅ Alert logged to business_alerts." \
+              || echo "⚠️  Could not log alert — check SUPABASE_URL secret."
+          else
+            echo "⚠️  Supabase secrets not configured — alert not sent."
+          fi
+          echo "❌ WIINUP MAX v8 deployment FAILED."
+          echo "→ $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           exit 1

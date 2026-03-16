@@ -1,4 +1,4 @@
-name: CI — WIINUP MAX v7
+name: CI — WIINUP MAX v8
 
 on:
   push:
@@ -7,17 +7,18 @@ on:
     branches: [main]
 
 jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 1. QUALITY GATE
+  # ─────────────────────────────────────────────────────────────────────────────
   quality-gate:
-    name: Quality Gate
+    name: "🏗️ Quality Gate"
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
@@ -51,9 +52,11 @@ jobs:
           done
           [ $LEGACY -eq 0 ] && echo "✅ No legacy AI refs in frontend." || exit 1
 
-  # ── Security Audit ──────────────────────────────────────────────────────────
+  # ─────────────────────────────────────────────────────────────────────────────
+  # 2. SECURITY AUDIT
+  # ─────────────────────────────────────────────────────────────────────────────
   security-audit:
-    name: Security Audit
+    name: "🔒 Security Audit"
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -76,7 +79,7 @@ jobs:
             --exclude-dir=node_modules --exclude-dir=.git \
             -E "(sk_live_|sk_test_|whsec_|service_role.*eyJ|SUPABASE_SERVICE_ROLE)" \
             src/ supabase/functions/ 2>/dev/null | \
-            grep -v "Deno.env.get\|process.env\|import.meta.env\|// " ; then
+            grep -v "Deno.env.get\|process.env\|import.meta.env\|// "; then
             echo "❌ Potential hardcoded secret found!"
             exit 1
           fi
@@ -97,6 +100,23 @@ jobs:
           [ $UNGUARDED -eq 0 ] && echo "✅ All Edge Functions guarded." \
             || (echo "❌ $UNGUARDED unguarded function(s)!" && exit 1)
 
+      - name: Rate-limit coverage audit
+        run: |
+          echo "⏱ Rate-limit audit on public-facing functions..."
+          for f in supabase/functions/*/index.ts; do
+            name=$(basename $(dirname "$f"))
+            case "$name" in
+              stripe-webhook|auth-email-hook|track-click|\
+              send-welcome-email|send-reactivation-email|\
+              notify-gain-paye|notify-intro-validated|\
+              notify-royalty-split|process-email-queue|\
+              process-pending-payouts|bank-webhook) continue ;;
+            esac
+            grep -qE "(checkRateLimit|rateLimit|rate_limit)" "$f" 2>/dev/null \
+              && echo "  ✅ $name — rate-limit OK" \
+              || echo "  ℹ️  $name — no rate-limit (review if public)"
+          done
+
       - name: No wildcard CORS
         run: |
           if grep -rn --include="*.ts" --exclude-dir=node_modules \
@@ -107,17 +127,22 @@ jobs:
           fi
           echo "✅ CORS hardened."
 
-# ── MANUAL GATES (run before go-live) ────────────────────────────────────────
+# ── MANUAL GATES (run before each go-live) ───────────────────────────────────
 #
-#   1. Stripe E2E:
-#        stripe listen --forward-to <function-url>
+#   1. Stripe E2E (test mode):
+#        stripe listen --forward-to https://usnriklfiagazpffsqew.supabase.co/functions/v1/stripe-webhook
 #        stripe trigger checkout.session.completed
-#        Verify: subscription row + founder_pass status
+#        → Verify: subscriptions row created + abonnement_statut = 'founder_pass'
 #
 #   2. Seed first 5 clients:
 #        Run scripts/seed-first-clients.sql in Lovable Cloud > SQL Editor
+#        (replace UUID_CLIENT_1..5 with real auth.users IDs)
 #
-#   3. Full smoke test:
-#        ./deploy.sh
+#   3. Full smoke + deploy:
+#        chmod +x deploy.sh && ./deploy.sh
 #
+#   4. Onboarding email:
+#        Run scripts/onboard-clients.sh with Resend API key configured
+#
+# Lighthouse target: Performance ≥ 90, Accessibility ≥ 95, SEO = 100
 # Documented in docs/compliance.md and ROADMAP.md §Phase1.

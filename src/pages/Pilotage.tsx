@@ -86,36 +86,13 @@ export default function Pilotage() {
     if (!user) return;
     const load = async () => {
       setLoading(true);
-      const [jobsRes, configRes, validRes, recsRes] = await Promise.all([
-        db.from("openclaw_job_queue")
-          .select("id, job_type, status, output_summary, ended_at, scheduled_at")
-          .eq("user_id", user.id)
-          .in("status", ["done", "running", "pending", "locked", "failed"])
-          .order("scheduled_at", { ascending: false })
-          .limit(12),
-        db.from("openclaw_config")
-          .select("is_connected, kill_switch_global, autonomy_level")
-          .eq("user_id", user.id)
-          .maybeSingle(),
-        db.from("openclaw_validations")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .eq("statut", "en_attente"),
-        db.from("openclaw_recommendations")
-          .select("id, title, summary, priority, action_label, action_href")
-          .eq("user_id", user.id)
-          .order("priority", { ascending: false })
-          .limit(10),
-      ]);
-
-      setRecentJobs((jobsRes.data ?? []) as typeof recentJobs);
-      const cfg = configRes.data as { is_connected: boolean; kill_switch_global: boolean; autonomy_level?: number } | null;
-      setOpenClawConnected((cfg?.is_connected ?? false) && !(cfg?.kill_switch_global ?? false));
-      setKillSwitch(cfg?.kill_switch_global ?? false);
-      setAutonomyLevel(cfg?.autonomy_level ?? 2);
-      setValidationsPending(validRes.count ?? 0);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setRecs((recsRes.data ?? []) as any);
+      // OpenClaw tables removed in v8 — Pilotage page shows empty state
+      setRecentJobs([]);
+      setOpenClawConnected(false);
+      setKillSwitch(false);
+      setAutonomyLevel(2);
+      setValidationsPending(0);
+      setRecs([]);
       setLoading(false);
     };
     load();
@@ -123,18 +100,12 @@ export default function Pilotage() {
 
   const handleAutonomyChange = async (value: number) => {
     setAutonomyLevel(value);
-    if (user) {
-      await db.from("openclaw_config").upsert({ user_id: user.id, autonomy_level: value }, { onConflict: "user_id" });
-    }
   };
 
   const handleKillSwitch = async (value: boolean) => {
     if (value && !killConfirm) { setKillConfirm(true); return; }
     setKillConfirm(false);
     setKillSwitch(value);
-    if (user) {
-      await db.from("openclaw_config").upsert({ user_id: user.id, kill_switch_global: value }).eq("user_id", user.id);
-    }
   };
 
   if (loading) {

@@ -62,35 +62,21 @@ export default function SystemStatus() {
       updateStatus("auth", { status: "error", detail: String(e) });
     }
 
-    // ── ETG
+    // ── Réseau & Missions
     const t1 = Date.now();
     try {
-      const { data, error } = await supabase.from("etg_persons").select("id").limit(1);
+      const { error } = await supabase.from("missions").select("id").limit(1);
       const latency = Date.now() - t1;
-      updateStatus("etg", {
+      updateStatus("reseau", {
         status: error ? "degraded" : "ok",
         latencyMs: latency,
-        detail: error ? error.message : `pgvector opérationnel (${latency}ms)`,
+        detail: error ? error.message : `Missions + Introductions opérationnels (${latency}ms)`,
       });
     } catch (e) {
-      updateStatus("etg", { status: "error", detail: String(e) });
+      updateStatus("reseau", { status: "error", detail: String(e) });
     }
 
-    // ── ADA
-    const t2 = Date.now();
-    try {
-      const { data, error } = await supabase.from("ada_sessions").select("id").limit(1);
-      const latency = Date.now() - t2;
-      updateStatus("ada", {
-        status: error ? "degraded" : "ok",
-        latencyMs: latency,
-        detail: error ? error.message : `Llama-3-70B + Gemini 2.5 Flash — ${latency}ms`,
-      });
-    } catch (e) {
-      updateStatus("ada", { status: "error", detail: String(e) });
-    }
-
-    // ── Stripe (check via subscriptions table)
+    // ── Stripe (check via billing_events table)
     const t3 = Date.now();
     try {
       const { error } = await supabase.from("billing_events").select("id").limit(1);
@@ -104,26 +90,15 @@ export default function SystemStatus() {
       updateStatus("stripe", { status: "degraded", detail: "Non critique — vérifier la config Stripe" });
     }
 
-    // ── Royalty Engine
+    // ── Royalty Engine — check gains table
     try {
-      const { data, error } = await supabase.from("ada_sessions").select("royalty_12pct").limit(1);
+      const { error } = await supabase.from("gains").select("id").limit(1);
       updateStatus("royalty", {
         status: error ? "degraded" : "ok",
         detail: error ? error.message : "Versement automatique des gains opérationnel",
       });
     } catch (e) {
       updateStatus("royalty", { status: "error", detail: String(e) });
-    }
-
-    // ── Insights API
-    try {
-      const { error } = await supabase.from("etg_opportunities").select("id").limit(1);
-      updateStatus("insights", {
-        status: error ? "degraded" : "ok",
-        detail: error ? error.message : "Analyse des opportunités · Signaux business · Opérationnel",
-      });
-    } catch (e) {
-      updateStatus("insights", { status: "error", detail: String(e) });
     }
 
     // ── Security
