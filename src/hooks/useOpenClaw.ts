@@ -173,55 +173,22 @@ export function useOpenClaw() {
   const [healthChecking, setHealthChecking] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Charger depuis Supabase ─────────────────────────────────────────────────
+  // ── Charger depuis Supabase (OpenClaw tables removed v8 — returns empty state) ──
   const loadAll = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const [configRes, agentsRes, validationsRes, logsRes, dossierRes] = await Promise.all([
-      supabase.from("openclaw_config").select("*").eq("user_id", user.id).maybeSingle(),
-      supabase.from("openclaw_agents").select("*").eq("user_id", user.id).order("agent_id"),
-      supabase.from("openclaw_validations").select("*").eq("user_id", user.id)
-        .order("created_at", { ascending: false }).limit(50),
-      supabase.from("openclaw_logs").select("*").eq("user_id", user.id)
-        .order("created_at", { ascending: false }).limit(40),
-      supabase.from("openclaw_dossier").select("completion_score, derniere_sync_openclaw_at, openclaw_session_id")
-        .eq("user_id", user.id).maybeSingle(),
-    ]);
-
-    const cfg = configRes.data as OpenClawConfig | null;
-    setConfig(cfg ?? {
+    // OpenClaw tables dropped in v8 migration — reset to disabled state
+    setConfig({
       gateway_url: null, autonomie_level: "preparation",
       kill_switch_global: false, is_connected: false,
       healthcheck_status: "unknown", last_healthcheck_at: null,
     });
-
-    // Déduire le connectionStatus depuis la config DB
-    if (!cfg?.gateway_url) {
-      setConnectionStatus("not_configured");
-    } else if (cfg.kill_switch_global) {
-      setConnectionStatus("kill_switch_on");
-    } else if (cfg.healthcheck_status === "ok" && cfg.is_connected) {
-      setConnectionStatus("connected");
-    } else if (cfg.healthcheck_status === "error") {
-      setConnectionStatus("error");
-    } else {
-      setConnectionStatus("not_configured");
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setAgents((agentsRes.data ?? []) as any as OpenClawAgent[]);
-    setValidations((validationsRes.data ?? []) as OpenClawValidation[]);
-    setLogs((logsRes.data ?? []) as OpenClawLog[]);
-
-    const dos = dossierRes.data;
-    setDossierSync({
-      synced: !!dos?.derniere_sync_openclaw_at,
-      last_sync_at: dos?.derniere_sync_openclaw_at ?? null,
-      error: null,
-      completion_score: dos?.completion_score ?? 0,
-    });
-
+    setConnectionStatus("not_configured");
+    setAgents([]);
+    setValidations([]);
+    setLogs([]);
+    setDossierSync({ synced: false, last_sync_at: null, error: null, completion_score: 0 });
     setLoading(false);
   }, []);
 
