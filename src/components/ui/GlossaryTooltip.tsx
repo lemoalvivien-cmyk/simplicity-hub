@@ -5,9 +5,7 @@ const GLOSSARY: Record<string, string> = {
   "Mission": "Une offre que vous publiez pour trouver des clients via le réseau.",
   "Introduction": "Un facilitateur présente un contact qualifié à une entreprise.",
   "Facilitateur": "Une personne qui utilise son réseau pour connecter entreprises et clients potentiels.",
-  "OpenClaw": "Le moteur d'intelligence artificielle qui prospecte automatiquement pour vous.",
-  "KITT IA": "Votre assistant IA personnel qui analyse votre pipeline et vous guide.",
-  "Deal Radar": "Système de détection automatique d'opportunités commerciales.",
+  "Deal Radar": "Système de détection d'opportunités basé sur l'activité de votre réseau.",
   "Score de confiance": "Note calculée sur l'historique réel d'un facilitateur.",
   "Cockpit": "Votre tableau de bord central avec toutes vos données.",
 };

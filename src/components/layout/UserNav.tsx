@@ -105,10 +105,10 @@ function buildEntrepriseGroups(badges: ReturnType<typeof useBadges>, gatewayRead
       items: accueilItems,
     },
     {
-      label: "Mon assistant IA",
+      label: "Mon pilotage",
       items: [
-        { to: "/ada",       label: "Mon assistant IA",    icon: Sparkles, badgeLabel: "Live" },
-        { to: "/ada/model", label: "Précision IA",         icon: Activity },
+        { to: "/ada",       label: "Mon tableau de bord IA", icon: Sparkles, badgeLabel: "Live" },
+        { to: "/ada/model", label: "Précision & métriques",   icon: Activity },
       ],
     },
     {

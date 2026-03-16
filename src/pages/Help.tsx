@@ -31,7 +31,7 @@ const categories = [
   {
     label: "Utilisation",
     items: [
-      { q: "Comment accéder à l'assistant IA ?", a: "L'assistant IA est accessible depuis le menu **Aide** ou directement via la page **Assistant**. Il est disponible 24h/24, 7j/7 et répond en quelques secondes." },
+      { q: "Comment obtenir de l'aide ?", a: "Vous pouvez contacter notre support depuis la page **Aide** ou par email à contact@wiinupmax.com. Nous répondons sous 24h en jours ouvrés." },
       { q: "Mes données sont-elles sécurisées ?", a: "Oui. Vos données sont hébergées en Europe, chiffrées en transit et au repos. Nous ne vendons ni ne partageons vos données avec des tiers." },
       { q: "Y a-t-il une limite d'utilisation ?", a: "Non. Le Pass Fondateur vous donne un accès illimité à toutes les fonctionnalités, sans quota ni restriction." },
     ],
@@ -124,13 +124,13 @@ export default function Help() {
           </div>
           <h3 className="font-semibold mb-1">Vous n'avez pas trouvé votre réponse ?</h3>
           <p className="text-sm text-primary-foreground/70 mb-4">
-            Notre assistant IA peut vous aider instantanément.
+            Notre équipe support peut vous aider rapidement.
           </p>
           <Link
             to="/assistant"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-primary font-semibold text-sm hover:bg-white/90 transition-colors"
           >
-            Parler à l'assistant →
+            Contacter le support →
           </Link>
         </div>
       </div>
