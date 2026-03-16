@@ -67,7 +67,7 @@ export default function PassiveSectionLanding() {
             }}>avec traçabilité complète.</span>
           </h2>
           <p className="text-white/55 text-lg max-w-2xl mx-auto leading-relaxed">
-            Prospection IA assistée + réseau humain structuré. OpenClaw (en connexion réelle) et facilitateurs actifs travaillent en parallèle. Chaque opportunité est tracée. Chaque résultat est mesurable.
+            Réseau humain structuré. Vos facilitateurs actifs vous apportent des introductions qualifiées en parallèle de votre prospection. Chaque opportunité est tracée. Chaque résultat est mesurable.
           </p>
         </div>
 
