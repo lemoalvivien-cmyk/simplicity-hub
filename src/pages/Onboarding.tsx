@@ -557,7 +557,7 @@ export default function Onboarding() {
     try {
       // ── 1. Persist profile ─────────────────────────────────────────────────
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: profileErr } = await (db.from("profiles") as any)
+      const { error: profileErr } = await (supabase.from("profiles") as any)
         .update({
           role,
           prenom,
@@ -571,7 +571,7 @@ export default function Onboarding() {
 
       // ── 2. Persist role-specific data ──────────────────────────────────────
       if (role === "entreprise") {
-        const { error: epErr } = await db
+        const { error: epErr } = await supabase
           .from("entreprise_profiles")
           .upsert(
             {
@@ -584,7 +584,7 @@ export default function Onboarding() {
           );
         if (epErr) throw epErr;
       } else if (role === "facilitateur") {
-        const { error: fpErr } = await db
+        const { error: fpErr } = await supabase
           .from("facilitateur_profiles")
           .upsert({ user_id: user.id, secteur }, { onConflict: "user_id" });
         if (fpErr) throw fpErr;
