@@ -99,6 +99,7 @@ export default function LandingPage() {
             <span className="text-[10px] text-muted-foreground/60">SIRET 835 125 089 000 28</span>
           </div>
           <div className="flex flex-wrap justify-center gap-5 text-xs">
+            <Link to="/creer-emploi" className="hover:text-foreground transition-colors font-medium" style={{ color: "hsl(var(--accent))" }}>Créer son Emploi</Link>
             <Link to="/a-propos" className="hover:text-foreground transition-colors">À propos</Link>
             <Link to="/pricing" className="hover:text-foreground transition-colors">Tarifs</Link>
             <Link to="/cgu" className="hover:text-foreground transition-colors">CGU</Link>
@@ -125,7 +126,7 @@ export default function LandingPage() {
           }}
         >
           <div className="px-4 py-3 flex gap-2">
-            <Link
+          <Link
               to="/checkout"
               className="btn-cta flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-bold"
               onClick={() => track("cta_sticky_mobile")}
@@ -134,10 +135,11 @@ export default function LandingPage() {
               <ArrowRight size={15} />
             </Link>
             <Link
-              to="/login"
-              className="px-4 py-3.5 rounded-xl text-sm font-medium border border-white/15 text-white/70 hover:text-white/90 transition-colors flex items-center"
+              to="/creer-emploi"
+              className="px-4 py-3.5 rounded-xl text-sm font-medium border border-white/15 text-white/70 hover:text-white/90 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+              onClick={() => track("cta_sticky_emploi")}
             >
-              Connexion
+              Emploi →
             </Link>
           </div>
           <GuaranteeBadge className="pb-2 px-4" />

@@ -230,6 +230,17 @@ export default function HeroFounderPass() {
               transition={{ ...EASE_POWER, delay: 0.38 }}
             >
               <FounderPassButton isSoldOut={isSoldOut} isUrgent={isUrgent} remaining={remaining} />
+              <motion.div whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
+                <Link
+                  to="/creer-emploi"
+                  className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold border transition-all duration-200"
+                  style={{ borderColor: "hsl(var(--accent) / 0.35)", color: "hsl(var(--accent))", background: "hsl(var(--accent) / 0.07)" }}
+                  onClick={() => track("cta_hero_creer_emploi")}
+                >
+                  Créer mon emploi ou complément de revenus
+                  <ArrowRight size={14} />
+                </Link>
+              </motion.div>
             </motion.div>
 
             {/* Trust signals */}
