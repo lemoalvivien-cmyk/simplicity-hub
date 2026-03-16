@@ -90,26 +90,15 @@ export default function SystemStatus() {
       updateStatus("stripe", { status: "degraded", detail: "Non critique — vérifier la config Stripe" });
     }
 
-    // ── Royalty Engine
+    // ── Royalty Engine — check gains table
     try {
-      const { data, error } = await supabase.from("ada_sessions").select("royalty_12pct").limit(1);
+      const { error } = await supabase.from("gains").select("id").limit(1);
       updateStatus("royalty", {
         status: error ? "degraded" : "ok",
         detail: error ? error.message : "Versement automatique des gains opérationnel",
       });
     } catch (e) {
       updateStatus("royalty", { status: "error", detail: String(e) });
-    }
-
-    // ── Insights API
-    try {
-      const { error } = await supabase.from("etg_opportunities").select("id").limit(1);
-      updateStatus("insights", {
-        status: error ? "degraded" : "ok",
-        detail: error ? error.message : "Analyse des opportunités · Signaux business · Opérationnel",
-      });
-    } catch (e) {
-      updateStatus("insights", { status: "error", detail: String(e) });
     }
 
     // ── Security
