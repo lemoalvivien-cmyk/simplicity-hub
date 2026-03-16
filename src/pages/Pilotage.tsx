@@ -159,7 +159,7 @@ export default function Pilotage() {
               <GlossaryTooltip term="KITT IA">Mon IA</GlossaryTooltip>
             </h1>
             <p className="text-sm text-muted-foreground">
-              Votre assistant IA travaille en arrière-plan pour vous.
+              Gérez vos missions et introductions en cours.
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
