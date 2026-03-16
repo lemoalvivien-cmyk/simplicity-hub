@@ -226,16 +226,16 @@ export default function CreerEmploiPage() {
               </motion.h1>
 
               <motion.p
-                className="font-display font-semibold leading-snug mb-6"
+                className="font-semibold leading-relaxed mb-8"
                 style={{
-                  fontSize: "clamp(1.05rem, 2.2vw, 1.4rem)",
-                  color: "hsl(0 0% 100% / 0.88)",
+                  fontSize: "clamp(0.9rem, 1.6vw, 1.1rem)",
+                  color: "hsl(0 0% 100% / 0.7)",
                 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...EASE, delay: 0.18 }}
               >
-                Créez votre propre emploi ou un complément de revenus en toute sécurité, sans rien sortir de votre poche, sans charge mentale ni bousculer vos habitudes en travaillant moins de 8H par semaine.
+                Accès Facilitateur 100 % gratuit. Vous ne payez que si ça marche.
               </motion.p>
 
               <motion.div
