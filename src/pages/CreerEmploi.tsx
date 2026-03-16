@@ -207,21 +207,22 @@ export default function CreerEmploiPage() {
               </motion.p>
 
               <motion.h1
-                className="font-display font-bold text-white leading-[1.05] tracking-tight mb-6"
-                style={{ fontSize: "clamp(2.4rem, 5.5vw, 4rem)" }}
+                className="font-display font-bold text-white leading-[1.1] tracking-tight mb-6"
+                style={{ fontSize: "clamp(1.6rem, 3.8vw, 3rem)" }}
                 initial={{ opacity: 0, y: 36 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ ...EASE, delay: 0.08 }}
               >
-                Créez votre{" "}
+                Créez votre propre emploi ou un{" "}
                 <span style={{
                   background: "linear-gradient(135deg, hsl(var(--accent)), hsl(38 100% 70%))",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
                 }}>
-                  propre emploi
-                </span>
+                  complément de revenus
+                </span>{" "}
+                en toute sécurité, sans rien sortir de votre poche, sans charge mentale ni bousculer vos habitudes en travaillant moins de 8H par semaine
               </motion.h1>
 
               <motion.p
