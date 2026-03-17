@@ -278,3 +278,140 @@ export async function sendIntroValideeEmail(opts: {
     html: shell("Introduction validée", body),
   });
 }
+
+// ── Template: Onboarding reminder ─────────────────────────────────────────────
+export async function sendOnboardingReminderEmail(opts: {
+  to: string;
+  prenom: string;
+}): Promise<boolean> {
+  const body = `
+    <tr><td style="padding:40px 40px 0;">
+      <h1 style="margin:0 0 8px;font-size:26px;font-weight:800;color:${COLOR.text};">
+        ${opts.prenom}, finalisez votre profil ⚡
+      </h1>
+      <p style="margin:0 0 24px;font-size:15px;color:${COLOR.textMuted};line-height:1.7;">
+        Vous avez créé votre compte WIINUP MAX mais votre profil n'est pas encore complété.
+        Il ne reste que <strong style="color:${COLOR.text};">2 minutes</strong> pour être prêt à recevoir vos premières introductions.
+      </p>
+
+      <div style="border:1px solid ${COLOR.border};border-radius:12px;padding:20px 24px;margin-bottom:28px;background:#f8fafc;">
+        <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:${COLOR.text};">Ce qui vous attend :</p>
+        <ul style="margin:0;padding-left:20px;font-size:13px;color:${COLOR.textMuted};line-height:1.8;">
+          <li>3 missions de démo injectées dans votre pipeline</li>
+          <li>1 contact qualifié pour voir le flux en action</li>
+          <li>Accès complet à votre tableau de bord</li>
+        </ul>
+      </div>
+
+      <div style="text-align:center;margin-bottom:36px;">
+        <a href="${APP_URL}/onboarding" style="display:inline-block;background:${COLOR.accent};color:#fff;font-size:15px;font-weight:700;padding:16px 36px;border-radius:10px;text-decoration:none;">
+          Terminer mon profil en 2 min →
+        </a>
+      </div>
+
+      <p style="margin:0 0 40px;font-size:13px;color:${COLOR.textMuted};line-height:1.6;text-align:center;">
+        Vous ne payez rien tant que vous n'avez pas trouvé de valeur — zéro risque.
+      </p>
+    </td></tr>
+  `;
+
+  return sendEmail({
+    to: opts.to,
+    subject: `${opts.prenom}, votre profil WIINUP MAX vous attend — 2 min suffisent`,
+    html: shell("Finalisez votre profil", body),
+  });
+}
+
+// ── Template: First mission reminder ──────────────────────────────────────────
+export async function sendFirstMissionReminderEmail(opts: {
+  to: string;
+  prenom: string;
+}): Promise<boolean> {
+  const body = `
+    <tr><td style="padding:40px 40px 0;">
+      <h1 style="margin:0 0 8px;font-size:26px;font-weight:800;color:${COLOR.text};">
+        Créez votre première mission 🎯
+      </h1>
+      <p style="margin:0 0 24px;font-size:15px;color:${COLOR.textMuted};line-height:1.7;">
+        Bonjour <strong style="color:${COLOR.text};">${opts.prenom}</strong>,<br>
+        Votre compte est actif mais vous n'avez pas encore créé de mission. Sans mission, votre réseau de facilitateurs ne peut pas vous envoyer d'introductions.
+      </p>
+
+      <div style="background:#eff6ff;border:2px solid #93c5fd;border-radius:12px;padding:20px 24px;margin-bottom:28px;">
+        <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:${COLOR.electric};">Comment ça marche :</p>
+        <ol style="margin:0;padding-left:20px;font-size:13px;color:${COLOR.textMuted};line-height:1.9;">
+          <li>Créez une mission (secteur, zone, profil recherché)</li>
+          <li>Les facilitateurs de votre réseau voient votre mission</li>
+          <li>Ils vous envoient des introductions qualifiées</li>
+          <li>Vous ne payez qu'à la signature</li>
+        </ol>
+      </div>
+
+      <div style="text-align:center;margin-bottom:36px;">
+        <a href="${APP_URL}/missions/nouvelle" style="display:inline-block;background:${COLOR.primary};color:#fff;font-size:15px;font-weight:700;padding:16px 36px;border-radius:10px;text-decoration:none;">
+          Créer ma première mission →
+        </a>
+      </div>
+
+      <p style="margin:0 0 40px;font-size:13px;color:${COLOR.textMuted};line-height:1.6;text-align:center;">
+        Prend moins de 5 minutes. Votre premier facilitateur peut vous contacter dès aujourd'hui.
+      </p>
+    </td></tr>
+  `;
+
+  return sendEmail({
+    to: opts.to,
+    subject: `${opts.prenom}, créez votre première mission et recevez des introductions`,
+    html: shell("Créez votre première mission", body),
+  });
+}
+
+// ── Template: First intro reminder (facilitateur) ─────────────────────────────
+export async function sendFirstIntroReminderEmail(opts: {
+  to: string;
+  prenom: string;
+}): Promise<boolean> {
+  const body = `
+    <tr><td style="padding:40px 40px 0;">
+      <h1 style="margin:0 0 8px;font-size:26px;font-weight:800;color:${COLOR.text};">
+        Des missions vous attendent, ${opts.prenom} 🌟
+      </h1>
+      <p style="margin:0 0 24px;font-size:15px;color:${COLOR.textMuted};line-height:1.7;">
+        Des entreprises ont publié des missions et attendent des introductions de votre réseau.
+        Chaque introduction que vous validez peut vous générer un gain automatique — sans risque, sans avance.
+      </p>
+
+      <div style="border:1px solid ${COLOR.border};border-radius:12px;overflow:hidden;margin-bottom:28px;">
+        ${[
+          [`${COLOR.success}`, "Gratuit pour vous", "Aucun abonnement. Vous êtes payé uniquement à la signature."],
+          [`${COLOR.electric}`, "Vos introductions sont protégées", "Date, heure, contact — tout est enregistré dès l'envoi."],
+          [`${COLOR.accent}`,   "Gains automatiques", "Pas de négociation, pas d'attente. Le virement est automatique."],
+        ].map(([color, title, desc], i) => `
+          <div style="padding:16px 20px;${i > 0 ? `border-top:1px solid ${COLOR.border};` : ""}">
+            <p style="margin:0 0 2px;font-size:14px;font-weight:700;color:${COLOR.text};">
+              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${color};margin-right:8px;vertical-align:middle;"></span>
+              ${title}
+            </p>
+            <p style="margin:0 0 0 18px;font-size:13px;color:${COLOR.textMuted};line-height:1.5;">${desc}</p>
+          </div>
+        `).join("")}
+      </div>
+
+      <div style="text-align:center;margin-bottom:36px;">
+        <a href="${APP_URL}/missions" style="display:inline-block;background:${COLOR.accent};color:#fff;font-size:15px;font-weight:700;padding:16px 36px;border-radius:10px;text-decoration:none;">
+          Voir les missions disponibles →
+        </a>
+      </div>
+
+      <p style="margin:0 0 40px;font-size:13px;color:${COLOR.textMuted};line-height:1.6;text-align:center;">
+        Votre premier gain potentiel vous attend — il suffit d'une introduction.
+      </p>
+    </td></tr>
+  `;
+
+  return sendEmail({
+    to: opts.to,
+    subject: `${opts.prenom}, envoyez votre première introduction et commencez à gagner`,
+    html: shell("Des missions vous attendent", body),
+  });
+}
