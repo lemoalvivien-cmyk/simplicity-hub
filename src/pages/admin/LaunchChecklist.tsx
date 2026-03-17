@@ -384,7 +384,7 @@ const INITIAL_ITEMS: CheckItem[] = [
   },
 ];
 
-const CATEGORIES = ["Sécurité", "Secrets & Emails", "Bêta & Lancement", "Technique", "Produit", "Lancement Product Hunt"];
+const CATEGORIES = ["🔐 Rotation Secrets P0", "Sécurité", "Secrets & Emails", "Bêta & Lancement", "Technique", "Produit", "Lancement Product Hunt"];
 
 export default function AdminLaunchChecklist() {
   const [items, setItems] = useState<CheckItem[]>(INITIAL_ITEMS);
