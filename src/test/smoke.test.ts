@@ -29,3 +29,16 @@ describe("Smoke tests — critical imports", () => {
     expect(typeof CLOSED_BETA).toBe("boolean");
   });
 });
+
+describe('Security smoke tests', () => {
+  it('queryClient est importable depuis lib/queryClient', async () => {
+    const mod = await import('../lib/queryClient');
+    expect(mod.queryClient).toBeDefined();
+    expect(typeof mod.queryClient.clear).toBe('function');
+  });
+
+  it('ProtectedRoute est défini en default export', async () => {
+    const mod = await import('../components/auth/ProtectedRoute');
+    expect(mod.default).toBeDefined();
+  });
+});
