@@ -36,6 +36,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
+    // TODO: Replace pwa-192.png and pwa-512.png with branded WIINUP MAX icons before Product Hunt launch
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
