@@ -50,7 +50,7 @@ function shell(title: string, body: string): string {
           <td style="background:#f8fafc;padding:24px 40px;border-top:1px solid ${COLOR.border};">
             <p style="margin:0;font-size:12px;color:${COLOR.textMuted};text-align:center;line-height:1.7;">
               WIINUP MAX — La plateforme de mise en relation B2B par apport d'affaires<br>
-              <a href="${APP_URL}" style="color:#64748b;text-decoration:none;">wiinupmax.lovable.app</a>
+              <a href="${APP_URL}" style="color:#64748b;text-decoration:none;">wiinupmax.com</a>
               &nbsp;·&nbsp;
               <a href="${APP_URL}/confidentialite" style="color:#64748b;text-decoration:none;">Confidentialité</a>
             </p>
