@@ -1,0 +1,56 @@
+name: Security Guard — Auto-patch gitignore
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Patch .gitignore if .env not blocked
+        run: |
+          if ! grep -q "^\.env$" .gitignore 2>/dev/null; then
+            echo "" >> .gitignore
+            echo "# Environment variables — NEVER commit secrets" >> .gitignore
+            echo ".env" >> .gitignore
+            echo ".env.*" >> .gitignore
+            echo ".env.local" >> .gitignore
+            echo ".env.production" >> .gitignore
+            echo "*.env" >> .gitignore
+            echo "!.env.example" >> .gitignore
+            git config user.email "security-bot@wiinupmax.com"
+            git config user.name "WiinupMax Security Bot"
+            git add .gitignore
+            git commit -m "security-bot: auto-patch .gitignore to block .env"
+            git push
+            echo "✓ .gitignore patched by security-guard workflow"
+          else
+            echo "✓ .gitignore already protects .env"
+          fi
+
+      - name: Remove .env from tree if tracked
+        run: |
+          if git ls-files | grep -E "^\.env$"; then
+            git rm --cached .env
+            git config user.email "security-bot@wiinupmax.com"
+            git config user.name "WiinupMax Security Bot"
+            git commit -m "security-bot: remove .env from git tracking"
+            git push
+            echo "✓ .env untracked by security-guard workflow"
+          else
+            echo "✓ .env is not tracked by git"
+          fi
+
+      - name: Verify clean state
+        run: |
+          echo "=== Git tracked files check ==="
+          git ls-files | grep "\.env" && echo "FAIL: .env still tracked" && exit 1 || echo "✓ No .env tracked"
+          grep "^\.env$" .gitignore && echo "✓ .gitignore blocks .env" || echo "WARN: .gitignore check"
