@@ -45,7 +45,7 @@ describe('Security smoke tests', () => {
 
 describe('Security regressions', () => {
   it('aucune variable VITE_ ne contient un secret critique', () => {
-    const envKeys = Object.keys(import.meta.env);
+    const envKeys = Object.keys(import.meta.env).filter(k => k.startsWith('VITE_'));
     const dangerous = envKeys.filter(k =>
       k.includes('SERVICE_ROLE') ||
       k.includes('SECRET_KEY') ||
