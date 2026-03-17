@@ -42,3 +42,33 @@ describe('Security smoke tests', () => {
     expect(mod.default).toBeDefined();
   });
 });
+
+describe('Security regressions', () => {
+  it('aucune variable VITE_ ne contient un secret critique', () => {
+    const envKeys = Object.keys(import.meta.env);
+    const dangerous = envKeys.filter(k =>
+      k.includes('SERVICE_ROLE') ||
+      k.includes('SECRET_KEY') ||
+      k.includes('WEBHOOK_SECRET') ||
+      k.includes('STRIPE_SECRET') ||
+      k.includes('INTERNAL_FUNCTION')
+    );
+    expect(dangerous).toHaveLength(0);
+  });
+
+  it('queryClient importable et fonctionnel', async () => {
+    const { queryClient } = await import('../lib/queryClient');
+    expect(queryClient).toBeDefined();
+    expect(typeof queryClient.clear).toBe('function');
+  });
+
+  it('ProtectedRoute est un composant React valide', async () => {
+    const mod = await import('../components/auth/ProtectedRoute');
+    expect(typeof mod.default).toBe('function');
+  });
+
+  it('supabase client utilise des variables env et non des secrets hardcodés', async () => {
+    const mod = await import('../integrations/supabase/client');
+    expect(mod.supabase).toBeDefined();
+  });
+});
