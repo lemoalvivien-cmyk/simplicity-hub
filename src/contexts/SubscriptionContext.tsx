@@ -77,7 +77,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     try {
       setInfo(prev => ({ ...prev, loading: true }));
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
       const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (controller.signal.aborted) return;
       if (error || !data) throw error;
 
       setInfo({
