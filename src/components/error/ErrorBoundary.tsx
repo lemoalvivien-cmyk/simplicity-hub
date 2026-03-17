@@ -1,5 +1,6 @@
 /**
  * ErrorBoundary — Global React crash boundary.
+ * • Détecte les erreurs réseau/Supabase et affiche un message adapté
  * • Logs to Sentry (if DSN configured)
  * • Logs to business_alerts table (Lovable Cloud)
  * • Renders a clean fallback UI — never breaks the app
@@ -7,7 +8,7 @@
 import { Component, type ReactNode, type ErrorInfo } from "react";
 import * as Sentry from "@sentry/react";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -18,13 +19,29 @@ interface State {
   hasError: boolean;
   errorId: string | null;
   sentryEventId: string | null;
+  isNetworkError: boolean;
+}
+
+function isNetworkOrSupabaseError(error: Error): boolean {
+  const msg = error.message ?? "";
+  return (
+    msg.includes("Failed to fetch") ||
+    msg.includes("NetworkError") ||
+    msg.includes("supabase") ||
+    msg.includes("timeout") ||
+    msg.includes("net::ERR")
+  );
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false, errorId: null, sentryEventId: null };
+  state: State = { hasError: false, errorId: null, sentryEventId: null, isNetworkError: false };
 
-  static getDerivedStateFromError(): Partial<State> {
-    return { hasError: true, errorId: crypto.randomUUID().slice(0, 8) };
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    return {
+      hasError: true,
+      errorId: crypto.randomUUID().slice(0, 8),
+      isNetworkError: isNetworkOrSupabaseError(error),
+    };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
@@ -67,12 +84,14 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, errorId: null, sentryEventId: null });
+    this.setState({ hasError: false, errorId: null, sentryEventId: null, isNetworkError: false });
   };
 
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
+
+      const { isNetworkError, errorId, sentryEventId } = this.state;
 
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -86,41 +105,60 @@ export class ErrorBoundary extends Component<Props, State> {
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
               style={{
-                background: "hsl(0 72% 50% / 0.1)",
-                border: "1px solid hsl(0 72% 50% / 0.2)",
+                background: isNetworkError
+                  ? "hsl(38 92% 50% / 0.1)"
+                  : "hsl(0 72% 50% / 0.1)",
+                border: isNetworkError
+                  ? "1px solid hsl(38 92% 50% / 0.2)"
+                  : "1px solid hsl(0 72% 50% / 0.2)",
               }}
             >
-              <AlertTriangle size={24} style={{ color: "hsl(0 72% 60%)" }} />
+              {isNetworkError
+                ? <WifiOff size={24} style={{ color: "hsl(38 92% 60%)" }} />
+                : <AlertTriangle size={24} style={{ color: "hsl(0 72% 60%)" }} />
+              }
             </div>
             <h2 className="font-display font-bold text-lg text-foreground mb-2">
-              Un problème est survenu
+              {isNetworkError ? "Service temporairement indisponible" : "Un problème est survenu"}
             </h2>
             <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-              Notre équipe a été prévenue automatiquement.
-              Rechargez la page ou revenez dans quelques instants.
+              {isNetworkError
+                ? "Vérifiez votre connexion internet et rechargez la page."
+                : "Notre équipe a été prévenue automatiquement. Rechargez la page ou revenez dans quelques instants."
+              }
             </p>
-            {this.state.errorId && (
+            {errorId && (
               <p className="text-[10px] text-muted-foreground/50 mb-1 font-mono">
-                Réf. #{this.state.errorId}
+                Réf. #{errorId}
               </p>
             )}
-            {this.state.sentryEventId && (
+            {sentryEventId && (
               <p className="text-[9px] text-muted-foreground/30 mb-4 font-mono">
-                Sentry: {this.state.sentryEventId.slice(0, 16)}
+                Sentry: {sentryEventId.slice(0, 16)}
               </p>
             )}
-            <button
-              onClick={this.handleReset}
-              className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-              style={{
-                background: "hsl(var(--primary) / 0.12)",
-                border: "1px solid hsl(var(--primary) / 0.25)",
-                color: "hsl(var(--primary-glow))",
-              }}
-            >
-              <RefreshCw size={14} />
-              Réessayer
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                style={{
+                  background: "hsl(var(--primary) / 0.12)",
+                  border: "1px solid hsl(var(--primary) / 0.25)",
+                  color: "hsl(var(--primary-glow))",
+                }}
+              >
+                <RefreshCw size={14} />
+                Recharger la page
+              </button>
+              {!isNetworkError && (
+                <button
+                  onClick={this.handleReset}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+                >
+                  Réessayer sans recharger
+                </button>
+              )}
+            </div>
           </div>
         </div>
       );

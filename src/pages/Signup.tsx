@@ -44,6 +44,7 @@ export default function Signup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return; // double-submit guard
     setError(null);
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -58,25 +59,27 @@ export default function Signup() {
 
     trackEvent("signup_started", null, { source: "signup_form" });
     setLoading(true);
-    const { error: authError } = await signUp(email, password, prenom);
-    setLoading(false);
+    try {
+      const { error: authError } = await signUp(email, password, prenom);
 
-    if (authError) {
-      const msg = authError.message || "";
-      if (msg.includes("already registered") || msg.includes("user_already_exists")) {
-        setError("Cette adresse e-mail est déjà utilisée. Connectez-vous.");
-      } else if (msg.includes("password")) {
-        setError("Mot de passe trop faible. Utilisez au moins 8 caractères.");
-      } else {
-        setError("Une erreur est survenue. Vérifiez vos informations.");
+      if (authError) {
+        const msg = authError.message || "";
+        if (msg.includes("already registered") || msg.includes("user_already_exists")) {
+          setError("Cette adresse e-mail est déjà utilisée. Connectez-vous.");
+        } else if (msg.includes("password")) {
+          setError("Mot de passe trop faible. Utilisez au moins 8 caractères.");
+        } else {
+          setError("Une erreur est survenue. Vérifiez vos informations.");
+        }
+        return;
       }
-      return;
+
+      // Store redirect so Login can pick it up after email confirmation
+      if (redirect) sessionStorage.setItem("post_login_redirect", redirect);
+      setSuccess(true);
+    } finally {
+      setLoading(false);
     }
-
-    // Store redirect so Login can pick it up after email confirmation
-    if (redirect) sessionStorage.setItem("post_login_redirect", redirect);
-
-    setSuccess(true);
   };
 
   if (success) {

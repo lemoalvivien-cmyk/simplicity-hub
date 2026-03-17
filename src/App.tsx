@@ -13,6 +13,7 @@ import { usePageTracking } from "@/lib/analytics";
 import { useAuth } from "@/contexts/AuthContext";
 import { initFounderSlots } from "@/stores/founderSlotsStore";
 import { queryClient } from "@/lib/queryClient";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 // ── Eager imports (core) ────────────────────────────────────────────────────
 import Index from "./pages/Index";
@@ -78,6 +79,7 @@ const AdminPromoCodes = lazy(() => import("./pages/admin/PromoCodes"));
 const AdminRevenue = lazy(() => import("./pages/admin/Revenue"));
 const AdminBeta = lazy(() => import("./pages/admin/Beta"));
 const AdminLaunchChecklist = lazy(() => import("./pages/admin/LaunchChecklist"));
+const AdminRefunds = lazy(() => import("./pages/admin/Refunds"));
 
 // ── Skeleton fallback ────────────────────────────────────────────────────────
 function PageSkeleton() {
@@ -120,7 +122,8 @@ const App = () => (
           <RGPDConsentBanner />
           <FounderSlotsInit />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <PageTracker />
+            <ErrorBoundary>
+              <PageTracker />
             <Suspense fallback={<PageSkeleton />}>
               <Routes>
                 {/* ── Public ───────────────────────────────── */}
@@ -184,11 +187,13 @@ const App = () => (
                 <Route path="/admin/revenue" element={<ProtectedRoute adminOnly><AdminRevenue /></ProtectedRoute>} />
                 <Route path="/admin/beta" element={<ProtectedRoute adminOnly><AdminBeta /></ProtectedRoute>} />
                 <Route path="/admin/launch-checklist" element={<ProtectedRoute adminOnly><AdminLaunchChecklist /></ProtectedRoute>} />
+                <Route path="/admin/refunds" element={<ProtectedRoute adminOnly><AdminRefunds /></ProtectedRoute>} />
 
                 {/* ── 404 ──────────────────────────────────── */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
+            </ErrorBoundary>
           </BrowserRouter>
         </TooltipProvider>
       </SubscriptionProvider>

@@ -23,8 +23,8 @@ interface SubscriptionInfo {
   cancelAtPeriodEnd: boolean;
   accessType: AccessType;
   offerType: OfferType;
-  launchAvailable: boolean;
-  launchSlotsRemaining: number;
+  launchAvailable: boolean | null;
+  launchSlotsRemaining: number | null;
   loading: boolean;
 }
 
@@ -46,8 +46,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     cancelAtPeriodEnd: false,
     accessType: "loading",
     offerType: null,
-    launchAvailable: true,
-    launchSlotsRemaining: 100,
+    launchAvailable: null,
+    launchSlotsRemaining: null,
     loading: true,
   });
   // PASSE F: coordinate refresh across tabs — prevents N×calls on multi-tab
@@ -59,7 +59,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     setInfo({
       status: "none", subscribed: false, subscriptionEnd: null, cancelAtPeriodEnd: false,
-      accessType: "none", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false,
+      accessType: "none", offerType: null, launchAvailable: null, launchSlotsRemaining: null, loading: false,
     });
   }, []);
 
@@ -71,7 +71,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     if (!user) { reset(); return; }
 
     if (role === "facilitateur" || role === "admin") {
-      setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
+      setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", offerType: null, launchAvailable: null, launchSlotsRemaining: null, loading: false });
       return;
     }
 
@@ -91,8 +91,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
         accessType: (data.access_type as AccessType) || "none",
         offerType: (data.offer_type as OfferType) ?? null,
-        launchAvailable: data.launch_available ?? true,
-        launchSlotsRemaining: data.launch_slots_remaining ?? 100,
+        launchAvailable: data.launch_available ?? null,
+        launchSlotsRemaining: data.launch_slots_remaining ?? null,
         loading: false,
       });
     } catch {
