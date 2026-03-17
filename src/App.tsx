@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
@@ -12,6 +12,7 @@ import RGPDConsentBanner from "@/components/landing/RGPDConsentBanner";
 import { usePageTracking } from "@/lib/analytics";
 import { useAuth } from "@/contexts/AuthContext";
 import { initFounderSlots } from "@/stores/founderSlotsStore";
+import { queryClient } from "@/lib/queryClient";
 
 // ── Eager imports (core) ────────────────────────────────────────────────────
 import Index from "./pages/Index";
