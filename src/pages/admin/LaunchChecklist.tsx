@@ -257,8 +257,9 @@ const INITIAL_ITEMS: CheckItem[] = [
     actionUrl: "https://github.com/settings",
     actionLabel: "GitHub settings",
   },
+];
 
-const CATEGORIES = ["Sécurité", "Bêta & Lancement", "Technique", "Produit"];
+const CATEGORIES = ["Sécurité", "Bêta & Lancement", "Technique", "Produit", "Lancement Product Hunt"];
 
 export default function AdminLaunchChecklist() {
   const [items, setItems] = useState<CheckItem[]>(INITIAL_ITEMS);
