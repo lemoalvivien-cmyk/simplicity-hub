@@ -22,6 +22,7 @@
 | 10 | Fix P0 ProtectedRoute getUser | ✅ Done | `src/components/auth/ProtectedRoute.tsx` — getUser() server-side |
 | 11 | Fix P0 Rate-limit submit-intro | ✅ Done | `supabase/functions/submit-introduction/index.ts` — 30 req/min |
 | 12 | Fix P0 CSP Sentry connect-src | ✅ Done | `index.html` — *.sentry.io ajouté |
+| 13 | **Démo full app publiée** | ✅ Done 17/03/2026 | https://wiinupmax.lovable.app — signup + créer-emploi fonctionnels |
 
 ---
 
