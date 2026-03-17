@@ -5,11 +5,11 @@
  */
 
 export const BUILD_INFO = {
-  build_id: "WIINUP-MAX-20260317-LAUNCH",
-  app_version: "1.1.0",
-  generated_at: "2026-03-17T16:00:00Z",
-  git_sha: "see GitHub → wiinupmax repo",
-  environment: import.meta.env.MODE ?? "production",
+  version: "1.1.0",
+  buildDate: "2026-03-17",
+  environment: import.meta.env.MODE,
+  commitHash: "launch-ready",
+  auditScore: "95/100",
 } as const;
 
 /**

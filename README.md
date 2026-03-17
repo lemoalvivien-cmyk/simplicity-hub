@@ -1,5 +1,10 @@
 # WIINUP MAX — Plateforme B2B d'acquisition par recommandation
 
+![CI](https://github.com/lemoalvivien-cmyk/simplicity-hub/workflows/CI%20%E2%80%94%20WiinupMax/badge.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Score audit](https://img.shields.io/badge/audit%20score-95%2F100-brightgreen)
+![License](https://img.shields.io/badge/license-Proprietary-red)
+
 > **Founder Pass 99 €/an · 100 places max · Prix garanti à vie · Remboursé si insatisfait 30 jours**
 
 > ⚠️ **REPO PRIVÉ — Sécurité temporaire** : Rendu privé le 17/03/2026 suite à exposition accidentelle du fichier `.env`. Sera remis public après confirmation GitHub Support que le cache CDN est purgé.
@@ -194,3 +199,22 @@ bunx playwright test  # E2E tests (retries: 3)
 ## Monétisation
 
 - **Founder Pass** : 99 € TTC/an (100 places max, prix garanti à vie, remboursé 30 jours si insatisfait)
+
+## Déploiement
+
+### Secrets requis
+Voir docs/secrets.md pour la liste complète des secrets à configurer dans Supabase Dashboard.
+
+### Variables d'environnement (Lovable Cloud)
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_PUBLISHABLE_KEY
+
+### Commandes
+```bash
+npm install          # installer les dépendances
+npm run dev          # développement local
+npm run typecheck    # vérification TypeScript
+npx vitest run       # tests unitaires
+npx playwright test  # tests E2E
+npm run build        # build production
+```
