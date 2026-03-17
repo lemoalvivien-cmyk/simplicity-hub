@@ -1,12 +1,14 @@
 /**
- * submit-introduction — Edge Function v5.
+ * submit-introduction — Edge Function v6.
  * Appelle submit_introduction_atomic() — transaction PL/pgSQL ACID.
  * Un seul round-trip DB. Rollback automatique sur toute erreur.
  * AUTH : getClaims() (nouvelle API Lovable Cloud — compatible signing-keys).
  * SECURITY: userId toujours dérivé du JWT. Aucun override possible.
+ * P0 FIX: Rate-limiting 30 req/min/user — protection anti-spam.
  */
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
