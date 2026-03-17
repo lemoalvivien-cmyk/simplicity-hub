@@ -174,7 +174,8 @@ export default function DashboardFacilitateur() {
           {/* ══════════════════════════════════════════════
               3 STAT CARDS
           ══════════════════════════════════════════════ */}
-          <div className="flex gap-3">
+          <div className="overflow-x-auto -mx-1 px-1">
+          <div className="flex gap-3 min-w-max md:min-w-0">
             <StatCard label={<GlossaryTooltip term="Mission">Missions dispo</GlossaryTooltip>} value={missionsCount} to="/missions" loading={loading} />
             <StatCard label={<GlossaryTooltip term="Introduction">Intros envoyées</GlossaryTooltip>} value={introsCount} to="/introductions" loading={loading} />
             <StatCard
@@ -184,6 +185,7 @@ export default function DashboardFacilitateur() {
               loading={loading}
               accent={totalValide > 0}
             />
+          </div>
           </div>
 
           {/* ══════════════════════════════════════════════
