@@ -8,7 +8,7 @@
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM_EMAIL     = "WIINUP MAX <notifications@wiinupmax.com>";
-const APP_URL        = "https://wiinupmax.lovable.app";
+const APP_URL        = "https://wiinupmax.com";
 
 // ── Brand tokens (align with index.css design system) ────────────────────────
 const COLOR = {
