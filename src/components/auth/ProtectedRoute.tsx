@@ -86,11 +86,13 @@ export default function ProtectedRoute({
   //   1. Admins & facilitateurs → always allowed (free tier).
   //   2. Exempt paths (/checkout, /onboarding, /account) → always allowed.
   //   3. Entreprise with active subscription → allowed everywhere.
-  //   4. Entreprise with inactive subscription → redirect to /checkout.
+  //   4. Entreprise WITHOUT onboarding done → let through to /onboarding first.
+  //      The onboarding guard above already redirects them there.
+  //      Paywall is only activated AFTER the user has seen the platform.
+  //   5. Entreprise with inactive subscription + onboarding done → /checkout.
   //
-  // NOTE: The localStorage "onboarding_done" flag that previously bypassed
-  // this guard has been removed. The subscription state from Supabase is the
-  // only source of truth. This prevents client-side paywall bypass.
+  // GROWTH: Users must see the Aha Moment (3 demo missions + 1 contact) BEFORE
+  // hitting the paywall. Blocking immediately at signup kills conversion.
 
   const isExemptPath = SUBSCRIPTION_EXEMPT_PATHS.some((p) =>
     location.pathname.startsWith(p)
@@ -99,7 +101,8 @@ export default function ProtectedRoute({
   if (
     role === "entreprise" &&
     !isAccessActive(subscription.status) &&
-    !isExemptPath
+    !isExemptPath &&
+    onboardingDone  // ← paywall only after onboarding is completed
   ) {
     toast.warning("Activez votre accès pour continuer.", { id: "sub-guard" });
     return <Navigate to="/checkout" replace />;

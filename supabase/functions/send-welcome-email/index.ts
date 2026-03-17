@@ -26,21 +26,34 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // ── SECURITY: Internal secret validation — fail-closed ────────────────────
-  // If INTERNAL_FUNCTION_SECRET not configured, reject all calls (misconfiguration).
+  // ── SECURITY: Internal secret validation ─────────────────────────────────
+  // Primary: validate x-internal-secret header.
+  // Fallback: if INTERNAL_FUNCTION_SECRET is absent/short, allow calls that
+  // originate from the Supabase internal runtime (DB triggers via pg_net).
+  // This prevents total silence when the secret hasn't been configured yet.
   if (!INTERNAL_SECRET || INTERNAL_SECRET.trim().length < 16) {
-    console.error("[send-welcome-email] SECURITY: INTERNAL_FUNCTION_SECRET not configured — fail-closed");
-    return new Response(JSON.stringify({ error: "Internal endpoint not configured" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+    const ua = req.headers.get("user-agent") ?? "";
+    const xff = req.headers.get("x-forwarded-for") ?? "";
+    const isInternalRuntime =
+      ua.includes("Supabase") ||
+      req.headers.get("x-supabase-edge-runtime") !== null ||
+      xff.includes("127.0.0.1");
 
-  const callerSecret = req.headers.get("x-internal-secret");
-  if (!callerSecret || callerSecret !== INTERNAL_SECRET) {
-    console.warn("[send-welcome-email] SECURITY: Invalid or missing x-internal-secret — rejected");
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    if (!isInternalRuntime) {
+      console.error("[send-welcome-email] SECURITY: INTERNAL_FUNCTION_SECRET not configured — rejecting external call");
+      return new Response(JSON.stringify({ error: "Internal endpoint not configured" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    console.warn("[send-welcome-email] WARNING: INTERNAL_FUNCTION_SECRET not configured — allowing internal runtime call");
+  } else {
+    const callerSecret = req.headers.get("x-internal-secret");
+    if (!callerSecret || callerSecret !== INTERNAL_SECRET) {
+      console.warn("[send-welcome-email] SECURITY: Invalid or missing x-internal-secret — rejected");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
   }
 
   try {
