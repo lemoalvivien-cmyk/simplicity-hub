@@ -215,7 +215,8 @@ export default function DashboardEntreprise() {
         {/* ══════════════════════════════════════════════════
             MÉTRIQUES 3 CARDS
         ══════════════════════════════════════════════════ */}
-        <div className="flex gap-3">
+        <div className="overflow-x-auto -mx-1 px-1">
+        <div className="flex gap-3 min-w-max md:min-w-0">
           <MetricCard
             label={<GlossaryTooltip term="Mission">Missions actives</GlossaryTooltip>}
             value={activeMissionsCount}
