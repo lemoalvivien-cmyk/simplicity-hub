@@ -91,8 +91,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
         accessType: (data.access_type as AccessType) || "none",
         offerType: (data.offer_type as OfferType) ?? null,
-        launchAvailable: data.launch_available ?? true,
-        launchSlotsRemaining: data.launch_slots_remaining ?? 100,
+        launchAvailable: data.launch_available ?? null,
+        launchSlotsRemaining: data.launch_slots_remaining ?? null,
         loading: false,
       });
     } catch {
