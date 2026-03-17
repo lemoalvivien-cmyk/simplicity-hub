@@ -3,7 +3,7 @@ import {
   User, CreditCard, Shield, ChevronRight, LogOut,
   CheckCircle2, Clock, AlertCircle, XCircle, Loader2,
   ExternalLink, Zap, Gift, Calendar, Timer, ShieldCheck,
-  Download, Trash2,
+  Download, Trash2, RotateCcw,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription, isAccessActive, getOfferLabel } from "@/contexts/SubscriptionContext";
