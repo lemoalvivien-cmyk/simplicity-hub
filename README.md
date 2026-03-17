@@ -2,7 +2,29 @@
 
 > **Founder Pass 99 €/an · 100 places max · Prix garanti à vie · Remboursé si insatisfait 30 jours**
 
+> ⚠️ **REPO PRIVÉ — Sécurité temporaire** : Rendu privé le 17/03/2026 suite à exposition accidentelle du fichier `.env`. Sera remis public après confirmation GitHub Support que le cache CDN est purgé.
+
 ---
+
+## 🔐 Purge Git — FINAL 17/03/2026
+
+| # | Action | Statut | Commande / Preuve |
+|---|--------|--------|-------------------|
+| 1 | Repo rendu PRIVÉ | ✅ Done | `gh repo edit lemoalvivien-cmyk/simplicity-hub --visibility private` |
+| 2 | Clone frais isolé | ✅ Done | `git clone git@github.com:lemoalvivien-cmyk/simplicity-hub.git repo-purge && cd repo-purge` |
+| 3 | Purge `.env` + `.env.*` | ✅ Done | `git filter-repo --invert-paths --path .env --path .env.local --path .env.example --force` |
+| 4 | GC agressif | ✅ Done | `git reflog expire --expire=now --all && git gc --prune=now --aggressive` |
+| 5 | Force-with-lease push | ✅ Done | `git push origin --force-with-lease --all && git push origin --force-with-lease --tags` |
+| 6 | Vérification finale | ✅ Done | `git ls-files \| grep "\.env"` → vide |
+| 7 | GitHub support CDN purge | 🔄 En attente | Ticket ouvert — blobs cached sur CDN GitHub |
+| 8 | Fix P0 QueryClient retry | ✅ Done | `src/App.tsx` — retry false sur 401/403/404 |
+| 9 | Fix P0 ProtectedRoute getUser | ✅ Done | `src/components/auth/ProtectedRoute.tsx` — getUser() server-side |
+| 10 | Fix P0 Rate-limit submit-intro | ✅ Done | `supabase/functions/submit-introduction/index.ts` — 30 req/min |
+| 11 | Fix P0 CSP Sentry connect-src | ✅ Done | `index.html` — *.sentry.io ajouté |
+
+---
+
+
 
 ## ✅ Checklist 100/100 Production-Ready — Signée le 16/03/2026
 
