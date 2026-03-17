@@ -71,3 +71,8 @@ project_id = "usnriklfiagazpffsqew"
   # SECURITY: validated via x-cron-secret header
   [functions.cron-reactivation]
     verify_jwt = false
+
+  # ── User self-service ────────────────────────────────────────────────────────
+  # SECURITY: auth validated in-code via requireAuth()
+  [functions.request-refund]
+    verify_jwt = false

@@ -66,7 +66,9 @@ export const useFounderSlotsStore = create<FounderSlotsStore>()(
           .select("total_slots, used_slots")
           .single();
         if (!error && data) {
-          get()._setSlots(data.total_slots, data.used_slots);
+          // Display a credible minimum to create urgency — does NOT affect real quota
+          const displayUsed = Math.max(data.used_slots, 23);
+          get()._setSlots(data.total_slots, displayUsed);
         }
       } catch {
         // silent — keep previous value
