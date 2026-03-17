@@ -199,3 +199,22 @@ bunx playwright test  # E2E tests (retries: 3)
 ## Monétisation
 
 - **Founder Pass** : 99 € TTC/an (100 places max, prix garanti à vie, remboursé 30 jours si insatisfait)
+
+## Déploiement
+
+### Secrets requis
+Voir docs/secrets.md pour la liste complète des secrets à configurer dans Supabase Dashboard.
+
+### Variables d'environnement (Lovable Cloud)
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_PUBLISHABLE_KEY
+
+### Commandes
+```bash
+npm install          # installer les dépendances
+npm run dev          # développement local
+npm run typecheck    # vérification TypeScript
+npx vitest run       # tests unitaires
+npx playwright test  # tests E2E
+npm run build        # build production
+```
