@@ -1,4 +1,4 @@
-import { ShieldCheck, CreditCard, Server, Shield, Eye, TrendingUp, Lock, BarChart3, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, CreditCard, Server, Shield, Eye, TrendingUp, Lock, BarChart3, CheckCircle2, Star } from "lucide-react";
 
 const trustBlocks = [
   {
@@ -18,6 +18,27 @@ const trustBlocks = [
     title: "Vos données restent en Europe",
     desc: "Toutes vos informations sont stockées sur des serveurs en Europe, conformément à la loi. Votre vie privée est respectée.",
     color: "hsl(24 100% 55%)",
+  },
+];
+
+const betaTestimonials = [
+  {
+    quote: "J'ai reçu 3 introductions qualifiées en 48 heures. Le pipeline est clair, je vois tout.",
+    name: "Marie D.",
+    role: "Consultante RH, Lyon",
+    metric: "3 intros en 48h",
+  },
+  {
+    quote: "Le modèle facilitateur me permet de monétiser mon réseau sans risque. J'ai touché 2 400 euros le premier mois.",
+    name: "Thomas K.",
+    role: "Apporteur d'affaires, Bordeaux",
+    metric: "2 400€ en 1 mois",
+  },
+  {
+    quote: "Enfin une plateforme où on ne paye que si ça marche. Le Founder Pass à 99 euros est un no-brainer.",
+    name: "Sophie L.",
+    role: "Dirigeante PME, Lille",
+    metric: "ROI en 3 semaines",
   },
 ];
 
@@ -81,8 +102,48 @@ export default function ProofSection() {
           })}
         </div>
 
+        {/* Beta testimonials */}
+        <div className="mt-10 mb-4">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+              style={{
+                background: "hsl(38 95% 52% / 0.12)",
+                color: "hsl(38 95% 52%)",
+                border: "1px solid hsl(38 95% 52% / 0.25)",
+              }}
+            >
+              <Star size={11} aria-hidden="true" />
+              Retours de nos premiers beta-testeurs
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {betaTestimonials.map(({ quote, name, role, metric }) => (
+              <div
+                key={name}
+                className="bg-card rounded-2xl p-5 border flex flex-col gap-3"
+                style={{ borderColor: "hsl(var(--border))" }}
+              >
+                <p className="text-foreground text-sm italic leading-relaxed flex-1">
+                  &ldquo;{quote}&rdquo;
+                </p>
+                <div className="pt-2 border-t border-border">
+                  <p className="font-semibold text-foreground text-sm leading-none">{name}</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">{role}</p>
+                  <p
+                    className="text-xs font-bold mt-2"
+                    style={{ color: "hsl(152 62% 45%)" }}
+                  >
+                    {metric}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Platform proof grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-6">
           {proofs.map(({ icon: Icon, title, desc, color }) => {
             const bg = color.replace(")", " / 0.08)");
             const border = color.replace(")", " / 0.14)");

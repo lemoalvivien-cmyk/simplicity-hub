@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Network, ShieldCheck, Coins, ArrowRight } from "lucide-react";
+import { Network, ShieldCheck, Coins, ArrowRight, Check, Minus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { track } from "@/lib/landingTracking";
 
@@ -113,6 +113,15 @@ const pillars = [
   },
 ];
 
+const comparisonData = [
+  { feature: "Introductions tracées et horodatées", wiinup: true, apporteurs: false, linkedin: false },
+  { feature: "Commission automatique à la signature", wiinup: true, apporteurs: false, linkedin: false },
+  { feature: "IA de prospection (OpenClaw)", wiinup: true, apporteurs: false, linkedin: false },
+  { feature: "Gratuit pour les facilitateurs", wiinup: true, apporteurs: true, linkedin: false },
+  { feature: "Score de réputation vérifié", wiinup: true, apporteurs: false, linkedin: false },
+  { feature: "Preuve juridique de mise en relation", wiinup: true, apporteurs: false, linkedin: false },
+];
+
 const containerVariants = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.12 } },
@@ -199,6 +208,89 @@ export default function WhyDifferentSection() {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Comparison table */}
+        <div className="mt-16">
+          <h3 className="font-display text-xl md:text-2xl font-bold text-foreground text-center mb-8">
+            Pourquoi les professionnels choisissent WIINUP MAX
+          </h3>
+
+          {/* Desktop table */}
+          <div className="hidden md:block rounded-2xl border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+            <table className="w-full text-sm">
+              <thead>
+                <tr style={{ background: "hsl(var(--primary) / 0.06)", borderBottom: "1px solid hsl(var(--border))" }}>
+                  <th className="text-left px-5 py-3.5 text-muted-foreground font-medium w-[44%]">Fonctionnalité</th>
+                  <th className="text-center px-4 py-3.5 font-bold w-[18%]" style={{ color: "hsl(var(--primary))" }}>WIINUP MAX</th>
+                  <th className="text-center px-4 py-3.5 text-muted-foreground font-medium w-[19%]">ApporteursAffaires</th>
+                  <th className="text-center px-4 py-3.5 text-muted-foreground font-medium w-[19%]">LinkedIn</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonData.map(({ feature, wiinup, apporteurs, linkedin }, i) => (
+                  <tr
+                    key={feature}
+                    style={{
+                      borderBottom: i < comparisonData.length - 1 ? "1px solid hsl(var(--border))" : undefined,
+                      background: i % 2 === 0 ? "hsl(var(--card))" : "hsl(var(--background))",
+                    }}
+                  >
+                    <td className="px-5 py-3.5 text-foreground text-sm">{feature}</td>
+                    <td className="px-4 py-3.5 text-center">
+                      {wiinup ? (
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full" style={{ background: "hsl(152 62% 42% / 0.15)" }}>
+                          <Check size={13} style={{ color: "hsl(152 62% 52%)" }} aria-label="Oui" />
+                        </span>
+                      ) : (
+                        <Minus size={14} className="mx-auto text-muted-foreground/40" aria-label="Non" />
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5 text-center">
+                      {apporteurs ? (
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full" style={{ background: "hsl(152 62% 42% / 0.15)" }}>
+                          <Check size={13} style={{ color: "hsl(152 62% 52%)" }} aria-label="Oui" />
+                        </span>
+                      ) : (
+                        <Minus size={14} className="mx-auto text-muted-foreground/40" aria-label="Non" />
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5 text-center">
+                      {linkedin ? (
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full" style={{ background: "hsl(152 62% 42% / 0.15)" }}>
+                          <Check size={13} style={{ color: "hsl(152 62% 52%)" }} aria-label="Oui" />
+                        </span>
+                      ) : (
+                        <Minus size={14} className="mx-auto text-muted-foreground/40" aria-label="Non" />
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: WIINUP MAX column only */}
+          <div className="md:hidden rounded-2xl border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+            <div className="px-4 py-3 text-center font-bold text-sm" style={{ background: "hsl(var(--primary) / 0.06)", color: "hsl(var(--primary))", borderBottom: "1px solid hsl(var(--border))" }}>
+              WIINUP MAX
+            </div>
+            {comparisonData.map(({ feature, wiinup }, i) => (
+              <div
+                key={feature}
+                className="flex items-center gap-3 px-4 py-3.5"
+                style={{
+                  borderBottom: i < comparisonData.length - 1 ? "1px solid hsl(var(--border))" : undefined,
+                  background: i % 2 === 0 ? "hsl(var(--card))" : "hsl(var(--background))",
+                }}
+              >
+                <span className="inline-flex items-center justify-center w-6 h-6 shrink-0 rounded-full" style={{ background: "hsl(152 62% 42% / 0.15)" }}>
+                  <Check size={13} style={{ color: "hsl(152 62% 52%)" }} aria-hidden="true" />
+                </span>
+                <span className="text-foreground text-sm">{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* CTA */}
         <div className="mt-12 text-center">
