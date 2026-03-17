@@ -25,6 +25,80 @@ interface CheckItem {
 }
 
 const INITIAL_ITEMS: CheckItem[] = [
+  // 🔐 Rotation des Secrets (P0 — post repo public)
+  {
+    id: "rotate-stripe-secret",
+    category: "🔐 Rotation Secrets P0",
+    label: "Stripe Secret Key rotée",
+    detail: "Roll la clé secrète Stripe → mettre à jour dans Supabase Secrets",
+    done: false,
+    critical: true,
+    icon: CreditCard,
+    actionUrl: "https://dashboard.stripe.com/apikeys",
+    actionLabel: "Ouvrir Stripe API Keys",
+  },
+  {
+    id: "rotate-stripe-webhook",
+    category: "🔐 Rotation Secrets P0",
+    label: "Stripe Webhook Secret roté",
+    detail: "Roll le signing secret → mettre à jour dans Supabase Secrets",
+    done: false,
+    critical: true,
+    icon: CreditCard,
+    actionUrl: "https://dashboard.stripe.com/webhooks",
+    actionLabel: "Ouvrir Stripe Webhooks",
+  },
+  {
+    id: "rotate-internal-secret",
+    category: "🔐 Rotation Secrets P0",
+    label: "INTERNAL_FUNCTION_SECRET régénéré",
+    detail: "openssl rand -hex 32 → Supabase Dashboard → Edge Functions → Secrets",
+    done: false,
+    critical: true,
+    icon: Shield,
+  },
+  {
+    id: "rotate-cron-secret",
+    category: "🔐 Rotation Secrets P0",
+    label: "CRON_SECRET régénéré",
+    detail: "openssl rand -hex 32 → Supabase Dashboard → Edge Functions → Secrets",
+    done: false,
+    critical: true,
+    icon: Shield,
+  },
+  {
+    id: "supabase-plan",
+    category: "🔐 Rotation Secrets P0",
+    label: "Plan Supabase vérifié (Pro requis)",
+    detail: "Vérifier que le projet tourne sur le plan Pro pour les edge functions en production",
+    done: false,
+    critical: true,
+    icon: Zap,
+    actionUrl: "https://supabase.com/dashboard/project/usnriklfiagazpffsqew/settings/billing",
+    actionLabel: "Voir facturation Supabase",
+  },
+  {
+    id: "rls-check",
+    category: "🔐 Rotation Secrets P0",
+    label: "RLS activé sur toutes les tables",
+    detail: "Vérifier que Row Level Security est activé sur toutes les tables publiques",
+    done: false,
+    critical: true,
+    icon: Lock,
+    actionUrl: "https://supabase.com/dashboard/project/usnriklfiagazpffsqew/auth/policies",
+    actionLabel: "Voir politiques RLS",
+  },
+  {
+    id: "uptime-monitor",
+    category: "🔐 Rotation Secrets P0",
+    label: "Uptime monitor BetterStack configuré",
+    detail: "Configurer un monitor sur https://wiinupmax.com pour alertes downtime",
+    done: false,
+    critical: false,
+    icon: Globe,
+    actionUrl: "https://betterstack.com",
+    actionLabel: "Ouvrir BetterStack",
+  },
   // Sécurité
   {
     id: "repo-private",
@@ -310,7 +384,7 @@ const INITIAL_ITEMS: CheckItem[] = [
   },
 ];
 
-const CATEGORIES = ["Sécurité", "Secrets & Emails", "Bêta & Lancement", "Technique", "Produit", "Lancement Product Hunt"];
+const CATEGORIES = ["🔐 Rotation Secrets P0", "Sécurité", "Secrets & Emails", "Bêta & Lancement", "Technique", "Produit", "Lancement Product Hunt"];
 
 export default function AdminLaunchChecklist() {
   const [items, setItems] = useState<CheckItem[]>(INITIAL_ITEMS);

@@ -94,7 +94,7 @@
       form-action 'self' *.stripe.com                   → form submissions only to safe targets
     -->
     <!-- P0 FIX: Added *.sentry.io + *.ingest.sentry.io to connect-src for error reporting -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'nonce-WIINUP_NONCE_PLACEHOLDER'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://api.stripe.com https://js.stripe.com https://api.resend.com wss://*.supabase.co https://*.lovable.app https://*.lovableproject.com https://*.sentry.io https://*.ingest.sentry.io; img-src 'self' data: blob: https://*.supabase.co https://wiinupmax.com; font-src 'self' data:; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com;" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3NOBIQl1eooP7GOFzgmjwOpViIolES0irtj+B5xJsWY='; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://api.stripe.com https://js.stripe.com https://api.resend.com wss://*.supabase.co https://*.lovable.app https://*.lovableproject.com https://*.sentry.io https://*.ingest.sentry.io; img-src 'self' data: blob: https://*.supabase.co https://wiinupmax.com; font-src 'self' data:; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com;" />
   </head>
 
   <body>

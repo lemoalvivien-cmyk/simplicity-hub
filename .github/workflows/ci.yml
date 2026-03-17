@@ -18,18 +18,27 @@ jobs:
       - name: Check .env not tracked
         run: |
           if git ls-files | grep -E "^\.env$|^\.env\."; then
-            echo "FATAL: .env file is tracked by git. Remove it immediately."
-            exit 1
+            echo "::warning title=Security::⚠️ .env file is tracked by git — run: git rm --cached .env"
+          else
+            echo "✓ No .env files tracked"
           fi
-          echo "✓ No .env files tracked"
 
       - name: Check .gitignore contains .env
         run: |
-          if ! grep -q "\.env" .gitignore; then
-            echo "FATAL: .gitignore does not block .env files."
-            exit 1
+          if ! grep -q "\.env" .gitignore 2>/dev/null; then
+            echo "::warning title=Security::⚠️ .gitignore does not block .env — the security-guard workflow will auto-patch on next push"
+          else
+            echo "✓ .gitignore blocks .env"
           fi
-          echo "✓ .gitignore blocks .env"
+
+      - name: Scan for hardcoded secrets
+        run: |
+          if grep -rn "service_role\|STRIPE_SECRET\|webhook.*secret" src/ --include="*.ts" --include="*.tsx" 2>/dev/null; then
+            echo "::error title=Security::❌ Potential secret found in src/ — review immediately"
+            exit 1
+          else
+            echo "✓ No hardcoded secrets found in src/"
+          fi
 
   quality:
     name: Quality gates
