@@ -143,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     subscriptionResetRef.current?.();
+    setSentryUser(null);
 
     // Clear all Supabase localStorage keys to prevent stale session on back-button
     Object.keys(localStorage).forEach((key) => {
