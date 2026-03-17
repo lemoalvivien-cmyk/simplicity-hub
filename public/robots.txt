@@ -1,25 +1,33 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Allow: /pricing
+Allow: /a-propos
+Allow: /creer-emploi
+Allow: /cgu
+Allow: /confidentialite
+Allow: /mentions-legales
+Allow: /aide
 Disallow: /dashboard
-Disallow: /onboarding
 Disallow: /admin
 Disallow: /checkout
-Disallow: /success
+Disallow: /onboarding
 Disallow: /account
+Disallow: /success
+Crawl-delay: 1
 
 Sitemap: https://wiinupmax.com/sitemap.xml
 
-# Crawl-delay for polite bots
-Crawl-delay: 1
+User-agent: GPTBot
+Allow: /
+Disallow: /dashboard
+Disallow: /admin
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /dashboard
+Disallow: /admin
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /dashboard
+Disallow: /admin

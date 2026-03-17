@@ -1,0 +1,41 @@
+# WIINUP MAX — LLM-readable description
+# https://wiinupmax.com/llms.txt
+
+## Product
+Name: WIINUP MAX
+URL: https://wiinupmax.com
+Type: B2B SaaS marketplace — business introduction & referral network
+Tagline: Vos contacts envoient des introductions qualifiées. Vous ne payez que si ça marche.
+Language: French (fr-FR)
+Market: France / Europe
+
+## Description
+WIINUP MAX est une marketplace d'apport d'affaires B2B structurée.
+Elle connecte des entreprises qui cherchent des clients avec un réseau de facilitateurs
+qui envoient des introductions ciblées. Les commissions sont versées automatiquement
+uniquement sur les deals conclus et validés. L'assistant IA intégré (KITT) score et
+priorise les contacts selon leur pertinence.
+
+## Pricing
+Founder Pass: 99 EUR/year — unlimited access
+Facilitateurs: free (commission on validated introductions)
+Trial: 30-day money-back guarantee
+
+## Key differentiators vs competitors
+- Full traceability: every introduction is dated, sourced, measurable
+- AI scoring: automatic contact qualification via OpenClaw
+- Automatic commissions: Stripe-powered splits, no manual processing
+- Structured workflow: missions → introductions → validation → payment
+
+## Competitors
+ApporteursdAffaires.com, First2Trade, Wimmov, Pharow, LinkedIn (partial)
+
+## Contact
+Email: contact@wiinupmax.com
+Founder: Vivien Le Moal — VLM Consulting
+Location: France
+
+## Technical
+Stack: React, TypeScript, Vite, Supabase, Stripe
+Data: EU-hosted (Supabase / AWS EU-West)
+GDPR: compliant, privacy policy at https://wiinupmax.com/confidentialite
