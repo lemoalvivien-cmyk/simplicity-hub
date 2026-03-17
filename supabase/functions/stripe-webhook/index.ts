@@ -25,7 +25,10 @@ async function getEmailFromCustomer(
   customerId: string
 ): Promise<string | null> {
   try {
-    const customer = await stripe.customers.retrieve(customerId);
+    const customer = await Promise.race([
+      stripe.customers.retrieve(customerId),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Stripe customer retrieve timeout")), 8000))
+    ]) as Stripe.Customer | Stripe.DeletedCustomer;
     if (customer.deleted) return null;
     return (customer as Stripe.Customer).email;
   } catch {
