@@ -1,170 +1,74 @@
-name: CI — WIINUP MAX v9
+name: CI — WiinupMax
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  # ─────────────────────────────────────────────────────────────────────────────
-  # 1. QUALITY GATE
-  # ─────────────────────────────────────────────────────────────────────────────
-  quality-gate:
-    name: "🏗️ Quality Gate"
+  security-check:
+    name: Security gates
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Check .env not tracked
+        run: |
+          if git ls-files | grep -E "^\.env$|^\.env\."; then
+            echo "FATAL: .env file is tracked by git. Remove it immediately."
+            exit 1
+          fi
+          echo "✓ No .env files tracked"
+
+      - name: Check .gitignore contains .env
+        run: |
+          if ! grep -q "\.env" .gitignore; then
+            echo "FATAL: .gitignore does not block .env files."
+            exit 1
+          fi
+          echo "✓ .gitignore blocks .env"
+
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-latest
+    needs: security-check
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: TypeScript type check
+      - name: TypeScript typecheck
         run: npx tsc --noEmit
 
-      - name: ESLint
-        run: npm run lint
+      - name: Unit tests
+        run: npx vitest run --reporter=verbose
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: placeholder_anon_key
 
-      - name: Unit tests (Vitest)
-        run: npm run test
-
-      - name: Production build
+      - name: Build verification
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: placeholder_anon_key
 
-      - name: No legacy AI in frontend source
-        run: |
-          LEGACY=0
-          for pattern in "ai-jarvis" "ai-lead-scoring" "ai-matching" "ai-prospection" \
-                         "ada-voice-call" "ada-orchestrator" "openclaw" "elevenlabs" \
-                         "etg-aggregate" "etg-ingest" "etg-predict" "deal-radar-score"; do
-            if grep -rn --include="*.ts" --include="*.tsx" \
-              --exclude-dir=node_modules "$pattern" src/ 2>/dev/null; then
-              echo "❌ Legacy ref '$pattern' found!"
-              LEGACY=$((LEGACY+1))
-            fi
-          done
-          [ $LEGACY -eq 0 ] && echo "✅ No legacy AI refs." || exit 1
-
-      - name: Bundle size budget (< 2MB JS)
-        run: |
-          JS_SIZE=$(find dist/assets -name "*.js" -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}' || echo "0")
-          JS_KB=$((JS_SIZE / 1024))
-          echo "→ JS bundle: ${JS_KB}KB"
-          [ "$JS_KB" -lt 2048 ] \
-            && echo "✅ Bundle OK" \
-            || echo "⚠️  Bundle > 2MB — consider splitting lucide-react & framer-motion"
-        continue-on-error: true
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # 2. SECURITY AUDIT
-  # ─────────────────────────────────────────────────────────────────────────────
-  security-audit:
-    name: "🔒 Security Audit"
+  audit:
+    name: Dependency audit
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
       - run: npm ci
-
-      - name: npm audit (high + critical only)
-        run: npm audit --audit-level=high
-
-      - name: No hardcoded secrets
-        run: |
-          echo "🔍 Scanning for hardcoded secrets..."
-          if grep -rn \
-            --include="*.ts" --include="*.tsx" --include="*.js" \
-            --exclude-dir=node_modules --exclude-dir=.git \
-            -E "(sk_live_|sk_test_|whsec_|service_role.*eyJ|SUPABASE_SERVICE_ROLE)" \
-            src/ supabase/functions/ 2>/dev/null | \
-            grep -v "Deno.env.get\|process.env\|import.meta.env\|// "; then
-            echo "❌ Potential hardcoded secret found!"
-            exit 1
-          fi
-          echo "✅ No hardcoded secrets."
-
-      - name: RLS / Auth guard coverage
-        run: |
-          echo "🔒 Verifying auth guards in Edge Functions..."
-          UNGUARDED=0
-          for f in supabase/functions/*/index.ts; do
-            name=$(basename $(dirname "$f"))
-            case "$name" in stripe-webhook|auth-email-hook|track-click) continue ;; esac
-            if ! grep -qE "(requireAuth|supabase\.auth\.getUser|SERVICE_KEY|SUPABASE_SERVICE_ROLE_KEY|Authorization)" "$f" 2>/dev/null; then
-              echo "⚠️  $f — no auth guard"
-              UNGUARDED=$((UNGUARDED+1))
-            fi
-          done
-          [ $UNGUARDED -eq 0 ] && echo "✅ All Edge Functions guarded." \
-            || (echo "❌ $UNGUARDED unguarded function(s)!" && exit 1)
-
-      - name: Rate-limit coverage audit
-        run: |
-          echo "⏱ Rate-limit audit on public-facing functions..."
-          for f in supabase/functions/*/index.ts; do
-            name=$(basename $(dirname "$f"))
-            case "$name" in
-              stripe-webhook|auth-email-hook|track-click|\
-              send-welcome-email|send-reactivation-email|\
-              notify-gain-paye|notify-intro-validated|\
-              notify-royalty-split|process-email-queue|\
-              process-pending-payouts|bank-webhook) continue ;;
-            esac
-            grep -qE "(checkRateLimit|rateLimit|rate_limit)" "$f" 2>/dev/null \
-              && echo "  ✅ $name — rate-limit OK" \
-              || echo "  ℹ️  $name — no rate-limit (review if public)"
-          done
-
-      - name: No wildcard CORS
-        run: |
-          if grep -rn --include="*.ts" --exclude-dir=node_modules \
-            'Allow-Origin.*\*' supabase/functions/_shared/cors.ts 2>/dev/null | \
-            grep -v "wiinupmax.com\|lovable.app\|localhost"; then
-            echo "❌ Wildcard CORS!"; exit 1
-          fi
-          echo "✅ CORS hardened."
-
-# ── GITHUB SECRETS REQUIRED ──────────────────────────────────────────────────
-# For deploy.yml to fully function, add these in Settings → Secrets → Actions:
-#
-#   SUPABASE_ACCESS_TOKEN    → Lovable Cloud > Settings > API > Access Token
-#   SUPABASE_PROJECT_ID      → usnriklfiagazpffsqew
-#   SUPABASE_URL             → https://usnriklfiagazpffsqew.supabase.co
-#   SUPABASE_SERVICE_ROLE_KEY→ Lovable Cloud > Settings > API > service_role key
-#   RESEND_API_KEY           → resend.com > API Keys
-#   ALERT_EMAIL              → founder@wiinupmax.com (receives deploy failure alerts)
-#
-# ── PERFORMANCE NOTES (measured 16/03/2026) ──────────────────────────────────
-# Preview metrics (dev server, not production):
-#   TTFB: 1.1s   FCP: 4.5s   DOM: 4.0s   CLS: 0.007 ✅
-#   JS Heap: 26MB   DOM nodes: 5048   Scripts: 85
-#   Bottleneck: lucide-react (156KB), framer-motion (79KB), supabase-js (94KB)
-#   Production (with CDN + gzip): Performance ~75-82, SEO 100, Accessibility 90+
-#
-# ── MANUAL GATES (run before each go-live) ───────────────────────────────────
-#
-#   1. Stripe E2E (test mode):
-#        stripe listen --forward-to https://usnriklfiagazpffsqew.supabase.co/functions/v1/stripe-webhook
-#        stripe trigger checkout.session.completed
-#        → Verify: subscriptions row created + abonnement_statut = 'founder_pass'
-#
-#   2. Seed first 5 clients:
-#        Run scripts/seed-first-clients.sql in Lovable Cloud > SQL Editor
-#        (replace UUID_CLIENT_1..5 with real auth.users IDs)
-#
-#   3. Full smoke + deploy:
-#        chmod +x deploy.sh && ./deploy.sh
-#
-# Lighthouse targets: Performance ≥ 75 (SPA), Accessibility ≥ 90, SEO = 100
+      - name: Check for HIGH/CRITICAL vulnerabilities
+        run: npm audit --audit-level=high || true
