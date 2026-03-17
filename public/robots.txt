@@ -20,3 +20,6 @@ Disallow: /success
 Disallow: /account
 
 Sitemap: https://wiinupmax.com/sitemap.xml
+
+# Crawl-delay for polite bots
+Crawl-delay: 1
