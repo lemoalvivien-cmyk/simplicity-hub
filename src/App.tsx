@@ -13,6 +13,7 @@ import { usePageTracking } from "@/lib/analytics";
 import { useAuth } from "@/contexts/AuthContext";
 import { initFounderSlots } from "@/stores/founderSlotsStore";
 import { queryClient } from "@/lib/queryClient";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 // ── Eager imports (core) ────────────────────────────────────────────────────
 import Index from "./pages/Index";
