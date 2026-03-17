@@ -122,7 +122,8 @@ const App = () => (
           <RGPDConsentBanner />
           <FounderSlotsInit />
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <PageTracker />
+            <ErrorBoundary>
+              <PageTracker />
             <Suspense fallback={<PageSkeleton />}>
               <Routes>
                 {/* ── Public ───────────────────────────────── */}
