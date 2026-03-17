@@ -45,6 +45,12 @@ Deno.serve(async (req: Request) => {
   // SECURITY: userId toujours dérivé du JWT — aucun override possible
   const facilitateurId: string = authData.claims.sub;
 
+  // P0 FIX: Rate-limiting — 30 introductions/min max (anti-spam)
+  const { allowed } = await checkRateLimit(facilitateurId, "submit-introduction", 30);
+  if (!allowed) {
+    return rateLimitResponse(corsHeaders);
+  }
+
   try {
     const body = await req.json();
     const {
