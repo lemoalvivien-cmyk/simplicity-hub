@@ -22,10 +22,10 @@ function RGPDExportButton({ userId }: { userId: string | undefined }) {
     try {
       const [{ data: profile }, { data: intros }, { data: gains }, { data: contacts }] =
         await Promise.all([
-          supabase.from("profiles").select("*").eq("id", userId).single(),
-          (supabase.from("introductions") as any).select("*").eq("facilitateur_id", userId),
-          (supabase.from("gains") as any).select("*").eq("facilitateur_id", userId),
-          (supabase.from("contacts") as any).select("*").eq("owner_user_id", userId),
+          supabase.from("profiles").select("id, email, prenom, role, onboarding_done, created_at").eq("id", userId).single(),
+          (supabase.from("introductions") as any).select("id, contact_nom, statut, created_at").eq("facilitateur_id", userId).limit(500),
+          (supabase.from("gains") as any).select("id, montant, statut, source, created_at").eq("facilitateur_id", userId).limit(500),
+          (supabase.from("contacts") as any).select("id, prenom_nom, email, entreprise, created_at").eq("owner_user_id", userId).limit(500),
         ]);
 
       const payload = {
