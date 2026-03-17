@@ -5,9 +5,9 @@
  */
 
 export const BUILD_INFO = {
-  build_id: "WIINUP-MAX-20260316-001",
-  app_version: "1.0.0",
-  generated_at: "2026-03-16T00:00:00Z",
+  build_id: "WIINUP-MAX-20260317-LAUNCH",
+  app_version: "1.1.0",
+  generated_at: "2026-03-17T16:00:00Z",
   git_sha: "see GitHub → wiinupmax repo",
   environment: import.meta.env.MODE ?? "production",
 } as const;
