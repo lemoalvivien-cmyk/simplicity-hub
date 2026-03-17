@@ -338,6 +338,9 @@ export default function Account() {
                     <ChevronRight size={15} className="text-muted-foreground" />
                   </button>
                 )}
+                {isStripe && isActive && (
+                  <RefundRequestButton userId={user?.id} />
+                )}
                 {status === "past_due" && (
                   <button
                     onClick={handlePortal}
