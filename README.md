@@ -5,6 +5,39 @@
 ![Score audit](https://img.shields.io/badge/audit%20score-95%2F100-brightgreen)
 ![License](https://img.shields.io/badge/license-Proprietary-red)
 
+## Checklist GO / NO-GO — Lancement Product Hunt
+
+### 🔴 Bloquants absolus — STOP si l'un est KO
+
+- [ ] `git ls-files | grep "\.env"` → retourne **vide**
+- [ ] `cat .gitignore | grep ".env"` → retourne 3+ lignes
+- [ ] Badge CI GitHub Actions **vert** sur `main`
+- [ ] Secrets Stripe + Supabase rotés (voir /admin/launch-checklist)
+- [ ] `curl https://wiinupmax.com/signup -o /dev/null -w "%{http_code}"` → `200`
+- [ ] Paiement test Stripe → vérifier table `subscriptions` mise à jour
+- [ ] Email de bienvenue reçu après inscription test
+
+### 🟠 Fortement recommandés
+
+- [ ] `curl https://wiinupmax.com | grep "WIINUP MAX"` → H1 présent
+- [ ] `curl https://wiinupmax.com/llms.txt` → `200`
+- [ ] LinkedIn Inspector preview correcte : https://www.linkedin.com/post-inspector/
+- [ ] Sentry capture une erreur test (console DevTools)
+- [ ] Uptime BetterStack actif : https://betterstack.com
+- [ ] Plan Supabase Pro vérifié : https://supabase.com/dashboard/project/usnriklfiagazpffsqew/settings/billing
+
+### 🟡 Post-lancement semaine 1
+
+- [ ] Google Search Console : propriété + sitemap soumis
+- [ ] LinkedIn Company Page créée
+- [ ] Crunchbase profil créé
+- [ ] 3 beta-testeurs recrutés pour parcours complet
+- [ ] 1 success story documentée → remplacer témoignages beta dans ProofSection.tsx
+- [ ] Lighthouse mobile > 70 sur PageSpeed Insights
+- [ ] GitHub repo remis public après confirmation purge CDN
+
+---
+
 > **Founder Pass 99 €/an · 100 places max · Prix garanti à vie · Remboursé si insatisfait 30 jours**
 
 > ⚠️ **REPO PRIVÉ — Sécurité temporaire** : Rendu privé le 17/03/2026 suite à exposition accidentelle du fichier `.env`. Sera remis public après confirmation GitHub Support que le cache CDN est purgé.
