@@ -59,7 +59,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const reset = useCallback(() => {
     setInfo({
       status: "none", subscribed: false, subscriptionEnd: null, cancelAtPeriodEnd: false,
-      accessType: "none", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false,
+      accessType: "none", offerType: null, launchAvailable: null, launchSlotsRemaining: null, loading: false,
     });
   }, []);
 
