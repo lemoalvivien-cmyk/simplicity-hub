@@ -127,6 +127,85 @@ function RGPDDeleteButton({ onConfirm }: { onConfirm: () => Promise<void> }) {
   );
 }
 
+/* ── Refund Request Button ───────────────────────────────── */
+function RefundRequestButton({ userId }: { userId: string | undefined }) {
+  const [step, setStep] = useState<"idle" | "form" | "loading" | "done">("idle");
+  const [reason, setReason] = useState("");
+
+  const handleSubmit = async () => {
+    if (!userId) return;
+    setStep("loading");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("request-refund", {
+        body: { reason },
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined,
+      });
+      if (res.error) throw res.error;
+      const result = res.data as { eligible: boolean; message: string };
+      if (result.eligible) {
+        toast.success(result.message);
+        setStep("done");
+      } else {
+        toast.error(result.message);
+        setStep("idle");
+      }
+    } catch {
+      toast.error("Erreur lors de l'envoi. Contactez contact@wiinupmax.com");
+      setStep("idle");
+    }
+  };
+
+  if (step === "done") {
+    return (
+      <p className="text-xs text-muted-foreground text-center py-1">
+        ✓ Demande enregistrée — réponse sous 48h.
+      </p>
+    );
+  }
+
+  if (step === "form" || step === "loading") {
+    return (
+      <div className="p-3 rounded-xl border border-border bg-muted/30 space-y-2">
+        <p className="text-xs font-semibold text-foreground">Motif du remboursement (optionnel)</p>
+        <textarea
+          value={reason}
+          onChange={e => setReason(e.target.value)}
+          placeholder="Expliquez brièvement votre demande…"
+          rows={2}
+          className="w-full text-xs rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        <div className="flex gap-2">
+          <button onClick={() => setStep("idle")}
+            className="flex-1 px-3 py-2 rounded-lg text-xs font-medium border border-border hover:bg-muted transition-colors">
+            Annuler
+          </button>
+          <button onClick={handleSubmit} disabled={step === "loading"}
+            className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors flex items-center justify-center gap-1.5">
+            {step === "loading" ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} />}
+            Envoyer la demande
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setStep("form")}
+      className="flex items-center justify-between w-full px-4 py-2 rounded-xl border border-border/60 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+    >
+      <span className="flex items-center gap-2">
+        <RotateCcw size={12} />
+        Demander un remboursement (garantie 30 jours)
+      </span>
+      <ChevronRight size={13} className="opacity-50" />
+    </button>
+  );
+}
+
 export default function Account() {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
