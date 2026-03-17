@@ -1,7 +1,9 @@
+// CRITICAL BUSINESS PAGE — NE JAMAIS SUPPRIMER PENDANT CLEANUP GHOST
 /**
  * /creer-emploi — Mega tunnel de vente Facilitateur
  * Design system 100 % tokens existants — Sora/Inter — Framer Motion
  * Mobile-first — Lazy + Realtime quota
+ * Route: src/App.tsx ligne ~139 → <Route path="/creer-emploi" element={<CreerEmploiPage />} />
  */
 import { useState } from "react";
 import { Link } from "react-router-dom";
