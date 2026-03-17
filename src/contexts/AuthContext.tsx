@@ -9,6 +9,7 @@ import {
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { setSentryUser } from "@/lib/sentryConfig";
 
 type AppRole = "entreprise" | "facilitateur" | "admin" | null;
 
@@ -52,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
       if (!error && data) {
         setProfile(data as Profile);
+        setSentryUser({ id: data.id, email: data.email ?? undefined });
       }
     } catch {
       // silent — network may be down
@@ -141,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     subscriptionResetRef.current?.();
+    setSentryUser(null);
 
     // Clear all Supabase localStorage keys to prevent stale session on back-button
     Object.keys(localStorage).forEach((key) => {
