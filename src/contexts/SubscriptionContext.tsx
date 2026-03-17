@@ -71,7 +71,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     if (!user) { reset(); return; }
 
     if (role === "facilitateur" || role === "admin") {
-      setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", offerType: null, launchAvailable: true, launchSlotsRemaining: 100, loading: false });
+      setInfo({ status: "active", subscribed: true, subscriptionEnd: null, cancelAtPeriodEnd: false, accessType: "free", offerType: null, launchAvailable: null, launchSlotsRemaining: null, loading: false });
       return;
     }
 
