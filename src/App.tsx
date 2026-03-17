@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
@@ -12,6 +12,7 @@ import RGPDConsentBanner from "@/components/landing/RGPDConsentBanner";
 import { usePageTracking } from "@/lib/analytics";
 import { useAuth } from "@/contexts/AuthContext";
 import { initFounderSlots } from "@/stores/founderSlotsStore";
+import { queryClient } from "@/lib/queryClient";
 
 // ── Eager imports (core) ────────────────────────────────────────────────────
 import Index from "./pages/Index";
@@ -87,23 +88,7 @@ function PageSkeleton() {
   );
 }
 
-// P0 FIX: Custom retry — never retry on auth/not-found errors to avoid
-// masking 401/403/404 and flooding the network with useless retries.
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (failureCount, error: unknown) => {
-        const status = (error as { status?: number })?.status;
-        if (status === 401 || status === 403 || status === 404) return false;
-        return failureCount < 2;
-      },
-      staleTime: 60_000,
-    },
-    mutations: {
-      retry: false,
-    },
-  },
-});
+
 
 function DashboardRouter() {
   const { role } = useAuth();

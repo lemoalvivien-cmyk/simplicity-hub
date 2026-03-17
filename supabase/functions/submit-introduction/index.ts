@@ -9,6 +9,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkRateLimit, rateLimitResponse } from "../_shared/rateLimit.ts";
+import { requireAuth, unauthorizedResponse } from "../_shared/authGuard.ts";
 
 Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -17,33 +18,15 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // ── Auth via getClaims() (Lovable Cloud signing-keys compatible) ──────────
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+  // ── Auth via requireAuth() — centralisé, ES256-safe ──────────────────────
+  // SECURITY: facilitateurId toujours dérivé du JWT — aucun override possible
+  let claims;
+  try {
+    claims = await requireAuth(req);
+  } catch {
+    return unauthorizedResponse(corsHeaders);
   }
-
-  const anonSb = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-
-  const token = authHeader.replace("Bearer ", "");
-  const { data: authData, error: authError } = await anonSb.auth.getClaims(token);
-
-  if (authError || !authData?.claims) {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
-
-  // SECURITY: userId toujours dérivé du JWT — aucun override possible
-  const facilitateurId: string = authData.claims.sub;
+  const facilitateurId: string = claims.sub;
 
   // P0 FIX: Rate-limiting — 30 introductions/min max (anti-spam)
   const { allowed } = await checkRateLimit(facilitateurId, "submit-introduction", 30);
