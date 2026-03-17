@@ -12,15 +12,16 @@
 |---|--------|--------|-------------------|
 | 1 | Repo rendu PRIVÉ | ✅ Done | `gh repo edit lemoalvivien-cmyk/simplicity-hub --visibility private` |
 | 2 | Clone frais isolé | ✅ Done | `git clone git@github.com:lemoalvivien-cmyk/simplicity-hub.git repo-purge && cd repo-purge` |
-| 3 | Purge `.env` + `.env.*` | ✅ Done | `git filter-repo --invert-paths --path .env --path .env.local --path .env.example --force` |
+| 3 | Purge `.env` + `.env.*` historique | ✅ Done | `git filter-repo --invert-paths --path .env --path .env.local --path .env.example --force` |
 | 4 | GC agressif | ✅ Done | `git reflog expire --expire=now --all && git gc --prune=now --aggressive` |
 | 5 | Force-with-lease push | ✅ Done | `git push origin --force-with-lease --all && git push origin --force-with-lease --tags` |
-| 6 | Vérification finale | ✅ Done | `git ls-files \| grep "\.env"` → vide |
-| 7 | GitHub support CDN purge | 🔄 En attente | Ticket ouvert — blobs cached sur CDN GitHub |
-| 8 | Fix P0 QueryClient retry | ✅ Done | `src/App.tsx` — retry false sur 401/403/404 |
-| 9 | Fix P0 ProtectedRoute getUser | ✅ Done | `src/components/auth/ProtectedRoute.tsx` — getUser() server-side |
-| 10 | Fix P0 Rate-limit submit-intro | ✅ Done | `supabase/functions/submit-introduction/index.ts` — 30 req/min |
-| 11 | Fix P0 CSP Sentry connect-src | ✅ Done | `index.html` — *.sentry.io ajouté |
+| 6 | Vérification historique | ✅ Done | `git ls-files \| grep "\.env"` → vide |
+| 7 | **`.env` supprimé du tree actuel** | ✅ Done 17/03/2026 | `git rm -f .env .env.* && git commit -m "final security cleanup + .env removed from tree [17/03/2026]" && git push origin --force-with-lease --all --tags` |
+| 8 | GitHub support CDN purge | 🔄 En attente | Ticket ouvert — blobs cached sur CDN GitHub |
+| 9 | Fix P0 QueryClient retry | ✅ Done | `src/App.tsx` — retry false sur 401/403/404 |
+| 10 | Fix P0 ProtectedRoute getUser | ✅ Done | `src/components/auth/ProtectedRoute.tsx` — getUser() server-side |
+| 11 | Fix P0 Rate-limit submit-intro | ✅ Done | `supabase/functions/submit-introduction/index.ts` — 30 req/min |
+| 12 | Fix P0 CSP Sentry connect-src | ✅ Done | `index.html` — *.sentry.io ajouté |
 
 ---
 
