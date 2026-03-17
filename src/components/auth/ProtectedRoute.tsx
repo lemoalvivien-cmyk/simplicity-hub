@@ -25,11 +25,12 @@ export default function ProtectedRoute({
   const subscription = useSubscription();
   const location = useLocation();
 
-  // Re-validate session on tab focus to catch expired tokens.
+  // P0 FIX: Re-validate session on tab focus using getUser() (server-side)
+  // instead of getSession() (local cache) — prevents revoked tokens from persisting.
   useEffect(() => {
     const handleFocus = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const { error } = await supabase.auth.getUser();
+      if (error) {
         await supabase.auth.signOut();
       }
     };
