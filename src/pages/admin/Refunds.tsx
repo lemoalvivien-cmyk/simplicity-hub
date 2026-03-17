@@ -121,8 +121,8 @@ export default function AdminRefunds() {
   };
 
   return (
-    <AdminLayout>
-      <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <AdminLayout title="Remboursements" subtitle="Gérer les demandes de remboursement 30 jours">
+      <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

@@ -13,6 +13,7 @@ const links = [
   { to: "/admin/revenue", label: "Revenu réel", icon: TrendingUp },
   { to: "/admin/beta", label: "Bêta & Waitlist", icon: Rocket },
   { to: "/admin/launch-checklist", label: "Checklist lancement", icon: CheckSquare },
+  { to: "/admin/refunds", label: "Remboursements", icon: CreditCard },
 ];
 
 export default function AdminNav() {
