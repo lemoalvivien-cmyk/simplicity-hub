@@ -1,9 +1,11 @@
 /**
- * ErrorBoundary — React class boundary for production error capture.
- * Logs to `business_alerts` table (Lovable Cloud) + console.
- * Renders a clean fallback UI on crash.
+ * ErrorBoundary — Global React crash boundary.
+ * • Logs to Sentry (if DSN configured)
+ * • Logs to business_alerts table (Lovable Cloud)
+ * • Renders a clean fallback UI — never breaks the app
  */
 import { Component, type ReactNode, type ErrorInfo } from "react";
+import * as Sentry from "@sentry/react";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
@@ -15,24 +17,39 @@ interface Props {
 interface State {
   hasError: boolean;
   errorId: string | null;
+  sentryEventId: string | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false, errorId: null };
+  state: State = { hasError: false, errorId: null, sentryEventId: null };
 
-  static getDerivedStateFromError(): State {
+  static getDerivedStateFromError(): Partial<State> {
     return { hasError: true, errorId: crypto.randomUUID().slice(0, 8) };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     const errorId = this.state.errorId ?? "unknown";
-    const message = `[${errorId}] ${error.name}: ${error.message}\n${info.componentStack?.slice(0, 800)}`;
 
-    // Fire & forget — never blocks UI
+    // 1. Sentry (primary — full stack trace + replay)
+    const sentryEventId = import.meta.env.VITE_SENTRY_DSN
+      ? Sentry.captureException(error, {
+          extra: {
+            componentStack: info.componentStack?.slice(0, 1200),
+            errorId,
+          },
+        })
+      : null;
+
+    if (sentryEventId) {
+      this.setState({ sentryEventId });
+    }
+
+    // 2. Lovable Cloud business_alerts (fallback + ops visibility)
+    const message = `[${errorId}] ${error.name}: ${error.message}\n${info.componentStack?.slice(0, 800)}`;
     (supabase.from("business_alerts") as any)
       .insert({
         alert_type: "frontend_error",
-        title: `Erreur JS — ${error.name}`,
+        title: `Erreur React — ${error.name}`,
         message,
         severity: "high",
         value: null,
@@ -40,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
       })
       .then(({ error: dbError }: { error: unknown }) => {
         if (dbError && import.meta.env.DEV) {
-          console.warn("[ErrorBoundary] failed to log:", dbError);
+          console.warn("[ErrorBoundary] DB log failed:", dbError);
         }
       });
 
@@ -50,7 +67,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, errorId: null });
+    this.setState({ hasError: false, errorId: null, sentryEventId: null });
   };
 
   render() {
@@ -68,7 +85,10 @@ export class ErrorBoundary extends Component<Props, State> {
           >
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5"
-              style={{ background: "hsl(0 72% 50% / 0.1)", border: "1px solid hsl(0 72% 50% / 0.2)" }}
+              style={{
+                background: "hsl(0 72% 50% / 0.1)",
+                border: "1px solid hsl(0 72% 50% / 0.2)",
+              }}
             >
               <AlertTriangle size={24} style={{ color: "hsl(0 72% 60%)" }} />
             </div>
@@ -76,11 +96,17 @@ export class ErrorBoundary extends Component<Props, State> {
               Un problème est survenu
             </h2>
             <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-              Notre équipe a été prévenue automatiquement. Rechargez la page ou revenez dans quelques instants.
+              Notre équipe a été prévenue automatiquement.
+              Rechargez la page ou revenez dans quelques instants.
             </p>
             {this.state.errorId && (
-              <p className="text-[10px] text-muted-foreground/50 mb-4 font-mono">
+              <p className="text-[10px] text-muted-foreground/50 mb-1 font-mono">
                 Réf. #{this.state.errorId}
+              </p>
+            )}
+            {this.state.sentryEventId && (
+              <p className="text-[9px] text-muted-foreground/30 mb-4 font-mono">
+                Sentry: {this.state.sentryEventId.slice(0, 16)}
               </p>
             )}
             <button
