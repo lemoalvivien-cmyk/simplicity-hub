@@ -237,7 +237,7 @@ export default function DashboardFacilitateur() {
                 Toutes <Plus size={11} />
               </Link>
             </div>
-            <div className="p-4 space-y-3">
+            <div className="p-4 space-y-3 overflow-x-auto">
               {loading ? (
                 [0, 1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-muted animate-pulse" />)
               ) : missions.length === 0 ? (
