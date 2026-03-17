@@ -46,8 +46,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     cancelAtPeriodEnd: false,
     accessType: "loading",
     offerType: null,
-    launchAvailable: true,
-    launchSlotsRemaining: 100,
+    launchAvailable: null,
+    launchSlotsRemaining: null,
     loading: true,
   });
   // PASSE F: coordinate refresh across tabs — prevents N×calls on multi-tab
