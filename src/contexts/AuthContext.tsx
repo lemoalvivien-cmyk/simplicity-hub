@@ -53,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
       if (!error && data) {
         setProfile(data as Profile);
+        setSentryUser({ id: data.id, email: data.email });
       }
     } catch {
       // silent — network may be down
