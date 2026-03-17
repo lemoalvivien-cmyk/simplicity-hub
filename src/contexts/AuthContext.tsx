@@ -8,6 +8,7 @@ import {
 } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { queryClient } from "@/App";
 import { useNavigate } from "react-router-dom";
 import { setSentryUser } from "@/lib/sentryConfig";
 

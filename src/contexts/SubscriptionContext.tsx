@@ -53,6 +53,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // PASSE F: coordinate refresh across tabs — prevents N×calls on multi-tab
   const channelRef = useRef<BroadcastChannel | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // PASSE A: reset exposed to AuthContext for signOut cleanup
   const reset = useCallback(() => {
