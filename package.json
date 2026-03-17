@@ -15,7 +15,7 @@
     "verify:quota:gaps": "deno run --allow-env --allow-net scripts/verify-quota-gaps.ts",
     "verify:quota:race": "deno run --allow-env --allow-net scripts/verify-quota-race.ts",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "node scripts/patch-gitignore.mjs && husky"
   },
   "dependencies": {
     "@elevenlabs/react": "^0.14.1",

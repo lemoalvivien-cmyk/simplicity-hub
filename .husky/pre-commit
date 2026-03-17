@@ -1,4 +1,17 @@
-#!/usr/bin/env sh
+#!/bin/sh
+
+# SECURITY: Block .env file commits
+if git diff --cached --name-only | grep -E "^\.env$|^\.env\."; then
+  echo "╔══════════════════════════════════════════╗"
+  echo "║  COMMIT BLOQUÉ : .env ne doit JAMAIS     ║"
+  echo "║  être commité. Retire-le du staging :    ║"
+  echo "║  git rm --cached .env                    ║"
+  echo "╚══════════════════════════════════════════╝"
+  exit 1
+fi
+
+echo "✓ Security check passed — no .env in staged files"
+
 # ─────────────────────────────────────────────────────────────────────────────
 # WIINUP MAX — pre-commit secret scanner
 # Blocks any commit that contains known secret patterns.
@@ -50,7 +63,7 @@ for FILE in $STAGED; do
   case "$FILE" in
     *.png|*.jpg|*.ico|*.svg|*.woff*|bun.lock*|package-lock.json) continue ;;
     # SECURITY: Never commit .env files regardless of extension
-    .env|.env.*|.env.example)
+    .env|.env.*)
       echo ""
       echo "🚨 BLOCKED: Attempting to commit .env file: $FILE"
       FOUND=1
