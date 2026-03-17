@@ -307,7 +307,7 @@ export default function DashboardEntreprise() {
               <Plus size={11} /> Nouvelle
             </Link>
           </div>
-          <div className="p-4 space-y-2">
+          <div className="p-4 space-y-2 overflow-x-auto">
             {loading ? (
               [0, 1, 2].map(i => <div key={i} className="h-14 rounded-xl bg-muted animate-pulse" />)
             ) : isEmpty ? (

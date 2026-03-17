@@ -102,7 +102,7 @@ export default function LandingPage() {
             <Link to="/mentions-legales" className="hover:text-foreground transition-colors">Mentions légales</Link>
             <a href="mailto:contact@wiinupmax.com" className="hover:text-foreground transition-colors">Contact</a>
             <span className="text-muted-foreground/20">|</span>
-            <a href="https://calendly.com/wiinupmax/demo" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors font-medium" style={{ color: "hsl(var(--accent))" }}>Réserver une démo</a>
+            <a href="mailto:contact@wiinupmax.com?subject=Demande%20de%20demo%20WiinupMax" className="hover:text-foreground transition-colors font-medium" style={{ color: "hsl(var(--accent))" }}>Demander une démo</a>
           </div>
         </div>
         <div className="container mt-5">
