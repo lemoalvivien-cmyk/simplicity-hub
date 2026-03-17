@@ -53,6 +53,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // PASSE F: coordinate refresh across tabs — prevents N×calls on multi-tab
   const channelRef = useRef<BroadcastChannel | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // PASSE A: reset exposed to AuthContext for signOut cleanup
   const reset = useCallback(() => {
@@ -76,7 +77,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     try {
       setInfo(prev => ({ ...prev, loading: true }));
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
       const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (controller.signal.aborted) return;
       if (error || !data) throw error;
 
       setInfo({
@@ -107,6 +112,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
       bc.close(); channelRef.current = null;
+      abortRef.current?.abort();
     };
   }, [user, checkSubscription, reset]);
 

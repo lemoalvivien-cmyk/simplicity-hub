@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: false,        // no source maps in prod — no code leaks
     minify: "esbuild",
     target: "es2020",
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         // Chunk splitting for optimal loading
@@ -27,6 +28,7 @@ export default defineConfig(({ mode }) => ({
           ui:      ["@radix-ui/react-dialog", "@radix-ui/react-tabs", "@radix-ui/react-dropdown-menu"],
           charts:  ["recharts"],
           motion:  ["framer-motion"],
+          sentry:  ["@sentry/react"],
         },
       },
     },
