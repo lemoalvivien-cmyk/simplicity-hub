@@ -479,7 +479,8 @@ export async function fetchLeadPipelineSummary(
   userId: string,
   asEntreprise = false
 ): Promise<LeadPipelineSummary> {
-  let query = db.from("lead_intakes").select("qualification_status");
+  // Bounded query — index idx_lead_intakes_user_qual / idx_lead_intakes_entreprise_qual covers this
+  let query = db.from("lead_intakes").select("qualification_status").limit(5000);
 
   if (asEntreprise) {
     query = query.eq("entreprise_id", userId);
