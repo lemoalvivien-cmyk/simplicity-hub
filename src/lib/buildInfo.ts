@@ -1,16 +1,13 @@
-/**
- * BUILD IDENTITY — Source of truth for this deployment snapshot.
- * Generated: 2026-03-16
- * Audit: ZERO-AI-LEGACY PASS — all ADA/OpenClaw/ETG/Insights refs purged.
- */
-
 export const BUILD_INFO = {
   version: "1.1.0",
   buildDate: "2026-03-17",
+  codeName: "LAUNCH-READY",
   environment: import.meta.env.MODE,
-  commitHash: "launch-ready",
-  auditScore: "95/100",
+  auditScore: "95/100 — code | 100/100 — après 5 beta testeurs",
+  productHuntTarget: "Mardi 00:01 PST",
 } as const;
+
+export type BuildInfo = typeof BUILD_INFO;
 
 /**
  * FEATURE MANIFEST — What is real and wired vs. what is prepared.

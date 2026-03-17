@@ -105,16 +105,9 @@ export default function ProofSection() {
         {/* Beta testimonials */}
         <div className="mt-10 mb-4">
           <div className="flex items-center justify-center gap-2 mb-6">
-            <span
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-              style={{
-                background: "hsl(38 95% 52% / 0.12)",
-                color: "hsl(38 95% 52%)",
-                border: "1px solid hsl(38 95% 52% / 0.25)",
-              }}
-            >
-              <Star size={11} aria-hidden="true" />
-              Retours de nos premiers beta-testeurs
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M6 1l1.5 3 3.5.5-2.5 2.5.5 3.5L6 9 3 10.5l.5-3.5L1 4.5 4.5 4z"/></svg>
+              Témoignages beta — accès anticipé offert
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

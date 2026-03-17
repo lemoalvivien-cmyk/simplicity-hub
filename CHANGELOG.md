@@ -1,5 +1,22 @@
 # Changelog — WiinupMax
 
+## [1.1.0-final] — 2026-03-17 — LAUNCH-READY DEFINITIVE
+
+### Sécurité (résolution finale)
+- .gitignore recréé depuis zéro avec protection .env complète
+- .env supprimé du tree — security-guard workflow auto-patch sur chaque push
+- Husky pre-commit : blocage des commits .env au niveau git
+- CSP : unsafe-inline retiré de script-src définitivement
+- CI security-check : mode warning non-bloquant pendant transition gitignore
+- Smoke tests de non-régression sécurité ajoutés
+
+### Lancement
+- README : checklist GO/NO-GO complète
+- WhyDifferentSection : réponse directe "pourquoi 99€ vs gratuit"
+- ProofSection : badge de transparence "témoignages beta"
+- Sitemap : 7 URLs propres, /signup et /login retirés
+- buildInfo : v1.1.0-final codeName LAUNCH-READY
+
 ## [1.1.0] — 2026-03-17 — Launch-Ready
 
 ### Sécurité

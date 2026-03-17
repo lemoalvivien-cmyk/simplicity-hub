@@ -211,6 +211,12 @@ export default function WhyDifferentSection() {
 
         {/* Comparison table */}
         <div className="mt-16">
+          <p className="text-center text-base text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+            Chez les concurrents gratuits, vous payez avec votre temps — des heures à trier
+            des contacts froids non qualifiés. Chez WiinupMax, vous payez 99&nbsp;€/an et vous
+            recevez des introductions qualifiées, traçables et sourcées par des personnes
+            qui engagent leur réputation. <strong className="text-foreground">Ce n'est pas le même produit.</strong>
+          </p>
           <h3 className="font-display text-xl md:text-2xl font-bold text-foreground text-center mb-8">
             Pourquoi les professionnels choisissent WIINUP MAX
           </h3>
