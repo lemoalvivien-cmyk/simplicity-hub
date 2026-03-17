@@ -23,8 +23,8 @@ interface SubscriptionInfo {
   cancelAtPeriodEnd: boolean;
   accessType: AccessType;
   offerType: OfferType;
-  launchAvailable: boolean;
-  launchSlotsRemaining: number;
+  launchAvailable: boolean | null;
+  launchSlotsRemaining: number | null;
   loading: boolean;
 }
 
