@@ -112,6 +112,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
       bc.close(); channelRef.current = null;
+      abortRef.current?.abort();
     };
   }, [user, checkSubscription, reset]);
 
