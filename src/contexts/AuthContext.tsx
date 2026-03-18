@@ -9,7 +9,7 @@ import {
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { queryClient } from "@/lib/queryClient";
-import { useNavigate } from "react-router-dom";
+
 import { setSentryUser } from "@/lib/sentryConfig";
 
 type AppRole = "entreprise" | "facilitateur" | "admin" | null;
