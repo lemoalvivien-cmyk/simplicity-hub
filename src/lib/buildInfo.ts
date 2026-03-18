@@ -1,7 +1,7 @@
 export const BUILD_INFO = {
-  version: "1.4.0",
-  buildDate: "2026-03-18-FORCE-REBUILD",
-  codeName: "ATOMIC-PATCH-NO-SW-NO-CACHE",
+  version: "1.5.0",
+  buildDate: "2026-03-18-SUPABASE-GUARD",
+  codeName: "PHOENIX-FINAL",
   environment: import.meta.env.MODE,
   auditScore: "95/100 — code | 100/100 — après 5 beta testeurs",
   productHuntTarget: "Mardi 00:01 PST",
