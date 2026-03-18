@@ -282,10 +282,10 @@ export default function Pricing() {
                   style={{ background: "hsl(var(--accent) / 0.2)", border: "1px solid hsl(var(--accent) / 0.45)", color: "hsl(var(--accent))" }}
                 >
                   <Zap size={10} />
-                  {slotsRemaining} places restantes
+                  Offre en cours
                 </span>
                 <span className="text-white/40 text-xs">·</span>
-                <span className="text-white/55 text-xs font-medium">100 places max</span>
+                <span className="text-white/55 text-xs font-medium">Prix garanti à vie</span>
               </div>
 
               <p className="text-white/75 text-xs font-bold uppercase tracking-widest mb-2">Founder Pass — Entreprise</p>
