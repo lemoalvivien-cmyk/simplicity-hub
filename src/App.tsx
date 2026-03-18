@@ -198,12 +198,12 @@ const App = () => (
                 {/* ── 404 ──────────────────────────────────── */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Suspense>
+              </Suspense>
             </ErrorBoundary>
-          </BrowserRouter>
-        </TooltipProvider>
-      </SubscriptionProvider>
-    </AuthProvider>
+          </TooltipProvider>
+        </SubscriptionProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
