@@ -656,9 +656,8 @@ export default function CreerEmploiPage() {
             variants={fadeUp()}
             className="space-y-6"
           >
-            {/* Live quota */}
+            {/* Founder Pass badge */}
             <div className="flex justify-center mb-2">
-              <LaunchQuotaBanner variant="pricing" />
             </div>
 
             <div className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full border"
