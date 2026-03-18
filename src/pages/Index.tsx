@@ -8,10 +8,17 @@ import MecanismeSection from "@/components/landing/MecanismeSection";
 import FeaturesValueSection from "@/components/landing/FeaturesValueSection";
 import HowItWorksEntrepriseSection from "@/components/landing/HowItWorksEntrepriseSection";
 import FacilitateurSection from "@/components/landing/FacilitateurSection";
+import CreerEmploiCTASection from "@/components/landing/CreerEmploiCTASection";
 import ProofSection from "@/components/landing/ProofSection";
 import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
 import PricingSection from "@/components/landing/PricingSection";
 import FinalCTASection from "@/components/landing/FinalCTASection";
+import WhyDifferentSection from "@/components/landing/WhyDifferentSection";
+import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
+import ClosedBetaBanner from "@/components/landing/ClosedBetaBanner";
+import { initScrollTracking, track } from "@/lib/landingTracking";
+import { trackEvent } from "@/lib/analytics";
+import { CLOSED_BETA } from "@/lib/betaConfig";
 import WhyDifferentSection from "@/components/landing/WhyDifferentSection";
 import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
 import ClosedBetaBanner from "@/components/landing/ClosedBetaBanner";
@@ -69,6 +76,7 @@ export default function LandingPage() {
       <FeaturesValueSection />
       <HowItWorksEntrepriseSection />
       <FacilitateurSection />
+      <CreerEmploiCTASection />
       <ProofSection />
       <AntiBullshitSection />
       <WhyDifferentSection />
