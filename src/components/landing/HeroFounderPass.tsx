@@ -93,7 +93,7 @@ export default function HeroFounderPass() {
   const [sphereX, setSphereX] = useState(0);
   const [sphereY, setSphereY] = useState(0);
 
-  const { remaining, isSoldOut, isUrgent } = useFounderSlots();
+  const { isSoldOut } = useFounderSlots();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = containerRef.current?.getBoundingClientRect();
