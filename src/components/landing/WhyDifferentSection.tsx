@@ -116,7 +116,7 @@ const pillars = [
 const comparisonData = [
   { feature: "Introductions tracées et horodatées", wiinup: true, apporteurs: false, linkedin: false },
   { feature: "Commission automatique à la signature", wiinup: true, apporteurs: false, linkedin: false },
-  { feature: "IA de prospection (OpenClaw)", wiinup: true, apporteurs: false, linkedin: false },
+  { feature: "Matching intelligent des missions", wiinup: true, apporteurs: false, linkedin: false },
   { feature: "Gratuit pour les facilitateurs", wiinup: true, apporteurs: true, linkedin: false },
   { feature: "Score de réputation vérifié", wiinup: true, apporteurs: false, linkedin: false },
   { feature: "Preuve juridique de mise en relation", wiinup: true, apporteurs: false, linkedin: false },
