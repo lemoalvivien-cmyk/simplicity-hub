@@ -301,8 +301,8 @@ export default function Pricing() {
               </div>
 
               <p className="text-white/60 text-xs leading-relaxed max-w-sm">
-                Prix garanti à vie si souscrit pendant la période de lancement.
-                Après les 100 places, retour au plein tarif.
+                Prix garanti à vie · Facturation annuelle · Résiliation libre.
+                Le tarif Founder Pass est garanti à vie.
               </p>
             </div>
 
