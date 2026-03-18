@@ -1,3 +1,14 @@
+// CRITICAL: Unregister any stale Service Worker before app boots
+// Prevents cached old JS chunks from crashing the app after a rebuild
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister();
+      console.log('[WIINUP] Stale SW unregistered:', registration.scope);
+    }
+  });
+}
+
 console.log("%c[WIINUP DEBUG] main.tsx démarré", "color:orange;font-size:16px");
 
 import { createRoot } from "react-dom/client";
