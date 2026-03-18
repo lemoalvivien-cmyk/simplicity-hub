@@ -683,7 +683,7 @@ export default function CreerEmploiPage() {
             </h2>
 
             <p className="text-white/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-              Founder Pass à 99 €/an — prix garanti à vie. Vos contacts vous envoient des introductions qualifiées. Vous ne payez que si ça marche. 100 places seulement.
+              Founder Pass à 99 €/an — prix garanti à vie. Vos contacts vous envoient des introductions qualifiées. Vous ne payez que si ça marche.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
