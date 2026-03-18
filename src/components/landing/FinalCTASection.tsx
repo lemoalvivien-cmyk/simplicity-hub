@@ -7,7 +7,7 @@ import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
 import { CLOSED_BETA } from "@/lib/betaConfig";
 
 export default function FinalCTASection() {
-  const { isSoldOut, isUrgent, remaining } = useFounderSlots();
+  const { isSoldOut } = useFounderSlots();
 
   return (
     <section className="hero-bg py-24 md:py-32 relative overflow-hidden">

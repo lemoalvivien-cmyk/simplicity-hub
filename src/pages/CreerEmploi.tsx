@@ -14,7 +14,6 @@ import {
   GraduationCap, Award, ChevronDown, Zap,
 } from "lucide-react";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
-import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import vivienPhoto from "@/assets/vivien-le-moal.jpg";
 
 /* ─── Motion helpers ──────────────────────────────────────────────────── */
