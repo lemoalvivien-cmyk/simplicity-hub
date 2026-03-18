@@ -250,7 +250,7 @@ export default function HeroFounderPass() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.55, duration: 0.6 }}
             >
-              <span className="text-white/40 text-xs">Paiement sécurisé Stripe · Satisfait ou remboursé 30 jours · Accès immédiat</span>
+              <span className="text-white/40 text-xs">Paiement sécurisé Stripe · Prix garanti à vie · Accès immédiat</span>
             </motion.div>
           </div>
 
