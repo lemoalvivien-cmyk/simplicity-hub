@@ -25,7 +25,7 @@ class DebugErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      const err = this.state.error as Error;
+      const err = (this.state.error ?? new Error("Erreur inconnue")) as Error;
       return (
         <div style={{
           background: "red",
