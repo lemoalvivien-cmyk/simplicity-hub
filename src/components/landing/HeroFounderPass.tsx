@@ -226,7 +226,7 @@ export default function HeroFounderPass() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.38 }}
             >
-              <FounderPassButton isSoldOut={isSoldOut} isUrgent={isUrgent} remaining={remaining} />
+              <FounderPassButton isSoldOut={isSoldOut} />
               <motion.div whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
                 <Link
                   to="/creer-emploi"
