@@ -15,8 +15,14 @@ export default function ForgotPassword() {
     setError(null);
     setLoading(true);
 
+    // SEC: hardcode production base in prod to prevent broken links in preview envs.
+    // Same pattern as signUp in AuthContext.tsx
+    const redirectBase = import.meta.env.PROD
+      ? "https://wiinupmax.com"
+      : window.location.origin;
+
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${redirectBase}/reset-password`,
     });
 
     setLoading(false);
