@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import {
-  CheckCircle2, Zap, Users, Flame, ArrowRight,
+  CheckCircle2, Zap, Users, ArrowRight,
   FileText, TrendingUp, Coins, Shield, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
-import { useFounderSlots } from "@/hooks/useFounderSlots";
 
 // ─── Feature blocks ────────────────────────────────────────────────────────
 const founderFeatures = [

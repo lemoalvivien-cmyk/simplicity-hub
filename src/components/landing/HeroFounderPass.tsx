@@ -4,7 +4,6 @@ import { ArrowRight, Zap, ChevronDown, Lock } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { track } from "@/lib/landingTracking";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
-import SlotCounter from "@/components/landing/SlotCounter";
 import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
 import { CLOSED_BETA } from "@/lib/betaConfig";
 

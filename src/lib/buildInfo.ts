@@ -1,7 +1,7 @@
 export const BUILD_INFO = {
-  version: "1.1.0",
-  buildDate: "2026-03-17",
-  codeName: "LAUNCH-READY",
+  version: "1.2.0",
+  buildDate: "2026-03-18-CLEAN-LAUNCH",
+  codeName: "MARKET-READY",
   environment: import.meta.env.MODE,
   auditScore: "95/100 — code | 100/100 — après 5 beta testeurs",
   productHuntTarget: "Mardi 00:01 PST",
