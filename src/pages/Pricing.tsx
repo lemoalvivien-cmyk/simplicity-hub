@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import {
-  CheckCircle2, Zap, Users, Flame, ArrowRight,
+  CheckCircle2, Zap, Users, ArrowRight,
   FileText, TrendingUp, Coins, Shield, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
-import { useFounderSlots } from "@/hooks/useFounderSlots";
 
 // ─── Feature blocks ────────────────────────────────────────────────────────
 const founderFeatures = [
@@ -95,57 +94,6 @@ const faqItems = [
   },
 ];
 
-// ─── Slot badge live ───────────────────────────────────────────────────────
-function SlotBadge({ slots }: { slots: number }) {
-  const pct = (slots / 100) * 100;
-  const urgent = slots <= 20;
-  return (
-    <div
-      className="rounded-2xl px-5 py-4 border flex flex-col gap-2"
-      style={{
-        background: urgent ? "hsl(0 72% 51% / 0.08)" : "hsl(var(--accent) / 0.08)",
-        borderColor: urgent ? "hsl(0 72% 51% / 0.35)" : "hsl(var(--accent) / 0.35)",
-      }}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Flame size={15} style={{ color: urgent ? "hsl(0 72% 65%)" : "hsl(var(--accent))" }} />
-          <span
-            className="text-sm font-bold"
-            style={{ color: urgent ? "hsl(0 72% 72%)" : "hsl(var(--accent))" }}
-          >
-            {urgent ? "🔥 Offre de lancement !" : "Offre Founder Pass exclusive"}
-          </span>
-        </div>
-        <span
-          className="text-xs font-bold px-2.5 py-1 rounded-full"
-          style={{
-            background: urgent ? "hsl(0 72% 51% / 0.18)" : "hsl(var(--accent) / 0.18)",
-            color: urgent ? "hsl(0 72% 72%)" : "hsl(var(--accent))",
-          }}
-        >
-          Founder Pass — 99 €/an
-        </span>
-      </div>
-      {/* Progress bar */}
-      <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-700"
-          style={{
-            width: `${100 - pct}%`,
-            background: urgent
-              ? "linear-gradient(90deg, hsl(0 72% 55%), hsl(0 72% 72%))"
-              : "linear-gradient(90deg, hsl(var(--accent)), hsl(38 100% 72%))",
-          }}
-        />
-      </div>
-      <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-        99 € TTC/an au lieu de 990 € — Prix garanti à vie · Premier arrivé premier servi
-      </p>
-    </div>
-  );
-}
-
 // ─── FAQ accordion item ────────────────────────────────────────────────────
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
@@ -195,9 +143,6 @@ function ActivateButton() {
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 export default function Pricing() {
-  const { remaining, loading: slotsLoading } = useFounderSlots();
-  const slotsRemaining = remaining ?? 100;
-
   useEffect(() => {
     trackEvent("pricing_view", null, { source: "direct" });
   }, []);
@@ -258,11 +203,6 @@ export default function Pricing() {
           </p>
         </div>
       </section>
-
-      {/* ── Slot badge ──────────────────────────────────────────────── */}
-      <div className="container max-w-4xl py-6">
-        <SlotBadge slots={slotsRemaining} />
-      </div>
 
       {/* ── Pricing cards ───────────────────────────────────────────── */}
       <div className="container max-w-4xl pb-16">

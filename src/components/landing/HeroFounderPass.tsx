@@ -4,7 +4,6 @@ import { ArrowRight, Zap, ChevronDown, Lock } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { track } from "@/lib/landingTracking";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
-import SlotCounter from "@/components/landing/SlotCounter";
 import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
 import { CLOSED_BETA } from "@/lib/betaConfig";
 
@@ -150,7 +149,17 @@ export default function HeroFounderPass() {
               transition={EASE_POWER}
               className="mb-6"
             >
-              <SlotCounter variant="hero" />
+              <div
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold"
+                  style={{
+                    background: "hsl(var(--accent) / 0.12)",
+                    borderColor: "hsl(var(--accent) / 0.4)",
+                    color: "hsl(var(--accent))",
+                  }}
+                >
+                  <Zap size={11} />
+                  Founder Pass — 99 €/an · Prix garanti à vie
+                </div>
             </motion.div>
 
             {/* Brand + price */}

@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Zap, Lock } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
-import SlotCounter from "@/components/landing/SlotCounter";
 import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
 import { CLOSED_BETA } from "@/lib/betaConfig";
 
@@ -39,11 +38,6 @@ export default function FinalCTASection() {
             vos journées en vraies opportunités ?
           </span>
         </h2>
-
-        {/* Live slot counter */}
-        <div className="flex justify-center mb-5">
-          <SlotCounter variant="hero" />
-        </div>
 
         <p className="text-white/80 text-base mb-6 max-w-sm mx-auto leading-relaxed font-medium">
           Rejoignez les entrepreneurs qui ont déjà choisi la simplicité et la tranquillité.

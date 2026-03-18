@@ -138,8 +138,7 @@ export default function LandingPage() {
               className="btn-cta flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-bold"
               onClick={() => track("cta_hero_creer_emploi")}
             >
-              Créer ma Mission — Gratuit
-              <ArrowRight size={15} />
+              Créer ma Mission →
             </Link>
             <Link
               to="/checkout"
