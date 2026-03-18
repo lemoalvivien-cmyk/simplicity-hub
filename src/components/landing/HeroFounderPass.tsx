@@ -189,7 +189,7 @@ export default function HeroFounderPass() {
                   Founder Pass 99 €/an
                 </span>
                 <span className="text-white/50 text-xs line-through">990 €</span>
-                <span className="text-white/60 text-xs">· 100 places max</span>
+                <span className="text-white/60 text-xs">· Facturation annuelle</span>
               </div>
 
               <h1
@@ -250,7 +250,7 @@ export default function HeroFounderPass() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.55, duration: 0.6 }}
             >
-              <span className="text-white/40 text-xs">Paiement sécurisé Stripe · Satisfait ou remboursé 30 jours · Accès immédiat</span>
+              <span className="text-white/40 text-xs">Paiement sécurisé Stripe · Prix garanti à vie · Accès immédiat</span>
             </motion.div>
           </div>
 

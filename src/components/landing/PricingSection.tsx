@@ -96,7 +96,7 @@ export default function PricingSection() {
                 </div>
               </div>
               <p className="text-white/80 text-xs font-semibold mt-1">
-                Prix garanti à vie · Remboursé si insatisfait 30 jours · Premier arrivé premier servi
+                Prix garanti à vie · Facturation annuelle · Premier arrivé premier servi
               </p>
             </div>
 
