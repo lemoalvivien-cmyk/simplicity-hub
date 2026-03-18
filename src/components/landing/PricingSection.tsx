@@ -118,7 +118,7 @@ export default function PricingSection() {
                     Offre de lancement terminée
                   </div>
                   <p className="text-center text-xs text-muted-foreground">
-                    Toutes les places ont été prises. Merci pour votre intérêt !
+                    L'offre Founder Pass n'est plus disponible actuellement.
                   </p>
                 </div>
               ) : (
