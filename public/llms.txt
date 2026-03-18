@@ -23,7 +23,7 @@ Guarantee: Price locked for life. Cancel anytime.
 
 ## Key differentiators vs competitors
 - Full traceability: every introduction is dated, sourced, measurable
-- AI scoring: automatic contact qualification via OpenClaw
+- AI scoring: automatic contact qualification and intelligent matching
 - Automatic commissions: Stripe-powered splits, no manual processing
 - Structured workflow: missions → introductions → validation → payment
 
