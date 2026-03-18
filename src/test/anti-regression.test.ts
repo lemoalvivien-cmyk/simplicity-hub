@@ -42,10 +42,15 @@ describe("GUARD — Section #section-creer-emploi dans Index.tsx", () => {
     expect(lazyLine).toBeNull();
   });
 
-  it("la section emploi est positionnée AVANT ProblemSection", () => {
+  it("la section emploi est positionnée AVANT ProblemSection dans le JSX", () => {
     const index = read("src/pages/Index.tsx");
-    const posEmploi = index.indexOf("section-creer-emploi");
-    const posProbleme = index.indexOf("ProblemSection");
+    // Chercher uniquement dans le JSX (après la dernière ligne d'import)
+    const lastImport = index.lastIndexOf("^import ", index.indexOf("export default"));
+    // Trouver la position du bloc JSX en cherchant le return()
+    const returnPos = index.indexOf("return (");
+    const jsx = index.slice(returnPos);
+    const posEmploi = jsx.indexOf("section-creer-emploi");
+    const posProbleme = jsx.indexOf("<ProblemSection");
     expect(posEmploi).toBeGreaterThan(0);
     expect(posProbleme).toBeGreaterThan(0);
     expect(posEmploi).toBeLessThan(posProbleme);
