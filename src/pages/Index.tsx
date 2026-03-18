@@ -19,12 +19,6 @@ import ClosedBetaBanner from "@/components/landing/ClosedBetaBanner";
 import { initScrollTracking, track } from "@/lib/landingTracking";
 import { trackEvent } from "@/lib/analytics";
 import { CLOSED_BETA } from "@/lib/betaConfig";
-import WhyDifferentSection from "@/components/landing/WhyDifferentSection";
-import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
-import ClosedBetaBanner from "@/components/landing/ClosedBetaBanner";
-import { initScrollTracking, track } from "@/lib/landingTracking";
-import { trackEvent } from "@/lib/analytics";
-import { CLOSED_BETA } from "@/lib/betaConfig";
 
 const HeroFounderPass = lazy(() => import("@/components/landing/HeroFounderPass"));
 const MagneticCursor  = lazy(() => import("@/components/landing/MagneticCursor"));
@@ -72,11 +66,13 @@ export default function LandingPage() {
       <ProblemSection />
       <FacilitateurPainSection />
       <MecanismeSection />
-
       <FeaturesValueSection />
       <HowItWorksEntrepriseSection />
       <FacilitateurSection />
+
+      {/* ★ SECTION STAR — Créer son Emploi / Facilitateur — CTA #1 business ★ */}
       <CreerEmploiCTASection />
+
       <ProofSection />
       <AntiBullshitSection />
       <WhyDifferentSection />
@@ -131,20 +127,20 @@ export default function LandingPage() {
           }}
         >
           <div className="px-4 py-3 flex gap-2">
-          <Link
-              to="/checkout"
+            <Link
+              to="/creer-emploi"
               className="btn-cta flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-bold"
-              onClick={() => track("cta_sticky_mobile")}
+              onClick={() => track("cta_hero_creer_emploi")}
             >
-              Founder Pass — 99 €/an
+              Créer ma Mission — Gratuit
               <ArrowRight size={15} />
             </Link>
             <Link
-              to="/creer-emploi"
+              to="/checkout"
               className="px-4 py-3.5 rounded-xl text-sm font-medium border border-white/15 text-white/70 hover:text-white/90 transition-colors flex items-center gap-1.5 whitespace-nowrap"
-              onClick={() => track("cta_sticky_emploi")}
+              onClick={() => track("cta_sticky_mobile")}
             >
-              Emploi →
+              99 €/an →
             </Link>
           </div>
           <GuaranteeBadge className="pb-2 px-4" />
