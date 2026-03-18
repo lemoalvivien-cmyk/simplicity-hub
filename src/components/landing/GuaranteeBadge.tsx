@@ -42,7 +42,7 @@ export default function GuaranteeBadge({ variant = "inline", className = "" }: G
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
             <strong className="text-foreground">Prix verrouillé à vie</strong> · votre tarif de 99 €/an ne changera jamais.{" "}
-            <strong className="text-foreground">Remboursement intégral</strong> si vous n'êtes pas satisfait dans les 30 jours.
+            <strong className="text-foreground">Résiliation libre</strong> · sans engagement minimum supplémentaire.
           </p>
         </div>
       </div>
