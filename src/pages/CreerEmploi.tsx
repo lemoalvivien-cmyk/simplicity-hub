@@ -196,7 +196,6 @@ export default function CreerEmploiPage() {
             {/* LEFT — copy */}
             <div className="flex flex-col">
               <motion.div initial={{ opacity: 0, y: -18 }} animate={{ opacity: 1, y: 0 }} transition={EASE} className="mb-6">
-                <LaunchQuotaBanner variant="hero" />
               </motion.div>
 
               <motion.p
