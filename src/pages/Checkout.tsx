@@ -230,7 +230,7 @@ function StepRecap({
           >
             <Clock size={12} style={{ color: "hsl(38 95% 65%)" }} />
             <p className="text-xs font-semibold" style={{ color: "hsl(38 95% 65%)" }}>
-              Prix garanti à vie si souscrit pendant le lancement · 100 places max
+              Prix garanti à vie · Facturation annuelle · Résiliation libre
             </p>
           </div>
         </div>
