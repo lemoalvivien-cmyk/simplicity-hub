@@ -333,10 +333,10 @@ export default function CreerEmploiPage() {
                   backdropFilter: "blur(20px)",
                 }}
               >
-                <p className="text-[10px] font-medium text-white/50 mb-0.5">Places restantes</p>
+                <p className="text-[10px] font-medium text-white/50 mb-0.5">Inscription</p>
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(152 62% 45%)" }} />
-                  <p className="font-display font-bold text-xl text-white leading-none">Live</p>
+                  <p className="font-display font-bold text-xl text-white leading-none">60 sec</p>
                 </div>
               </motion.div>
             </motion.div>
