@@ -39,7 +39,7 @@ export default function FacilitateurSection() {
               <ArrowRight size={16} />
             </Link>
             <p className="text-[11px] text-muted-foreground mt-3">
-              100 places fondateurs · Prix garanti à vie · Satisfait ou remboursé 30 jours.
+              Founder Pass · Prix garanti à vie · Facturation annuelle
             </p>
           </div>
 
