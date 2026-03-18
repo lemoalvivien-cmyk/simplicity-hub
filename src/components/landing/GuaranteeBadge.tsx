@@ -1,5 +1,5 @@
 /**
- * GuaranteeBadge — "Prix garanti à vie + Résiliation libre"
+ * GuaranteeBadge — "Prix garanti à vie + Remboursement 30 jours"
  * Réutilisable partout : CTA, pricing, success, dashboard
  */
 import { ShieldCheck, BadgeCheck } from "lucide-react";
@@ -23,7 +23,7 @@ export default function GuaranteeBadge({ variant = "inline", className = "" }: G
         <span className="text-white/25 text-xs hidden sm:inline">·</span>
         <span className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "hsl(152 62% 52%)" }}>
           <ShieldCheck size={13} />
-          Engagement annuel · Résiliation libre
+          Remboursé si pas satisfait — 30 jours
         </span>
       </div>
     );
@@ -42,7 +42,7 @@ export default function GuaranteeBadge({ variant = "inline", className = "" }: G
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">
             <strong className="text-foreground">Prix verrouillé à vie</strong> · votre tarif de 99 €/an ne changera jamais.{" "}
-            <strong className="text-foreground">Résiliation libre</strong> · sans engagement minimum supplémentaire.
+            <strong className="text-foreground">Remboursement intégral</strong> si vous n'êtes pas satisfait dans les 30 jours.
           </p>
         </div>
       </div>
@@ -57,7 +57,7 @@ export default function GuaranteeBadge({ variant = "inline", className = "" }: G
       </span>
       <span className="text-muted-foreground/40">·</span>
       <span className="flex items-center gap-1" style={{ color: "hsl(152 62% 50%)" }}>
-        <ShieldCheck size={12} /> Résiliation libre · Prix garanti
+        <ShieldCheck size={12} /> Remboursé si insatisfait — 30 jours
       </span>
     </p>
   );

@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
 import {
-  CheckCircle2, Zap, Users, ArrowRight,
+  CheckCircle2, Zap, Users, Flame, ArrowRight,
   FileText, TrendingUp, Coins, Shield, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { useFounderSlots } from "@/hooks/useFounderSlots";
 
 // ─── Feature blocks ────────────────────────────────────────────────────────
 const founderFeatures = [
@@ -77,6 +78,10 @@ const facilitateurFeatures = [
 
 const faqItems = [
   {
+    q: "Combien de places restent disponibles ?",
+    a: "L'offre de démarrage est limitée à 100 entreprises. Le compteur est en temps réel. Après, le prix passe à 990 €/an.",
+  },
+  {
     q: "À quoi servent les 99 € par an ?",
     a: "Ils donnent accès à tout : publier des missions, recevoir des introductions qualifiées de vos apporteurs, suivre votre pipeline et déclencher les versements automatiques. Tout inclus, sans frais cachés.",
   },
@@ -93,6 +98,57 @@ const faqItems = [
     a: "Oui. Si vous vous inscrivez pendant la période de lancement, votre tarif reste à 99 €/an pour toujours. Aucune surprise.",
   },
 ];
+
+// ─── Slot badge live ───────────────────────────────────────────────────────
+function SlotBadge({ slots }: { slots: number }) {
+  const pct = (slots / 100) * 100;
+  const urgent = slots <= 20;
+  return (
+    <div
+      className="rounded-2xl px-5 py-4 border flex flex-col gap-2"
+      style={{
+        background: urgent ? "hsl(0 72% 51% / 0.08)" : "hsl(var(--accent) / 0.08)",
+        borderColor: urgent ? "hsl(0 72% 51% / 0.35)" : "hsl(var(--accent) / 0.35)",
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Flame size={15} style={{ color: urgent ? "hsl(0 72% 65%)" : "hsl(var(--accent))" }} />
+          <span
+            className="text-sm font-bold"
+            style={{ color: urgent ? "hsl(0 72% 72%)" : "hsl(var(--accent))" }}
+          >
+            {urgent ? "🔥 Dernières places !" : "Offre de lancement exclusive"}
+          </span>
+        </div>
+        <span
+          className="text-xs font-bold px-2.5 py-1 rounded-full"
+          style={{
+            background: urgent ? "hsl(0 72% 51% / 0.18)" : "hsl(var(--accent) / 0.18)",
+            color: urgent ? "hsl(0 72% 72%)" : "hsl(var(--accent))",
+          }}
+        >
+          {slots} / 100 places restantes
+        </span>
+      </div>
+      {/* Progress bar */}
+      <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-700"
+          style={{
+            width: `${100 - pct}%`,
+            background: urgent
+              ? "linear-gradient(90deg, hsl(0 72% 55%), hsl(0 72% 72%))"
+              : "linear-gradient(90deg, hsl(var(--accent)), hsl(38 100% 72%))",
+          }}
+        />
+      </div>
+      <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+        99 € TTC/an au lieu de 990 € — Prix garanti à vie · Premier arrivé premier servi
+      </p>
+    </div>
+  );
+}
 
 // ─── FAQ accordion item ────────────────────────────────────────────────────
 function FAQItem({ q, a }: { q: string; a: string }) {
@@ -143,6 +199,9 @@ function ActivateButton() {
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 export default function Pricing() {
+  const { remaining, loading: slotsLoading } = useFounderSlots();
+  const slotsRemaining = remaining ?? 100;
+
   useEffect(() => {
     trackEvent("pricing_view", null, { source: "direct" });
   }, []);
@@ -193,7 +252,7 @@ export default function Pricing() {
                 marginTop: "0.3rem",
               }}
             >
-              Founder Pass 99 €/an
+              Founder Pass 99 €/an · 100 places max
             </span>
           </h1>
 
@@ -203,6 +262,11 @@ export default function Pricing() {
           </p>
         </div>
       </section>
+
+      {/* ── Slot badge ──────────────────────────────────────────────── */}
+      <div className="container max-w-4xl py-6">
+        <SlotBadge slots={slotsRemaining} />
+      </div>
 
       {/* ── Pricing cards ───────────────────────────────────────────── */}
       <div className="container max-w-4xl pb-16">
@@ -222,10 +286,10 @@ export default function Pricing() {
                   style={{ background: "hsl(var(--accent) / 0.2)", border: "1px solid hsl(var(--accent) / 0.45)", color: "hsl(var(--accent))" }}
                 >
                   <Zap size={10} />
-                  Offre en cours
+                  {slotsRemaining} places restantes
                 </span>
                 <span className="text-white/40 text-xs">·</span>
-                <span className="text-white/55 text-xs font-medium">Prix garanti à vie</span>
+                <span className="text-white/55 text-xs font-medium">100 places max</span>
               </div>
 
               <p className="text-white/75 text-xs font-bold uppercase tracking-widest mb-2">Founder Pass — Entreprise</p>
@@ -241,8 +305,8 @@ export default function Pricing() {
               </div>
 
               <p className="text-white/60 text-xs leading-relaxed max-w-sm">
-                Prix garanti à vie · Facturation annuelle · Résiliation libre.
-                Le tarif Founder Pass est garanti à vie.
+                Prix garanti à vie si souscrit pendant la période de lancement.
+                Après les 100 places, retour au plein tarif.
               </p>
             </div>
 

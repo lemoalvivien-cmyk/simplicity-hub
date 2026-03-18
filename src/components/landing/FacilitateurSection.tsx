@@ -8,7 +8,7 @@ const benefits = [
   "Paiement automatique dès la signature — sans relances",
   "Tableau de bord temps réel de vos introductions et conversions",
   "Résiliation libre · Sans engagement",
-  "Prix garanti à vie — 99 €/an · Résiliation libre",
+  "Prix garanti à vie — 99 €/an pour les 100 premiers",
 ];
 
 export default function FacilitateurSection() {
@@ -39,7 +39,7 @@ export default function FacilitateurSection() {
               <ArrowRight size={16} />
             </Link>
             <p className="text-[11px] text-muted-foreground mt-3">
-              Founder Pass · Prix garanti à vie · Facturation annuelle
+              100 places fondateurs · Prix garanti à vie · Satisfait ou remboursé 30 jours.
             </p>
           </div>
 
@@ -63,7 +63,7 @@ export default function FacilitateurSection() {
                 <p className="font-display font-bold text-white text-2xl leading-none">99 € TTC/an</p>
                 <p className="text-white/60 text-xs line-through">990 €</p>
               </div>
-              <p className="text-white/60 text-xs mt-1">Prix garanti à vie · Facturation annuelle</p>
+              <p className="text-white/60 text-xs mt-1">Prix garanti à vie · 100 places max</p>
             </div>
             <ul className="p-6 space-y-3">
               {benefits.map((item) => (

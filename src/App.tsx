@@ -113,25 +113,19 @@ function FounderSlotsInit() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    {/*
-     * CRITICAL: BrowserRouter MUST be the outermost provider so that
-     * AuthContext (which uses useNavigate) always has Router context.
-     * Moving it inside AuthProvider caused a crash that silently fell
-     * back to the landing page on every route.
-     */}
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <AuthProvider>
-        <SubscriptionProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <InstallBanner />
-            <RGPDConsentBanner />
-            <FounderSlotsInit />
+    <AuthProvider>
+      <SubscriptionProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <InstallBanner />
+          <RGPDConsentBanner />
+          <FounderSlotsInit />
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <ErrorBoundary>
               <PageTracker />
-              <Suspense fallback={<PageSkeleton />}>
-                <Routes>
+            <Suspense fallback={<PageSkeleton />}>
+              <Routes>
                 {/* ── Public ───────────────────────────────── */}
                 <Route path="/" element={<Index />} />
                 <Route path="/pricing" element={<Pricing />} />
@@ -198,12 +192,12 @@ const App = () => (
                 {/* ── 404 ──────────────────────────────────── */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-              </Suspense>
+            </Suspense>
             </ErrorBoundary>
-          </TooltipProvider>
-        </SubscriptionProvider>
-      </AuthProvider>
-    </BrowserRouter>
+          </BrowserRouter>
+        </TooltipProvider>
+      </SubscriptionProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

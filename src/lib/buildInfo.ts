@@ -1,7 +1,7 @@
 export const BUILD_INFO = {
-  version: "1.5.0",
-  buildDate: "2026-03-18-SUPABASE-GUARD",
-  codeName: "PHOENIX-FINAL",
+  version: "1.1.0",
+  buildDate: "2026-03-17",
+  codeName: "LAUNCH-READY",
   environment: import.meta.env.MODE,
   auditScore: "95/100 — code | 100/100 — après 5 beta testeurs",
   productHuntTarget: "Mardi 00:01 PST",
@@ -21,7 +21,7 @@ export const FEATURE_FLAGS = {
   // ── Core app ──────────────────────────────────────────────
   auth_supabase:           { state: "live",     note: "Email/password + ProtectedRoute" },
   billing_stripe:          { state: "live",     note: "create-checkout + stripe-webhook + check-subscription" },
-  pwa_installable:         { state: "disabled", note: "VitePWA DISABLED — stale SW crash. Re-enable only after pipeline stabilised." },
+  pwa_installable:         { state: "live",     note: "vite-plugin-pwa + InstallBanner + /install" },
   multilingue_i18n:        { state: "hardcoded_fr" as unknown as "live", note: "UI hardcoded in French only — i18n removed, no LanguageSwitcher" },
   voice_elevenlabs:        { state: "disabled",  note: "AUDIT 16/03/2026 — désactivé GTM, retourne 503" },
 

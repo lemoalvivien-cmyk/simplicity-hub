@@ -64,17 +64,10 @@ export default function LandingPage() {
         </section>
       )}
 
-      {/* === BUSINESS CRITICAL — NE JAMAIS TOUCHER — Page Emploi STAR ===
-          Position #1 conversion maximale — juste après le Hero.
-          Ne jamais déplacer, conditionner, commenter ou supprimer. */}
-      <div
-        id="section-creer-emploi"
-        data-protected="business-critical"
-        data-version="2026-03-18-permanent"
-        data-never-remove="true"
-      >
-        <CreerEmploiCTASection />
-      </div>
+      {/* ★★★ SECTION ÉTOILE — Créer son Emploi — CTA #1 BUSINESS ★★★
+          Positionnée immédiatement après le Hero pour impact conversion maximal.
+          Ne jamais déplacer plus bas sans validation CRO. */}
+      <CreerEmploiCTASection />
 
       <ProblemSection />
       <FacilitateurPainSection />
@@ -141,7 +134,8 @@ export default function LandingPage() {
               className="btn-cta flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-bold"
               onClick={() => track("cta_hero_creer_emploi")}
             >
-              Créer ma Mission →
+              Créer ma Mission — Gratuit
+              <ArrowRight size={15} />
             </Link>
             <Link
               to="/checkout"

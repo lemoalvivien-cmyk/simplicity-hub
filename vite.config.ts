@@ -2,9 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-// VitePWA DISABLED — stale SW was serving outdated chunks after every rebuild → silent crash
-// Re-enable only after deployment pipeline is fully stabilised
-// import { VitePWA } from "vite-plugin-pwa";
+import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -38,7 +36,56 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    // VitePWA removed — see comment above
+    // TODO: Replace pwa-192.png and pwa-512.png with branded WIINUP MAX icons before Product Hunt launch
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.ico", "robots.txt"],
+      workbox: {
+        navigateFallbackDenylist: [/^\/~oauth/],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // Cache strategy: network-first for API, cache-first for assets
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "supabase-cache",
+              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+            },
+          },
+        ],
+      },
+      manifest: {
+        name: "WIINUP MAX",
+        short_name: "WIINUP MAX",
+        description: "Va te coucher, je prospecte pendant que tu dors.",
+        theme_color: "#0f1b2e",
+        background_color: "#0f1b2e",
+        display: "standalone",
+        orientation: "portrait",
+        scope: "/",
+        start_url: "/",
+        icons: [
+          {
+            src: "/favicon.ico",
+            sizes: "64x64 32x32 24x24 16x16",
+            type: "image/x-icon",
+          },
+          {
+            src: "/pwa-192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/pwa-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable",
+          },
+        ],
+      },
+    }),
   ].filter(Boolean),
   resolve: {
     alias: {

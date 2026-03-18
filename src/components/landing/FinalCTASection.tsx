@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Zap, Lock } from "lucide-react";
 import { track } from "@/lib/landingTracking";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
+import SlotCounter from "@/components/landing/SlotCounter";
 import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
 import { CLOSED_BETA } from "@/lib/betaConfig";
 
 export default function FinalCTASection() {
-  const { isSoldOut } = useFounderSlots();
+  const { isSoldOut, isUrgent, remaining } = useFounderSlots();
 
   return (
     <section className="hero-bg py-24 md:py-32 relative overflow-hidden">
@@ -39,6 +40,11 @@ export default function FinalCTASection() {
           </span>
         </h2>
 
+        {/* Live slot counter */}
+        <div className="flex justify-center mb-5">
+          <SlotCounter variant="hero" />
+        </div>
+
         <p className="text-white/80 text-base mb-6 max-w-sm mx-auto leading-relaxed font-medium">
           Rejoignez les entrepreneurs qui ont déjà choisi la simplicité et la tranquillité.
         </p>
@@ -67,7 +73,10 @@ export default function FinalCTASection() {
               onClick={() => track("cta_final_enterprise")}
             >
               <Zap size={16} />
-              Je veux mes premiers clients dès demain — 99 € TTC/an
+              {isUrgent
+                ? `🔥 Il reste ${remaining} place${remaining! > 1 ? "s" : ""} — J'en profite maintenant`
+                : "Je veux mes premiers clients dès demain — 99 € TTC/an"
+              }
               <ArrowRight size={17} />
             </Link>
           )}

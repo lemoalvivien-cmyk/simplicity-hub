@@ -19,11 +19,11 @@ priorise les contacts selon leur pertinence.
 ## Pricing
 Founder Pass: 99 EUR/year — unlimited access
 Facilitateurs: free (commission on validated introductions)
-Guarantee: Price locked for life. Cancel anytime.
+Trial: 30-day money-back guarantee
 
 ## Key differentiators vs competitors
 - Full traceability: every introduction is dated, sourced, measurable
-- AI scoring: automatic contact qualification and intelligent matching
+- AI scoring: automatic contact qualification via OpenClaw
 - Automatic commissions: Stripe-powered splits, no manual processing
 - Structured workflow: missions → introductions → validation → payment
 

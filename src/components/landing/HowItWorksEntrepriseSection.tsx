@@ -98,7 +98,7 @@ export default function HowItWorksEntrepriseSection() {
             <ArrowRight size={16} />
           </Link>
           <p className="text-[11px] text-muted-foreground mt-3">
-            Accès immédiat · Prix garanti à vie · Paiement sécurisé Stripe
+            Accès immédiat · 30 jours satisfait ou remboursé · Paiement sécurisé Stripe
           </p>
         </div>
 

@@ -4,6 +4,7 @@ import { ArrowRight, Zap, ChevronDown, Lock } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { track } from "@/lib/landingTracking";
 import { useFounderSlots } from "@/hooks/useFounderSlots";
+import SlotCounter from "@/components/landing/SlotCounter";
 import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
 import { CLOSED_BETA } from "@/lib/betaConfig";
 
@@ -39,7 +40,7 @@ function StatCard({
 }
 
 // ─── Main CTA button: points to /checkout ─────────────────────────────────
-function FounderPassButton({ isSoldOut }: { isSoldOut: boolean }) {
+function FounderPassButton({ isSoldOut, isUrgent, remaining }: { isSoldOut: boolean; isUrgent: boolean; remaining: number | null }) {
   if (CLOSED_BETA) {
     return (
       <motion.div
@@ -59,7 +60,7 @@ function FounderPassButton({ isSoldOut }: { isSoldOut: boolean }) {
         style={{ borderColor: "hsl(218 20% 60% / 0.3)", color: "hsl(218 20% 70%)" }}
       >
         <Lock size={15} />
-        Offre de lancement terminée
+        Toutes les places ont été prises
       </motion.div>
     );
   }
@@ -72,7 +73,10 @@ function FounderPassButton({ isSoldOut }: { isSoldOut: boolean }) {
         onClick={() => track("cta_hero_founder_pass")}
       >
         <Zap size={16} strokeWidth={2.5} />
-        Je veux mes premiers clients dès demain — 99 €/an
+        {isUrgent && remaining !== null
+          ? `🔥 Il reste ${remaining} place${remaining > 1 ? "s" : ""} — J'en profite`
+          : "Je veux mes premiers clients dès demain — 99 €/an"
+        }
         <ArrowRight size={15} />
       </Link>
     </motion.div>
@@ -92,7 +96,7 @@ export default function HeroFounderPass() {
   const [sphereX, setSphereX] = useState(0);
   const [sphereY, setSphereY] = useState(0);
 
-  const { isSoldOut } = useFounderSlots();
+  const { remaining, isSoldOut, isUrgent } = useFounderSlots();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -149,17 +153,7 @@ export default function HeroFounderPass() {
               transition={EASE_POWER}
               className="mb-6"
             >
-              <div
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold"
-                  style={{
-                    background: "hsl(var(--accent) / 0.12)",
-                    borderColor: "hsl(var(--accent) / 0.4)",
-                    color: "hsl(var(--accent))",
-                  }}
-                >
-                  <Zap size={11} />
-                  Founder Pass — 99 €/an · Prix garanti à vie
-                </div>
+              <SlotCounter variant="hero" />
             </motion.div>
 
             {/* Brand + price */}
@@ -195,7 +189,7 @@ export default function HeroFounderPass() {
                   Founder Pass 99 €/an
                 </span>
                 <span className="text-white/50 text-xs line-through">990 €</span>
-                <span className="text-white/60 text-xs">· Facturation annuelle</span>
+                <span className="text-white/60 text-xs">· 100 places max</span>
               </div>
 
               <h1
@@ -235,7 +229,7 @@ export default function HeroFounderPass() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.38 }}
             >
-              <FounderPassButton isSoldOut={isSoldOut} />
+              <FounderPassButton isSoldOut={isSoldOut} isUrgent={isUrgent} remaining={remaining} />
               <motion.div whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
                 <Link
                   to="/creer-emploi"
@@ -256,7 +250,7 @@ export default function HeroFounderPass() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.55, duration: 0.6 }}
             >
-              <span className="text-white/40 text-xs">Paiement sécurisé Stripe · Prix garanti à vie · Accès immédiat</span>
+              <span className="text-white/40 text-xs">Paiement sécurisé Stripe · Satisfait ou remboursé 30 jours · Accès immédiat</span>
             </motion.div>
           </div>
 

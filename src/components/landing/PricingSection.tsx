@@ -34,13 +34,14 @@ export default function PricingSection() {
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">
-            Offre Founder Pass
+            {CLOSED_BETA ? "Bêta privée — 50 places" : "Offre lancement exclusive"}
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
             Simple, honnête, transparent.
           </h2>
           <p className="text-muted-foreground text-base max-w-md mx-auto">
             Pour les entreprises : Pass Fondateur à <strong className="text-foreground">99 € par an</strong> seulement (au lieu de 990 €).{" "}
+            {CLOSED_BETA ? "50 places en bêta privée." : "Seulement 100 places disponibles."}{" "}
             Tout est inclus. Pour les facilitateurs : <strong className="text-foreground">Gratuit pour toujours</strong>, aucune carte demandée.
           </p>
         </div>
@@ -79,7 +80,10 @@ export default function PricingSection() {
                 ) : (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold">
                     <Zap size={10} />
-                    Founder Pass — Offre de lancement
+                    {CLOSED_BETA
+                      ? "Bêta privée — places limitées"
+                      : `Offre lancement — ${remaining} place${remaining !== 1 ? "s" : ""} restante${remaining !== 1 ? "s" : ""}`
+                    }
                   </div>
                 )}
               </div>
@@ -92,7 +96,7 @@ export default function PricingSection() {
                 </div>
               </div>
               <p className="text-white/80 text-xs font-semibold mt-1">
-                Prix garanti à vie · Facturation annuelle · Premier arrivé premier servi
+                Prix garanti à vie · Remboursé si insatisfait 30 jours · Premier arrivé premier servi
               </p>
             </div>
 
@@ -118,7 +122,7 @@ export default function PricingSection() {
                     Offre de lancement terminée
                   </div>
                   <p className="text-center text-xs text-muted-foreground">
-                    L'offre Founder Pass n'est plus disponible actuellement.
+                    Toutes les places ont été prises. Merci pour votre intérêt !
                   </p>
                 </div>
               ) : (

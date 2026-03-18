@@ -93,8 +93,8 @@
       base-uri 'self'                                   → blocks <base href> injection
       form-action 'self' *.stripe.com                   → form submissions only to safe targets
     -->
-    <!-- P0 DEBUG: CSP permissive temporaire — hash obsolète après Babel switch -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' https: data:; connect-src 'self' https: ws: wss:; frame-src https:; object-src 'none'; base-uri 'self'; form-action 'self' https:;" />
+    <!-- P0 FIX: Added *.sentry.io + *.ingest.sentry.io to connect-src for error reporting -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-3NOBIQl1eooP7GOFzgmjwOpViIolES0irtj+B5xJsWY='; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://api.stripe.com https://js.stripe.com https://api.resend.com wss://*.supabase.co https://*.lovable.app https://*.lovableproject.com https://*.sentry.io https://*.ingest.sentry.io; img-src 'self' data: blob: https://*.supabase.co https://wiinupmax.com; font-src 'self' data:; frame-src https://js.stripe.com https://hooks.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com;" />
   </head>
 
   <body>
@@ -115,16 +115,15 @@
             <li><strong>Assistant IA KITT</strong> — scoring automatique des contacts, priorisation par pertinence</li>
             <li><strong>Traçabilité totale</strong> — chaque introduction est datée, sourcée et mesurable</li>
             <li><strong>Commissions automatiques</strong> — paiements sécurisés via Stripe, split en temps réel</li>
-            <li><strong>Créer son Emploi</strong> — devenez facilitateur et monétisez votre réseau professionnel</li>
+            <li><strong>OpenClaw IA</strong> — prospection intelligente et recommandations de contacts</li>
           </ul>
           <h2 style="font-size: 20px; font-weight: 600; margin: 0 0 12px;">Tarification</h2>
           <p style="margin: 0 0 8px;"><strong>Founder Pass : 99 €/an</strong> — accès illimité, facilitateurs gratuits.</p>
-          <p style="margin: 0 0 20px;">Prix garanti à vie. Résiliation libre. Aucun engagement.</p>
+          <p style="margin: 0 0 20px;">Garantie satisfait ou remboursé 30 jours. Aucun engagement. Annulation à tout moment.</p>
           <h2 style="font-size: 20px; font-weight: 600; margin: 0 0 12px;">À propos</h2>
           <p style="margin: 0 0 20px;">WIINUP MAX est édité par VLM Consulting. Basé en France. Données hébergées dans l'Union Européenne (Supabase / AWS EU-West).</p>
           <nav style="margin: 0 0 20px;">
             <a href="https://wiinupmax.com/signup" style="margin-right: 16px; color: #1a1a9c;">S'inscrire</a>
-            <a href="https://wiinupmax.com/creer-emploi" style="margin-right: 16px; color: #1a1a9c;">Créer son Emploi</a>
             <a href="https://wiinupmax.com/login" style="margin-right: 16px; color: #1a1a9c;">Se connecter</a>
             <a href="https://wiinupmax.com/pricing" style="margin-right: 16px; color: #1a1a9c;">Tarifs</a>
             <a href="https://wiinupmax.com/a-propos" style="margin-right: 16px; color: #1a1a9c;">À propos</a>
