@@ -667,7 +667,7 @@ export default function CreerEmploiPage() {
                 color: "hsl(var(--accent))",
               }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
-              Places limitées — Offre Fondateur
+              Offre Founder Pass
             </div>
 
             <h2 className="font-display text-3xl md:text-5xl font-bold text-white leading-tight">
