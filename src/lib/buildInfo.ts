@@ -21,7 +21,7 @@ export const FEATURE_FLAGS = {
   // ── Core app ──────────────────────────────────────────────
   auth_supabase:           { state: "live",     note: "Email/password + ProtectedRoute" },
   billing_stripe:          { state: "live",     note: "create-checkout + stripe-webhook + check-subscription" },
-  pwa_installable:         { state: "live",     note: "vite-plugin-pwa + InstallBanner + /install" },
+  pwa_installable:         { state: "disabled", note: "VitePWA DISABLED — stale SW crash. Re-enable only after pipeline stabilised." },
   multilingue_i18n:        { state: "hardcoded_fr" as unknown as "live", note: "UI hardcoded in French only — i18n removed, no LanguageSwitcher" },
   voice_elevenlabs:        { state: "disabled",  note: "AUDIT 16/03/2026 — désactivé GTM, retourne 503" },
 
