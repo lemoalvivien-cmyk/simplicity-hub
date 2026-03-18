@@ -79,10 +79,7 @@ export default function PricingSection() {
                 ) : (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-white text-xs font-bold">
                     <Zap size={10} />
-                    {CLOSED_BETA
-                      ? "Bêta privée — places limitées"
-                      : `Offre lancement — ${remaining} place${remaining !== 1 ? "s" : ""} restante${remaining !== 1 ? "s" : ""}`
-                    }
+                    Founder Pass — Offre de lancement
                   </div>
                 )}
               </div>
