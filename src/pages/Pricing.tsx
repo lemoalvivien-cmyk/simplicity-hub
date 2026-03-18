@@ -143,9 +143,6 @@ function ActivateButton() {
 
 // ─── Page ──────────────────────────────────────────────────────────────────
 export default function Pricing() {
-  const { remaining, loading: slotsLoading } = useFounderSlots();
-  const slotsRemaining = remaining ?? 100;
-
   useEffect(() => {
     trackEvent("pricing_view", null, { source: "direct" });
   }, []);
