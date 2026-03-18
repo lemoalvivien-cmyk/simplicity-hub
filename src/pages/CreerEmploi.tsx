@@ -255,7 +255,7 @@ export default function CreerEmploiPage() {
                     </span>
                     <span className="text-[11px] font-semibold opacity-80 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-white/70 inline-block" />
-                      Places limitées — 100 places max
+                      Founder Pass — Offre de lancement
                     </span>
                   </Link>
                 </motion.div>
