@@ -8,7 +8,7 @@ const benefits = [
   "Paiement automatique dès la signature — sans relances",
   "Tableau de bord temps réel de vos introductions et conversions",
   "Résiliation libre · Sans engagement",
-  "Prix garanti à vie — 99 €/an pour les 100 premiers",
+  "Prix garanti à vie — 99 €/an · Résiliation libre",
 ];
 
 export default function FacilitateurSection() {

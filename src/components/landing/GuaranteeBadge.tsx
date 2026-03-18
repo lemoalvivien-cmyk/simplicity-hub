@@ -1,5 +1,5 @@
 /**
- * GuaranteeBadge — "Prix garanti à vie + Remboursement 30 jours"
+ * GuaranteeBadge — "Prix garanti à vie + Résiliation libre"
  * Réutilisable partout : CTA, pricing, success, dashboard
  */
 import { ShieldCheck, BadgeCheck } from "lucide-react";

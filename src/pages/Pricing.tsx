@@ -78,10 +78,6 @@ const facilitateurFeatures = [
 
 const faqItems = [
   {
-    q: "Combien de places restent disponibles ?",
-    a: "L'offre de démarrage est limitée à 100 entreprises. Le compteur est en temps réel. Après, le prix passe à 990 €/an.",
-  },
-  {
     q: "À quoi servent les 99 € par an ?",
     a: "Ils donnent accès à tout : publier des missions, recevoir des introductions qualifiées de vos apporteurs, suivre votre pipeline et déclencher les versements automatiques. Tout inclus, sans frais cachés.",
   },
@@ -118,7 +114,7 @@ function SlotBadge({ slots }: { slots: number }) {
             className="text-sm font-bold"
             style={{ color: urgent ? "hsl(0 72% 72%)" : "hsl(var(--accent))" }}
           >
-            {urgent ? "🔥 Dernières places !" : "Offre de lancement exclusive"}
+            {urgent ? "🔥 Offre de lancement !" : "Offre Founder Pass exclusive"}
           </span>
         </div>
         <span
@@ -128,7 +124,7 @@ function SlotBadge({ slots }: { slots: number }) {
             color: urgent ? "hsl(0 72% 72%)" : "hsl(var(--accent))",
           }}
         >
-          {slots} / 100 places restantes
+          Founder Pass — 99 €/an
         </span>
       </div>
       {/* Progress bar */}
@@ -252,7 +248,7 @@ export default function Pricing() {
                 marginTop: "0.3rem",
               }}
             >
-              Founder Pass 99 €/an · 100 places max
+              Founder Pass 99 €/an
             </span>
           </h1>
 
@@ -286,10 +282,10 @@ export default function Pricing() {
                   style={{ background: "hsl(var(--accent) / 0.2)", border: "1px solid hsl(var(--accent) / 0.45)", color: "hsl(var(--accent))" }}
                 >
                   <Zap size={10} />
-                  {slotsRemaining} places restantes
+                  Offre en cours
                 </span>
                 <span className="text-white/40 text-xs">·</span>
-                <span className="text-white/55 text-xs font-medium">100 places max</span>
+                <span className="text-white/55 text-xs font-medium">Prix garanti à vie</span>
               </div>
 
               <p className="text-white/75 text-xs font-bold uppercase tracking-widest mb-2">Founder Pass — Entreprise</p>
@@ -305,8 +301,8 @@ export default function Pricing() {
               </div>
 
               <p className="text-white/60 text-xs leading-relaxed max-w-sm">
-                Prix garanti à vie si souscrit pendant la période de lancement.
-                Après les 100 places, retour au plein tarif.
+                Prix garanti à vie · Facturation annuelle · Résiliation libre.
+                Le tarif Founder Pass est garanti à vie.
               </p>
             </div>
 
