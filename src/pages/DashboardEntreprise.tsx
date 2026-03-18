@@ -255,7 +255,7 @@ export default function DashboardEntreprise() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-foreground text-sm leading-tight mb-1">
-                  Founder Pass — 99 €/an · 100 places max
+                  Founder Pass — 99 €/an
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Accès complet : missions illimitées, introductions traçées, gains automatiques.{" "}

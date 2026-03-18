@@ -43,7 +43,7 @@ const nextSteps = [
 const guarantees = [
   { icon: ShieldCheck, label: "Accès immédiat" },
   { icon: BadgeCheck, label: "Prix garanti à vie" },
-  { icon: Gift, label: "30j satisfait ou remboursé" },
+  { icon: Gift, label: "Prix garanti à vie" },
 ];
 
 export default function Success() {

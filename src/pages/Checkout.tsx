@@ -812,7 +812,7 @@ export default function Checkout() {
               Offre de lancement terminée
             </h1>
             <p className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-sm mx-auto">
-              Les 100 places Founder Pass ont toutes été réservées. Merci à tous nos premiers fondateurs pour leur confiance !
+              L'offre Founder Pass n'est plus disponible actuellement. Merci pour votre intérêt !
             </p>
             <Link
               to="/pricing"

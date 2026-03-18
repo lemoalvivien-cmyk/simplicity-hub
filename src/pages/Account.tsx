@@ -199,7 +199,7 @@ function RefundRequestButton({ userId }: { userId: string | undefined }) {
     >
       <span className="flex items-center gap-2">
         <RotateCcw size={12} />
-        Demander un remboursement (garantie 30 jours)
+        Demander un remboursement
       </span>
       <ChevronRight size={13} className="opacity-50" />
     </button>
