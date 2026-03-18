@@ -124,7 +124,7 @@ function SlotBadge({ slots }: { slots: number }) {
             color: urgent ? "hsl(0 72% 72%)" : "hsl(var(--accent))",
           }}
         >
-          {slots} / 100 places restantes
+          Founder Pass — 99 €/an
         </span>
       </div>
       {/* Progress bar */}
