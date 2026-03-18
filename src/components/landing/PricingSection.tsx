@@ -34,7 +34,7 @@ export default function PricingSection() {
       <div className="container max-w-4xl">
         <div className="text-center mb-12">
           <p className="pill-tag mb-4 mx-auto w-fit">
-            {CLOSED_BETA ? "Bêta privée — 50 places" : "Offre lancement exclusive"}
+            Offre Founder Pass
           </p>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
             Simple, honnête, transparent.
