@@ -14,7 +14,6 @@ import {
   GraduationCap, Award, ChevronDown, Zap,
 } from "lucide-react";
 import PublicNav, { LegalFooter } from "@/components/layout/PublicNav";
-import LaunchQuotaBanner from "@/components/landing/LaunchQuotaBanner";
 import vivienPhoto from "@/assets/vivien-le-moal.jpg";
 
 /* ─── Motion helpers ──────────────────────────────────────────────────── */
@@ -197,7 +196,6 @@ export default function CreerEmploiPage() {
             {/* LEFT — copy */}
             <div className="flex flex-col">
               <motion.div initial={{ opacity: 0, y: -18 }} animate={{ opacity: 1, y: 0 }} transition={EASE} className="mb-6">
-                <LaunchQuotaBanner variant="hero" />
               </motion.div>
 
               <motion.p
@@ -335,10 +333,10 @@ export default function CreerEmploiPage() {
                   backdropFilter: "blur(20px)",
                 }}
               >
-                <p className="text-[10px] font-medium text-white/50 mb-0.5">Places restantes</p>
+                <p className="text-[10px] font-medium text-white/50 mb-0.5">Inscription</p>
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(152 62% 45%)" }} />
-                  <p className="font-display font-bold text-xl text-white leading-none">Live</p>
+                  <p className="font-display font-bold text-xl text-white leading-none">60 sec</p>
                 </div>
               </motion.div>
             </motion.div>
@@ -658,9 +656,8 @@ export default function CreerEmploiPage() {
             variants={fadeUp()}
             className="space-y-6"
           >
-            {/* Live quota */}
+            {/* Founder Pass badge */}
             <div className="flex justify-center mb-2">
-              <LaunchQuotaBanner variant="pricing" />
             </div>
 
             <div className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full border"
@@ -670,7 +667,7 @@ export default function CreerEmploiPage() {
                 color: "hsl(var(--accent))",
               }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--accent))" }} />
-              Places limitées — Offre Fondateur
+              Offre Founder Pass
             </div>
 
             <h2 className="font-display text-3xl md:text-5xl font-bold text-white leading-tight">
@@ -686,7 +683,7 @@ export default function CreerEmploiPage() {
             </h2>
 
             <p className="text-white/70 text-base md:text-lg leading-relaxed max-w-xl mx-auto">
-              Founder Pass à 99 €/an — prix garanti à vie. Vos contacts vous envoient des introductions qualifiées. Vous ne payez que si ça marche. 100 places seulement.
+              Founder Pass à 99 €/an — prix garanti à vie. Vos contacts vous envoient des introductions qualifiées. Vous ne payez que si ça marche.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">

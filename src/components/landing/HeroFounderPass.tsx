@@ -40,7 +40,7 @@ function StatCard({
 }
 
 // ─── Main CTA button: points to /checkout ─────────────────────────────────
-function FounderPassButton({ isSoldOut, isUrgent, remaining }: { isSoldOut: boolean; isUrgent: boolean; remaining: number | null }) {
+function FounderPassButton({ isSoldOut }: { isSoldOut: boolean }) {
   if (CLOSED_BETA) {
     return (
       <motion.div
@@ -60,7 +60,7 @@ function FounderPassButton({ isSoldOut, isUrgent, remaining }: { isSoldOut: bool
         style={{ borderColor: "hsl(218 20% 60% / 0.3)", color: "hsl(218 20% 70%)" }}
       >
         <Lock size={15} />
-        Toutes les places ont été prises
+        Offre de lancement terminée
       </motion.div>
     );
   }
@@ -73,10 +73,7 @@ function FounderPassButton({ isSoldOut, isUrgent, remaining }: { isSoldOut: bool
         onClick={() => track("cta_hero_founder_pass")}
       >
         <Zap size={16} strokeWidth={2.5} />
-        {isUrgent && remaining !== null
-          ? `🔥 Il reste ${remaining} place${remaining > 1 ? "s" : ""} — J'en profite`
-          : "Je veux mes premiers clients dès demain — 99 €/an"
-        }
+        Je veux mes premiers clients dès demain — 99 €/an
         <ArrowRight size={15} />
       </Link>
     </motion.div>
@@ -96,7 +93,7 @@ export default function HeroFounderPass() {
   const [sphereX, setSphereX] = useState(0);
   const [sphereY, setSphereY] = useState(0);
 
-  const { remaining, isSoldOut, isUrgent } = useFounderSlots();
+  const { isSoldOut } = useFounderSlots();
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -229,7 +226,7 @@ export default function HeroFounderPass() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...EASE_POWER, delay: 0.38 }}
             >
-              <FounderPassButton isSoldOut={isSoldOut} isUrgent={isUrgent} remaining={remaining} />
+              <FounderPassButton isSoldOut={isSoldOut} />
               <motion.div whileHover={{ scale: 1.02, y: -1 }} whileTap={{ scale: 0.97 }} transition={BOUNCE}>
                 <Link
                   to="/creer-emploi"

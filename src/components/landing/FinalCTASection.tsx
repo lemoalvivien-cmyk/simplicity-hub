@@ -7,7 +7,7 @@ import GuaranteeBadge from "@/components/landing/GuaranteeBadge";
 import { CLOSED_BETA } from "@/lib/betaConfig";
 
 export default function FinalCTASection() {
-  const { isSoldOut, isUrgent, remaining } = useFounderSlots();
+  const { isSoldOut } = useFounderSlots();
 
   return (
     <section className="hero-bg py-24 md:py-32 relative overflow-hidden">
@@ -73,10 +73,7 @@ export default function FinalCTASection() {
               onClick={() => track("cta_final_enterprise")}
             >
               <Zap size={16} />
-              {isUrgent
-                ? `🔥 Il reste ${remaining} place${remaining! > 1 ? "s" : ""} — J'en profite maintenant`
-                : "Je veux mes premiers clients dès demain — 99 € TTC/an"
-              }
+              Je veux mes premiers clients dès demain — 99 € TTC/an
               <ArrowRight size={17} />
             </Link>
           )}
