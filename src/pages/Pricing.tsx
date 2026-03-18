@@ -114,7 +114,7 @@ function SlotBadge({ slots }: { slots: number }) {
             className="text-sm font-bold"
             style={{ color: urgent ? "hsl(0 72% 72%)" : "hsl(var(--accent))" }}
           >
-            {urgent ? "🔥 Dernières places !" : "Offre de lancement exclusive"}
+            {urgent ? "🔥 Offre de lancement !" : "Offre Founder Pass exclusive"}
           </span>
         </div>
         <span
