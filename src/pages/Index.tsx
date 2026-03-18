@@ -8,6 +8,7 @@ import MecanismeSection from "@/components/landing/MecanismeSection";
 import FeaturesValueSection from "@/components/landing/FeaturesValueSection";
 import HowItWorksEntrepriseSection from "@/components/landing/HowItWorksEntrepriseSection";
 import FacilitateurSection from "@/components/landing/FacilitateurSection";
+// SECTION CRÉER EMPLOI — RESTAURÉE EN #1 BUSINESS CRITIQUE (photo nouvelle + texte exact screenshot)
 import CreerEmploiCTASection from "@/components/landing/CreerEmploiCTASection";
 import ProofSection from "@/components/landing/ProofSection";
 import AntiBullshitSection from "@/components/landing/AntiBullshitSection";
@@ -63,16 +64,17 @@ export default function LandingPage() {
         </section>
       )}
 
+      {/* ★★★ SECTION ÉTOILE — Créer son Emploi — CTA #1 BUSINESS ★★★
+          Positionnée immédiatement après le Hero pour impact conversion maximal.
+          Ne jamais déplacer plus bas sans validation CRO. */}
+      <CreerEmploiCTASection />
+
       <ProblemSection />
       <FacilitateurPainSection />
       <MecanismeSection />
       <FeaturesValueSection />
       <HowItWorksEntrepriseSection />
       <FacilitateurSection />
-
-      {/* ★ SECTION STAR — Créer son Emploi / Facilitateur — CTA #1 business ★ */}
-      <CreerEmploiCTASection />
-
       <ProofSection />
       <AntiBullshitSection />
       <WhyDifferentSection />
