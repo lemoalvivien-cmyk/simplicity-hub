@@ -75,7 +75,9 @@ export default function LandingPage() {
           SECTION CRÉER EMPLOI — RESTAURÉE EN #1 BUSINESS CRITIQUE (photo nouvelle + texte exact screenshot)
           Positionnée après FacilitateurSection pour conversion maximale.
           Ne jamais déplacer sans validation CRO. */}
-      <CreerEmploiCTASection />
+      <div id="section-creer-emploi" data-protected="business-critical" data-never-remove="true">
+        <CreerEmploiCTASection />
+      </div>
 
       <ProofSection />
       <AntiBullshitSection />
