@@ -63,7 +63,7 @@ export default function FacilitateurSection() {
                 <p className="font-display font-bold text-white text-2xl leading-none">99 € TTC/an</p>
                 <p className="text-white/60 text-xs line-through">990 €</p>
               </div>
-              <p className="text-white/60 text-xs mt-1">Prix garanti à vie · 100 places max</p>
+              <p className="text-white/60 text-xs mt-1">Prix garanti à vie · Facturation annuelle</p>
             </div>
             <ul className="p-6 space-y-3">
               {benefits.map((item) => (
