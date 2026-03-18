@@ -57,7 +57,7 @@ export default function GuaranteeBadge({ variant = "inline", className = "" }: G
       </span>
       <span className="text-muted-foreground/40">·</span>
       <span className="flex items-center gap-1" style={{ color: "hsl(152 62% 50%)" }}>
-        <ShieldCheck size={12} /> Remboursé si insatisfait — 30 jours
+        <ShieldCheck size={12} /> Résiliation libre · Prix garanti
       </span>
     </p>
   );

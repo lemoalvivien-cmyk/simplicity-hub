@@ -64,17 +64,19 @@ export default function LandingPage() {
         </section>
       )}
 
-      {/* ★★★ SECTION ÉTOILE — Créer son Emploi — CTA #1 BUSINESS ★★★
-          Positionnée immédiatement après le Hero pour impact conversion maximal.
-          Ne jamais déplacer plus bas sans validation CRO. */}
-      <CreerEmploiCTASection />
-
       <ProblemSection />
       <FacilitateurPainSection />
       <MecanismeSection />
       <FeaturesValueSection />
       <HowItWorksEntrepriseSection />
       <FacilitateurSection />
+
+      {/* ★★★ SECTION ÉTOILE — Créer son Emploi — CTA #1 BUSINESS ★★★
+          SECTION CRÉER EMPLOI — RESTAURÉE EN #1 BUSINESS CRITIQUE (photo nouvelle + texte exact screenshot)
+          Positionnée après FacilitateurSection pour conversion maximale.
+          Ne jamais déplacer sans validation CRO. */}
+      <CreerEmploiCTASection />
+
       <ProofSection />
       <AntiBullshitSection />
       <WhyDifferentSection />
