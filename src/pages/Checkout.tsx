@@ -29,7 +29,7 @@ const reassuranceItems = [
   { icon: Lock, label: "Paiement 100 % sécurisé par Stripe" },
   { icon: ShieldCheck, label: "Données protégées · RGPD" },
   { icon: CircleCheck, label: "Facture envoyée immédiatement" },
-  { icon: BadgeCheck, label: "30 jours satisfait ou remboursé" },
+  { icon: BadgeCheck, label: "Prix garanti à vie" },
 ];
 
 // ─── Sidebar Summary (desktop) ────────────────────────────────────────────────
