@@ -78,10 +78,6 @@ const facilitateurFeatures = [
 
 const faqItems = [
   {
-    q: "Combien de places restent disponibles ?",
-    a: "L'offre de démarrage est limitée à 100 entreprises. Le compteur est en temps réel. Après, le prix passe à 990 €/an.",
-  },
-  {
     q: "À quoi servent les 99 € par an ?",
     a: "Ils donnent accès à tout : publier des missions, recevoir des introductions qualifiées de vos apporteurs, suivre votre pipeline et déclencher les versements automatiques. Tout inclus, sans frais cachés.",
   },
