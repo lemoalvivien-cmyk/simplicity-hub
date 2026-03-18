@@ -45,6 +45,7 @@ export type TrackEvent =
   | "cta_entreprise_section"
   | "cta_why_different"
   | "cta_dashboard_activate"
+  | "cta_landing_creer_emploi_section"
   | "qa_open"
   | "scroll_25"
   | "scroll_75"
