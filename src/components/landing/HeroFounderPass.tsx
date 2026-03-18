@@ -189,7 +189,7 @@ export default function HeroFounderPass() {
                   Founder Pass 99 €/an
                 </span>
                 <span className="text-white/50 text-xs line-through">990 €</span>
-                <span className="text-white/60 text-xs">· 100 places max</span>
+                <span className="text-white/60 text-xs">· Facturation annuelle</span>
               </div>
 
               <h1
