@@ -248,7 +248,7 @@ export default function Pricing() {
                 marginTop: "0.3rem",
               }}
             >
-              Founder Pass 99 €/an · 100 places max
+              Founder Pass 99 €/an
             </span>
           </h1>
 
