@@ -204,11 +204,6 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* ── Slot badge ──────────────────────────────────────────────── */}
-      <div className="container max-w-4xl py-6">
-        <SlotBadge slots={slotsRemaining} />
-      </div>
-
       {/* ── Pricing cards ───────────────────────────────────────────── */}
       <div className="container max-w-4xl pb-16">
         <div className="grid lg:grid-cols-5 gap-6 items-start">
