@@ -64,21 +64,24 @@ export default function LandingPage() {
         </section>
       )}
 
+      {/* === BUSINESS CRITICAL — NE JAMAIS TOUCHER — Page Emploi STAR ===
+          Position #1 conversion maximale — juste après le Hero.
+          Ne jamais déplacer, conditionner, commenter ou supprimer. */}
+      <div
+        id="section-creer-emploi"
+        data-protected="business-critical"
+        data-version="2026-03-18-permanent"
+        data-never-remove="true"
+      >
+        <CreerEmploiCTASection />
+      </div>
+
       <ProblemSection />
       <FacilitateurPainSection />
       <MecanismeSection />
       <FeaturesValueSection />
       <HowItWorksEntrepriseSection />
       <FacilitateurSection />
-
-      {/* ★★★ SECTION ÉTOILE — Créer son Emploi — CTA #1 BUSINESS ★★★
-          SECTION CRÉER EMPLOI — RESTAURÉE EN #1 BUSINESS CRITIQUE (photo nouvelle + texte exact screenshot)
-          Positionnée après FacilitateurSection pour conversion maximale.
-          Ne jamais déplacer sans validation CRO. */}
-      <div id="section-creer-emploi" data-protected="business-critical" data-never-remove="true">
-        <CreerEmploiCTASection />
-      </div>
-
       <ProofSection />
       <AntiBullshitSection />
       <WhyDifferentSection />
